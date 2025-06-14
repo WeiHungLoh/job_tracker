@@ -1,9 +1,9 @@
 import { pool } from '../connectDB.js'
 
 const insertUser = async (
-    email: string,
-    hashed_password: string,
-    sorting_preferences: 'DEFAULT' | 'APPLICATION_DATE'
+    email,
+    hashed_password,
+    sorting_preferences,
 ) => {
     await pool.query(
         `INSERT INTO users (email, hashed_password, sorting_preferences) VALUES ($1, $2, $3)`,
@@ -11,7 +11,7 @@ const insertUser = async (
     )
 }
 
-const findUser = async (email: string) => {
+const findUser = async (email) => {
     const res = await pool.query(
         `SELECT 1 FROM users WHERE email = $1`, [email]
     )
@@ -24,4 +24,12 @@ const findUser = async (email: string) => {
     }
 }
 
-export { insertUser, findUser }
+const findUserInfo = async (email) => {
+    const res = await pool.query(
+        `SELECT * FROM users WHERE email = $1`, [email]
+    )
+
+    return res.rows[0]
+}
+
+export { insertUser, findUser, findUserInfo }

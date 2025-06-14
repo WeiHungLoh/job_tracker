@@ -1,13 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
 
-// Makes req.user able to be inferred
-interface AuthenticatedRequest extends Request {
-    user?: string | jwt.JwtPayload
-}
-
-const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const verifyToken = (req, res, next) => {
   // Extracts JWT from the Authorization header in the format: "Bearer <token>".
   // The token is sent by the frontend (after sign in) and included in requests
   // to protected routes like /exam or /assignment.
@@ -24,12 +18,8 @@ const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunctio
     // Save decoded token data (userid and email) so it can be used in protected routes (/exam and /assignment)
     req.user = decoded
     next()
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-        return res.status(401).send(error.message)
-    } else {
-        return res.status(401).send(error)
-    }
+  } catch (error) {
+      return res.status(401).send(error.message)
   }
 }
 

@@ -1,35 +1,7 @@
 import { pool } from '../connectDB'
 
-interface User {
-    user_id: number
-    email: string
-    hashed_password: string
-    created_at: Date
-}
-
-interface Application {
-    job_id: number
-    user_id: number
-    company_name: string
-    job_title: string
-    application_date: Date
-    job_status: 'Applied' | 'Interview' | 'Offer' | 'Rejected' | 'Accepted'
-    location?: string | null
-    job_posting_url?: string | null
-}
-
-interface Interview {
-    interview_id: number
-    job_id: number
-    interview_date: string
-    location: string
-    interview_type?: string | null
-    notes?: string | null
-    created_at: Date
-}
-
 const createTable = async () => {
-    const createUsersTable: string =
+    const createUsersTable =
         `
         CREATE TABLE IF NOT EXISTS users (
             user_id SERIAL PRIMARY KEY,
@@ -39,7 +11,7 @@ const createTable = async () => {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`
 
-    const createJobAppTable: string =
+    const createJobAppTable =
         `CREATE TABLE IF NOT EXISTS job_applications (
             job_id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -51,7 +23,7 @@ const createTable = async () => {
             job_posting_url TEXT
         )`
 
-    const createInterviewTable: string =
+    const createInterviewTable =
         `CREATE TABLE IF NOT EXISTS interviews (
             interview_id SERIAL PRIMARY KEY,
             job_id INTEGER REFERENCES job_applications(job_id) ON DELETE CASCADE,
@@ -66,11 +38,9 @@ const createTable = async () => {
         await pool.query(createUsersTable)
         await pool.query(createJobAppTable)
         await pool.query(createInterviewTable)
-    } catch (error: unknown) {
-        if (error instanceof Error) {
+    } catch (error) {
+        {
             console.log('Unable to create table ' + error.message)
-        } else {
-            console.log('Unable to create table', error)
         }
     }
 }

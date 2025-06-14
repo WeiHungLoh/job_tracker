@@ -4,7 +4,7 @@ import { connectDB } from './db/connectDB.js'
 import authRoute from './routes/auth.js'
 import verifyToken from './middleware/verifyToken.js'
 
-const startServer = async (): Promise<void> => {
+const startServer = async () => {
     await connectDB()
     const app = express()
     app.use(cors())
