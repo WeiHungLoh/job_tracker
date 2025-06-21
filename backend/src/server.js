@@ -5,6 +5,7 @@ import createTable from './db/queries/createTable.js'
 import authRoute from './routes/auth.js'
 import applicationRoute from './routes/application.js'
 import interviewRoute from './routes/interview.js'
+import pingRoute from './routes/ping.js'
 import verifyToken from './middleware/verifyToken.js'
 
 const startServer = async () => {
