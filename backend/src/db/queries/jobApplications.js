@@ -1,7 +1,51 @@
-import { pool } from '../connectDB'
+import { pool } from '../connectDB.js'
 
-const insertJobApplication = async () => {
-
+const insertJobApplication = async (
+    userId, companyName, jobTitle, applicationDate, jobStatus, jobLocation, jobURL 
+) => {
+    await pool.query(
+        `INSERT INTO job_applications (user_id, company_name, job_title, application_date, job_status, job_location, job_posting_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [userId, companyName, jobTitle, applicationDate, jobStatus, jobLocation, jobURL]
+    )
 }
 
-export {  }
+const getJobApplications = async (userId) => {
+    const res = await pool.query(
+        `SELECT * FROM job_applications WHERE user_id = $1 ORDER BY application_date DESC`,
+        [userId]
+    )
+
+    return res.rows
+}
+
+const deleteJobApplication = async (jobId) => {
+    await pool.query(
+        `DELETE FROM job_applications WHERE job_id = $1`,
+        [jobId]
+    )
+}
+
+const deleteAllJobApplications = async (userId) => {
+    await pool.query(
+        `DELETE FROM job_applications WHERE user_id = $1`,
+        [userId]
+    )
+}
+
+const toggleEditStatus = async (jobId, userId) => {
+    await pool.query(
+        `UPDATE job_applications SET edit_status = NOT edit_status WHERE job_id = $1 AND user_id = $2`,
+        [jobId, userId]
+    )
+}
+
+const toggleJobStatus = async (jobStatus, jobId, userId) => {
+    await pool.query(
+        `UPDATE job_applications SET job_status = $1 WHERE job_id = $2 AND user_id = $3`,
+        [jobStatus, jobId, userId]
+    )
+}
+
+export { insertJobApplication, getJobApplications, deleteJobApplication, 
+    deleteAllJobApplications, toggleEditStatus, toggleJobStatus }
