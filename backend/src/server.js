@@ -14,6 +14,7 @@ const startServer = async () => {
     app.use(cors())
     app.use(express.json())
 
+    app.use('/ping', pingRoute)
     app.use('/auth', authRoute)
     app.use('/application', verifyToken, applicationRoute)
     app.use('/interview', verifyToken, interviewRoute)
