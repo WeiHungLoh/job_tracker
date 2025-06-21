@@ -1,0 +1,332 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+* {
+  font-family: quicksand;
+}
+.signin, .signup {
+  max-width: 400px;
+  padding: 20px;
+  margin: auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0 10px rgba(0, 0, 0, 0.2);
+}
+.signin h2, .signup h2 {
+  font-size: 24px;
+  color: #f1356d;
+  text-align: center;
+  margin-bottom: 30px;
+}
+.signin input, .signup input {
+  width: 95%;
+  padding: 10px;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.signin button, .signup button {
+  width: 100%;
+  padding: 10px;
+  background-color: #f1356d;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.signin button:hover, .signup button:hover {
+  background-color: #d12b5a;
+}
+.signin p, .signup p {
+  cursor: pointer;
+  text-align: center;
+  color: #007BFF;
+  margin-top: 20px;
+}
+.signin .password-wrapper, .signup .password-wrapper {
+  position: relative;
+}
+.signin .toggle-visibility, .signup .toggle-visibility {
+  position: absolute;
+  top: 40%;
+  right: 10px;
+  cursor: pointer;
+}
+.signin .notice-wrapper, .signup .notice-wrapper {
+  background-color: #e6f4ff;
+  color: #084298;
+  border-left: 4px solid #0d6efd;
+  padding-left: 10px;
+}
+.notification {
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-top: 30px;
+}
+.invalid-page {
+  font-size: 20px;
+  text-align: center;
+  margin-top: 200px;
+  color: #f1356d
+}
+.invalid-page a {
+  text-decoration: none;
+  color: #007BFF
+}
+.add-application, .add-interview {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.add-application label, .add-interview label {
+  justify-content: left;
+  display: flex;
+}
+.add-application h2, .add-interview h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.add-application input, .add-interview input {
+  width: 575px;
+  padding: 6px 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1.5px solid #ddd;
+}
+.add-application select {
+  width: 600px;
+  padding: 6px 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1.5px solid #ddd;
+  box-sizing: border-box;
+}
+.add-application .submit-button, .add-interview .submit-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 70px; 
+}
+.add-application button, .add-interview button {
+  color:#ddd;
+  background:#f1356d;
+  border: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.add-application button, .add-interview a {
+  color:#ddd;
+  background:#f1356d;
+  border: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+}
+.navbar {
+  display: flex;
+  align-items: center;
+  max-width: 1050px;
+  margin: auto;
+  border-bottom: 1px solid #f2f2f2;
+}
+.navbar .links {
+  margin-left: auto;
+  display: flex;
+}
+.navbar .active {
+  color: red;
+  margin-left: 50px;
+  font-weight: bold;
+}
+.navbar .inactive {
+  color: blue;
+  margin-left: 50px;
+  text-decoration: none;
+}
+.navbar a:hover {
+  color: #f1356d;
+}
+.navbar h1 {
+  color: #4a148c;
+  font-size: 25px;
+}
+.navbar .archive-status {
+  margin-left: 50px;
+  cursor: pointer;
+  color: blue;
+}
+.application-list, .interview-list {
+  max-width: 690px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.application-list .application, .interview-list .interview {
+  width: 100%;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+}
+.application-list .button-group, .interview-list .button-group {
+  margin-left: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color:#fff;
+  gap: 10px;
+}
+.application-list .button-group button, .interview-list .button-group button {
+  background-color:#f1356d;
+  border: 0;
+  border-radius: 10px;
+  color:#fff;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+.application-list .application-button, .interview-list .interview-button {
+  display: flex;
+  gap: 70px;
+}
+.application-list .application-content, .interview-list .interview-content {  
+  color: #666;
+}
+.application-list .application-content h2, .interview-list .interview-content h2 {
+  font-size: 24px;
+  color: black;
+}
+.application-list .application-content .date, .interview-list .interview-content .date {
+  font-weight: bold;
+  color: 	#343a40;
+}
+.interview-list .interview-content p:last-of-type {
+  font-weight: bold;
+  color: 	red;
+}
+.application-list .application-content a, .interview-list .interview-content a {
+  background-color: #e0f0ff;
+  color: #0d6efd;                 
+  padding: 4px 20px;           
+  border-radius: 5px;            
+  font-weight: bolder;          
+  font-size: 13px;   
+  margin-top: 10px;            
+  letter-spacing: 0.5px; 
+  border: none;
+  display: flex;
+  max-width: fit-content;
+  cursor: pointer;
+  text-decoration: none;
+}
+.application-list .application-content .url {
+  background-color: darkgrey;
+  color: cornsilk;               
+  padding: 4px 20px;           
+  border-radius: 5px;            
+  font-weight: bolder;          
+  font-size: 13px;   
+  margin-top: 10px;            
+  letter-spacing: 0.5px; 
+  border: none;
+  display: flex;
+  max-width: fit-content;
+  cursor: pointer;
+}
+.application-list .application-content select {
+  background: #e0f0ff;
+  color: #003366;             
+  padding: 4px 20px;              
+  border-radius: 5px;            
+  font-weight: bolder;          
+  font-size: 13px;             
+  letter-spacing: 0.5px; 
+  border: none;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.application-list .application-content a:hover {
+  background-color: #d0e8ff;
+}
+.application-list .application-content .url:hover {
+  background-color: #6c757d;
+}
+.application-list .application-content .applied {
+  background-color: #6c757d;       
+  color: white;                   
+  padding: 4px 20px;              
+  border-radius: 5px;            
+  font-weight: 600;           
+  font-size: 13px;           
+  display: inline-flex;         
+  margin-top: 0px;               
+  margin-bottom: 0px;              
+  letter-spacing: 0.5px;           
+}
+.application-list .application-content .interview {
+  background-color: #0d6efd;     
+  color: white;                   
+  padding: 4px 20px;              
+  border-radius: 5px;            
+  font-weight: 600;           
+  font-size: 13px;             
+  display: inline-flex;         
+  margin-top: 0px;               
+  margin-bottom: 0px;              
+  letter-spacing: 0.5px;           
+}
+.application-list .application-content .offer {
+  background-color: #ffc107;   
+  color: white;                   
+  padding: 4px 20px;              
+  border-radius: 5px;            
+  font-weight: 600;           
+  font-size: 13px;             
+  display: inline-flex;         
+  margin-top: 0px;               
+  margin-bottom: 0px;              
+  letter-spacing: 0.5px;           
+}
+.application-list .application-content .accepted {
+  background-color: #198754;  
+  color: white;                   
+  padding: 4px 20px;              
+  border-radius: 5px;            
+  font-weight: 600;           
+  font-size: 13px;             
+  display: inline-flex;         
+  margin-top: 0px;               
+  margin-bottom: 0px;              
+  letter-spacing: 0.5px;           
+}
+.application-list .application-content .rejected {
+  background-color: #dc3545; 
+  color: white;                   
+  padding: 4px 20px;              
+  border-radius: 5px;            
+  font-weight: 600;           
+  font-size: 13px;             
+  display: inline-flex;         
+  margin-top: 0px;               
+  margin-bottom: 0px;              
+  letter-spacing: 0.5px;           
+}
+.application-list .application-button button, .interview-list .interview-button button {
+  background-color:#f1356d;
+  border: 0;
+  border-radius: 10px;
+  color:#fff;
+  cursor: pointer;
+  padding: 8px 10px;
+  margin-top: 20px;
+}
+.application-list a {
+  text-decoration: none;
+  color: 	#17a2b8
+}
