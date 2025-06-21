@@ -1,4 +1,4 @@
-import { pool } from '../connectDB'
+import { pool } from '../connectDB.js'
 
 const createTable = async () => {
     const createUsersTable =
@@ -8,7 +8,7 @@ const createTable = async () => {
             email TEXT UNIQUE NOT NULL,
             hashed_password TEXT NOT NULL,
             sorting_preferences TEXT CHECK (sorting_preferences IN ('DEFAULT', 'APPLICATION_DATE')),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         )`
 
     const createJobAppTable =
@@ -17,9 +17,10 @@ const createTable = async () => {
             user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
             company_name TEXT NOT NULL,
             job_title TEXT NOT NULL,
-            application_date TIMESTAMP NOT NULL,
+            application_date TIMESTAMPTZ,
             job_status TEXT CHECK (job_status IN ('Applied', 'Interview', 'Offer', 'Rejected', 'Accepted')),
-            location TEXT,
+            edit_status BOOLEAN DEFAULT false,
+            job_location TEXT,
             job_posting_url TEXT
         )`
 
@@ -27,8 +28,9 @@ const createTable = async () => {
         `CREATE TABLE IF NOT EXISTS interviews (
             interview_id SERIAL PRIMARY KEY,
             job_id INTEGER REFERENCES job_applications(job_id) ON DELETE CASCADE,
-            interview_date TIMESTAMP NOT NULL,
-            location TEXT NOT NULL,
+            user_id INTEGER REFERENCES users(user_id),
+            interview_date TIMESTAMPTZ NOT NULL,
+            interview_location TEXT NOT NULL,
             interview_type TEXT,
             notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
