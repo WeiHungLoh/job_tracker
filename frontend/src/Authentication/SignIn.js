@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { IoMdEyeOff } from 'react-icons/io'
 import { IoEye } from 'react-icons/io5'
 import { GoAlertFill } from 'react-icons/go'
@@ -94,6 +94,7 @@ const SignIn = () => {
                 please wait up to 30 seconds. This may happen because the backend is hosted on a free tier,
                 which can take time to wake up after periods of inactivity.
             </div>
+            <Link className='ug-link' to='/userguide' target='_blank'>Click here to view user guide</Link>
         </div>
     )
 }

@@ -7,6 +7,7 @@ import AddInterview from './Interview/AddInterview.js'
 import ViewInterview from './Interview/ViewInterview.js'
 import ViewArchivedApplication from './ArchivedApplication/ViewArchivedApplication.js'
 import ViewArchivedInterview from './ArchivedApplication/ViewArchivedInterview.js'
+import UserGuide from './UserGuide/UserGuide.js'
 import ProtectedRoutes from './ProtectedRoutes.js'
 import InvalidPage from './InvalidPage.js'
 import Navbar from './Navbar.js'
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         <Route path='/' element={<SignIn />} />
         <Route path='/signup' element={<SignUp />} />
+        <Route path='/userguide' element={<UserGuide />} />
 
         <Route element={<ProtectedRoutes />}>
             <Route path='/addapplication' element={<AddApplication />} />
