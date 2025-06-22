@@ -63,9 +63,11 @@ const AddInterview = () => {
 
     return (
         <div className='add-interview'>
-            <h2>
-                You are adding an interview for the position of {app.job_title} at {app.company_name}
-            </h2>
+            <div className="interview-header">
+                <h2>You are adding an interview for:</h2>
+                <p>Company: <em>{app.company_name}</em></p>
+                <p>Position: <em>{app.job_title}</em></p>
+            </div>
 
             <label>Input Interview Date</label>
             <input

@@ -90,7 +90,9 @@
   margin-bottom: 20px;
   word-break: break-all;
 }
-
+.add-interview p {
+  word-break: break-all;
+}
 .add-application input, .add-interview input {
   width: 575px;
   padding: 6px 10px;
