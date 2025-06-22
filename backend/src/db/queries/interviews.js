@@ -25,20 +25,6 @@ const deleteJobInterview = async (interviewId, userId) => {
     )
 }
 
-const deleteCorrJobInterview = async (jobId, userId) => {
-    await pool.query(
-        `DELETE FROM interviews WHERE job_id = $1 AND user_id = $2`,
-        [jobId, userId]
-    )
-}
-
-const deleteAllCorrJobInterviews = async (userId) => {
-    await pool.query(
-        `DELETE FROM interviews WHERE userId = $1`,
-        [userId]
-    )
-}
-
 const deleteAllJobInterviews = async (userId) => {
     await pool.query(
         `DELETE FROM interviews WHERE user_id = $1`,
@@ -46,5 +32,4 @@ const deleteAllJobInterviews = async (userId) => {
     )
 }
 
-export { insertInterview, getInterviews, deleteJobInterview, deleteAllJobInterviews,
-    deleteCorrJobInterview, deleteAllCorrJobInterviews }
+export { insertInterview, getInterviews, deleteJobInterview, deleteAllJobInterviews }

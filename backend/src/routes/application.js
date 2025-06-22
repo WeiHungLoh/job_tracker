@@ -1,7 +1,6 @@
 import express from 'express'
 const router = express.Router()
 import { insertJobApplication, getJobApplications, deleteJobApplication, deleteAllJobApplications, toggleEditStatus, toggleJobStatus } from '../db/queries/jobApplications.js'
-import { deleteAllCorrJobInterviews, deleteCorrJobInterview } from '../db/queries/interviews.js'
 
 router.post('/add', async (req, res) => {
     const { companyName, jobTitle, appDate, jobStatus, jobLocation, jobURL } = req.body
@@ -31,7 +30,6 @@ router.delete('/deleteall', async (req, res) => {
 
     try {
         await deleteAllJobApplications(userId)
-        await deleteAllCorrJobInterviews(userId)
         res.status(200).send('Deleted all applications')
     } catch (error) {
         res.status(500).send('Error deleting application ' + error.message)
@@ -44,7 +42,6 @@ router.delete('/:jobId', async (req, res) => {
     const userId = req.user.id
 
     try {
-        await deleteCorrJobInterview(jobId, userId)
         await deleteJobApplication(jobId, userId)
         res.status(200).send('Deleted application')
     } catch (error) {

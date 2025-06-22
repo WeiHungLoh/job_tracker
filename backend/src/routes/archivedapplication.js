@@ -1,7 +1,6 @@
 import express from 'express'
 import { deleteAllArchivedJobApplications, getArchivedJobApplications, deleteArchivedJobApplication,
     insertArchivedJobApplication, removeArchivedJobApplication } from '../db/queries/archivedJobApplications.js'
-import { deleteAllCorrArchivedJobInterviews, deleteCorrArchivedJobInterview } from '../db/queries/archivedInterviews.js'
 const router = express.Router()
 
 router.post('/archive', async (req, res) => {
@@ -44,7 +43,6 @@ router.delete('/deleteall', async (req, res) => {
 
     try {
         await deleteAllArchivedJobApplications(userId)
-        await deleteAllCorrArchivedJobInterviews(userId)
         res.status(200).send('Deleted archived applications')
     } catch (error) {
         res.status(500).send('Error deleting archived applications' + error.message)
@@ -57,7 +55,6 @@ router.delete('/:jobId', async (req, res) => {
     const userId = req.user.id
 
     try {
-        await deleteCorrArchivedJobInterview(jobId, userId)
         await deleteArchivedJobApplication(jobId, userId)
         res.status(200).send('Deleted archived application')
     } catch (error) {

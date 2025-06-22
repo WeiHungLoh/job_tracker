@@ -1,5 +1,5 @@
 import express from 'express'
-import { getArchivedJobInterviews, deleteArchivedJobInterview, deleteAllCorrArchivedJobInterviews } from '../db/queries/archivedInterviews.js'
+import { getArchivedJobInterviews, deleteArchivedJobInterview, deleteAllArchivedJobInterviews } from '../db/queries/archivedInterviews.js'
 const router = express.Router()
 
 router.get('/view', async (req, res) => {
@@ -17,7 +17,7 @@ router.delete('/deleteall', async (req, res) => {
     const userId = req.user.id
 
     try {
-        await deleteAllCorrArchivedJobInterviews(userId)
+        await deleteAllArchivedJobInterviews(userId)
         res.status(200).send('Deleted all archived interviews')
     } catch (error) {
         res.status(500).send('Error deleting archived interviews ' + error.message)

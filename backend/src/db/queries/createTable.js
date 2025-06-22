@@ -52,7 +52,7 @@ const createTable = async () => {
         `CREATE TABLE IF NOT EXISTS archived_interviews (
             archived_interview_id SERIAL PRIMARY KEY,
             archived_job_id INTEGER REFERENCES archived_job_applications(archived_job_id) ON DELETE CASCADE,
-            user_id INTEGER REFERENCES users(user_id),
+            user_id INTEGER REFERENCES users(user_id) ,
             interview_date TIMESTAMPTZ NOT NULL,
             interview_location TEXT NOT NULL,
             interview_type TEXT,
