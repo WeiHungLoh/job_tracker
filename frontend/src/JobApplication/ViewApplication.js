@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import ToggleButton from '../Icons/ToggleButton.js'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
 
@@ -9,6 +10,7 @@ const ViewApplication = () => {
     const [jobStatuses, setJobStatuses] = useState({})
     const { data: interviews } = useFetchData(`${process.env.REACT_APP_API_URL}/interview/view`)
     const [interviewJobId, setInterviewJobId] = useState([])
+    const [toggled, setToggled] = useState(false)
 
     useEffect(() => {
         if (interviews) {
@@ -98,6 +100,25 @@ const ViewApplication = () => {
         }
     }
 
+    const handleArchive = async (jobId) => {
+        try {
+            await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/archive`,
+                {
+                    method: 'POST',
+                    headers:
+                    {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ jobId })
+                }
+            )
+            refetch()
+        } catch (error) {
+            alert('Failed to archive an application ' + error.message)
+        }
+    }
+
     const isEditStatus = (editStatus) => {
         return editStatus
     }
@@ -130,6 +151,7 @@ const ViewApplication = () => {
     return (
         <div className='application-list'>
             <h2>Job Application Viewer</h2>
+            <ToggleButton toggled={toggled} onToggle={() => setToggled(!toggled)} />
 
             {showAddApplicationMessage(applications) && <div>No job application found. Start adding one now! </div>}
 
@@ -191,6 +213,14 @@ const ViewApplication = () => {
                         <button onClick={() => handleDelete(application.job_id)}>
                             Delete
                         </button>
+
+                        {toggled &&
+                            <div className='archive-button' onClick={() => handleArchive(application.job_id)}>
+                                <button>
+                                    Archive
+                                </button>
+                            </div>
+                        }
                     </div>
                 </div>
             ))}

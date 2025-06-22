@@ -46,7 +46,7 @@ const AddInterview = () => {
             const message = await res.text()
             setNotification({ message, type: res.ok ? 'success' : 'error' })
 
-            // Resets interview form after successfully adding a new interview
+            // Resets interview z after successfully adding a new interview
             setInterviewDate('')
             setInterviewLocation('')
             setInterviewType('')
