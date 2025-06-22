@@ -31,3 +31,9 @@
     font-size: 0.9rem;
     color: #6b7280;
 }
+code {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #e9ecef;
+    padding: 2px 4px;
+    border-radius: 3px;
+}

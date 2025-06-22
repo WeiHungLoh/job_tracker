@@ -22,11 +22,11 @@ const UserGuide = () => {
                     Use this to see all active job applications. You can delete your job applications or update their statuses.
                 </p>
                 <p>
-                    Clicking <strong>Edit Status</strong> will reveal a dropdown menu to change the job status. Updating the status to <strong>Interview</strong> will show a button: <strong>"Click here to add an interview"</strong>,
+                    Clicking <code>Edit Status</code> will reveal a dropdown menu to change the job status. Updating the status to <code>Interview</code> will show a button: <code>Click here to add an interview</code>,
                     which takes you to a page where you can create an interview tied to that specific job application.
                 </p>
                 <p>
-                    <strong>Note:</strong> If an interview already exists, you must delete it before changing the job status back to "Applied".
+                    <strong>Note:</strong> If an interview already exists, you must delete it before changing the job status back to <code>Applied</code>.
                 </p>
                 <p>
                     If you've added a job posting URL, make sure it's valid. The button that appears will use it to open the job posting page.
@@ -42,7 +42,7 @@ const UserGuide = () => {
                     Displays interviews linked to your job applications. You can delete interviews here.
                 </p>
                 <p>
-                    There's also a button labeled <strong>"Click here to view corresponding job application"</strong>, which takes you to the related job entry.
+                    There's also a button labeled <code>Click here to view corresponding job application</code>, which takes you to the related job entry.
                 </p>
             </section>
 
