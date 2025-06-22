@@ -19,10 +19,10 @@ const getJobApplications = async (userId) => {
     return res.rows
 }
 
-const deleteJobApplication = async (jobId) => {
+const deleteJobApplication = async (jobId, userId) => {
     await pool.query(
-        `DELETE FROM job_applications WHERE job_id = $1`,
-        [jobId]
+        `DELETE FROM job_applications WHERE job_id = $1 AND user_id = $2`,
+        [jobId, userId]
     )
 }
 

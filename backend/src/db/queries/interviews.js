@@ -18,17 +18,17 @@ const getInterviews = async (userId) => {
     return res.rows
 }
 
-const deleteJobInterview = async (interviewId) => {
+const deleteJobInterview = async (interviewId, userId) => {
     await pool.query(
-        `DELETE FROM interviews WHERE interview_id = $1`,
-        [interviewId]
+        `DELETE FROM interviews WHERE interview_id = $1 and user_id = $2`,
+        [interviewId, userId]
     )
 }
 
-const deleteCorrJobInterview = async (jobId) => {
+const deleteCorrJobInterview = async (jobId, userId) => {
     await pool.query(
-        `DELETE FROM interviews WHERE job_id = $1`,
-        [jobId]
+        `DELETE FROM interviews WHERE job_id = $1 AND user_id = $2`,
+        [jobId, userId]
     )
 }
 

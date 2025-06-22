@@ -22,7 +22,7 @@ router.get('/view', async (req, res) => {
         const sortedApplications = await getJobApplications(userId)
         res.status(200).json(sortedApplications)
     } catch (error) {
-        res.status(500).send('Failed to load assignments ' + error.message)
+        res.status(500).send('Failed to load applications ' + error.message)
     }
 })
 
@@ -38,14 +38,14 @@ router.delete('/deleteall', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:jobId', async (req, res) => {
     // Since assignment object ID has been passed to param, retrieve it
-    const { id } = req.params
-    const jobId = req.body
+    const { jobId } = req.params
+    const userId = req.user.id
 
     try {
-        await deleteJobApplication(id)
-        await deleteCorrJobInterview(jobId)
+        await deleteCorrJobInterview(jobId, userId)
+        await deleteJobApplication(jobId, userId)
         res.status(200).send('Deleted application')
     } catch (error) {
         res.status(500).send('Error deleting assignment ' + error.message)

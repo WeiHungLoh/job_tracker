@@ -36,12 +36,13 @@ router.delete('/deleteall', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:interviewId', async (req, res) => {
     // Since assignment object ID has been passed to param, retrieve it
-    const { id } = req.params
+    const { interviewId } = req.params
+    const userId = req.user.id
 
     try {
-        await deleteJobInterview(id)
+        await deleteJobInterview(interviewId, userId)
         res.status(200).send('Deleted application')
     } catch (error) {
         res.status(500).send('Error deleting assignment ' + error.message)
