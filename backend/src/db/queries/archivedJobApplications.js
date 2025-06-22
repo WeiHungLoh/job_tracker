@@ -34,11 +34,6 @@ const insertArchivedJobApplication = async (jobId, userId) => {
     })
 
     await pool.query(
-        `DELETE FROM interviews WHERE job_id = $1 and user_id = $2`,
-        [jobId, userId]
-    )
-
-    await pool.query(
         `DELETE FROM job_applications WHERE job_id = $1 AND user_id = $2`,
         [jobId, userId]
     )
@@ -76,11 +71,6 @@ const removeArchivedJobApplication = async (archivedJobId, userId) => {
                 interview.interview_type, interview.notes]
         )
     })
-
-    await pool.query(
-        `DELETE FROM archived_interviews WHERE archived_job_id = $1 and user_id = $2`,
-        [archivedJobId, userId]
-    )
 
     await pool.query(
         `DELETE FROM archived_job_applications WHERE archived_job_id = $1 AND user_id = $2`,
