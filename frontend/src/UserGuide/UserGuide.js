@@ -49,7 +49,7 @@ const UserGuide = () => {
             <section>
                 <h2>🗃️ Show Archive Mode</h2>
                 <p>
-                    Clicking <strong>Show Archive Mode</strong> will remove the usual navigation items — like <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> — and replace them with two new sections:
+                    Clicking <code>Show Archived</code> will remove the usual navigation items — like <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> — and replace them with two new sections:
                 </p>
                 <ul>
                     <li>
@@ -60,7 +60,7 @@ const UserGuide = () => {
                     </li>
                 </ul>
                 <p>
-                    Archive mode helps you keep your dashboard clean while preserving old records. Use it to review past job applications and interviews.
+                    Archive mode helps you keep your dashboard clean while preserving old records. Use it to review past job applications and interviews. To go back to active mode click <code>Show Active</code> on the navigation bar.
                 </p>
             </section>
 
