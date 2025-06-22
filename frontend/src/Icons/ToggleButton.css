@@ -1,0 +1,40 @@
+.hide-archive-button {
+    font-size: 12px;
+    position: absolute;
+    right: 210px;
+    top: 105px;
+}
+.hide-archive-button .toggle-button {
+    background-color: #b7b9ba;
+    border: 1px solid #aaa;
+    border-radius: 99px;
+    width: 50px;
+    height: 28px;
+    transition: background-color 0.1s ease, border-color 0.2s ease;
+    cursor: pointer;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0,748);
+    position: relative;
+    display: flex;
+    margin: auto;
+}
+.hide-archive-button .toggle-button .thumb {
+    height: 20px;
+    width: 20px;
+    background-color: #ffff;
+    border-radius: 99px;
+    transform: translateX(0);
+    transition: left 0.15s ease;
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.hide-archive-button .toggle-button.active {
+    background-color: #15b58e;
+}
+.hide-archive-button .toggle-button:hover {
+    border-color: #6f6f6f;
+}
+.hide-archive-button .toggle-button.active .thumb {
+    left: 25px;
+}
