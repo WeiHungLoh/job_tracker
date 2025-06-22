@@ -43,6 +43,19 @@ const Navbar = () => {
         return false
     }
 
+    const isViewArchivedApplicationsActive = (currentLocation) => {
+        if (currentLocation === '/viewarchivedapplications') {
+            return true
+        }
+        return false
+    }
+    const isViewArchivedInterviewsActive = (currentLocation) => {
+        if (currentLocation === '/viewarchivedinterviews') {
+            return true
+        }
+        return false
+    }
+
     return (
         <nav className='navbar'>
             <h1>Job Tracker</h1>
@@ -60,6 +73,17 @@ const Navbar = () => {
                         <NavLink to='/viewinterviews' className={isViewInterviewsActive(currLocation) ? 'active' : 'inactive'}>
                             View Interviews
                         </NavLink>
+                    </>
+                }
+
+                {archived &&
+                    <>
+                    <NavLink to='/viewarchivedapplications' className={isViewArchivedApplicationsActive(currLocation) ? 'active' : 'inactive'}>
+                            View Archived Applications
+                    </NavLink>
+                    <NavLink to='/viewarchivedinterviews' className={isViewArchivedInterviewsActive(currLocation) ? 'active' : 'inactive'}>
+                            View Archived Interviews
+                    </NavLink>
                     </>
                 }
 

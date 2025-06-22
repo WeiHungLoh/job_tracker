@@ -88,6 +88,7 @@
 .add-application h2, .add-interview h2 {
   font-size: 24px;
   margin-bottom: 20px;
+  word-break: break-all;
 }
 
 .add-application input, .add-interview input {
@@ -162,28 +163,59 @@
   cursor: pointer;
   color: blue;
 }
-.application-list, .interview-list {
-  max-width: 690px;
+.application-list, .interview-list, .archived-application-list, .archived-interview-list {
+  max-width: 710px;
   margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.application-list .application, .interview-list .interview {
+.application-list .application, .interview-list .interview, .archived-application-list .application,
+  .archived-interview-list .interview {
   width: 100%;
   padding-bottom: 20px;
   border-bottom: 1px solid #ddd;
   display: flex;
+  gap: 60px;
 }
-.application-list .button-group, .interview-list .button-group {
+.application-list .button-group {
   margin-left: auto;
   cursor: pointer;
   display: flex;
   align-items: center;
   color:#fff;
   gap: 10px;
+  position: relative;
+  flex: 0 0 165px;
 }
-.application-list .button-group button, .interview-list .button-group button {
+.interview-list .button-group, .archived-application-list .button-group,
+  .archived-interview-list .button-group {
+  display: flex;
+  margin-left: auto;
+  cursor: pointer;
+  align-items: center;
+  color:#fff;
+  gap: 10px;
+}
+.application-list .button-group .archive-button button {
+  background-color: green;
+  color: cornsilk;               
+  padding: 7px 20px;           
+  border-radius: 5px;            
+  font-weight: bolder;          
+  font-size: 13px;            
+  letter-spacing: 2px; 
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  bottom: 0.5px;
+  right: 8px;
+  left: 0px;
+  width: inherit;
+  text-align: center;
+}
+.application-list .button-group button, .interview-list .button-group button, 
+  .archived-application-list .button-group button, .archived-interview-list .button-group button {
   background-color:#f1356d;
   border: 0;
   border-radius: 10px;
@@ -191,26 +223,34 @@
   cursor: pointer;
   padding: 8px 10px;
 }
-.application-list .application-button, .interview-list .interview-button {
+.application-list .application-button, .interview-list .interview-button,
+  .archived-application-list .application-button {
   display: flex;
   gap: 70px;
 }
-.application-list .application-content, .interview-list .interview-content {  
+.application-list .application-content, .interview-list .interview-content,
+  .archived-application-list .application-content, .archived-interview-list .interview-content {  
   color: #666;
+  word-break: break-all;
 }
-.application-list .application-content h2, .interview-list .interview-content h2 {
+.application-list .application-content h2, .interview-list .interview-content h2,
+  .archived-application-list .application-content h2, .archived-interview-list .interview-content h2 {
   font-size: 24px;
   color: black;
 }
-.application-list .application-content .date, .interview-list .interview-content .date {
+.application-list .application-content .date, .interview-list .interview-content .date,
+  .archived-application-list .application-content .date, 
+  .archived-interview-list .interview-content .date {
   font-weight: bold;
   color: 	#343a40;
 }
-.interview-list .interview-content p:last-of-type {
+.interview-list .interview-content p:last-of-type,
+  .archived-interview-list .interview-content p:last-of-type {
   font-weight: bold;
   color: 	red;
 }
-.application-list .application-content a, .interview-list .interview-content a {
+.application-list .application-content a, .interview-list .interview-content a,
+  .archived-interview-list .interview-content a {
   background-color: #e0f0ff;
   color: #0d6efd;                 
   padding: 4px 20px;           
@@ -225,7 +265,8 @@
   cursor: pointer;
   text-decoration: none;
 }
-.application-list .application-content .url {
+.application-list .application-content .url,
+  .archived-application-list .application-content .url {
   background-color: darkgrey;
   color: cornsilk;               
   padding: 4px 20px;           
@@ -254,10 +295,12 @@
 .application-list .application-content a:hover {
   background-color: #d0e8ff;
 }
-.application-list .application-content .url:hover {
+.application-list .application-content .url:hover,
+  .archived-application-list .application-content .url:hover {
   background-color: #6c757d;
 }
-.application-list .application-content .applied {
+.application-list .application-content .applied,
+  .archived-application-list .application-content .applied {
   background-color: #6c757d;       
   color: white;                   
   padding: 4px 20px;              
@@ -269,7 +312,8 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
-.application-list .application-content .interview {
+.application-list .application-content .interview,
+  .archived-application-list .application-content .interview {
   background-color: #0d6efd;     
   color: white;                   
   padding: 4px 20px;              
@@ -281,7 +325,8 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
-.application-list .application-content .offer {
+.application-list .application-content .offer,
+  .archived-application-list .application-content .offer {
   background-color: #ffc107;   
   color: white;                   
   padding: 4px 20px;              
@@ -293,7 +338,8 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
-.application-list .application-content .accepted {
+.application-list .application-content .accepted,
+  .archived-application-list .application-content .accepted {
   background-color: #198754;  
   color: white;                   
   padding: 4px 20px;              
@@ -305,7 +351,8 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
-.application-list .application-content .rejected {
+.application-list .application-content .rejected, 
+  .archived-application-list .application-content .rejected {
   background-color: #dc3545; 
   color: white;                   
   padding: 4px 20px;              
@@ -317,7 +364,9 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
-.application-list .application-button button, .interview-list .interview-button button {
+.application-list .application-button button, .interview-list .interview-button button,
+  .archived-application-list .application-button button,
+  .archived-interview-list .interview-button button {
   background-color:#f1356d;
   border: 0;
   border-radius: 10px;
@@ -326,7 +375,7 @@
   padding: 8px 10px;
   margin-top: 20px;
 }
-.application-list a {
+.application-list a, .archived-application-list a {
   text-decoration: none;
   color: 	#17a2b8
 }
