@@ -149,6 +149,24 @@ const ViewApplication = () => {
         return true
     }
 
+    const checkJobStatus = (application) => {
+        const jobStatus = application.job_status
+
+        if (jobStatus === 'Accepted') {
+            return 'accepted'
+        } else if (jobStatus === 'Applied') {
+            return 'applied'
+        } else if (jobStatus === 'Ghosted') {
+            return 'ghosted'
+        } else if (jobStatus === 'Interview') {
+            return 'interview'
+        } else if (jobStatus === 'Offer') {
+            return 'offer'
+        } else {
+            return 'rejected'
+        }
+    }
+
     return (
         <div className='application-list'>
             <h2>Job Application Viewer</h2>
@@ -166,13 +184,7 @@ const ViewApplication = () => {
                             <p>Location: {application.job_location}</p>}
                         <p className='date'>Application Date: {DateFormatter(application.application_date).formattedDate}</p>
                         <p>Time since application: {DateFormatter(application.application_date).timeSinceApplication}</p>
-                        <p className={
-                            application.job_status === 'Applied'
-                                ? 'applied' : application.job_status === 'Interview'
-                                    ? 'interview' : application.job_status === 'Offer'
-                                        ? 'offer' : application.job_status === 'Rejected'
-                                            ? 'rejected' : 'accepted'
-                        }>Job Status: {application.job_status}</p>
+                        <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
 
                         {isEditStatus(application.edit_status) && <select
                             value={jobStatuses[application.job_id] ?? application.job_status}
@@ -183,13 +195,13 @@ const ViewApplication = () => {
                                 }))
                             }
                         >
+
+                            <option value='Accepted'>Accepted</option>
                             <option value='Applied' disabled=
-                                {interviewJobId.includes(application.job_id)}>
-                                Applied
-                            </option>
+                                {interviewJobId.includes(application.job_id)}>Applied</option>
+                            <option value='Ghosted'>Ghosted</option>
                             <option value='Interview'>Interview</option>
                             <option value='Offer'>Offer</option>
-                            <option value='Accepted'>Accepted</option>
                             <option value='Rejected'>Rejected</option>
                         </select>}
 

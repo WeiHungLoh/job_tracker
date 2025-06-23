@@ -92,6 +92,24 @@ const ViewArchivedApplication = () => {
         return true
     }
 
+    const checkJobStatus = (application) => {
+        const jobStatus = application.job_status
+
+        if (jobStatus === 'Accepted') {
+            return 'accepted'
+        } else if (jobStatus === 'Applied') {
+            return 'applied'
+        } else if (jobStatus === 'Ghosted') {
+            return 'ghosted'
+        } else if (jobStatus === 'Interview') {
+            return 'interview'
+        } else if (jobStatus === 'Offer') {
+            return 'offer'
+        } else {
+            return 'rejected'
+        }
+    }
+
     return (
         <div className='archived-application-list'>
             <h2>Archived Job Application Viewer</h2>
@@ -108,13 +126,7 @@ const ViewArchivedApplication = () => {
                             <p>Location: {application.job_location}</p>}
                         <p className='date'>Application Date: {DateFormatter(application.application_date).formattedDate}</p>
                         <p>Time since application: {DateFormatter(application.application_date).timeSinceApplication}</p>
-                        <p className={
-                            application.job_status === 'Applied'
-                                ? 'applied' : application.job_status === 'Interview'
-                                    ? 'interview' : application.job_status === 'Offer'
-                                        ? 'offer' : application.job_status === 'Rejected'
-                                            ? 'rejected' : 'accepted'
-                        }>Job Status: {application.job_status}</p>
+                        <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
 
                         {showJobURL(application) &&
                             <a className='url' href={application.job_posting_url} target='_blank'>

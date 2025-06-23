@@ -34,7 +34,7 @@ const AddApplication = () => {
         }
 
         const appDate = isAppDatePresent(applicationDate)
-        
+
         if (appDate > currDate) {
             alert('Application date cannot be later than current date')
             return
@@ -92,11 +92,12 @@ const AddApplication = () => {
 
             <label>Input Job Status</label>
             <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
+                <option value='Accepted'>Accepted</option>
                 <option value='Applied'>Applied</option>
+                <option value='Ghosted'>Ghosted</option>
                 <option value='Interview'>Interview</option>
                 <option value='Offer'>Offer</option>
                 <option value='Rejected'>Rejected</option>
-                <option value='Accepted'>Accepted</option>
             </select>
 
             <label>Input Application Date (uses current date if left blank)</label>
@@ -107,13 +108,13 @@ const AddApplication = () => {
             />
 
             <label>Input Job Location (optional)</label>
-            <input 
+            <input
                 value={jobLocation}
                 onChange={e => setJobLocation(e.target.value)}
             />
 
             <label>Input Job Posting URL (optional)</label>
-            <input 
+            <input
                 value={jobURL}
                 onChange={e => setJobURL(e.target.value)}
             />
