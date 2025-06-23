@@ -91,6 +91,7 @@ const getArchivedJobApplications = async (userId) => {
                 ELSE 6
             END,
          application_date DESC`,
+         [userId]
     )
 
     return res.rows
