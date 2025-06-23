@@ -1,7 +1,7 @@
 import { pool } from '../connectDB.js'
 
 const insertJobApplication = async (
-    userId, companyName, jobTitle, applicationDate, jobStatus, jobLocation, jobURL 
+    userId, companyName, jobTitle, applicationDate, jobStatus, jobLocation, jobURL
 ) => {
     await pool.query(
         `INSERT INTO job_applications (user_id, company_name, job_title, application_date, job_status, job_location, job_posting_url)
@@ -12,7 +12,17 @@ const insertJobApplication = async (
 
 const getJobApplications = async (userId) => {
     const res = await pool.query(
-        `SELECT * FROM job_applications WHERE user_id = $1 ORDER BY application_date DESC`,
+        `SELECT * FROM job_applications WHERE user_id = $1 
+         ORDER BY 
+            CASE 
+                WHEN job_status = 'Accepted' THEN 1
+                WHEN job_status = 'Offer' THEN 2
+                WHEN job_status = 'Interview' THEN 3
+                WHEN job_status = 'Applied' THEN 4
+                WHEN job_status = 'Ghosted' THEN 5
+                ELSE 6
+            END,
+         application_date DESC`,
         [userId]
     )
 
@@ -47,5 +57,7 @@ const toggleJobStatus = async (jobStatus, jobId, userId) => {
     )
 }
 
-export { insertJobApplication, getJobApplications, deleteJobApplication, 
-    deleteAllJobApplications, toggleEditStatus, toggleJobStatus }
+export {
+    insertJobApplication, getJobApplications, deleteJobApplication,
+    deleteAllJobApplications, toggleEditStatus, toggleJobStatus
+}

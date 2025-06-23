@@ -80,8 +80,17 @@ const removeArchivedJobApplication = async (archivedJobId, userId) => {
 
 const getArchivedJobApplications = async (userId) => {
     const res = await pool.query(
-        `SELECT * FROM archived_job_applications WHERE user_id = $1 ORDER BY application_date DESC`,
-        [userId]
+        `SELECT * FROM archived_job_applications WHERE user_id = $1 
+         ORDER BY 
+            CASE 
+                WHEN job_status = 'Accepted' THEN 1
+                WHEN job_status = 'Offer' THEN 2
+                WHEN job_status = 'Interview' THEN 3
+                WHEN job_status = 'Applied' THEN 4
+                WHEN job_status = 'Ghosted' THEN 5
+                ELSE 6
+            END,
+         application_date DESC`,
     )
 
     return res.rows
