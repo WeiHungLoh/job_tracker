@@ -8,12 +8,12 @@ const UserGuide = () => {
             <section>
                 <h2>📝 Add Job Application</h2>
                 <p>
-                    Use this to log job opportunities. Enter the company name, title, status, and optional fields like application date, location and job URL. 
+                    Use this to log job opportunities. Enter the company name, title, status, and optional fields like application date, location and job URL.
                 </p>
                 <p>
                     <strong>Note:</strong> If application date is left blank, current date will be added.
                 </p>
-                
+
             </section>
 
             <section>
@@ -82,6 +82,29 @@ const UserGuide = () => {
                 </ul>
             </section>
 
+            <section>
+                <h2>🔀 Sorting Order</h2>
+                <p>
+                    Job applications and archived job applications are sorted first by <strong>job status</strong> in this order: <br />
+                    <code>Accepted</code>, <code>Offer</code>, <code>Interview</code>, <code>Applied</code>, <code>Ghosted</code>, <code>Rejected</code>.
+                </p>
+                <p>
+                    Within each status, applications are sorted by <strong>application date</strong> in descending order (most recent first).
+                </p>
+                <p>
+                    Job interviews and archived job interviews are sorted by <strong>interview date</strong> in ascending order (earliest first).
+                </p>
+            </section>
+
+            <section>
+                <h2>✨ Highlight Animation</h2>
+                <p>
+                    When you edit the status of a job application, the page will automatically scroll to that specific application and highlight it with a green background for 4 seconds to help you easily spot the update.
+                </p>
+                <p>
+                    Similarly, when you click the button labeled <code>Click here to view corresponding job application</code> in the Interviews section, it will scroll to and highlight the related job application in green for 4 seconds to make navigation clearer.
+                </p>
+            </section>
             <p className="tip">
                 Tip: Prefer archiving over deleting if you want to keep records for later reference.
             </p>
