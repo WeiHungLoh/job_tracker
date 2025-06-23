@@ -1,21 +1,31 @@
 import { useNavigate, Link } from 'react-router-dom'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import { useConfirm } from 'material-ui-confirm'
 import './ViewInterview.css'
 
 const ViewInterview = () => {
     const navigate = useNavigate()
     const { data: interviews, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/interview/view`)
+    const confirm = useConfirm()
 
     const handleDelete = async (interviewId) => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/interview/${interviewId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete this job interview? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete',
+                confirmationButtonProps: { autoFocus: true }
             })
 
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/interview/${interviewId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
+            }
             // Refreshes UI to show remaining undeleted interviews
             refetch()
         } catch (error) {
@@ -25,14 +35,23 @@ const ViewInterview = () => {
 
     const handleDeleteAll = async () => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/interview/deleteall`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete all job interviews? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete All',
+                cancellationText: 'Cancel',
+            })
+
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/interview/deleteall`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
                     }
-                }
-            )
+                )
+            }
 
             refetch()
         } catch (error) {
@@ -42,6 +61,10 @@ const ViewInterview = () => {
 
     const showAddinterviewMessage = (interviews) => {
         return interviews && interviews.length === 0
+    }
+
+    const showDeleteAllButton = (interviews) => {
+        return interviews && interviews.length !== 0
     }
 
     const showInterviewType = (field) => {
@@ -93,7 +116,8 @@ const ViewInterview = () => {
 
             <div className='interview-button'>
                 <button onClick={() => navigate('/addinterview')}>Add new interview</button>
-                <button onClick={() => handleDeleteAll()}>Delete all interviews</button>
+                {showDeleteAllButton(interviews) && <button onClick={() => handleDeleteAll()}>
+                    Delete all interviews</button>}
             </div>
         </div>
     )

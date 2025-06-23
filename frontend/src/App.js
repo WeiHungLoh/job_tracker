@@ -11,6 +11,7 @@ import UserGuide from './UserGuide/UserGuide.js'
 import ProtectedRoutes from './ProtectedRoutes.js'
 import InvalidPage from './InvalidPage.js'
 import Navbar from './Navbar.js'
+import { ConfirmProvider } from 'material-ui-confirm';
 
 function App() {
   const location = useLocation()
@@ -23,21 +24,23 @@ function App() {
   return (
     <div className='App'>
       {showNavbar && <Navbar />}
-      <Routes>
-        <Route path='/' element={<SignIn />} />
-        <Route path='/signup' element={<SignUp />} />
-        <Route path='/userguide' element={<UserGuide />} />
+      <ConfirmProvider>
+        <Routes>
+          <Route path='/' element={<SignIn />} />
+          <Route path='/signup' element={<SignUp />} />
+          <Route path='/userguide' element={<UserGuide />} />
 
-        <Route element={<ProtectedRoutes />}>
+          <Route element={<ProtectedRoutes />}>
             <Route path='/addapplication' element={<AddApplication />} />
             <Route path='/viewapplications' element={<ViewApplication />} />
             <Route path='/addinterview' element={<AddInterview />} />
             <Route path='/viewinterviews' element={<ViewInterview />} />
-             <Route path='/viewarchivedapplications' element={<ViewArchivedApplication/>} />
+            <Route path='/viewarchivedapplications' element={<ViewArchivedApplication />} />
             <Route path='/viewarchivedinterviews' element={<ViewArchivedInterview />} />
             <Route path='*' element={<InvalidPage />} />
-        </Route>
-      </Routes>
+          </Route>
+        </Routes>
+      </ConfirmProvider>
     </div>
   );
 }

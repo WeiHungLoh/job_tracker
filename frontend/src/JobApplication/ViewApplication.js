@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import ToggleButton from '../Icons/ToggleButton.js'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import { useConfirm } from 'material-ui-confirm'
 import './ViewApplication.css'
 
 const ViewApplication = () => {
@@ -12,6 +13,7 @@ const ViewApplication = () => {
     const { data: interviews } = useFetchData(`${process.env.REACT_APP_API_URL}/interview/view`)
     const [interviewJobId, setInterviewJobId] = useState([])
     const [toggled, setToggled] = useState(false)
+    const confirm = useConfirm()
 
     useEffect(() => {
         if (interviews) {
@@ -43,32 +45,52 @@ const ViewApplication = () => {
 
     const handleDelete = async (applicationId) => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/application/${applicationId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify({ applicationId })
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete this job application? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete',
+                cancellationText: 'Cancel',
+                confirmationButtonProps: { autoFocus: true }
             })
 
-            // Refreshes UI to show remaining undeleted applications
-            refetch()
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/application/${applicationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-type': 'application/json'
+                    },
+                    body: JSON.stringify({ applicationId })
+                })
+
+                // Refreshes UI to show remaining undeleted applications
+                refetch()
+            }
         } catch (error) {
             alert(error.message)
+            return
         }
     }
 
     const handleDeleteAll = async () => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/application/deleteall`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete all job applications? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete All',
+                cancellationText: 'Cancel',
+            })
+
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/application/deleteall`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
                     }
-                }
-            )
+                )
+            }
 
             refetch()
         } catch (error) {
@@ -107,12 +129,12 @@ const ViewApplication = () => {
                     if (app) {
                         app.scrollIntoView({ behavior: 'smooth' });
 
-                    // Add the 'highlighted' class when the application scrolls into view,
-                    // and remove it after 4 seconds to match transition time
-                    app.classList.add('highlighted')
-                    setTimeout(() => {
-                        app.classList.remove('highlighted')
-                    }, 4000)
+                        // Add the 'highlighted' class when the application scrolls into view,
+                        // and remove it after 4 seconds to match transition time
+                        app.classList.add('highlighted')
+                        setTimeout(() => {
+                            app.classList.remove('highlighted')
+                        }, 4000)
                     }
                 }, 100);
             }
@@ -155,6 +177,10 @@ const ViewApplication = () => {
 
     const showAddApplicationMessage = (applications) => {
         return applications && applications.length === 0
+    }
+
+    const showDeleteAllButton = (applications) => {
+        return applications && applications.length !== 0
     }
 
     const showJobLocation = (field) => {
@@ -262,7 +288,8 @@ const ViewApplication = () => {
 
             <div className='application-button'>
                 <button onClick={() => navigate('/addapplication')}>Add new application</button>
-                <button onClick={() => handleDeleteAll()}>Delete all applications</button>
+                {showDeleteAllButton(applications) && <button onClick={() => handleDeleteAll()}>
+                        Delete all applications</button>}
             </div>
         </div>
     )

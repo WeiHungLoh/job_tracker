@@ -1,19 +1,31 @@
 import { Link } from 'react-router-dom'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import { useConfirm } from 'material-ui-confirm'
 import './ViewArchivedInterview.css'
 
 const ViewArchivedInterview = () => {
     const { data: archivedInterviews, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedinterview/view`)
+    const confirm = useConfirm()
 
     const handleDelete = async (interviewId) => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/archivedinterview/${interviewId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete this archived job interview? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete',
+                cancellationText: 'Cancel',
+                confirmationButtonProps: { autoFocus: true }
             })
+
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/archivedinterview/${interviewId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
+            }
 
             // Refreshes UI to show remaining undeleted interviews
             refetch()
@@ -24,14 +36,23 @@ const ViewArchivedInterview = () => {
 
     const handleDeleteAll = async () => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/archivedinterview/deleteall`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete all archived job interviews? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete All',
+                cancellationText: 'Cancel',
+            })
+
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/archivedinterview/deleteall`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
                     }
-                }
-            )
+                )
+            }
 
             refetch()
         } catch (error) {
@@ -41,6 +62,10 @@ const ViewArchivedInterview = () => {
 
     const showArchiveInterviewMessage = (archivedInterviews) => {
         return archivedInterviews && archivedInterviews.length === 0
+    }
+
+    const showDeleteAllButton = (archivedInterviews) => {
+        return archivedInterviews && archivedInterviews.length !== 0
     }
 
     const showInterviewType = (field) => {
@@ -91,7 +116,8 @@ const ViewArchivedInterview = () => {
             ))}
 
             <div className='interview-button'>
-                <button onClick={() => handleDeleteAll()}>Delete all archived interviews</button>
+                {showDeleteAllButton(archivedInterviews) &&
+                <button onClick={() => handleDeleteAll()}>Delete all archived interviews</button>}
             </div>
         </div>
     )

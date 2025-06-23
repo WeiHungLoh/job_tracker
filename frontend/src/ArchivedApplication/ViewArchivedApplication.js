@@ -2,11 +2,13 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import { useConfirm } from 'material-ui-confirm'
 import './ViewArchivedApplication.css'
 
 const ViewArchivedApplication = () => {
     const { data: archivedApplications, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedapplication/view`)
     const location = useLocation()
+    const confirm = useConfirm()
 
     useEffect(() => {
         // Obtains application.job_id from <Link> in AddInterview
@@ -31,13 +33,22 @@ const ViewArchivedApplication = () => {
 
     const handleDelete = async (archivedApplicationId) => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/${archivedApplicationId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete this job application? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete',
+                cancellationText: 'Cancel',
+                confirmationButtonProps: { autoFocus: true }
             })
 
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/${archivedApplicationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                })
+            }
             // Refreshes UI to show remaining undeleted archivedApplications
             refetch()
         } catch (error) {
@@ -47,14 +58,23 @@ const ViewArchivedApplication = () => {
 
     const handleDeleteAll = async () => {
         try {
-            await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/deleteall`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+            const { confirmed } = await confirm({
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete all archived job applications? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete All',
+                cancellationText: 'Cancel',
+            })
+
+            if (confirmed) {
+                await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/deleteall`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
                     }
-                }
-            )
+                )
+            }
 
             refetch()
         } catch (error) {
@@ -83,6 +103,10 @@ const ViewArchivedApplication = () => {
 
     const showArchiveApplicationMessage = (archivedApplications) => {
         return archivedApplications && archivedApplications.length === 0
+    }
+
+    const showDeleteAllButton = (archivedApplications) => {
+        return archivedApplications && archivedApplications.length !== 0
     }
 
     const showJobLocation = (field) => {
@@ -147,7 +171,7 @@ const ViewArchivedApplication = () => {
                                 Unarchive
                             </button>
                         </div>
-                        
+
                         <button onClick={() => handleDelete(application.archived_job_id)}>
                             Delete
                         </button>
@@ -156,7 +180,8 @@ const ViewArchivedApplication = () => {
             ))}
 
             <div className='application-button'>
-                <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>
+                {showDeleteAllButton(archivedApplications) && 
+                <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>}
             </div>
         </div>
     )
