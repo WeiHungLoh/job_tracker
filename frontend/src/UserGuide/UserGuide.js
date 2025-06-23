@@ -32,7 +32,7 @@ const UserGuide = () => {
                     If you've added a job posting URL, make sure it's valid. The button that appears will use it to open the job posting page.
                 </p>
                 <p>
-                    There's also a toggle to show or hide the archive button. You can archive a job application after revealing this button.
+                    There's also a toggle to unhide/hide the archive button. You can archive a job application after revealing this button.
                 </p>
             </section>
 
