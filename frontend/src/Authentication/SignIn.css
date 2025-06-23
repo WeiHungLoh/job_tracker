@@ -100,8 +100,8 @@
 .signin .ug-link:hover {
   background-color: #007BFF;
 }
+
+/* Delay auto fill background colour from appearing */
 .signin input:-webkit-autofill {
-  transition: background-color 5000s ease-in-out 0s;
-  -webkit-text-fill-color: #000 !important;
-  caret-color: black;
+  transition: background-color 1000s;
 }
