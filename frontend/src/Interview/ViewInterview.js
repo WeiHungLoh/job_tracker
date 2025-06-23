@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import './ViewInterview.css'
 
 const ViewInterview = () => {
     const navigate = useNavigate()

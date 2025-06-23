@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, useLocation, Navigate, Link } from 'react-router-dom'
 import Notification from '../Notification.js'
+import './AddInterview.css'
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState('')

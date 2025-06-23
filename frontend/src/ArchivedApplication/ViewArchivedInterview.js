@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import './ViewArchivedInterview.css'
 
 const ViewArchivedInterview = () => {
     const { data: archivedInterviews, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedinterview/view`)
@@ -76,7 +77,7 @@ const ViewArchivedInterview = () => {
                             <p>Notes: {interview.notes}</p>}
                         <p className='date'>Interview Date: {DateFormatter(interview.interview_date).formattedDate}</p>
                         <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
-                        <Link to={`/viewapplications#${interview.job_id}`}>
+                        <Link to={`/viewarchivedapplications#${interview.job_id}`}>
                             Click here to review corresponding job application
                         </Link>
                     </div>

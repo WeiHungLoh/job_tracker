@@ -1,0 +1,73 @@
+.signin {
+  max-width: 400px;
+  padding: 20px;
+  margin: auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0 10px rgba(0, 0, 0, 0.2);
+}
+.signin h2 {
+  font-size: 24px;
+  color: #f1356d;
+  text-align: center;
+  margin-bottom: 30px;
+}
+.signin input {
+  width: 95%;
+  padding: 10px;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.signin button {
+  width: 100%;
+  padding: 10px;
+  background-color: #f1356d;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.signin button:hover {
+  background-color: #d12b5a;
+}
+.signin p {
+  cursor: pointer;
+  text-align: center;
+  color: #007BFF;
+  margin-top: 20px;
+}
+.signin .password-wrapper {
+  position: relative;
+}
+.signin .toggle-visibility {
+  position: absolute;
+  top: 40%;
+  right: 10px;
+  cursor: pointer;
+}
+.signin .notice-wrapper {
+  background-color: #e6f4ff;
+  color: #084298;
+  border-left: 4px solid #0d6efd;
+  padding-left: 10px;
+}
+.signin .ug-link {
+  background-color: #0d6efd;     
+  color: white;                   
+  padding: 4px 20px;              
+  border-radius: 5px;                      
+  font-size: 13px;  
+  display: flex;                
+  margin-top: 15px;                 
+  justify-content: center;           
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+.signin .ug-link:hover {
+  background-color: #007BFF;
+}

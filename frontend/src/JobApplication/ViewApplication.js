@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import ToggleButton from '../Icons/ToggleButton.js'
 import useFetchData from '../useFetchData.js'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import './ViewApplication.css'
 
 const ViewApplication = () => {
     const navigate = useNavigate()

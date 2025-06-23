@@ -5,6 +5,7 @@ import { IoMdEyeOff } from 'react-icons/io'
 import { IoEye } from 'react-icons/io5'
 import { GoAlertFill } from 'react-icons/go'
 import LoadingSpinner from '../Icons/LoadingSpinner.js'
+import './SignUp.css'
 
 const SignUp = () => {
     const [email, setEmail] = useState('')
