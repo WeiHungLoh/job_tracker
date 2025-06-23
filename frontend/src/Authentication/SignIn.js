@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import { IoMdEyeOff } from 'react-icons/io'
 import { IoEye } from 'react-icons/io5'
 import { GoAlertFill } from 'react-icons/go'
+import { MdEmail, MdLock } from 'react-icons/md'
+import { FaBriefcase } from 'react-icons/fa'
 import LoadingSpinner from '../Icons/LoadingSpinner.js'
 import './SignIn.css'
 
@@ -54,19 +56,24 @@ const SignIn = () => {
 
     return (
         <div className='signin'>
+            <FaBriefcase className="logo-icon" />
             <h2>Sign in to Job Tracker</h2>
             <form onSubmit={handleSignIn}>
 
                 <label>Email</label>
-                <input
-                    type='email'
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                />
+                <div className='input-box'>
+                    <MdEmail className='left-icon' />
+                    <input
+                        type='email'
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
 
                 <label>Password</label>
                 <div className='password-wrapper'>
+                    <MdLock className="left-icon" />
                     <input
                         type={visible ? 'text' : 'password'}
                         value={password}
@@ -79,8 +86,8 @@ const SignIn = () => {
                 </div>
 
                 {isPending
-                    ?   <button>Loading...{' '}<LoadingSpinner /> </button>
-                    :   <button type='submit'>Sign in</button>
+                    ? <button>Loading...{' '}<LoadingSpinner /> </button>
+                    : <button type='submit'>Sign in</button>
                 }
 
                 <p onClick={toggleSignUp}>
@@ -92,7 +99,7 @@ const SignIn = () => {
                     <GoAlertFill />
                 </span>
                 {'  '}If the sign-in process seems to hang after you click the sign in button,
-                please wait up to 30 seconds. This may happen because the backend is hosted on a free tier,
+                please wait up to 50 seconds. This may happen because the backend is hosted on a free tier,
                 which can take time to wake up after periods of inactivity.
             </div>
             <Link className='ug-link' to='/userguide' target='_blank'>Click here to view user guide</Link>
