@@ -155,3 +155,17 @@
   text-decoration: none;
   color: 	#17a2b8
 }
+
+/* Highlight archived-application div to make it more prominent for users to see */
+.highlighted {
+  animation: highlightFade 4s ease-in-out;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #dfffd9;
+  }
+  100% {
+    background-color: inherit;
+  }
+}

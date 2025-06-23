@@ -29,6 +29,13 @@ const ViewApplication = () => {
                 const app = document.getElementById(hash.substring(1))
                 if (app) {
                     app.scrollIntoView({ behavior: 'smooth' })
+
+                    // Add the 'highlighted' class when the application scrolls into view,
+                    // and remove it after 4 seconds to match transition time
+                    app.classList.add('highlighted')
+                    setTimeout(() => {
+                        app.classList.remove('highlighted')
+                    }, 4000)
                 }
             }, 100)
         }
@@ -93,6 +100,21 @@ const ViewApplication = () => {
                         jobId: application.job_id
                     })
                 })
+                await refetch();
+
+                setTimeout(() => {
+                    const app = document.getElementById(application.job_id);
+                    if (app) {
+                        app.scrollIntoView({ behavior: 'smooth' });
+
+                    // Add the 'highlighted' class when the application scrolls into view,
+                    // and remove it after 4 seconds to match transition time
+                    app.classList.add('highlighted')
+                    setTimeout(() => {
+                        app.classList.remove('highlighted')
+                    }, 4000)
+                    }
+                }, 100);
             }
 
             refetch()

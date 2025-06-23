@@ -17,8 +17,15 @@ const ViewArchivedApplication = () => {
                 const app = document.getElementById(hash.substring(1))
                 if (app) {
                     app.scrollIntoView({ behavior: 'smooth' })
+
+                    // Add the 'highlighted' class when the application scrolls into view,
+                    // and remove it after 4 seconds to match transition time
+                    app.classList.add('highlighted')
+                    setTimeout(() => {
+                        app.classList.remove('highlighted')
+                    }, 4000)
                 }
-            }, 100)
+            }, 4000)
         }
     }, [location])
 
