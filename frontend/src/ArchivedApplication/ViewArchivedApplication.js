@@ -35,7 +35,7 @@ const ViewArchivedApplication = () => {
         try {
             const { confirmed } = await confirm({
                 title: 'Confirm Deletion',
-                description: 'Are you sure you want to delete this job application? This action is permanent and cannot be undone.',
+                description: 'Are you sure you want to delete this archived job application? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete',
                 cancellationText: 'Cancel',
                 confirmationButtonProps: { autoFocus: true }

@@ -243,7 +243,6 @@ const ViewApplication = () => {
                                 }))
                             }
                         >
-
                             <option value='Accepted'>Accepted</option>
                             <option value='Applied' disabled=
                                 {interviewJobId.includes(application.job_id)}>Applied</option>
