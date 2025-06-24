@@ -5,7 +5,7 @@ const getArchivedJobInterviews = async (userId) => {
         `SELECT * FROM archived_interviews, archived_job_applications 
             WHERE archived_interviews.user_id = $1 
             AND archived_interviews.archived_job_id = archived_job_applications.archived_job_id 
-            ORDER BY archived_interviews.interview_date ASC`, 
+            ORDER BY archived_interviews.interview_date ASC`,
         [userId])
     return res.rows
 }

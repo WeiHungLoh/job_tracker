@@ -1,9 +1,9 @@
-import express from 'express'
+import { findUser, findUserInfo, insertUser } from '../db/queries/users.js'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import { findUserInfo, findUser, insertUser } from '../db/queries/users.js'
-const router = express.Router();
+import express from 'express'
+import jwt from 'jsonwebtoken'
+const router = express.Router()
 dotenv.config()
 
 router.post('/signup', async (req, res) => {

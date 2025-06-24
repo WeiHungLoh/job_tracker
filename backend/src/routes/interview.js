@@ -1,6 +1,6 @@
+import { deleteAllJobInterviews, deleteJobInterview, getInterviews, insertInterview } from '../db/queries/interviews.js'
 import express from 'express'
 const router = express.Router()
-import { deleteAllJobInterviews, deleteJobInterview, getInterviews, insertInterview } from '../db/queries/interviews.js'
 
 router.post('/add', async (req, res) => {
     const {jobId, interviewDate, interviewLocation, interviewType, notes} = req.body
@@ -16,7 +16,7 @@ router.post('/add', async (req, res) => {
 
 router.get('/view', async (req, res) => {
     const userId = req.user.id
-    
+
     try {
         const sortedInterviews = await getInterviews(userId)
         res.status(200).json(sortedInterviews)

@@ -13,7 +13,7 @@ const insertInterview = async (
 const getInterviews = async (userId) => {
     const res = await pool.query(
         `SELECT * FROM interviews, job_applications WHERE interviews.user_id = $1 
-            AND interviews.job_id = job_applications.job_id ORDER BY interviews.interview_date ASC`, 
+            AND interviews.job_id = job_applications.job_id ORDER BY interviews.interview_date ASC`,
         [userId])
     return res.rows
 }
