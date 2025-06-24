@@ -1,6 +1,13 @@
+import {
+    deleteAllJobApplications,
+    deleteJobApplication,
+    getJobApplications,
+    insertJobApplication,
+    toggleEditStatus,
+    toggleJobStatus
+} from '../db/queries/jobApplications.js'
 import express from 'express'
 const router = express.Router()
-import { insertJobApplication, getJobApplications, deleteJobApplication, deleteAllJobApplications, toggleEditStatus, toggleJobStatus } from '../db/queries/jobApplications.js'
 
 router.post('/add', async (req, res) => {
     const { companyName, jobTitle, appDate, jobStatus, jobLocation, jobURL } = req.body

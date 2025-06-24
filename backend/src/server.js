@@ -1,12 +1,12 @@
-import express from 'express'
-import cors from 'cors'
-import { connectDB } from './db/connectDB.js'
-import createTable from './db/queries/createTable.js'
-import authRoute from './routes/auth.js'
 import applicationRoute from './routes/application.js'
-import interviewRoute from './routes/interview.js'
 import archivedApplicationRoute from './routes/archivedapplication.js'
 import archivedInterviewRoute from './routes/archivedinterview.js'
+import authRoute from './routes/auth.js'
+import { connectDB } from './db/connectDB.js'
+import cors from 'cors'
+import createTable from './db/queries/createTable.js'
+import express from 'express'
+import interviewRoute from './routes/interview.js'
 import pingRoute from './routes/ping.js'
 import verifyToken from './middleware/verifyToken.js'
 
@@ -24,10 +24,10 @@ const startServer = async () => {
     app.use('/archivedapplication', verifyToken, archivedApplicationRoute)
     app.use('/archivedinterview', verifyToken, archivedInterviewRoute)
 
-    const PORT = process.env.PORT || 5005;
+    const PORT = process.env.PORT || 5005
     app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+        console.log(`Server is running on port ${PORT}`)
+    })
 }
 
 startServer()

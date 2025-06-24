@@ -12,7 +12,7 @@ const connectDB = async () => {
         console.log('Connected to pool')
         client.release()
     } catch (error) {
-        console.log('Unable to connect to pool')
+        console.log('Unable to connect to pool ' + error.message)
     }
 }
 

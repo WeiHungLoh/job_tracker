@@ -1,5 +1,9 @@
+import {
+    deleteAllArchivedJobInterviews,
+    deleteArchivedJobInterview,
+    getArchivedJobInterviews,
+} from '../db/queries/archivedInterviews.js'
 import express from 'express'
-import { getArchivedJobInterviews, deleteArchivedJobInterview, deleteAllArchivedJobInterviews } from '../db/queries/archivedInterviews.js'
 const router = express.Router()
 
 router.get('/view', async (req, res) => {

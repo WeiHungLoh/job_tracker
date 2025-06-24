@@ -1,6 +1,11 @@
+import {
+  deleteAllArchivedJobApplications,
+  deleteArchivedJobApplication,
+  getArchivedJobApplications,
+  insertArchivedJobApplication,
+  removeArchivedJobApplication
+} from '../db/queries/archivedJobApplications.js'
 import express from 'express'
-import { deleteAllArchivedJobApplications, getArchivedJobApplications, deleteArchivedJobApplication,
-    insertArchivedJobApplication, removeArchivedJobApplication } from '../db/queries/archivedJobApplications.js'
 const router = express.Router()
 
 router.post('/archive', async (req, res) => {
