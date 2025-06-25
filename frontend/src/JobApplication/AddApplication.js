@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Notification from '../Notification.js'
 import './AddApplication.css'
+import Notification from '../Notification.js'
+import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState('')

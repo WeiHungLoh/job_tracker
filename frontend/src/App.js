@@ -1,17 +1,17 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
-import SignIn from './Authentication/SignIn.js'
-import SignUp from './Authentication/SignUp.js'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import AddApplication from './JobApplication/AddApplication.js'
-import ViewApplication from './JobApplication/ViewApplication.js'
 import AddInterview from './Interview/AddInterview.js'
-import ViewInterview from './Interview/ViewInterview.js'
-import ViewArchivedApplication from './ArchivedApplication/ViewArchivedApplication.js'
-import ViewArchivedInterview from './ArchivedApplication/ViewArchivedInterview.js'
-import UserGuide from './UserGuide/UserGuide.js'
-import ProtectedRoutes from './ProtectedRoutes.js'
+import { ConfirmProvider } from 'material-ui-confirm'
 import InvalidPage from './InvalidPage.js'
 import Navbar from './Navbar.js'
-import { ConfirmProvider } from 'material-ui-confirm';
+import ProtectedRoutes from './ProtectedRoutes.js'
+import SignIn from './Authentication/SignIn.js'
+import SignUp from './Authentication/SignUp.js'
+import UserGuide from './UserGuide/UserGuide.js'
+import ViewApplication from './JobApplication/ViewApplication.js'
+import ViewArchivedApplication from './ArchivedApplication/ViewArchivedApplication.js'
+import ViewArchivedInterview from './ArchivedApplication/ViewArchivedInterview.js'
+import ViewInterview from './Interview/ViewInterview.js'
 
 function App() {
   const location = useLocation()
@@ -42,7 +42,7 @@ function App() {
         </Routes>
       </ConfirmProvider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

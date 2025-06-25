@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { IoMdArchive } from "react-icons/io";
-import { IoNewspaperOutline } from "react-icons/io5";
+import { IoMdArchive } from 'react-icons/io'
+import { IoNewspaperOutline } from 'react-icons/io5'
+import { useState } from 'react'
 
 const Navbar = () => {
     const location = useLocation()
@@ -10,7 +10,7 @@ const Navbar = () => {
     const [archived, setArchived] = useState(false)
 
     const showArchivedMessage = (archived) => {
-        return archived ? 'Show Active' : `Show Archived`
+        return archived ? 'Show Active' : 'Show Archived'
     }
 
     const showArchivedIcon = (archived) => {
@@ -60,7 +60,7 @@ const Navbar = () => {
         <nav className='navbar'>
             <h1>Job Tracker</h1>
             <div className='links'>
-                {!archived && 
+                {!archived &&
                     <>
                         <NavLink to='/addapplication' className={isAddApplicationActive(currLocation) ? 'active' : 'inactive'}>
                             Add Job Application

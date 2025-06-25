@@ -1,13 +1,13 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Notification from '../Notification.js'
-import { IoMdEyeOff } from 'react-icons/io'
-import { IoEye } from 'react-icons/io5'
-import { GoAlertFill } from 'react-icons/go'
+import './SignUp.css'
 import { MdEmail, MdLock } from 'react-icons/md'
 import { FaBriefcase } from 'react-icons/fa'
+import { GoAlertFill } from 'react-icons/go'
+import { IoEye } from 'react-icons/io5'
+import { IoMdEyeOff } from 'react-icons/io'
 import LoadingSpinner from '../Icons/LoadingSpinner.js'
-import './SignUp.css'
+import Notification from '../Notification.js'
+import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 const SignUp = () => {
     const [email, setEmail] = useState('')

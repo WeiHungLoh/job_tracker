@@ -1,8 +1,8 @@
-import { useNavigate, Link } from 'react-router-dom'
-import useFetchData from '../useFetchData.js'
+import './ViewInterview.css'
+import { Link, useNavigate } from 'react-router-dom'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import { useConfirm } from 'material-ui-confirm'
-import './ViewInterview.css'
+import useFetchData from '../useFetchData.js'
 
 const ViewInterview = () => {
     const navigate = useNavigate()
@@ -80,7 +80,6 @@ const ViewInterview = () => {
         }
         return true
     }
-
 
     return (
         <div className='interview-list'>

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import ToggleButton from '../Icons/ToggleButton.js'
-import useFetchData from '../useFetchData.js'
-import DateFormatter from '../Formatter/DateFormatter.js'
-import { useConfirm } from 'material-ui-confirm'
 import './ViewApplication.css'
+import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import DateFormatter from '../Formatter/DateFormatter.js'
+import ToggleButton from '../Icons/ToggleButton.js'
+import { useConfirm } from 'material-ui-confirm'
+import useFetchData from '../useFetchData.js'
 
 const ViewApplication = () => {
     const navigate = useNavigate()
@@ -122,12 +122,12 @@ const ViewApplication = () => {
                         jobId: application.job_id
                     })
                 })
-                await refetch();
+                await refetch()
 
                 setTimeout(() => {
-                    const app = document.getElementById(application.job_id);
+                    const app = document.getElementById(application.job_id)
                     if (app) {
-                        app.scrollIntoView({ behavior: 'smooth' });
+                        app.scrollIntoView({ behavior: 'smooth' })
 
                         // Add the 'highlighted' class when the application scrolls into view,
                         // and remove it after 4 seconds to match transition time
@@ -136,7 +136,7 @@ const ViewApplication = () => {
                             app.classList.remove('highlighted')
                         }, 4000)
                     }
-                }, 100);
+                }, 100)
             }
 
             refetch()
@@ -260,7 +260,7 @@ const ViewApplication = () => {
                             </Link>
                         }
                         {showJobURL(application) &&
-                            <a className='url' href={application.job_posting_url} target='_blank'>
+                            <a className='url' href={application.job_posting_url} target='_blank' rel='noreferrer'>
                                 Click here to head to job application URL
                             </a>}
                     </div>

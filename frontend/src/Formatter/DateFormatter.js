@@ -41,7 +41,7 @@ const DateFormatter = (dueDate) => {
         const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`
         return timeRemaining
     }
-  
+
     const timeSinceApplication = countFromApplication(dateSinceApplication)
     const timeBeforeInterview = countDownToInterview(dateBeforeInterview)
 
