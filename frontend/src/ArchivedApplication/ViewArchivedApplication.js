@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import useFetchData from '../useFetchData.js'
+import './ViewArchivedApplication.css'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import { useConfirm } from 'material-ui-confirm'
-import './ViewArchivedApplication.css'
+import { useEffect } from 'react'
+import useFetchData from '../useFetchData.js'
+import { useLocation } from 'react-router-dom'
 
 const ViewArchivedApplication = () => {
     const { data: archivedApplications, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedapplication/view`)
@@ -160,7 +160,7 @@ const ViewArchivedApplication = () => {
                         <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
 
                         {showJobURL(application) &&
-                            <a className='url' href={application.job_posting_url} target='_blank'>
+                            <a className='url' href={application.job_posting_url} target='_blank' rel='noreferrer'>
                                 Click here to head to job application URL
                             </a>}
                     </div>
@@ -180,7 +180,7 @@ const ViewArchivedApplication = () => {
             ))}
 
             <div className='application-button'>
-                {showDeleteAllButton(archivedApplications) && 
+                {showDeleteAllButton(archivedApplications) &&
                 <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>}
             </div>
         </div>

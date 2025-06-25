@@ -1,4 +1,4 @@
-import './UserGuide.css';
+import './UserGuide.css'
 
 const UserGuide = () => {
     return (
@@ -82,22 +82,20 @@ const UserGuide = () => {
                 </ul>
             </section>
 
-           <section>
-    <h2>⚡ Deleting Job Applications and Job Interviews (active or archived)</h2>
-    <p>When you delete a job application or a job interview, a confirmation dialog will appear:</p>
-    <ul>
-        <li><strong>Single Delete</strong> – A popup will ask, "Are you sure you want to delete this item? This action is <strong>permanent</strong> and <strong>cannot be undone</strong>."
-         You can click <code>Delete</code> or press Enter to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel.
+            <section>
+                <h2>⚡ Deleting Job Applications and Job Interviews (active or archived)</h2>
+                <p>When you delete a job application or a job interview, a confirmation dialog will appear:</p>
+                <ul>
+                    <li><strong>Single Delete</strong> – A popup will ask, "Are you sure you want to delete this item? This action is <strong>permanent</strong> and <strong>cannot be undone</strong>."
+                        You can click <code>Delete</code> or press Enter to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel.
 
-        </li>
-        <li><strong>Delete All</strong> – A similar popup will ask, "Are you sure you want to delete all items? This action is permanent and <em>cannot be undone</em>."
-            You <strong>MUST</strong> click <code>Delete all</code> to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel.
-        </li>
-    </ul>
-    <p>Always review before confirming deletions to prevent loss of important data.</p>
-</section>
-
-
+                    </li>
+                    <li><strong>Delete All</strong> – A similar popup will ask, "Are you sure you want to delete all items? This action is permanent and <em>cannot be undone</em>."
+                        You <strong>MUST</strong> click <code>Delete all</code> to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel.
+                    </li>
+                </ul>
+                <p>Always review before confirming deletions to prevent loss of important data.</p>
+            </section>
 
             <section>
                 <h2>🔀 Sorting Order</h2>
@@ -126,7 +124,7 @@ const UserGuide = () => {
                 Tip: Prefer archiving over deleting if you want to keep records for later reference.
             </p>
         </div>
-    );
-};
+    )
+}
 
-export default UserGuide;
+export default UserGuide

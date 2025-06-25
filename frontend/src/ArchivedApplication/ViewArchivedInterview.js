@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
-import useFetchData from '../useFetchData.js'
-import DateFormatter from '../Formatter/DateFormatter.js'
-import { useConfirm } from 'material-ui-confirm'
 import './ViewArchivedInterview.css'
+import DateFormatter from '../Formatter/DateFormatter.js'
+import { Link } from 'react-router-dom'
+import { useConfirm } from 'material-ui-confirm'
+import useFetchData from '../useFetchData.js'
 
 const ViewArchivedInterview = () => {
     const { data: archivedInterviews, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedinterview/view`)
@@ -81,7 +81,6 @@ const ViewArchivedInterview = () => {
         }
         return true
     }
-
 
     return (
         <div className='archived-interview-list'>

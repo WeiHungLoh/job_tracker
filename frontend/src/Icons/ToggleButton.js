@@ -10,7 +10,7 @@ const ToggleButton = ( {toggled, onToggle }) => {
             <div>{buttonMessage(toggled)}</div>
             <button className={`toggle-button ${toggled ? 'active' : ''}`}
                 onClick={onToggle}>
-                <div className='thumb' />    
+                <div className='thumb' />
             </button>
         </div>
     )
