@@ -28,7 +28,6 @@ const ProtectedRoutes = () => {
         checkIsAuth()
     }, [])
 
-    // Loading state is needed to allow time to confirm if user is logged in
     if (loading) {
         return <div>Loading... <LoadingSpinner /></div>
     }
