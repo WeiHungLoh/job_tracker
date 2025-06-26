@@ -17,7 +17,7 @@ const startServer = async () => {
     const app = express()
     app.use(cors({
         origin: process.env.NODE_ENV === 'production' 
-            ? 'https://jobtracker-whloh.netlify.app/' : 'http://localhost:3000',
+            ? 'https://jobtracker-whloh.netlify.app' : 'http://localhost:3000',
         credentials: true
     }))
     app.use(express.json())
