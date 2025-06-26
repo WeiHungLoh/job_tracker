@@ -55,10 +55,39 @@ router.post('/signin', async (req, res) => {
             ACCESS_TOKEN_SECRET,
             { expiresIn: '3h' }
         )
-        res.status(200).json({ message: 'Successfully signed in', token: ACCESS_TOKEN })
+
+        // Saves token inside cookie to prevent XSS/CSFR
+        res.cookie('token', ACCESS_TOKEN, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        })
+
+        res.status(200).json({ message: 'Successfully signed in' })
     } catch (error) {
         res.status(500).send('Server error: ' + error.message)
     }
+})
+
+router.get('/check', async (req, res) => {
+    const token = req.cookies.token
+
+    if (!token) {
+        return res.status(401).json({ message: 'No token found. Please login' })
+    }
+
+    try {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        res.json({ message: 'Authenticated user' })
+    } catch (error) {
+        res.status(404).json({ message: 'Invalid token. Please login' })
+    }
+})
+
+router.get('/logout', async (req, res) => {
+    res.clearCookie('token')
+    res.status(200).json({ message: 'Successfully logged out '})
 })
 
 export default router
