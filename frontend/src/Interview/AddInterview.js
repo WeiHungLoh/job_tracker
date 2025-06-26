@@ -36,10 +36,10 @@ const AddInterview = () => {
             const res = await fetch(`${process.env.REACT_APP_API_URL}/interview/add`,
                 {
                     method: 'POST',
+                    credentials: 'include',
                     headers:
                     {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     body: JSON.stringify({ jobId: app.job_id, interviewDate: localDate, interviewLocation, interviewType, notes })
                 }

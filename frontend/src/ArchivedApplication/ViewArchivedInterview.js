@@ -21,9 +21,7 @@ const ViewArchivedInterview = () => {
             if (confirmed) {
                 await fetch(`${process.env.REACT_APP_API_URL}/archivedinterview/${interviewId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
+                    credentials: 'include'
                 })
             }
 
@@ -47,9 +45,7 @@ const ViewArchivedInterview = () => {
                 await fetch(`${process.env.REACT_APP_API_URL}/archivedinterview/deleteall`,
                     {
                         method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
+                        credentials: 'include'
                     }
                 )
             }
@@ -101,7 +97,7 @@ const ViewArchivedInterview = () => {
                             <p>Notes: {interview.notes}</p>}
                         <p className='date'>Interview Date: {DateFormatter(interview.interview_date).formattedDate}</p>
                         <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
-                        <Link to={`/viewarchivedapplications#${interview.job_id}`}>
+                        <Link to={`/viewarchivedapplications#${interview.archived_job_id}`}>
                             Click here to review corresponding job application
                         </Link>
                     </div>
