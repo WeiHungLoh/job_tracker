@@ -1,10 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import LoadingSpinner from './Icons/LoadingSpinner.js'
 
 const ProtectedRoutes = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [loading, setLoading] = useState(true)
+    const [isAuthenticated, setIsAuthenticated] = useState(undefined)
 
     const checkIsAuth = async () => {
         try {
@@ -19,8 +17,6 @@ const ProtectedRoutes = () => {
             }
         } catch (error) {
             setIsAuthenticated(false)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -28,9 +24,11 @@ const ProtectedRoutes = () => {
         checkIsAuth()
     }, [])
 
-    // Loading state is needed to allow time to confirm if user is logged in
-    if (loading) {
-        return <div>Loading... <LoadingSpinner /></div>
+    // Wait for auth check to complete before rendering
+    // Without this, component renders with default false state
+    // and immediately redirects to login before API call finishes
+    if (isAuthenticated === undefined) {
+        return <div>Checking authentication status...</div>
     }
 
     return isAuthenticated ? <Outlet /> : <Navigate to='/' />
