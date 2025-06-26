@@ -56,7 +56,7 @@ router.post('/signin', async (req, res) => {
             { expiresIn: '3h' }
         )
 
-        // Saves token inside cookie to prevent XSS/CSFR
+        // Saves token inside cookie to prevent XSS
         res.cookie('token', ACCESS_TOKEN, {
             httpOnly: true,
             secure: true,
