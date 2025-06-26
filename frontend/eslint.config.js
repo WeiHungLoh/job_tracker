@@ -33,7 +33,6 @@ export default defineConfig([
         console: 'readonly',
         process: 'readonly',
         fetch: 'readonly',
-        localStorage: 'readonly',
         alert: 'readonly',
         setTimeout: 'readonly',
         document: 'readonly',

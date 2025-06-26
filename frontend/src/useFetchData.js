@@ -9,10 +9,7 @@ const useFetchData = (collectionName) => {
         try {
             const res = await fetch(collectionName, {
                 method: 'GET',
-                headers:
-                {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                credentials: 'include'
             })
 
             const actualData = await res.json()
