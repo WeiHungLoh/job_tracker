@@ -16,7 +16,7 @@ const startServer = async () => {
     await createTable()
     const app = express()
     app.use(cors({
-        origin: process.env.NODE_ENV === 'production' 
+        origin: process.env.NODE_ENV === 'production'
             ? 'https://jobtracker-whloh.netlify.app' : 'http://localhost:3000',
         credentials: true
     }))
