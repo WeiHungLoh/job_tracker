@@ -44,9 +44,7 @@ const ViewArchivedApplication = () => {
             if (confirmed) {
                 await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/${archivedApplicationId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    credentials: 'include'
                 })
             }
             // Refreshes UI to show remaining undeleted archivedApplications
@@ -69,9 +67,7 @@ const ViewArchivedApplication = () => {
                 await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/deleteall`,
                     {
                         method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
+                        credentials: 'include'
                     }
                 )
             }
@@ -87,11 +83,8 @@ const ViewArchivedApplication = () => {
             await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/unarchive`,
                 {
                     method: 'POST',
-                    headers:
-                    {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json',},
                     body: JSON.stringify({ archivedJobId })
                 }
             )

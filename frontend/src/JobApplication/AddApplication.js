@@ -44,15 +44,12 @@ const AddApplication = () => {
             const res = await fetch(`${process.env.REACT_APP_API_URL}/application/add`,
                 {
                     method: 'POST',
-                    headers:
-                    {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ companyName, jobTitle, appDate, jobStatus, jobLocation, jobURL })
                 }
             )
-            const message = res.text()
+            const message = await res.text()
             setNotification({ message, type: res.ok ? 'success' : 'error' })
 
             // Resets assignment form after successfully adding a new assignment
