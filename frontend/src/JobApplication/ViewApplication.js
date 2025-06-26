@@ -56,10 +56,8 @@ const ViewApplication = () => {
             if (confirmed) {
                 await fetch(`${process.env.REACT_APP_API_URL}/application/${applicationId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-type': 'application/json'
-                    },
+                    credentials: 'include',
+                    headers: { 'Content-type': 'application/json' },
                     body: JSON.stringify({ applicationId })
                 })
 
@@ -85,9 +83,7 @@ const ViewApplication = () => {
                 await fetch(`${process.env.REACT_APP_API_URL}/application/deleteall`,
                     {
                         method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
+                        credentials: 'include'
                     }
                 )
             }
@@ -103,20 +99,16 @@ const ViewApplication = () => {
         try {
             await fetch(`${process.env.REACT_APP_API_URL}/application/toggleeditstatus`, {
                 method: 'PUT',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+                credentials: 'include',
+                headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify({ jobId: application.job_id })
             })
 
             if (editStatus) {
                 await fetch(`${process.env.REACT_APP_API_URL}/application/togglejobstatus`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    credentials: 'include',
+                    headers: { 'Content-type': 'application/json' },
                     body: JSON.stringify({
                         jobStatus: jobStatuses[application.job_id] ?? application.job_status,
                         jobId: application.job_id
@@ -150,11 +142,8 @@ const ViewApplication = () => {
             await fetch(`${process.env.REACT_APP_API_URL}/archivedapplication/archive`,
                 {
                     method: 'POST',
-                    headers:
-                    {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ jobId })
                 }
             )

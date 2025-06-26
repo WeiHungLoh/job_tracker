@@ -21,9 +21,7 @@ const ViewInterview = () => {
             if (confirmed) {
                 await fetch(`${process.env.REACT_APP_API_URL}/interview/${interviewId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
+                    credentials: 'include'
                 })
             }
             // Refreshes UI to show remaining undeleted interviews
@@ -46,9 +44,7 @@ const ViewInterview = () => {
                 await fetch(`${process.env.REACT_APP_API_URL}/interview/deleteall`,
                     {
                         method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
+                        credentials: 'include'
                     }
                 )
             }
