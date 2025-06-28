@@ -4,7 +4,7 @@ const Notification = ({message}) => {
     }
 
     return (
-        <div className="notification" style={{
+        <div data-testid='noti' className="notification" style={{
             backgroundColor: message.type === 'error' ? 'red' : 'green'}}>
             {message.message}
         </div>
