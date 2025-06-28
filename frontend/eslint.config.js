@@ -37,6 +37,13 @@ export default defineConfig([
         setTimeout: 'readonly',
         document: 'readonly',
         location: 'readonly',
+        // Ignores globals for jest/react testing library
+        jest: 'readonly',
+        global: 'readonly',
+        beforeEach: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        describe: 'readonly'
       },
     },
     settings: {
