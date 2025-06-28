@@ -65,10 +65,11 @@ const SignUp = () => {
             <h2>Sign up for Job Tracker</h2>
             <form onSubmit={handleSignUp}>
 
-                <label>Email</label>
+                <label htmlFor='email'>Email</label>
                 <div className='input-box'>
                     <MdEmail className='left-icon' />
                     <input
+                        id='email'
                         type='email'
                         value={email}
                         onChange={e => setEmail(e.target.value)}
@@ -76,10 +77,11 @@ const SignUp = () => {
                     />
                 </div>
 
-                <label>Password</label>
+                <label htmlFor='password'>Password</label>
                 <div className='password-wrapper'>
                     <MdLock className="left-icon" />
                     <input
+                        id='password'
                         type={visible ? 'text' : 'password'}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
@@ -109,7 +111,7 @@ const SignUp = () => {
                 which can take time to wake up after periods of inactivity.
             </div>
 
-            <Notification message={notification} />
+            <Notification data-testid='noti' message={notification} />
         </div>
     )
 
