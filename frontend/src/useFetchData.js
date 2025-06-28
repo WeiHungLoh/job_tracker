@@ -8,7 +8,6 @@ const useFetchData = (collectionName) => {
     const getData = useCallback(async () => {
         try {
             const res = await fetch(collectionName, {
-                method: 'GET',
                 credentials: 'include'
             })
 
