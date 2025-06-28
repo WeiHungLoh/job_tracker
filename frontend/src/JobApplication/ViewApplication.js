@@ -226,10 +226,10 @@ const ViewApplication = () => {
                         {isEditStatus(application.edit_status) && <select
                             value={jobStatuses[application.job_id] ?? application.job_status}
                             onChange={e =>
-                                setJobStatuses(app => ({
-                                    ...app,
-                                    [application.job_id]: e.target.value
-                                }))
+                                    setJobStatuses(app => ({
+                                        ...app,
+                                        [application.job_id]: e.target.value
+                                    }))
                             }
                         >
                             <option value='Accepted'>Accepted</option>
