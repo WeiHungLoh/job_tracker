@@ -6,7 +6,7 @@ import { GoAlertFill } from 'react-icons/go'
 import { IoEye } from 'react-icons/io5'
 import { IoMdEyeOff } from 'react-icons/io'
 import LoadingSpinner from '../Icons/LoadingSpinner.js'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const SignIn = () => {
     const [email, setEmail] = useState('')
@@ -16,7 +16,9 @@ const SignIn = () => {
     const [isPending, setIsPending] = useState(false)
 
     // Dummy fetch request to wake backend hosted on free tier
-    fetch(`${process.env.REACT_APP_API_URL}/ping/ping`)
+    useEffect(() => {
+        fetch(`${process.env.REACT_APP_API_URL}/ping/ping`)
+    }, [])
 
     const handleSignIn = async (e) => {
         e.preventDefault()
@@ -59,10 +61,11 @@ const SignIn = () => {
             <h2>Sign in to Job Tracker</h2>
             <form onSubmit={handleSignIn}>
 
-                <label>Email</label>
+                <label htmlFor='email'>Email</label>
                 <div className='input-box'>
                     <MdEmail className='left-icon' />
                     <input
+                        id='email'
                         type='email'
                         value={email}
                         onChange={e => setEmail(e.target.value)}
@@ -70,10 +73,11 @@ const SignIn = () => {
                     />
                 </div>
 
-                <label>Password</label>
+                <label htmlFor='password'>Password</label>
                 <div className='password-wrapper'>
                     <MdLock className="left-icon" />
                     <input
+                        id='password'
                         type={visible ? 'text' : 'password'}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
