@@ -7,14 +7,14 @@ global.fetch = jest.fn()
 global.alert = jest.fn()
 
 describe('User add application flow', () => {
-    // Resets the state of fetch and mockNavigate
+    // Resets the state of fetch and alert
     beforeEach(() => {
         fetch.mockReset()
         alert.mockReset()
     })
 
     test('successfully adds an application and a notification message is shown', async () => {
-        global.fetch.mockResolvedValueOnce({
+        fetch.mockResolvedValueOnce({
             ok: true,
             status: 201,
             text: async () => 'Successfully added a job application!'
