@@ -43,7 +43,7 @@ router.delete('/:interviewId', async (req, res) => {
 
     try {
         await deleteJobInterview(interviewId, userId)
-        res.status(200).send('Deleted application')
+        res.status(200).send('Deleted interview')
     } catch (error) {
         res.status(500).send('Error deleting assignment ' + error.message)
     }
