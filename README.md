@@ -1,5 +1,5 @@
 # Job Tracker
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/5d3f2438-5d82-42a3-af14-d62a4ee8cd52/deploy-status)](https://app.netlify.com/projects/jobtracker-whloh/deploys)
 ## Overview
 
 Job Tracker is a full-stack web application built with the PERN stack (PostgreSQL, Express, React, Node.js) designed to help users efficiently manage their job applications and interviews. It provides intuitive status tracking, archiving, and linked data handling to keep your job search organized.
