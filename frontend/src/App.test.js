@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import App from './App'
+import App from './App.js'
 import { MemoryRouter } from 'react-router-dom'
 
 // Mocks fetch function so that we can simulate successful/unsuccessful fetching of data from backend
