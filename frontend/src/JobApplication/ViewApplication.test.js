@@ -1,11 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import ViewApplication from './ViewApplication'
+import ViewApplication from './ViewApplication.js'
 import useFetchData from '../useFetchData.js'
 import userEvent from '@testing-library/user-event'
 
 global.fetch = jest.fn()
 jest.mock('../useFetchData.js')
+const refetchMock = jest.fn()
 
 const mockConfirm = jest.fn()
 jest.mock('material-ui-confirm', () =>
@@ -14,7 +15,6 @@ jest.mock('material-ui-confirm', () =>
 }))
 
 describe('Job application viewing flow', () => {
-  const refetchMock = jest.fn()
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -50,6 +50,7 @@ describe('Job application viewing flow', () => {
     expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /add new application/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete all/i })).toBeInTheDocument()
   })
 
   test('button should switch to Save Changes button after toggle', async () => {
@@ -147,5 +148,22 @@ describe('Job application viewing flow', () => {
         body: JSON.stringify({ applicationId: '1' })
         }
     ))
+    
+    await waitFor(() => expect(refetchMock).toHaveBeenCalled())
+  })
+
+  test('renders message for empty application list on successful fetch with no data', () => {
+    useFetchData.mockReturnValue({
+      data: [],
+      refetch: refetchMock
+    })
+
+    render(
+      <MemoryRouter>
+        <ViewApplication />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText(/no job application found/i)).toBeInTheDocument()
   })
 })
