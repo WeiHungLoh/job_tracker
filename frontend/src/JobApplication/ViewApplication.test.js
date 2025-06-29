@@ -43,10 +43,11 @@ describe('Job application viewing flow', () => {
         <ViewApplication />
       </MemoryRouter>
     )
-
+    expect(screen.queryByText(/no job application found/i)).not.toBeInTheDocument()
     expect(screen.getByText(/job application viewer/i)).toBeInTheDocument()
     expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument()
     expect(screen.getByText(/software engineer/i)).toBeInTheDocument()
+    expect(screen.getByText(/job status/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /add new application/i })).toBeInTheDocument()
@@ -113,13 +114,6 @@ describe('Job application viewing flow', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText(/job application viewer/i)).toBeInTheDocument()
-    expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument()
-    expect(screen.getByText(/software engineer/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /add new application/i })).toBeInTheDocument()
-
     // Simulates user confirming delete
     mockConfirm.mockResolvedValueOnce({ confirmed: true })
 
@@ -141,14 +135,66 @@ describe('Job application viewing flow', () => {
     })
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith(
-        `${process.env.REACT_APP_API_URL}/application/1`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-type': 'application/json' },
-        body: JSON.stringify({ applicationId: '1' })
-        }
+      `${process.env.REACT_APP_API_URL}/application/1`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify({ applicationId: '1' })
+    }
     ))
-    
+
+    await waitFor(() => expect(refetchMock).toHaveBeenCalled())
+  })
+
+  test('renders message for empty application list on successful fetch with no data', () => {
+    useFetchData.mockReturnValue({
+      data: [],
+      refetch: refetchMock
+    })
+
+    render(
+      <MemoryRouter>
+        <ViewApplication />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText(/no job application found/i)).toBeInTheDocument()
+  })
+
+  test('deletes all application after user confirms', async () => {
+    render(
+      <MemoryRouter>
+        <ViewApplication />
+      </MemoryRouter>
+    )
+
+    // Simulates user confirming delete
+    mockConfirm.mockResolvedValueOnce({ confirmed: true })
+
+    // Simulates user clicking delete button and clicking confirm delete
+    userEvent.click(screen.getByRole('button', { name: 'Delete all applications' }))
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalledWith({
+      title: 'Confirm Deletion',
+      description: 'Are you sure you want to delete all job applications? This action is permanent and cannot be undone.',
+      confirmationText: 'Delete All',
+      cancellationText: 'Cancel',
+    }))
+
+    // Simulates fetching of data after confirming delete
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      text: 'Deleted all applications'
+    })
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+      `${process.env.REACT_APP_API_URL}/application/deleteall`,
+      {
+        method: 'DELETE',
+        credentials: 'include'
+      }
+    ))
+
     await waitFor(() => expect(refetchMock).toHaveBeenCalled())
   })
 

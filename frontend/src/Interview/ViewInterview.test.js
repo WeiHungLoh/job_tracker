@@ -87,13 +87,53 @@ describe('Job interview viewer flow', () => {
             `${process.env.REACT_APP_API_URL}/interview/1`, {
             method: 'DELETE',
             credentials: 'include'
-        }))
+        }
+        ))
+
+        await waitFor(() => expect(refetchMock).toHaveBeenCalled)
+    })
+
+    test('deletes all interviews after use confirms', async () => {
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>
+        )
+
+        // Simulates user confirming delete
+        mockConfirm.mockResolvedValueOnce({ confirmed: true })
+        // Simulates user clicking delete button and clicking confirm delete
+        userEvent.click(screen.getByRole('button', { name: 'Delete all interviews' }))
+
+        await waitFor(() => expect(mockConfirm).toHaveBeenCalledWith(
+            {
+                title: 'Confirm Deletion',
+                description: 'Are you sure you want to delete all job interviews? This action is permanent and cannot be undone.',
+                confirmationText: 'Delete All',
+                cancellationText: 'Cancel',
+            }
+        ))
+
+        // Simulates fetching of data after confirming delete
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            text: 'Deleted all interviews'
+        })
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+            `${process.env.REACT_APP_API_URL}/interview/deleteall`,
+            {
+                method: 'DELETE',
+                credentials: 'include'
+            }
+        ))
 
         await waitFor(() => expect(refetchMock).toHaveBeenCalled)
     })
 
     test('renders message for empty interview list on successful fetch with no data', () => {
-         useFetchData.mockReturnValue({
+        useFetchData.mockReturnValue({
             data: [],
             refetch: refetchMock
         })
