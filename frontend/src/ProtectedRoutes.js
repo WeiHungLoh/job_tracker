@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import LoadingSpinner from './Icons/LoadingSpinner.js'
 
 const ProtectedRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(undefined)
@@ -28,7 +29,15 @@ const ProtectedRoutes = () => {
     // Without this, component renders with default false state
     // and immediately redirects to login before API call finishes
     if (isAuthenticated === undefined) {
-        return <div>Checking authentication status...</div>
+        return <div
+            style={{
+                textAlign: 'center',
+                marginTop: '50px',
+                fontSize: '24px'
+            }}>
+                Checking authentication status...
+                <LoadingSpinner style={{height: '36px', width: '36px'}}/>
+        </div>
     }
 
     return isAuthenticated ? <Outlet /> : <Navigate to='/' />

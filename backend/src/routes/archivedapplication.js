@@ -48,7 +48,7 @@ router.delete('/deleteall', async (req, res) => {
 
     try {
         await deleteAllArchivedJobApplications(userId)
-        res.status(200).send('Deleted archived applications')
+        res.status(200).send('Deleted all archived applications')
     } catch (error) {
         res.status(500).send('Error deleting archived applications' + error.message)
     }
