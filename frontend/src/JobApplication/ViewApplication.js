@@ -223,13 +223,13 @@ const ViewApplication = () => {
                         <p>Time since application: {DateFormatter(application.application_date).timeSinceApplication}</p>
                         <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
 
-                        {isEditStatus(application.edit_status) && <select
+                        {isEditStatus(application.edit_status) && <select role='listbox'
                             value={jobStatuses[application.job_id] ?? application.job_status}
                             onChange={e =>
-                                setJobStatuses(app => ({
-                                    ...app,
-                                    [application.job_id]: e.target.value
-                                }))
+                                    setJobStatuses(app => ({
+                                        ...app,
+                                        [application.job_id]: e.target.value
+                                    }))
                             }
                         >
                             <option value='Accepted'>Accepted</option>

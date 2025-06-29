@@ -73,15 +73,17 @@ const AddApplication = () => {
         <div className='add-application'>
             <h2>Add a job application</h2>
 
-            <label>Input Company Name</label>
+            <label htmlFor='company-name'>Input Company Name</label>
             <input
+                id='company-name'
                 value={companyName}
                 onChange={e => setCompanyName(e.target.value)}
                 required
             />
 
-            <label>Input Job Title</label>
+            <label htmlFor='job-title'>Input Job Title</label>
             <input
+                id='job-title'
                 value={jobTitle}
                 onChange={e => setJobTitle(e.target.value)}
                 required
@@ -97,8 +99,9 @@ const AddApplication = () => {
                 <option value='Rejected'>Rejected</option>
             </select>
 
-            <label>Input Application Date (uses current date if left blank)</label>
+            <label htmlFor='app-date'>Input Application Date (uses current date if left blank)</label>
             <input
+                id='app-date'
                 value={applicationDate}
                 onChange={e => setApplicationDate(e.target.value)}
                 type='datetime-local'

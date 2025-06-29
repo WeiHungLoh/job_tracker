@@ -27,7 +27,7 @@ const ViewArchivedApplication = () => {
                         app.classList.remove('highlighted')
                     }, 4000)
                 }
-            }, 4000)
+            }, 100)
         }
     }, [location])
 
@@ -141,7 +141,7 @@ const ViewArchivedApplication = () => {
             {showArchiveApplicationMessage(archivedApplications) && <div>No archived job application found. Start archiving now! </div>}
 
             {archivedApplications && archivedApplications.map((application, index) => (
-                <div className='application' key={application.job_id} id={application.job_id}>
+                <div className='application' key={application.archived_job_id} id={application.archived_job_id}>
 
                     <div className='application-content'>
                         <h2>{index + 1}. {application.company_name}</h2>
