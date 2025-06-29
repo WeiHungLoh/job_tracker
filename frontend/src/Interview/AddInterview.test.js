@@ -17,7 +17,10 @@ describe('AddInterview page', () => {
                     { pathname: '/addinterview', state: { app: mockApp } }
                 ]}
             >
-                <AddInterview />
+                <Routes>
+                    <Route path="/addinterview" element={<AddInterview />} />
+                    <Route path="/viewapplications" element={<ViewApplication />} />
+                </Routes>
             </MemoryRouter>
         )
 
