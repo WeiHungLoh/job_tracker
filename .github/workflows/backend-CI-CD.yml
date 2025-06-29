@@ -43,6 +43,6 @@ jobs:
 
     steps:
       - name: Deploy to Render via webhook
+        run: curl "$RENDER_DEPLOY_WEBHOOK_URL"
         env:
           RENDER_DEPLOY_WEBHOOK_URL: ${{ secrets.RENDER_DEPLOY_WEBHOOK_URL }}
-        run: curl "$RENDER_DEPLOY_WEBHOOK_URL"
