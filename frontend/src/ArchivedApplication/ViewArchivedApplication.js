@@ -33,7 +33,7 @@ const ViewArchivedApplication = () => {
 
     const handleDelete = async (archivedApplicationId) => {
         try {
-            const { confirmed } = await confirm({
+            const confirmed = await confirm({
                 title: 'Confirm Deletion',
                 description: 'Are you sure you want to delete this archived job application? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete',
@@ -56,7 +56,7 @@ const ViewArchivedApplication = () => {
 
     const handleDeleteAll = async () => {
         try {
-            const { confirmed } = await confirm({
+            const confirmed = await confirm({
                 title: 'Confirm Deletion',
                 description: 'Are you sure you want to delete all archived job applications? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete All',

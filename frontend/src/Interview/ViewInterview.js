@@ -11,7 +11,7 @@ const ViewInterview = () => {
 
     const handleDelete = async (interviewId) => {
         try {
-            const { confirmed } = await confirm({
+            const confirmed = await confirm({
                 title: 'Confirm Deletion',
                 description: 'Are you sure you want to delete this job interview? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete',
@@ -33,7 +33,7 @@ const ViewInterview = () => {
 
     const handleDeleteAll = async () => {
         try {
-            const { confirmed } = await confirm({
+            const confirmed = await confirm({
                 title: 'Confirm Deletion',
                 description: 'Are you sure you want to delete all job interviews? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete All',
