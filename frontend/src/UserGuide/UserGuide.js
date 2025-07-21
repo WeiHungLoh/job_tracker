@@ -91,10 +91,19 @@ const UserGuide = () => {
 
                     </li>
                     <li><strong>Delete All</strong> – A similar popup will ask, "Are you sure you want to delete all items? This action is permanent and <em>cannot be undone</em>."
-                        You <strong>MUST</strong> click <code>Delete all</code> to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel.
+                        You <strong>MUST</strong> click <code>Delete all</code> to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel. 
+                        The Delete All button will only appear when there is at least one entry available to delete.
                     </li>
                 </ul>
                 <p>Always review before confirming deletions to prevent loss of important data.</p>
+            </section>
+
+            <section>
+                <h2>📤 Export as CSV</h2>
+                <p>
+                    You can export job applications, interviews, and archived records as CSV files using the <code>Export as CSV</code> button available in each relevant view. 
+                    This button will appear only when there is at least one entry to export.
+                </p>
             </section>
 
             <section>
