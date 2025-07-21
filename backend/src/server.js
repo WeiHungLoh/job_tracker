@@ -16,17 +16,20 @@ const startServer = async () => {
     await createTable()
     const app = express()
 
-    const acceptedOrigins = [
+    const allowedOrigins = [
         'https://jobtracker-whloh.netlify.app/',
         'https://jobtracker.weihungloh.com/',
         'https://weihungloh.com/',
-        'https://localhost:3000'
+        'http://localhost:3000'
     ]
 
     app.use(cors({
+        // Taken from: https://article.arunangshudas.com/7-tips-for-managing-cors-in-your-backend-applications-a4341385110c
         origin: (origin, callback) => {
-            if (acceptedOrigins.includes(origin)) {
-                callback(null, origin)
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
             }
         },
         credentials: true
