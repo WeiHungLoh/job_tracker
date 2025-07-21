@@ -1,6 +1,8 @@
 import './ViewApplication.css'
 import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+// Taken from: https://www.npmjs.com/package/react-csv
+import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import ToggleButton from '../Icons/ToggleButton.js'
 import { useConfirm } from 'material-ui-confirm'
@@ -14,6 +16,22 @@ const ViewApplication = () => {
     const [interviewJobId, setInterviewJobId] = useState([])
     const [toggled, setToggled] = useState(false)
     const confirm = useConfirm()
+
+    const headers = [
+        { label: 'Company', key: 'company_name' },
+        { label: 'Job Title', key: 'job_title' },
+        { label: 'Application Date', key: 'application_date' },
+        { label: 'Status', key: 'job_status' },
+        { label: 'Location', key: 'job_location' },
+        { label: 'Job URL', key: 'job_posting_url' },
+    ]
+
+    const data = (applications ?? []).map(app => ({
+        ...app,
+        application_date: DateFormatter(app.application_date).formattedDate,
+        job_location: app.job_location ? app.job_location : 'N/A',
+        job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
+    }))
 
     useEffect(() => {
         if (interviews) {
@@ -168,7 +186,7 @@ const ViewApplication = () => {
         return applications && applications.length === 0
     }
 
-    const showDeleteAllButton = (applications) => {
+    const showDeleteAllAndExportButtons = (applications) => {
         return applications && applications.length !== 0
     }
 
@@ -226,10 +244,10 @@ const ViewApplication = () => {
                         {isEditStatus(application.edit_status) && <select role='listbox'
                             value={jobStatuses[application.job_id] ?? application.job_status}
                             onChange={e =>
-                                    setJobStatuses(app => ({
-                                        ...app,
-                                        [application.job_id]: e.target.value
-                                    }))
+                                setJobStatuses(app => ({
+                                    ...app,
+                                    [application.job_id]: e.target.value
+                                }))
                             }
                         >
                             <option value='Accepted'>Accepted</option>
@@ -276,8 +294,20 @@ const ViewApplication = () => {
 
             <div className='application-button'>
                 <button onClick={() => navigate('/addapplication')}>Add new application</button>
-                {showDeleteAllButton(applications) && <button onClick={() => handleDeleteAll()}>
-                        Delete all applications</button>}
+                {showDeleteAllAndExportButtons(applications) && <>
+                    <button onClick={() => handleDeleteAll()}>
+                        Delete all applications</button>
+                    <button>
+                        <CSVLink
+                            data={data}
+                            headers={headers}
+                            filename={'job_applications.csv'}
+                            style={{ color: 'white' }}
+                        >
+                            Export as CSV
+                        </CSVLink>
+                    </button>
+                </>}
             </div>
         </div>
     )

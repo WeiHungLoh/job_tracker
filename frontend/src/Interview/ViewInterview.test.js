@@ -53,6 +53,7 @@ describe('Job interview viewer flow', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /delete all interviews/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /add new interview/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Export as CSV'})).toBeInTheDocument()
     })
 
     test('deletes interview after use confirms', async () => {

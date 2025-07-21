@@ -1,5 +1,7 @@
 import './ViewInterview.css'
 import { Link, useNavigate } from 'react-router-dom'
+// Taken from: https://www.npmjs.com/package/react-csv
+import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import { useConfirm } from 'material-ui-confirm'
 import useFetchData from '../useFetchData.js'
@@ -8,6 +10,22 @@ const ViewInterview = () => {
     const navigate = useNavigate()
     const { data: interviews, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/interview/view`)
     const confirm = useConfirm()
+
+    const headers = [
+        { label: 'Company', key: 'company_name' },
+        { label: 'Job Title', key: 'job_title' },
+        { label: 'Location', key: 'interview_location' },
+        { label: 'Interview Date', key: 'interview_date' },
+        { label: 'Interview Type', key: 'interview_type' },
+        { label: 'Additional Notes', key: 'notes' },
+    ]
+
+    const data = (interviews ?? []).map(interview => ({
+        ...interview,
+        interview_date: DateFormatter(interview.interview_date).formattedDate,
+        interview_type: interview.interview_type ? interview.interview_type : 'N/A',
+        notes: interview.notes ? interview.notes : 'N/A',
+    }))
 
     const handleDelete = async (interviewId) => {
         try {
@@ -59,7 +77,7 @@ const ViewInterview = () => {
         return interviews && interviews.length === 0
     }
 
-    const showDeleteAllButton = (interviews) => {
+    const showDeleteAllAndExportButtons = (interviews) => {
         return interviews && interviews.length !== 0
     }
 
@@ -111,8 +129,19 @@ const ViewInterview = () => {
 
             <div className='interview-button'>
                 <button onClick={() => navigate('/addinterview')}>Add new interview</button>
-                {showDeleteAllButton(interviews) && <button onClick={() => handleDeleteAll()}>
-                    Delete all interviews</button>}
+                {showDeleteAllAndExportButtons(interviews) && <> <button onClick={() => handleDeleteAll()}>
+                    Delete all interviews</button>
+                    <button>
+                        <CSVLink
+                            data={data}
+                            headers={headers}
+                            filename='job_interviews.csv'
+                            style={{ color: 'white', textDecoration: 'none' }}
+                        >
+                            Export as CSV
+                        </CSVLink>
+                    </button>
+                </>}
             </div>
         </div>
     )

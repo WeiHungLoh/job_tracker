@@ -50,6 +50,7 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /delete all archived applications/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
     })
 
     test('deletes application after user confirms', async () => {

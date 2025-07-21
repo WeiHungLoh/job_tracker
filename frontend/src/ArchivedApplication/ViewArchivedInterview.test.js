@@ -52,6 +52,7 @@ describe('Archived job interview viewer flow', () => {
         expect(screen.getByText(/bring resume/i)).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /delete all archived interviews/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
     })
 
     test('deletes archived interview after use confirms', async () => {
