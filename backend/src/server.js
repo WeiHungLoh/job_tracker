@@ -15,9 +15,19 @@ const startServer = async () => {
     await connectDB()
     await createTable()
     const app = express()
+
+    const acceptedOrigins = [
+        'https://jobtracker-whloh.netlify.app/',
+        'https://jobtracker.weihungloh.com/',
+        'https://weihungloh.com/'
+    ]
+
     app.use(cors({
-        origin: process.env.NODE_ENV === 'production'
-            ? 'https://jobtracker-whloh.netlify.app' : 'http://localhost:3000',
+        origin: (origin, callback) => {
+            if (acceptedOrigins.includes(origin)) {
+                callback(null, origin)
+            }
+        },
         credentials: true
     }))
     app.use(express.json())
