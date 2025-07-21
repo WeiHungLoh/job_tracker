@@ -19,7 +19,8 @@ const startServer = async () => {
     const acceptedOrigins = [
         'https://jobtracker-whloh.netlify.app/',
         'https://jobtracker.weihungloh.com/',
-        'https://weihungloh.com/'
+        'https://weihungloh.com/',
+        'https://localhost:3000'
     ]
 
     app.use(cors({
