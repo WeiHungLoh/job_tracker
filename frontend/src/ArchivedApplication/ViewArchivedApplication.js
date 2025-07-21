@@ -1,4 +1,6 @@
 import './ViewArchivedApplication.css'
+// Taken from: https://www.npmjs.com/package/react-csv
+import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import { useConfirm } from 'material-ui-confirm'
 import { useEffect } from 'react'
@@ -9,6 +11,22 @@ const ViewArchivedApplication = () => {
     const { data: archivedApplications, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedapplication/view`)
     const location = useLocation()
     const confirm = useConfirm()
+
+    const headers = [
+        { label: 'Company', key: 'company_name' },
+        { label: 'Job Title', key: 'job_title' },
+        { label: 'Application Date', key: 'application_date' },
+        { label: 'Status', key: 'job_status' },
+        { label: 'Location', key: 'job_location' },
+        { label: 'Job URL', key: 'job_posting_url' },
+    ]
+
+    const data = (archivedApplications ?? []).map(app => ({
+        ...app,
+        application_date: DateFormatter(app.application_date).formattedDate,
+        job_location: app.job_location ? app.job_location : 'N/A',
+        job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
+    }))
 
     useEffect(() => {
         // Obtains application.job_id from <Link> in AddInterview
@@ -84,7 +102,7 @@ const ViewArchivedApplication = () => {
                 {
                     method: 'POST',
                     credentials: 'include',
-                    headers: { 'Content-Type': 'application/json',},
+                    headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ archivedJobId })
                 }
             )
@@ -98,7 +116,7 @@ const ViewArchivedApplication = () => {
         return archivedApplications && archivedApplications.length === 0
     }
 
-    const showDeleteAllButton = (archivedApplications) => {
+    const showDeleteAllAndExportButtons = (archivedApplications) => {
         return archivedApplications && archivedApplications.length !== 0
     }
 
@@ -173,8 +191,19 @@ const ViewArchivedApplication = () => {
             ))}
 
             <div className='application-button'>
-                {showDeleteAllButton(archivedApplications) &&
-                <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>}
+                {showDeleteAllAndExportButtons(archivedApplications) && <>
+                    <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>
+                    <button>
+                        <CSVLink
+                            data={data}
+                            headers={headers}
+                            filename={'archived_job_applications.csv'}
+                            style={{ color: 'white' }}
+                        >
+                            Export as CSV
+                        </CSVLink>
+                    </button>
+                </>}
             </div>
         </div>
     )

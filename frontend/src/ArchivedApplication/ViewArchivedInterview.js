@@ -1,4 +1,6 @@
 import './ViewArchivedInterview.css'
+// Taken from: https://www.npmjs.com/package/react-csv
+import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import { Link } from 'react-router-dom'
 import { useConfirm } from 'material-ui-confirm'
@@ -7,6 +9,22 @@ import useFetchData from '../useFetchData.js'
 const ViewArchivedInterview = () => {
     const { data: archivedInterviews, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedinterview/view`)
     const confirm = useConfirm()
+
+    const headers = [
+        { label: 'Company', key: 'company_name' },
+        { label: 'Job Title', key: 'job_title' },
+        { label: 'Location', key: 'interview_location' },
+        { label: 'Interview Date', key: 'interview_date' },
+        { label: 'Interview Type', key: 'interview_type' },
+        { label: 'Additional Notes', key: 'notes' },
+    ]
+
+    const data = (archivedInterviews ?? []).map(interview => ({
+        ...interview,
+        interview_date: DateFormatter(interview.interview_date).formattedDate,
+        interview_type: interview.interview_type ? interview.interview_type : 'N/A',
+        notes: interview.notes ? interview.notes : 'N/A',
+    }))
 
     const handleDelete = async (interviewId) => {
         try {
@@ -60,7 +78,7 @@ const ViewArchivedInterview = () => {
         return archivedInterviews && archivedInterviews.length === 0
     }
 
-    const showDeleteAllButton = (archivedInterviews) => {
+    const showDeleteAllAndExportButtons = (archivedInterviews) => {
         return archivedInterviews && archivedInterviews.length !== 0
     }
 
@@ -111,8 +129,19 @@ const ViewArchivedInterview = () => {
             ))}
 
             <div className='interview-button'>
-                {showDeleteAllButton(archivedInterviews) &&
-                <button onClick={() => handleDeleteAll()}>Delete all archived interviews</button>}
+                {showDeleteAllAndExportButtons(archivedInterviews) && <>
+                    <button onClick={() => handleDeleteAll()}>Delete all archived interviews</button>
+                    <button>
+                        <CSVLink
+                            data={data}
+                            headers={headers}
+                            filename='archived_job_interviews.csv'
+                            style={{ color: 'white', textDecoration: 'none' }}
+                        >
+                            Export as CSV
+                        </CSVLink>
+                    </button>
+                </>}
             </div>
         </div>
     )

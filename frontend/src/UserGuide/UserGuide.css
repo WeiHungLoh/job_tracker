@@ -5,33 +5,41 @@
     line-height: 1.6;
     text-align: justify;
 }
+
 .user-guide h1 {
     font-size: 1.75rem;
     font-weight: bold;
 }
+
 .user-guide h2 {
     font-size: 1.25rem;
     font-weight: 600;
     margin-top: 30px;
     margin-bottom: 16px;
 }
+
 .user-guide ul {
     padding-left: 2rem;
 }
+
 .user-guide li {
     margin-bottom: 0.5rem;
 }
+
 .user-guide p {
     margin-bottom: 1rem;
 }
+
 .user-guide section {
     border-bottom: 1px solid #ddd;
 }
+
 .user-guide .tip {
     font-style: italic;
     font-size: 0.9rem;
     color: #6b7280;
 }
+
 code {
     font-family: 'Courier New', Courier, monospace;
     background-color: #e9ecef;

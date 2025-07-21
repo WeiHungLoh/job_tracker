@@ -6,7 +6,7 @@ import reactPlugin from 'eslint-plugin-react'
 
 export default defineConfig([
   globalIgnores([
-    'src/UserGuide/***'
+    'src/UserGuide/**'
   ]),
 
   {
