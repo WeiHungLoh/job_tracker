@@ -17,9 +17,9 @@ const startServer = async () => {
     const app = express()
 
     const allowedOrigins = [
-        'https://jobtracker-whloh.netlify.app/',
-        'https://jobtracker.weihungloh.com/',
-        'https://weihungloh.com/',
+        'https://jobtracker-whloh.netlify.app',
+        'https://jobtracker.weihungloh.com',
+        'https://weihungloh.com',
         'http://localhost:3000'
     ]
 
