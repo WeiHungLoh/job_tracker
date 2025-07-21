@@ -5,6 +5,7 @@
   flex-direction: column;
   align-items: center;
 }
+
 .application-list .application {
   width: 100%;
   padding-bottom: 20px;
@@ -12,6 +13,7 @@
   display: flex;
   gap: 60px;
 }
+
 .application-list .button-group {
   margin-left: auto;
   cursor: pointer;
@@ -22,6 +24,7 @@
   position: relative;
   flex: 0 0 165px;
 }
+
 .application-list .button-group .archive-button button {
   background-color: green;
   color: cornsilk;               
@@ -37,6 +40,7 @@
   right: 8px;
   left: 0px;
 }
+
 .application-list .button-group button {
   background-color:#f1356d;
   border: 0;
@@ -45,22 +49,27 @@
   cursor: pointer;
   padding: 8px 10px;
 }
+
 .application-list .application-button {
   display: flex;
   gap: 70px;
 }
+
 .application-list .application-content {  
   color: #666;
   word-break: break-all;
 }
+
 .application-list .application-content h2 {
   font-size: 24px;
   color: black;
 }
+
 .application-list .application-content .date {
   font-weight: bold;
   color: 	#343a40;
 }
+
 .application-list .application-content a {
   background-color: #e0f0ff;
   color: #0d6efd;                 
@@ -76,6 +85,7 @@
   cursor: pointer;
   text-decoration: none;
 }
+
 .application-list .application-content .url {
   background-color: darkgrey;
   color: cornsilk;               
@@ -90,6 +100,7 @@
   max-width: fit-content;
   cursor: pointer;
 }
+
 .application-list .application-content select {
   background: #e0f0ff;
   color: #003366;             
@@ -102,12 +113,15 @@
   margin-left: 10px;
   cursor: pointer;
 }
+
 .application-list .application-content a:hover {
   background-color: #d0e8ff;
 }
+
 .application-list .application-content .url:hover {
   background-color: #6c757d;
 }
+
 .application-list .application-content .applied {
   background-color: #6c757d;       
   color: white;                   
@@ -120,6 +134,7 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
+
 .application-list .application-content .interview {
   background-color: #0d6efd;     
   color: white;                   
@@ -132,6 +147,7 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
+
 .application-list .application-content .offer {
   background-color: #ffc107;   
   color: white;                   
@@ -144,6 +160,7 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
+
 .application-list .application-content .accepted {
   background-color: #198754;  
   color: white;                   
@@ -156,6 +173,7 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
+
 .application-list .application-content .rejected {
   background-color: #dc3545; 
   color: white;                   
@@ -168,6 +186,7 @@
   margin-bottom: 0px;              
   letter-spacing: 0.5px;           
 }
+
 .application-list .application-content .ghosted {
   background-color: #b8b8d1;
   color: white;
@@ -179,6 +198,7 @@
   margin: 0px;
   letter-spacing: 0.5px;
 }
+
 .application-list .application-button button {
   background-color:#f1356d;
   border: 0;
@@ -188,6 +208,7 @@
   padding: 8px 10px;
   margin-top: 20px;
 }
+
 .application-list a, .archived-application-list a {
   text-decoration: none;
   color: 	#17a2b8
