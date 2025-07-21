@@ -3,18 +3,22 @@
   margin: 0 auto;
   text-align: center;
 }
+
 .add-interview label {
   justify-content: left;
   display: flex;
 }
+
 .add-interview h2 {
   font-size: 24px;
   margin-bottom: 20px;
   word-break: break-all;
 }
+
 .add-interview p {
   word-break: break-all;
 }
+
 .add-interview input {
   width: 575px;
   padding: 6px 10px;
@@ -22,12 +26,14 @@
   margin-bottom: 10px;
   border: 1.5px solid #ddd;
 }
+
 .add-interview .submit-button {
   display: flex;
   justify-content: center;
   margin-top: 20px;
   gap: 70px; 
 }
+
 .add-interview button {
   color:#ddd;
   background:#f1356d;
@@ -36,6 +42,7 @@
   border-radius: 10px;
   cursor: pointer;
 }
+
 .add-interview a {
   color:#ddd;
   background:#f1356d;

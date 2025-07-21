@@ -1,18 +1,20 @@
-
 .add-application {
   max-width: 600px;
   margin: 0 auto;
   text-align: center;
 }
+
 .add-application label {
   justify-content: left;
   display: flex;
 }
+
 .add-application h2 {
   font-size: 24px;
   margin-bottom: 20px;
   word-break: break-all;
 }
+
 .add-application input {
   width: 575px;
   padding: 6px 10px;
@@ -20,6 +22,7 @@
   margin-bottom: 10px;
   border: 1.5px solid #ddd;
 }
+
 .add-application select {
   width: 600px;
   padding: 6px 10px;
@@ -28,12 +31,14 @@
   border: 1.5px solid #ddd;
   box-sizing: border-box;
 }
+
 .add-application .submit-button {
   display: flex;
   justify-content: center;
   margin-top: 20px;
   gap: 70px; 
 }
+
 .add-application button {
   color:#ddd;
   background:#f1356d;
@@ -42,6 +47,7 @@
   border-radius: 10px;
   cursor: pointer;
 }
+
 .add-application button {
   color:#ddd;
   background:#f1356d;
