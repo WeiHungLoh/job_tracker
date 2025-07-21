@@ -27,9 +27,9 @@ const startServer = async () => {
         // Taken from: https://article.arunangshudas.com/7-tips-for-managing-cors-in-your-backend-applications-a4341385110c
         origin: (origin, callback) => {
             if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
+                callback(null, true)
             } else {
-                callback(new Error('Not allowed by CORS'));
+                callback(new Error('Not allowed by CORS'))
             }
         },
         credentials: true
