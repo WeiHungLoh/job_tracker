@@ -52,6 +52,7 @@ describe('Job application viewing flow', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /add new application/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /delete all/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
   })
 
   test('button should switch to Save Changes button after toggle', async () => {
