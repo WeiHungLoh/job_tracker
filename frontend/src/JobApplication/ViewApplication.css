@@ -1,3 +1,22 @@
+.application-list .filter-option {
+  font-size: 12px;
+  position: absolute;
+  right: 350px;
+  top: 105px;
+  text-align: center;
+}
+
+.application-list .filter-option select {
+  background: #e0f0ff;
+  color: #003366;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
 .application-list {
   max-width: 710px;
   margin: auto;
@@ -19,7 +38,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  color:#fff;
+  color: #fff;
   gap: 10px;
   position: relative;
   flex: 0 0 165px;
@@ -27,12 +46,12 @@
 
 .application-list .button-group .archive-button button {
   background-color: green;
-  color: cornsilk;               
-  padding: 7px 20px;           
-  border-radius: 5px;            
-  font-weight: bolder;          
-  font-size: 13px;            
-  letter-spacing: 2px; 
+  color: cornsilk;
+  padding: 7px 20px;
+  border-radius: 5px;
+  font-weight: bolder;
+  font-size: 13px;
+  letter-spacing: 2px;
   border: none;
   cursor: pointer;
   position: absolute;
@@ -42,10 +61,10 @@
 }
 
 .application-list .button-group button {
-  background-color:#f1356d;
+  background-color: #f1356d;
   border: 0;
   border-radius: 10px;
-  color:#fff;
+  color: #fff;
   cursor: pointer;
   padding: 8px 10px;
 }
@@ -55,7 +74,7 @@
   gap: 70px;
 }
 
-.application-list .application-content {  
+.application-list .application-content {
   color: #666;
   word-break: break-all;
 }
@@ -67,18 +86,18 @@
 
 .application-list .application-content .date {
   font-weight: bold;
-  color: 	#343a40;
+  color: #343a40;
 }
 
 .application-list .application-content a {
   background-color: #e0f0ff;
-  color: #0d6efd;                 
-  padding: 4px 20px;           
-  border-radius: 5px;            
-  font-weight: bolder;          
-  font-size: 13px;   
-  margin-top: 10px;            
-  letter-spacing: 0.5px; 
+  color: #0d6efd;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: bolder;
+  font-size: 13px;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
   border: none;
   display: flex;
   max-width: fit-content;
@@ -88,13 +107,13 @@
 
 .application-list .application-content .url {
   background-color: darkgrey;
-  color: cornsilk;               
-  padding: 4px 20px;           
-  border-radius: 5px;            
-  font-weight: bolder;          
-  font-size: 13px;   
-  margin-top: 10px;            
-  letter-spacing: 0.5px; 
+  color: cornsilk;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: bolder;
+  font-size: 13px;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
   border: none;
   display: flex;
   max-width: fit-content;
@@ -103,12 +122,12 @@
 
 .application-list .application-content select {
   background: #e0f0ff;
-  color: #003366;             
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: bolder;          
-  font-size: 13px;             
-  letter-spacing: 0.5px; 
+  color: #003366;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: bolder;
+  font-size: 13px;
+  letter-spacing: 0.5px;
   border: none;
   margin-left: 10px;
   cursor: pointer;
@@ -123,68 +142,68 @@
 }
 
 .application-list .application-content .applied {
-  background-color: #6c757d;       
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;           
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #6c757d;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .application-list .application-content .interview {
-  background-color: #0d6efd;     
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #0d6efd;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .application-list .application-content .offer {
-  background-color: #ffc107;   
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #ffc107;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .application-list .application-content .accepted {
-  background-color: #198754;  
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #198754;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .application-list .application-content .rejected {
-  background-color: #dc3545; 
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .application-list .application-content .ghosted {
@@ -200,18 +219,19 @@
 }
 
 .application-list .application-button button {
-  background-color:#f1356d;
+  background-color: #f1356d;
   border: 0;
   border-radius: 10px;
-  color:#fff;
+  color: #fff;
   cursor: pointer;
   padding: 8px 10px;
   margin-top: 20px;
 }
 
-.application-list a, .archived-application-list a {
+.application-list a,
+.archived-application-list a {
   text-decoration: none;
-  color: 	#17a2b8
+  color: #17a2b8
 }
 
 /* Highlight application div to make it more prominent for users to see */
@@ -223,6 +243,7 @@
   0% {
     background-color: #dfffd9;
   }
+
   100% {
     background-color: inherit;
   }
