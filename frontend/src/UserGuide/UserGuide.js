@@ -34,6 +34,10 @@ const UserGuide = () => {
                 <p>
                     There's also a toggle to unhide/hide the archive button. You can archive a job application after revealing this button.
                 </p>
+                <p>
+                    You can now filter job applications using the <strong>Filter by</strong> dropdown beside Job Application Viewer header. Select a status like <code>Applied</code> or <code>Interview</code>, etc to view only applications with that status. Choose <code>Show All</code> to show everything.
+                </p>
+
             </section>
 
             <section>
@@ -54,6 +58,7 @@ const UserGuide = () => {
                 <ul>
                     <li>
                         <strong>View Archived Applications</strong> – Shows job applications you've archived. You can view full details and choose to <strong>unarchive</strong> them, which will also restore their linked interviews (if any).
+                        You can now filter archived job applications using the <strong>Filter by</strong> dropdown beside Archived Job Application header. Select a status like <code>Applied</code> or <code>Interview</code> to view only applications with that status. Choose <code>Show All</code> to show everything.
                     </li>
                     <li>
                         <strong>View Archived Interviews</strong> – Displays interviews linked to archived applications. These are view-only and cannot be directly unarchived. To unarchive them, you must unarchive the related job application.
@@ -91,7 +96,7 @@ const UserGuide = () => {
 
                     </li>
                     <li><strong>Delete All</strong> – A similar popup will ask, "Are you sure you want to delete all items? This action is permanent and <em>cannot be undone</em>."
-                        You <strong>MUST</strong> click <code>Delete all</code> to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel. 
+                        You <strong>MUST</strong> click <code>Delete all</code> to confirm, or click <code>Cancel</code> or press <kbd>Esc</kbd> to cancel.
                         The Delete All button will only appear when there is at least one entry available to delete.
                     </li>
                 </ul>
@@ -101,7 +106,7 @@ const UserGuide = () => {
             <section>
                 <h2>📤 Export as CSV</h2>
                 <p>
-                    You can export job applications, interviews, and archived records as CSV files using the <code>Export as CSV</code> button available in each relevant view. 
+                    You can export job applications, interviews, and archived records as CSV files using the <code>Export as CSV</code> button available in each relevant view.
                     This button will appear only when there is at least one entry to export.
                 </p>
             </section>
