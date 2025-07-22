@@ -1,13 +1,22 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { IoMdArchive } from 'react-icons/io'
 import { IoNewspaperOutline } from 'react-icons/io5'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const Navbar = () => {
     const location = useLocation()
     const currLocation = location.pathname
     const navigate = useNavigate()
     const [archived, setArchived] = useState(false)
+    const archivedLocations = ['/viewarchivedapplications', '/viewarchivedinterviews']
+
+    useEffect(() => {
+        if (archivedLocations.includes(currLocation)) {
+            setArchived(true)
+        } else {
+            setArchived(false)
+        }
+    }, [location])
 
     const showArchivedMessage = (archived) => {
         return archived ? 'Show Active' : 'Show Archived'
