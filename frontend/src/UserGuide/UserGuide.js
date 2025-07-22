@@ -53,7 +53,7 @@ const UserGuide = () => {
             <section>
                 <h2>🗃️ Show Archive Mode</h2>
                 <p>
-                    Clicking <code>Show Archived</code> will remove the usual navigation items — like <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> — and replace them with two new sections:
+                    Clicking <code>Show Archived</code> will remove the usual navigation items - like <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> - and replace them with two new sections:
                 </p>
                 <ul>
                     <li>
@@ -73,7 +73,7 @@ const UserGuide = () => {
                 <h2>⚠️ Deletion, Archiving & Unarchiving Rules</h2>
                 <ul>
                     <li>
-                        Deleting a job application — whether active or archived — will also delete its linked interview.
+                        Deleting a job application - whether active or archived - will also delete its linked interview.
                     </li>
                     <li>
                         Only job applications can be archived. Archiving an application automatically archives its related interview.
