@@ -77,8 +77,8 @@ const ViewInterview = () => {
         return interviews && interviews.length === 0
     }
 
-    const showDeleteAllAndExportButtons = (interviews) => {
-        return interviews && interviews.length !== 0
+    const hasInterviews = (applications) => {
+        return applications && applications.length !== 0
     }
 
     const showInterviewType = (field) => {
@@ -129,7 +129,7 @@ const ViewInterview = () => {
 
             <div className='interview-button'>
                 <button onClick={() => navigate('/addinterview')}>Add new interview</button>
-                {showDeleteAllAndExportButtons(interviews) && <> <button onClick={() => handleDeleteAll()}>
+                {hasInterviews(interviews) && <> <button onClick={() => handleDeleteAll()}>
                     Delete all interviews</button>
                     <button>
                         <CSVLink

@@ -78,8 +78,8 @@ const ViewArchivedInterview = () => {
         return archivedInterviews && archivedInterviews.length === 0
     }
 
-    const showDeleteAllAndExportButtons = (archivedInterviews) => {
-        return archivedInterviews && archivedInterviews.length !== 0
+    const hasInterviews = (applications) => {
+        return applications && applications.length !== 0
     }
 
     const showInterviewType = (field) => {
@@ -129,7 +129,7 @@ const ViewArchivedInterview = () => {
             ))}
 
             <div className='interview-button'>
-                {showDeleteAllAndExportButtons(archivedInterviews) && <>
+                {hasInterviews(archivedInterviews) && <>
                     <button onClick={() => handleDeleteAll()}>Delete all archived interviews</button>
                     <button>
                         <CSVLink
