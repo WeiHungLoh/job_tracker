@@ -43,7 +43,7 @@ describe('Job application viewing flow', () => {
         <ViewApplication />
       </MemoryRouter>
     )
-    expect(screen.queryByText(/no job application found/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/no job application with that job status found/i)).not.toBeInTheDocument()
     expect(screen.getByText(/job application viewer/i)).toBeInTheDocument()
     expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument()
     expect(screen.getByText(/software engineer/i)).toBeInTheDocument()
@@ -53,6 +53,8 @@ describe('Job application viewing flow', () => {
     expect(screen.getByRole('button', { name: /add new application/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /delete all/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
+    expect(screen.getByText(/unhide archive button/i)).toBeInTheDocument()
+    expect(screen.getByText(/filter by/i)).toBeInTheDocument()
   })
 
   test('button should switch to Save Changes button after toggle', async () => {
@@ -159,7 +161,7 @@ describe('Job application viewing flow', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText(/no job application found/i)).toBeInTheDocument()
+    expect(screen.getByText(/no job application with that job status found/i)).toBeInTheDocument()
   })
 
   test('deletes all application after user confirms', async () => {
@@ -211,6 +213,6 @@ describe('Job application viewing flow', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText(/no job application found/i)).toBeInTheDocument()
+    expect(screen.getByText(/no job application with that job status found/i)).toBeInTheDocument()
   })
 })

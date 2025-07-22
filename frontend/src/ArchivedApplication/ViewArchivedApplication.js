@@ -1,9 +1,9 @@
 import './ViewArchivedApplication.css'
 // Taken from: https://www.npmjs.com/package/react-csv
+import { useEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
 import { useConfirm } from 'material-ui-confirm'
-import { useEffect } from 'react'
 import useFetchData from '../useFetchData.js'
 import { useLocation } from 'react-router-dom'
 
@@ -11,6 +11,15 @@ const ViewArchivedApplication = () => {
     const { data: archivedApplications, refetch } = useFetchData(`${process.env.REACT_APP_API_URL}/archivedapplication/view`)
     const location = useLocation()
     const confirm = useConfirm()
+    const [jobStatus, setJobStatus] = useState('Show All')
+
+    const filteredApplications = (archivedApplications ?? []).filter(app => {
+        if (jobStatus === 'Show All') {
+            return true
+        } else {
+            return app.job_status === jobStatus
+        }
+    })
 
     const headers = [
         { label: 'Company', key: 'company_name' },
@@ -21,7 +30,7 @@ const ViewArchivedApplication = () => {
         { label: 'Job URL', key: 'job_posting_url' },
     ]
 
-    const data = (archivedApplications ?? []).map(app => ({
+    const data = (filteredApplications ?? []).map(app => ({
         ...app,
         application_date: DateFormatter(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
@@ -156,9 +165,22 @@ const ViewArchivedApplication = () => {
         <div className='archived-application-list'>
             <h2>Archived Job Application Viewer</h2>
 
-            {showArchiveApplicationMessage(archivedApplications) && <div>No archived job application found. Start archiving now! </div>}
+            <div className='filter-option'>
+                <div>Filter by</div>
+                <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
+                    <option value='Show All'>Show All</option>
+                    <option value='Accepted'>Accepted</option>
+                    <option value='Applied'>Applied</option>
+                    <option value='Ghosteed'>Ghosted</option>
+                    <option value='Interview'>Interview</option>
+                    <option value='Offer'>Offer</option>
+                    <option value='Rejected'>Rejected</option>
+                </select>
+            </div>
 
-            {archivedApplications && archivedApplications.map((application, index) => (
+            {showArchiveApplicationMessage(filteredApplications) && <div>No archived job application with that job status found. Start archiving now! </div>}
+
+            {filteredApplications && filteredApplications.map((application, index) => (
                 <div className='application' key={application.archived_job_id} id={application.archived_job_id}>
 
                     <div className='application-content'>
@@ -191,7 +213,7 @@ const ViewArchivedApplication = () => {
             ))}
 
             <div className='application-button'>
-                {showDeleteAllAndExportButtons(archivedApplications) && <>
+                {showDeleteAllAndExportButtons(filteredApplications) && <>
                     <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>
                     <button>
                         <CSVLink

@@ -4,6 +4,7 @@
     right: 210px;
     top: 105px;
 }
+
 .hide-archive-button .toggle-button {
     background-color: #b7b9ba;
     border: 1px solid #aaa;
@@ -17,6 +18,7 @@
     display: flex;
     margin: auto;
 }
+
 .hide-archive-button .toggle-button .thumb {
     height: 20px;
     width: 20px;
@@ -29,12 +31,15 @@
     top: 50%;
     transform: translateY(-50%);
 }
+
 .hide-archive-button .toggle-button.active {
     background-color: #15b58e;
 }
+
 .hide-archive-button .toggle-button:hover {
     border-color: #6f6f6f;
 }
+
 .hide-archive-button .toggle-button.active .thumb {
     left: 25px;
 }
