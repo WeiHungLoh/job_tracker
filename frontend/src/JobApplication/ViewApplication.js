@@ -248,7 +248,7 @@ const ViewApplication = () => {
                 </select>
             </div>
 
-            {hasApplications(filteredApplications) && 
+            {hasApplications(filteredApplications) &&
                 <ToggleButton toggled={toggled} onToggle={() => setToggled(!toggled)} />}
 
             {showAddApplicationMessage(filteredApplications) && <div>No job application with that job status found. Start adding one now! </div>}
