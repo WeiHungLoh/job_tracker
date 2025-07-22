@@ -43,7 +43,7 @@ describe('Archived job application viewing flow', () => {
             </MemoryRouter>
         )
 
-        expect(screen.queryByText(/no archived job application found/i)).not.toBeInTheDocument()
+        expect(screen.queryByText(/no archived job application with that job status found/i)).not.toBeInTheDocument()
         expect(screen.getByText(/job application viewer/i)).toBeInTheDocument()
         expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument()
         expect(screen.getByText(/software engineer/i)).toBeInTheDocument()
@@ -51,6 +51,7 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /delete all archived applications/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
+        expect(screen.getByText(/filter by/i)).toBeInTheDocument()
     })
 
     test('deletes application after user confirms', async () => {
@@ -166,6 +167,6 @@ describe('Archived job application viewing flow', () => {
             </MemoryRouter>
         )
 
-        expect(screen.getByText(/no archived job application found/i)).toBeInTheDocument()
+        expect(screen.getByText(/no archived job application with that job status found/i)).toBeInTheDocument()
     })
 })
