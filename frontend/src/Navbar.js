@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { IoMdArchive } from 'react-icons/io'
 import { IoNewspaperOutline } from 'react-icons/io5'
-import { useEffect, useState } from 'react'
 
 const Navbar = () => {
     const location = useLocation()
