@@ -195,7 +195,7 @@ const ViewApplication = () => {
         return applications && applications.length === 0
     }
 
-    const showDeleteAllAndExportButtons = (applications) => {
+    const hasApplications = (applications) => {
         return applications && applications.length !== 0
     }
 
@@ -248,7 +248,8 @@ const ViewApplication = () => {
                 </select>
             </div>
 
-            <ToggleButton toggled={toggled} onToggle={() => setToggled(!toggled)} />
+            {hasApplications(filteredApplications) && 
+                <ToggleButton toggled={toggled} onToggle={() => setToggled(!toggled)} />}
 
             {showAddApplicationMessage(filteredApplications) && <div>No job application with that job status found. Start adding one now! </div>}
 
@@ -317,7 +318,7 @@ const ViewApplication = () => {
 
             <div className='application-button'>
                 <button onClick={() => navigate('/addapplication')}>Add new application</button>
-                {showDeleteAllAndExportButtons(filteredApplications) && <>
+                {hasApplications(filteredApplications) && <>
                     <button onClick={() => handleDeleteAll()}>
                         Delete all applications</button>
                     <button>
