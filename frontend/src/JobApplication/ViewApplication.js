@@ -16,6 +16,15 @@ const ViewApplication = () => {
     const [interviewJobId, setInterviewJobId] = useState([])
     const [toggled, setToggled] = useState(false)
     const confirm = useConfirm()
+    const [jobStatus, setJobStatus] = useState('Show All')
+
+    const filteredApplications = (applications ?? []).filter(app => {
+        if (jobStatus === 'Show All') {
+            return true
+        } else {
+            return app.job_status === jobStatus
+        }
+    })
 
     const headers = [
         { label: 'Company', key: 'company_name' },
@@ -26,7 +35,7 @@ const ViewApplication = () => {
         { label: 'Job URL', key: 'job_posting_url' },
     ]
 
-    const data = (applications ?? []).map(app => ({
+    const data = filteredApplications.map(app => ({
         ...app,
         application_date: DateFormatter(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
@@ -225,11 +234,25 @@ const ViewApplication = () => {
     return (
         <div className='application-list'>
             <h2>Job Application Viewer</h2>
+
+            <div className='filter-option'>
+                <div>Filter by</div>
+                <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
+                    <option value='Show All'>Show All</option>
+                    <option value='Accepted'>Accepted</option>
+                    <option value='Applied'>Applied</option>
+                    <option value='Ghosteed'>Ghosted</option>
+                    <option value='Interview'>Interview</option>
+                    <option value='Offer'>Offer</option>
+                    <option value='Rejected'>Rejected</option>
+                </select>
+            </div>
+
             <ToggleButton toggled={toggled} onToggle={() => setToggled(!toggled)} />
 
-            {showAddApplicationMessage(applications) && <div>No job application found. Start adding one now! </div>}
+            {showAddApplicationMessage(filteredApplications) && <div>No job application with that job status found. Start adding one now! </div>}
 
-            {applications && applications.map((application, index) => (
+            {filteredApplications && filteredApplications.map((application, index) => (
                 <div className='application' key={application.job_id} id={application.job_id}>
 
                     <div className='application-content'>
@@ -294,7 +317,7 @@ const ViewApplication = () => {
 
             <div className='application-button'>
                 <button onClick={() => navigate('/addapplication')}>Add new application</button>
-                {showDeleteAllAndExportButtons(applications) && <>
+                {showDeleteAllAndExportButtons(filteredApplications) && <>
                     <button onClick={() => handleDeleteAll()}>
                         Delete all applications</button>
                     <button>

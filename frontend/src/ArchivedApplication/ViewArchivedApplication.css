@@ -1,3 +1,22 @@
+.archived-application-list .filter-option {
+  font-size: 12px;
+  position: absolute;
+  right: 350px;
+  top: 105px;
+  text-align: center;
+}
+
+.archived-application-list .filter-option select {
+  background: #e0f0ff;
+  color: #003366;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
 .archived-application-list {
   max-width: 710px;
   margin: auto;
