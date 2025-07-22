@@ -125,8 +125,8 @@ const ViewArchivedApplication = () => {
         return archivedApplications && archivedApplications.length === 0
     }
 
-    const showDeleteAllAndExportButtons = (archivedApplications) => {
-        return archivedApplications && archivedApplications.length !== 0
+    const hasApplications = (applications) => {
+        return applications && applications.length !== 0
     }
 
     const showJobLocation = (field) => {
@@ -213,7 +213,7 @@ const ViewArchivedApplication = () => {
             ))}
 
             <div className='application-button'>
-                {showDeleteAllAndExportButtons(filteredApplications) && <>
+                {hasApplications(filteredApplications) && <>
                     <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>
                     <button>
                         <CSVLink
