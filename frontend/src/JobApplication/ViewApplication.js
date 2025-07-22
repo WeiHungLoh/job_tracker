@@ -241,7 +241,7 @@ const ViewApplication = () => {
                     <option value='Show All'>Show All</option>
                     <option value='Accepted'>Accepted</option>
                     <option value='Applied'>Applied</option>
-                    <option value='Ghosteed'>Ghosted</option>
+                    <option value='Ghosted'>Ghosted</option>
                     <option value='Interview'>Interview</option>
                     <option value='Offer'>Offer</option>
                     <option value='Rejected'>Rejected</option>
