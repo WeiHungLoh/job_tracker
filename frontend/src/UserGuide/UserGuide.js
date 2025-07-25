@@ -6,6 +6,24 @@ const UserGuide = () => {
             <h1>📘 Job Tracker - User Guide</h1>
 
             <section>
+                <h2>📊 Dashboard</h2>
+                <p>
+                    The dashboard gives you a quick visual overview of your job search progress:
+                </p>
+                <ul>
+                    <li>
+                        📈 <strong>Line Chart</strong> – Shows the number of job applications added over the past 8 weeks, grouped by week. The x-axis labels indicate the <strong>first day of the week (Monday)</strong> for each week shown. Use this to track your application trends and consistency.
+                    </li>
+                    <li>
+                        🥧 <strong>Pie Chart</strong> – Displays the distribution of all your job applications by status (e.g., Applied, Interview, Offer, Rejected, etc). This helps you understand your current job pipeline at a glance.
+                    </li>
+                </ul>
+                <p>
+                    You can access the dashboard by selecting <code>Dashboard</code> from the navigation bar.
+                </p>
+            </section>
+
+            <section>
                 <h2>📝 Add Job Application</h2>
                 <p>
                     Use this to log job opportunities. Enter the company name, title, status, and optional fields like application date, location and job URL.
@@ -53,7 +71,7 @@ const UserGuide = () => {
             <section>
                 <h2>🗃️ Show Archive Mode</h2>
                 <p>
-                    Clicking <code>Show Archived</code> will remove the usual navigation items - like <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> - and replace them with two new sections:
+                    Clicking <code>Show Archived</code> will remove the usual navigation items - like <strong>Dashboard</strong>, <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> - and replace them with two new sections:
                 </p>
                 <ul>
                     <li>
