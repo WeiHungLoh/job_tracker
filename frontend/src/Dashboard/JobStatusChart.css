@@ -1,0 +1,17 @@
+.job-status-chart {
+    height: 400px;
+    width: 600px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.job-status-chart .application {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.job-status-chart .no-application-message {
+    text-align: center;
+}

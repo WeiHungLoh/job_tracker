@@ -2,6 +2,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import AddApplication from './JobApplication/AddApplication.js'
 import AddInterview from './Interview/AddInterview.js'
 import { ConfirmProvider } from 'material-ui-confirm'
+import Dashboard from './Dashboard/Dashboard.js'
 import InvalidPage from './InvalidPage.js'
 import Navbar from './Navbar.js'
 import ProtectedRoutes from './ProtectedRoutes.js'
@@ -17,7 +18,7 @@ function App() {
   const location = useLocation()
   // Stores all routes except for sign in and sign up
   const navbarRoutes = ['/addapplication', '/viewapplications', '/addinterview', '/viewinterviews',
-    '/viewarchivedapplications', '/viewarchivedinterviews'
+    '/viewarchivedapplications', '/viewarchivedinterviews', '/dashboard'
   ]
   const showNavbar = navbarRoutes.includes(location.pathname)
 
@@ -31,6 +32,7 @@ function App() {
           <Route path='/userguide' element={<UserGuide />} />
 
           <Route element={<ProtectedRoutes />}>
+            <Route path ='/dashboard' element={<Dashboard />} />
             <Route path='/addapplication' element={<AddApplication />} />
             <Route path='/viewapplications' element={<ViewApplication />} />
             <Route path='/addinterview' element={<AddInterview />} />
