@@ -33,6 +33,13 @@ const Navbar = () => {
         return false
     }
 
+    const isDashBoardActive = (currentLocation) => {
+        if (currLocation === '/dashboard') {
+            return true
+        }
+        return false
+    }
+
     const isViewApplicationsActive = (currentLocation) => {
         if (currentLocation === '/viewapplications') {
             return true
@@ -74,6 +81,9 @@ const Navbar = () => {
             <div className='links'>
                 {!archived &&
                     <>
+                        <NavLink to='/dashboard' className={isDashBoardActive(currLocation) ? 'active' : 'inactive'} >
+                            Dashboard
+                        </NavLink>
                         <NavLink to='/addapplication' className={isAddApplicationActive(currLocation) ? 'active' : 'inactive'}>
                             Add Job Application
                         </NavLink>
@@ -90,21 +100,21 @@ const Navbar = () => {
 
                 {archived &&
                     <>
-                    <NavLink to='/viewarchivedapplications' className={isViewArchivedApplicationsActive(currLocation) ? 'active' : 'inactive'}>
+                        <NavLink to='/viewarchivedapplications' className={isViewArchivedApplicationsActive(currLocation) ? 'active' : 'inactive'}>
                             View Archived Applications
-                    </NavLink>
-                    <NavLink to='/viewarchivedinterviews' className={isViewArchivedInterviewsActive(currLocation) ? 'active' : 'inactive'}>
+                        </NavLink>
+                        <NavLink to='/viewarchivedinterviews' className={isViewArchivedInterviewsActive(currLocation) ? 'active' : 'inactive'}>
                             View Archived Interviews
-                    </NavLink>
+                        </NavLink>
                     </>
                 }
-
-                <NavLink to='/' className='inactive' onClick={handleSignOut} >Logout</NavLink>
-
                 <div className='archive-status' onClick={() => setArchived(!archived)}>
                     <span>{showArchivedIcon(archived)} {' '}</span>
                     <span>{showArchivedMessage(archived)}</span>
                 </div>
+
+                <NavLink to='/' className='inactive' onClick={handleSignOut} >Logout</NavLink>
+
             </div>
         </nav>
     )
