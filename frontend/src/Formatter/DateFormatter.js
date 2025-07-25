@@ -10,6 +10,12 @@ const DateFormatter = (dueDate) => {
         hour12: true
     })
 
+      const formattedDay = date.toLocaleString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    })
+
     // Returns the remaining time in ms
     const dateBeforeInterview = date - Date.now()
     const dateSinceApplication = Date.now() - date
@@ -45,7 +51,7 @@ const DateFormatter = (dueDate) => {
     const timeSinceApplication = countFromApplication(dateSinceApplication)
     const timeBeforeInterview = countDownToInterview(dateBeforeInterview)
 
-    return { formattedDate, timeSinceApplication, timeBeforeInterview }
+    return { formattedDay, formattedDate, timeSinceApplication, timeBeforeInterview }
 }
 
 export default DateFormatter
