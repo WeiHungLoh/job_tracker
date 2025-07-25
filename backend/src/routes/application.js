@@ -1,7 +1,9 @@
 import {
     deleteAllJobApplications,
     deleteJobApplication,
+    getApplicationsForLatestEightWeeks,
     getJobApplications,
+    getJobStatusCountPair,
     insertJobApplication,
     toggleEditStatus,
     toggleJobStatus
@@ -27,6 +29,26 @@ router.get('/view', async (req, res) => {
         // Finds all assignments for a specific user then sort them in ascending order by application date
         const sortedApplications = await getJobApplications(userId)
         res.status(200).json(sortedApplications)
+    } catch (error) {
+        res.status(500).send('Failed to load applications ' + error.message)
+    }
+})
+
+router.get('/jobstatuscount', async (req, res) => {
+    const userId = req.user.id
+    try {
+        const jobStatusCountPair = await getJobStatusCountPair(userId)
+        res.status(200).json(jobStatusCountPair)
+    } catch (error) {
+        res.status(500).send('Failed to load applications ' + error.message)
+    }
+})
+
+router.get('/jobapplicationsbyweek', async (req, res) => {
+    const userId = req.user.id
+    try {
+        const jobApplicationsPerWeek = await getApplicationsForLatestEightWeeks(userId)
+        res.status(200).json(jobApplicationsPerWeek)
     } catch (error) {
         res.status(500).send('Failed to load applications ' + error.message)
     }

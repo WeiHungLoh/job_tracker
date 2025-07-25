@@ -1,0 +1,17 @@
+.application-line-chart {
+    height: 400px;
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.application-line-chart .application {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.application-line-chart .no-application-message {
+    text-align: center;
+}

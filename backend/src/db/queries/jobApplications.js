@@ -29,6 +29,43 @@ const getJobApplications = async (userId) => {
     return res.rows
 }
 
+const getJobStatusCountPair = async (userId) => {
+    const res = await pool.query(
+        `SELECT job_status, COUNT(*) FROM job_applications WHERE user_id = $1 
+        GROUP BY job_status ORDER BY job_status ASC`,
+        [userId]
+    )
+    return res.rows
+}
+
+const getApplicationsForLatestEightWeeks = async (userId) => {
+    const res = await pool.query(
+        `WITH last_8_mondays AS (
+            SELECT generate_series(
+                date_trunc('week', CURRENT_DATE) - interval '7 weeks',
+                date_trunc('week', CURRENT_DATE),
+                interval '1 week'
+            )::date AS start_of_week
+        ),
+        application_counts AS (
+            SELECT
+                DATE_TRUNC('week', application_date)::date AS start_of_week,
+                COUNT(*) AS applications_count
+            FROM job_applications
+            WHERE user_id = $1
+            GROUP BY start_of_week
+        )
+        SELECT
+            m.start_of_week,
+            COALESCE(a.applications_count, 0) AS applications_count
+        FROM last_8_mondays m
+        LEFT JOIN application_counts a ON m.start_of_week = a.start_of_week
+        ORDER BY m.start_of_week ASC`,
+        [userId]
+    )
+    return res.rows
+}
+
 const deleteJobApplication = async (jobId, userId) => {
     await pool.query(
         `DELETE FROM job_applications WHERE job_id = $1 AND user_id = $2`,
@@ -59,5 +96,6 @@ const toggleJobStatus = async (jobStatus, jobId, userId) => {
 
 export {
     insertJobApplication, getJobApplications, deleteJobApplication,
-    deleteAllJobApplications, toggleEditStatus, toggleJobStatus
+    deleteAllJobApplications, toggleEditStatus, toggleJobStatus, getJobStatusCountPair,
+    getApplicationsForLatestEightWeeks
 }
