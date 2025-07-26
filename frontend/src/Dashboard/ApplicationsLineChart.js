@@ -38,8 +38,8 @@ const ApplicationsLineChart = () => {
             {
                 label: 'Applications Applied',
                 data: Object.values(applicationByWeekCountPair),
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: '#17A2B8',
+                borderColor: '#0c8699ff',
             }
         ],
     }

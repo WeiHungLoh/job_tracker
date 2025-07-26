@@ -19,13 +19,13 @@ const JobStatusChart = () => {
             return '#198754'
         }
         if (status === 'Applied') {
-            return '#6c757d'
+            return '#17A2B8'
         }
         if (status === 'Interview') {
             return '#0d6efd'
         }
         if (status === 'Ghosted') {
-            return '#b8b8d1'
+            return '#6C757D'
         }
         if (status === 'Offer') {
             return '#ffc107'
@@ -40,10 +40,10 @@ const JobStatusChart = () => {
             return '#0f7847ff'
         }
         if (status === 'Applied') {
-            return '#5b636bff'
+            return '#1495a9ff'
         }
         if (status === 'Ghosted') {
-            return '#9b9bb6ff'
+            return 'rgba(122, 122, 148, 1)'
         }
         if (status === 'Interview') {
             return 'rgba(48, 153, 153, 1)'
