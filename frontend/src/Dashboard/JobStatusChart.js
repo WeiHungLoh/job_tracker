@@ -75,7 +75,7 @@ const JobStatusChart = () => {
         plugins: {
             title: {
                 display: true,
-                text: 'Job Applications Count by Status',
+                text: 'Application Status Overview',
                 font: {
                     size: 18,
                     weight: 'bold'

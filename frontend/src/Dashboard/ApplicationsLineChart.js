@@ -55,7 +55,7 @@ const ApplicationsLineChart = () => {
         plugins: {
             title: {
                 display: true,
-                text: 'Number of Applications Applied Per Week for the Last Eight Weeks',
+                text: 'Application Trend Over the Past 8 Weeks',
                 font: {
                     size: 18,
                     weight: 'bold'

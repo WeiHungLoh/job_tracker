@@ -57,9 +57,12 @@ const getApplicationsForLatestEightWeeks = async (userId) => {
         )
         SELECT
             m.start_of_week,
-            COALESCE(a.applications_count, 0) AS applications_count
-        FROM last_8_mondays m
-        LEFT JOIN application_counts a ON m.start_of_week = a.start_of_week
+            CASE 
+                WHEN a.applications_count IS NULL THEN 0
+                ELSE a.applications_count
+            END
+        FROM last_8_mondays m LEFT JOIN application_counts a 
+        ON m.start_of_week = a.start_of_week
         ORDER BY m.start_of_week ASC`,
         [userId]
     )
