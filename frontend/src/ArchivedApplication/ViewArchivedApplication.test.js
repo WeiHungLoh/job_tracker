@@ -52,6 +52,7 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('button', { name: /delete all archived applications/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
         expect(screen.getByText(/filter by/i)).toBeInTheDocument()
+        expect(screen.getByText(/unhide notes/i)).toBeInTheDocument()
     })
 
     test('deletes application after user confirms', async () => {
