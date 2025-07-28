@@ -1,9 +1,10 @@
 import './ViewApplication.css'
 import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 // Taken from: https://www.npmjs.com/package/react-csv
 import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import ShowNotesButton from '../Icons/ShowNotesButton.js'
 import ToggleButton from '../Icons/ToggleButton.js'
 import { useConfirm } from 'material-ui-confirm'
 import useFetchData from '../useFetchData.js'
@@ -14,9 +15,12 @@ const ViewApplication = () => {
     const [jobStatuses, setJobStatuses] = useState({})
     const { data: interviews } = useFetchData(`${process.env.REACT_APP_API_URL}/interview/view`)
     const [interviewJobId, setInterviewJobId] = useState([])
-    const [toggled, setToggled] = useState(false)
+    const [toggleArchived, setToggleArchived] = useState(false)
+    const [toggleNotes, setToggleNotes] = useState(false)
     const confirm = useConfirm()
     const [jobStatus, setJobStatus] = useState('Show All')
+    const showTimeout = useRef({})
+    const [notes, setNotes] = useState({})
 
     const filteredApplications = (applications ?? []).filter(app => {
         if (jobStatus === 'Show All') {
@@ -33,6 +37,7 @@ const ViewApplication = () => {
         { label: 'Status', key: 'job_status' },
         { label: 'Location', key: 'job_location' },
         { label: 'Job URL', key: 'job_posting_url' },
+        { label: 'Notes', key: 'notes' },
     ]
 
     const data = filteredApplications.map(app => ({
@@ -40,6 +45,7 @@ const ViewApplication = () => {
         application_date: DateFormatter(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
         job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
+        notes: app.notes ? app.notes : 'N/A',
     }))
 
     useEffect(() => {
@@ -69,6 +75,30 @@ const ViewApplication = () => {
             }, 100)
         }
     }, [location])
+
+    const handleEditNotes = (jobId, editedNotes) => {
+        setNotes({ ...notes, [jobId]: editedNotes })
+
+        const taskId = showTimeout.current[jobId]
+        if (taskId) {
+            clearTimeout(taskId)
+        }
+
+        showTimeout.current[jobId] = setTimeout(async () => {
+            try {
+                await fetch(`${process.env.REACT_APP_API_URL}/application/editnotes`,
+                    {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'Content-type': 'application/json' },
+                        body: JSON.stringify({ jobId, notes: editedNotes })
+                    }
+                )
+            } catch (error) {
+                alert(error.message)
+            }
+        }, 500)
+    }
 
     const handleDelete = async (applicationId) => {
         try {
@@ -249,7 +279,12 @@ const ViewApplication = () => {
             </div>
 
             {hasApplications(filteredApplications) &&
-                <ToggleButton toggled={toggled} onToggle={() => setToggled(!toggled)} />}
+                <ToggleButton toggled={toggleArchived} onToggle={() => setToggleArchived(!toggleArchived)}
+             />}
+
+            {hasApplications(filteredApplications) &&
+                <ShowNotesButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)}
+             />}
 
             {showAddApplicationMessage(filteredApplications) && <div>No job application with that job status found. Start adding one now! </div>}
 
@@ -305,7 +340,7 @@ const ViewApplication = () => {
                             Delete
                         </button>
 
-                        {toggled &&
+                        {toggleArchived &&
                             <div className='archive-button' onClick={() => handleArchive(application.job_id)}>
                                 <button>
                                     Archive
@@ -313,6 +348,16 @@ const ViewApplication = () => {
                             </div>
                         }
                     </div>
+
+                {toggleNotes &&
+                    <div className='notes'>
+                        <textarea
+                            value={notes[application.job_id] ?? application.notes}
+                            onChange={e => handleEditNotes(application.job_id, e.target.value)}
+                            placeholder='Add your notes here'
+                        />
+                    </div>
+                }
                 </div>
             ))}
 

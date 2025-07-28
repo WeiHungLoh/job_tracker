@@ -3,6 +3,7 @@ import './ViewArchivedApplication.css'
 import { useEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import DateFormatter from '../Formatter/DateFormatter.js'
+import ShowNotesButton from '../Icons/ShowNotesButton.js'
 import { useConfirm } from 'material-ui-confirm'
 import useFetchData from '../useFetchData.js'
 import { useLocation } from 'react-router-dom'
@@ -12,6 +13,8 @@ const ViewArchivedApplication = () => {
     const location = useLocation()
     const confirm = useConfirm()
     const [jobStatus, setJobStatus] = useState('Show All')
+    const [toggleNotes, setToggleNotes] = useState(false)
+    const [notes, setNotes] = useState({})
 
     const filteredApplications = (archivedApplications ?? []).filter(app => {
         if (jobStatus === 'Show All') {
@@ -28,6 +31,7 @@ const ViewArchivedApplication = () => {
         { label: 'Status', key: 'job_status' },
         { label: 'Location', key: 'job_location' },
         { label: 'Job URL', key: 'job_posting_url' },
+        { label: 'Notes', key: 'notes' },
     ]
 
     const data = (filteredApplications ?? []).map(app => ({
@@ -35,6 +39,7 @@ const ViewArchivedApplication = () => {
         application_date: DateFormatter(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
         job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
+        notes: app.notes ? app.notes : 'N/A',
     }))
 
     useEffect(() => {
@@ -178,6 +183,10 @@ const ViewArchivedApplication = () => {
                 </select>
             </div>
 
+            {hasApplications(filteredApplications) &&
+                <ShowNotesButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)}
+             />}
+
             {showArchiveApplicationMessage(filteredApplications) && <div>No archived job application with that job status found. Start archiving now! </div>}
 
             {filteredApplications && filteredApplications.map((application, index) => (
@@ -209,6 +218,14 @@ const ViewArchivedApplication = () => {
                             Delete
                         </button>
                     </div>
+                    {toggleNotes &&
+                    <div className='notes'>
+                        <textarea
+                            value={application.notes ?? 'You do not have any notes here'}
+                            disabled='true'
+                        />
+                    </div>
+                }
                 </div>
             ))}
 
