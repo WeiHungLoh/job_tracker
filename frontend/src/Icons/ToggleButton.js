@@ -2,7 +2,7 @@ import './ToggleButton.css'
 
 const ToggleButton = ({ toggled, onToggle }) => {
     const buttonMessage = (toggled) => {
-        return toggled ? 'Hide Archive Button' : 'Unhide Archive Button'
+        return toggled ? 'Hide Archive' : 'Unhide Archive'
     }
 
     return (
