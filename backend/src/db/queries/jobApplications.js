@@ -83,6 +83,13 @@ const deleteAllJobApplications = async (userId) => {
     )
 }
 
+const editNotes = async (jobId, userId, notes) => {
+    await pool.query(
+        `UPDATE job_applications SET notes = $1 WHERE job_id = $2 AND user_id = $3`,
+        [notes, jobId, userId]
+    )
+}
+
 const toggleEditStatus = async (jobId, userId) => {
     await pool.query(
         `UPDATE job_applications SET edit_status = NOT edit_status WHERE job_id = $1 AND user_id = $2`,
@@ -98,7 +105,7 @@ const toggleJobStatus = async (jobStatus, jobId, userId) => {
 }
 
 export {
-    insertJobApplication, getJobApplications, deleteJobApplication,
+    insertJobApplication, getJobApplications, deleteJobApplication, editNotes,
     deleteAllJobApplications, toggleEditStatus, toggleJobStatus, getJobStatusCountPair,
     getApplicationsForLatestEightWeeks
 }

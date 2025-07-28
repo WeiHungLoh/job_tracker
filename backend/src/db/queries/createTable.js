@@ -21,7 +21,8 @@ const createTable = async () => {
             job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
             edit_status BOOLEAN DEFAULT false,
             job_location TEXT,
-            job_posting_url TEXT
+            job_posting_url TEXT,
+            notes TEXT
         )`
 
     const createInterviewTable =
@@ -45,7 +46,8 @@ const createTable = async () => {
             application_date TIMESTAMPTZ,
             job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
             job_location TEXT,
-            job_posting_url TEXT
+            job_posting_url TEXT,
+            notes TEXT
         )`
 
     const createArchivedInterviewTable =
