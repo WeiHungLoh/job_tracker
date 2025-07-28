@@ -69,6 +69,27 @@ const UserGuide = () => {
             </section>
 
             <section>
+                <h2>📝 Notes Visibility Toggle</h2>
+                <p>
+                    At the top of both application viewer pages, you’ll find a toggle button labeled <code>Unhide Notes</code> or <code>Hide Notes</code>. Clicking this button will
+                    unhide or hide all notes for all job applications listed.
+                </p>
+
+                <h3>✏️ Editable Notes (View Job Applications)</h3>
+                <p>
+                    On the <strong>View Job Applications</strong> page, notes are <strong>editable</strong>.
+                    You can type directly into the note fields, and your changes are automatically saved
+                    after 0.5 seconds of not typing anything.
+                </p>
+
+                <h3>🔒 Read-Only Notes (View Archived Applications)</h3>
+                <p>
+                    On the <strong>View Archived Applications</strong> page, notes are <strong>read-only</strong>.
+                    While you can still toggle their visibility using the same button, you cannot edit them once the application is archived.
+                </p>
+            </section>
+
+            <section>
                 <h2>🗃️ Show Archive Mode</h2>
                 <p>
                     Clicking <code>Show Archived</code> will remove the usual navigation items - like <strong>Dashboard</strong>, <strong>Add Job Application</strong>, <strong>View Job Applications</strong>, and <strong>View Interviews</strong> - and replace them with two new sections:
