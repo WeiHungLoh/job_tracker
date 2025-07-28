@@ -43,7 +43,8 @@ export default defineConfig([
         beforeEach: 'readonly',
         test: 'readonly',
         expect: 'readonly',
-        describe: 'readonly'
+        describe: 'readonly',
+        clearTimeout: 'readonly',
       },
     },
     settings: {
