@@ -221,7 +221,11 @@ const ViewArchivedApplication = () => {
                     {toggleNotes &&
                     <div className='notes'>
                         <textarea
-                            value={application.notes ?? 'You do not have any notes here'}
+                            value={
+                                !application.notes || application.notes.trim() === ''
+                                    ? 'You do not have any notes here'
+                                    : application.notes
+                            }
                             disabled='true'
                         />
                     </div>
