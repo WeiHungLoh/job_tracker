@@ -9,10 +9,10 @@ const insertArchivedJobApplication = async (jobId, userId) => {
 
     const archivedRes = await pool.query(
         `INSERT INTO archived_job_applications (user_id, company_name, job_title, application_date,
-            job_status, job_location, job_posting_url) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            job_status, job_location, job_posting_url, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING archived_job_id`,
         [userId, jobApp.company_name, jobApp.job_title, jobApp.application_date,
-            jobApp.job_status, jobApp.job_location, jobApp.job_posting_url]
+            jobApp.job_status, jobApp.job_location, jobApp.job_posting_url, jobApp.notes]
     )
 
     const archivedJobId = archivedRes.rows[0].archived_job_id
@@ -48,10 +48,10 @@ const removeArchivedJobApplication = async (archivedJobId, userId) => {
 
     const unarchivedRes = await pool.query(
         `INSERT INTO job_applications (user_id, company_name, job_title, application_date,
-            job_status, job_location, job_posting_url) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            job_status, job_location, job_posting_url, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING job_id`,
         [userId, jobApp.company_name, jobApp.job_title, jobApp.application_date,
-            jobApp.job_status, jobApp.job_location, jobApp.job_posting_url]
+            jobApp.job_status, jobApp.job_location, jobApp.job_posting_url, jobApp.notes]
     )
 
     const jobId = unarchivedRes.rows[0].job_id

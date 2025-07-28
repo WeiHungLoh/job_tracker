@@ -1,6 +1,7 @@
 import {
     deleteAllJobApplications,
     deleteJobApplication,
+    editNotes,
     getApplicationsForLatestEightWeeks,
     getJobApplications,
     getJobStatusCountPair,
@@ -75,6 +76,18 @@ router.delete('/:jobId', async (req, res) => {
         res.status(200).send('Deleted application')
     } catch (error) {
         res.status(500).send('Error deleting assignment ' + error.message)
+    }
+})
+
+router.put('/editnotes', async (req, res) => {
+    const userId = req.user.id
+    const { jobId, notes } = req.body
+
+    try {
+        await editNotes(jobId, userId, notes)
+        res.status(200).send('Updated notes')
+    } catch (error) {
+        res.status(500).send('Error updating notes ' + error.message)
     }
 })
 
