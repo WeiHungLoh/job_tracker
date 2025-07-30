@@ -251,7 +251,7 @@
 .application-list a,
 .archived-application-list a {
   text-decoration: none;
-  color: #17a2b8
+  color: #17a2b8;
 }
 
 /* Highlight application div to make it more prominent for users to see */
