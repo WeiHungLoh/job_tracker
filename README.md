@@ -1,7 +1,7 @@
 # Job Tracker
 [![Netlify Status](https://api.netlify.com/api/v1/badges/5d3f2438-5d82-42a3-af14-d62a4ee8cd52/deploy-status)](https://app.netlify.com/projects/jobtracker-whloh/deploys)
 
-![Ui](images/applicationviewer.png)
+![Ui](frontend/images/applicationviewer.png)
 
 ## Overview
 
