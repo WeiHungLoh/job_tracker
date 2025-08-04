@@ -2,7 +2,7 @@ import './UserGuide.css'
 
 const UserGuide = () => {
     return (
-        <div className="user-guide">
+        <div data-testid='ug' className="user-guide">
             <h1>📘 Job Tracker - User Guide</h1>
 
             <section>
