@@ -11,11 +11,10 @@ const useFetchData = (collectionName) => {
                 credentials: 'include'
             })
 
-            const actualData = await res.json()
-
             if (!res.ok) {
                 alert('Data not found')
             }
+            const actualData = await res.json()
             setData(actualData)
         } catch (error) {
             setError(error.message)

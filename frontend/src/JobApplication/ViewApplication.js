@@ -279,7 +279,7 @@ const ViewApplication = () => {
             </div>
 
             {hasApplications(filteredApplications) &&
-                <ToggleButton toggled={toggleArchived} onToggle={() => setToggleArchived(!toggleArchived)}
+                <ToggleButton data-testid='unhide-archive' toggled={toggleArchived} onToggle={() => setToggleArchived(!toggleArchived)}
              />}
 
             {hasApplications(filteredApplications) &&

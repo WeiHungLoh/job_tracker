@@ -93,7 +93,7 @@ const SignIn = () => {
                     : <button type='submit'>Sign in</button>
                 }
 
-                <p onClick={toggleSignUp}>
+                <p data-testid='signup' onClick={toggleSignUp}>
                     Don’t have an account? Create one
                 </p>
             </form>

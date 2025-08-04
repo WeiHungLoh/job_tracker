@@ -172,7 +172,7 @@ const ViewArchivedApplication = () => {
 
             <div className='filter-option'>
                 <div>Filter by</div>
-                <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
+                <select role='listbox' value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
                     <option value='Show All'>Show All</option>
                     <option value='Accepted'>Accepted</option>
                     <option value='Applied'>Applied</option>

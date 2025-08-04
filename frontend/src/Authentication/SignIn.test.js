@@ -147,4 +147,15 @@ describe('User sign in flow', () => {
         await waitFor(() => expect(alert).toHaveBeenCalledWith('Failed to sign in: '
             + 'Incorrect password'))
     })
+
+    test('redirects user to sign up page', async () => {
+        render(
+            <MemoryRouter initialEntries={['/']}>
+                <SignIn />
+            </MemoryRouter>
+        )
+
+        userEvent.click(screen.getByTestId('signup'))
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/signup'), { timeout: 2000 })
+    })
 })

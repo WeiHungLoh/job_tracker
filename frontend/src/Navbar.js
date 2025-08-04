@@ -108,7 +108,7 @@ const Navbar = () => {
                         </NavLink>
                     </>
                 }
-                <div className='archive-status' onClick={() => setArchived(!archived)}>
+                <div role='set-archived' className='archive-status' onClick={() => setArchived(!archived)}>
                     <span>{showArchivedIcon(archived)} {' '}</span>
                     <span>{showArchivedMessage(archived)}</span>
                 </div>
