@@ -84,5 +84,16 @@ describe('User sign up flow', () => {
         // Checks that an alert pops up informing user that user with that email already exists
         await waitFor(() => expect(alert).toHaveBeenCalledWith('Failed to sign up: User already exists'))
     })
+
+    test('redirects user to sign in page', async () => {
+        render(
+            <MemoryRouter initialEntries={['/signup']}>
+                <SignUp />
+            </MemoryRouter>
+        )
+
+        userEvent.click(screen.getByText(/Already have an account?/i))
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'), { timeout: 2000 })
+    })
 })
 

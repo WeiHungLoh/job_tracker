@@ -14,6 +14,8 @@ jest.mock('material-ui-confirm', () =>
   useConfirm: () => mockConfirm
 }))
 
+global.alert = jest.fn()
+
 describe('Job application viewing flow', () => {
 
   beforeEach(() => {
