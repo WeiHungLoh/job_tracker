@@ -39,7 +39,7 @@
 
 .interview-list .interview-content {  
   color: #666;
-  word-break: break-all;
+  word-wrap: break-word;
 }
 
 .interview-list .interview-content h2 {
