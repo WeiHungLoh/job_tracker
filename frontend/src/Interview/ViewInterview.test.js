@@ -29,7 +29,7 @@ describe('Job interview viewer flow', () => {
                     job_title: 'Software Engineer',
                     interview_location: 'Changi Business Park',
                     interview_type: 'HR',
-                    notes: 'Bring resume',
+                    interview_notes: 'Bring resume',
                     interview_date: '2025-06-20T00:00:00Z'
                 }
             ],
