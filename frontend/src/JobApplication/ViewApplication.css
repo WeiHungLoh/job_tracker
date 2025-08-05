@@ -95,7 +95,7 @@
 
 .application-list .application-content {
   color: #666;
-  word-break: break-all;
+  word-wrap: break-word;
   width: 500px;
 }
 
