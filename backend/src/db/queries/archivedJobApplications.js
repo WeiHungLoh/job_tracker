@@ -27,9 +27,9 @@ const insertArchivedJobApplication = async (jobId, userId) => {
     jobInt.forEach(async (interview) => {
         await pool.query(
             `INSERT INTO archived_interviews (archived_job_id, user_id, interview_date, 
-            interview_location, interview_type, notes) VALUES ($1, $2, $3, $4, $5, $6)`,
+            interview_location, interview_type, interview_notes) VALUES ($1, $2, $3, $4, $5, $6)`,
             [archivedJobId, userId, interview.interview_date, interview.interview_location,
-                interview.interview_type, interview.notes]
+                interview.interview_type, interview.interview_notes]
         )
     })
 
@@ -66,9 +66,9 @@ const removeArchivedJobApplication = async (archivedJobId, userId) => {
     jobInt.forEach(async (interview) => {
         await pool.query(
             `INSERT INTO interviews (job_id, user_id, interview_date, 
-            interview_location, interview_type, notes) VALUES ($1, $2, $3, $4, $5, $6)`,
+            interview_location, interview_type, interview_notes) VALUES ($1, $2, $3, $4, $5, $6)`,
             [jobId, userId, interview.interview_date, interview.interview_location,
-                interview.interview_type, interview.notes]
+                interview.interview_type, interview.interview_notes]
         )
     })
 

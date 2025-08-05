@@ -4,7 +4,7 @@ const insertInterview = async (
     jobId, userId, interview_date, location, interview_type, notes
 ) => {
     await pool.query(
-        `INSERT INTO interviews (job_id, user_id, interview_date, interview_location, interview_type, notes)
+        `INSERT INTO interviews (job_id, user_id, interview_date, interview_location, interview_type, interview_notes)
         VALUES ($1, $2, $3, $4, $5, $6)`,
         [jobId, userId, interview_date, location, interview_type, notes]
     )

@@ -89,7 +89,7 @@ const ViewInterview = () => {
     }
 
     const showInterviewNotes = (field) => {
-        if (field.notes === '') {
+        if (field.interview_notes === '') {
             return false
         }
         return true
@@ -111,7 +111,7 @@ const ViewInterview = () => {
                         {showInterviewType(interview) &&
                             <p>Interview Type: {interview.interview_type}</p>}
                         {showInterviewNotes(interview) &&
-                            <p>Notes: {interview.notes}</p>}
+                            <p>Notes: {interview.interview_notes}</p>}
                         <p className='date'>Interview Date: {DateFormatter(interview.interview_date).formattedDate}</p>
                         <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
                         <Link to={`/viewapplications#${interview.job_id}`}>

@@ -33,7 +33,7 @@ const createTable = async () => {
             interview_date TIMESTAMPTZ NOT NULL,
             interview_location TEXT NOT NULL,
             interview_type TEXT,
-            notes TEXT,
+            interview_notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`
 
@@ -58,7 +58,7 @@ const createTable = async () => {
             interview_date TIMESTAMPTZ NOT NULL,
             interview_location TEXT NOT NULL,
             interview_type TEXT,
-            notes TEXT,
+            interview_notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`
     try {
