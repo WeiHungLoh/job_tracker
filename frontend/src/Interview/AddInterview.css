@@ -16,7 +16,7 @@
 }
 
 .add-interview p {
-  word-break: break-all;
+  word-wrap: break-word;
 }
 
 .add-interview input {

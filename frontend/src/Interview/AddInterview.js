@@ -64,7 +64,7 @@ const AddInterview = () => {
 
     return (
         <div className='add-interview'>
-            <div className="interview-header">
+            <div className='interview-header'>
                 <h2>You are adding an interview for:</h2>
                 <p>Company: <em>{app.company_name}</em></p>
                 <p>Position: <em>{app.job_title}</em></p>
