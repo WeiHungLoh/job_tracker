@@ -196,7 +196,7 @@ const ViewArchivedApplication = () => {
                         <h2>{index + 1}. {application.company_name}</h2>
                         <p>Job Title: {application.job_title}</p>
                         {showJobLocation(application) &&
-                            <p>Location: {application.job_location}</p>}
+                            <p className='location'>Location: {application.job_location}</p>}
                         <p className='date'>Application Date: {DateFormatter(application.application_date).formattedDate}</p>
                         <p>Time since application: {DateFormatter(application.application_date).timeSinceApplication}</p>
                         <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>

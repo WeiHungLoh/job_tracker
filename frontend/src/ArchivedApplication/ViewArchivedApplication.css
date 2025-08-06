@@ -82,6 +82,10 @@
   width: 500px;
 }
 
+.archived-application-list .application-content .location {
+  color: #2a9d8f;
+}
+
 .archived-application-list .application-content h2 {
   font-size: 24px;
   color: black;
@@ -112,7 +116,7 @@
 }
 
 .archived-application-list .application-content .applied {
-  background-color: #6c757d;       
+  background-color: #17A2B8;       
   color: white;                   
   padding: 4px 20px;              
   border-radius: 5px;            
@@ -177,7 +181,7 @@
 }
 
 .archived-application-list .application-content .ghosted {
-  background-color: #b8b8d1;
+  background-color: #6C757D;
   color: white;
   padding: 4px 20px;
   border-radius: 5px;

@@ -106,12 +106,12 @@ const ViewInterview = () => {
 
                     <div className='interview-content'>
                         <h2>{index + 1}. {interview.company_name}</h2>
-                        <p>Job Title: {interview.job_title}</p>
-                        <p>Location: {interview.interview_location}</p>
+                        <p className>Job Title: {interview.job_title}</p>
+                        <p className='location'>Location: {interview.interview_location}</p>
                         {showInterviewType(interview) &&
-                            <p>Interview Type: {interview.interview_type}</p>}
+                            <p className='type'>Interview Type: {interview.interview_type}</p>}
                         {showInterviewNotes(interview) &&
-                            <p>Notes: {interview.interview_notes}</p>}
+                            <p className='notes'>Notes: {interview.interview_notes}</p>}
                         <p className='date'>Interview Date: {DateFormatter(interview.interview_date).formattedDate}</p>
                         <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
                         <Link to={`/viewapplications#${interview.job_id}`}>
