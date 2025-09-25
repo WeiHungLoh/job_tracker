@@ -48,7 +48,7 @@ const Navbar = () => {
     }
 
     const handleSignOut = async () => {
-        await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
+        await fetch(`${process.env.REACT_APP_API_URL}/authentication/logout`, {
             method: 'GET',
             credentials: 'include',
         })
