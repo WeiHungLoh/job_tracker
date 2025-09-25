@@ -91,7 +91,8 @@ router.get('/logout', async (req, res) => {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        path: '/'
+        path: '/',
+        domain: 'job-tracker-300j.onrender.com'
     })
     res.status(200).json({ message: 'Successfully logged out '})
 })
