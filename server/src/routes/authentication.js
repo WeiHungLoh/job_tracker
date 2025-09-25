@@ -90,7 +90,8 @@ router.get('/logout', async (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: true,
-        sameSite: 'none'
+        sameSite: 'none',
+        path: '/'
     })
     res.status(200).json({ message: 'Successfully logged out '})
 })
