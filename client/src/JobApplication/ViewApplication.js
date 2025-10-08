@@ -19,8 +19,11 @@ const ViewApplication = () => {
     const [toggleNotes, setToggleNotes] = useState(false)
     const confirm = useConfirm()
     const [jobStatus, setJobStatus] = useState('Show All')
-    const showTimeout = useRef({})
+    const showNotesTimeout = useRef({})
+    const showEditStatusTimeout = useRef({})
+    const showCorrespondingAppTimeout = useRef({})
     const [notes, setNotes] = useState({})
+
 
     const filteredApplications = (applications ?? []).filter(app => {
         if (jobStatus === 'Show All') {
@@ -63,12 +66,17 @@ const ViewApplication = () => {
                 // Ignores the first string character # to get job_id
                 const app = document.getElementById(hash.substring(1))
                 if (app) {
-                    app.scrollIntoView({ behavior: 'smooth' })
+                    const taskId = showCorrespondingAppTimeout.current[app]
+                    if (taskId) {
+                        clearTimeout(taskId)
+                    }
+                    app.classList.remove('highlighted')
 
+                    app.scrollIntoView({ behavior: 'smooth' })
                     // Add the 'highlighted' class when the application scrolls into view,
                     // and remove it after 4 seconds to match transition time
                     app.classList.add('highlighted')
-                    setTimeout(() => {
+                    showCorrespondingAppTimeout.current[app] = setTimeout(() => {
                         app.classList.remove('highlighted')
                     }, 4000)
                 }
@@ -79,12 +87,12 @@ const ViewApplication = () => {
     const handleEditNotes = (jobId, editedNotes) => {
         setNotes({ ...notes, [jobId]: editedNotes })
 
-        const taskId = showTimeout.current[jobId]
+        const taskId = showNotesTimeout.current[jobId]
         if (taskId) {
             clearTimeout(taskId)
         }
 
-        showTimeout.current[jobId] = setTimeout(async () => {
+        showNotesTimeout.current[jobId] = setTimeout(async () => {
             try {
                 await fetch(`${process.env.REACT_APP_API_URL}/job-applications/${jobId}/notes`,
                     {
@@ -153,6 +161,8 @@ const ViewApplication = () => {
 
     const toggleEditStatus = async (application) => {
         const editStatus = application.edit_status
+        const newStatus = jobStatuses[application.job_id] ?? application.job_status
+        const oldStatus = application.job_status
         try {
             await fetch(`${process.env.REACT_APP_API_URL}/job-applications/${application.job_id}/edit-status`, {
                 method: 'PUT',
@@ -161,7 +171,7 @@ const ViewApplication = () => {
                 body: JSON.stringify({ jobId: application.job_id })
             })
 
-            if (editStatus) {
+            if (editStatus && newStatus != oldStatus) {
                 await fetch(`${process.env.REACT_APP_API_URL}/job-applications/${application.job_id}/job-status`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -176,12 +186,17 @@ const ViewApplication = () => {
                 setTimeout(() => {
                     const app = document.getElementById(application.job_id)
                     if (app) {
+                        const taskId = showEditStatusTimeout.current[app]
+                        if (taskId) {
+                            clearTimeout(taskId)
+                        }
+                        app.classList.remove('highlighted')
                         app.scrollIntoView({ behavior: 'smooth' })
 
                         // Add the 'highlighted' class when the application scrolls into view,
                         // and remove it after 4 seconds to match transition time
                         app.classList.add('highlighted')
-                        setTimeout(() => {
+                        showEditStatusTimeout.current[app] = setTimeout(() => {
                             app.classList.remove('highlighted')
                         }, 4000)
                     }
@@ -250,6 +265,8 @@ const ViewApplication = () => {
             return 'accepted'
         } else if (jobStatus === 'Applied') {
             return 'applied'
+        } else if (jobStatus === 'Declined') {
+            return 'declined'
         } else if (jobStatus === 'Ghosted') {
             return 'ghosted'
         } else if (jobStatus === 'Interview') {
@@ -271,6 +288,7 @@ const ViewApplication = () => {
                     <option value='Show All'>Show All</option>
                     <option value='Accepted'>Accepted</option>
                     <option value='Applied'>Applied</option>
+                    <option value='Declined'>Declined</option>
                     <option value='Ghosted'>Ghosted</option>
                     <option value='Interview'>Interview</option>
                     <option value='Offer'>Offer</option>
@@ -312,6 +330,7 @@ const ViewApplication = () => {
                             <option value='Accepted'>Accepted</option>
                             <option value='Applied' disabled=
                                 {interviewJobId.includes(application.job_id)}>Applied</option>
+                            <option value='Declined'>Declined</option>
                             <option value='Ghosted'>Ghosted</option>
                             <option value='Interview'>Interview</option>
                             <option value='Offer'>Offer</option>
