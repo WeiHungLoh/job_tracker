@@ -93,6 +93,7 @@ const AddApplication = () => {
             <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
                 <option value='Accepted'>Accepted</option>
                 <option value='Applied'>Applied</option>
+                <option value='Declined'>Declined</option>
                 <option value='Ghosted'>Ghosted</option>
                 <option value='Interview'>Interview</option>
                 <option value='Offer'>Offer</option>

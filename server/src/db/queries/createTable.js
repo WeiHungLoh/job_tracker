@@ -18,7 +18,7 @@ const createTable = async () => {
             company_name TEXT NOT NULL,
             job_title TEXT NOT NULL,
             application_date TIMESTAMPTZ,
-            job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
+            job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
             edit_status BOOLEAN DEFAULT false,
             job_location TEXT,
             job_posting_url TEXT,
@@ -44,7 +44,7 @@ const createTable = async () => {
             company_name TEXT NOT NULL,
             job_title TEXT NOT NULL,
             application_date TIMESTAMPTZ,
-            job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
+            job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
             job_location TEXT,
             job_posting_url TEXT,
             notes TEXT

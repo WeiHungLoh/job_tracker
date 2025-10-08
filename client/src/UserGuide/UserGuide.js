@@ -167,7 +167,7 @@ const UserGuide = () => {
             <section>
                 <h2>✨ Highlight Animation</h2>
                 <p>
-                    When you edit the status of a job application, the page will automatically scroll to that specific application and highlight it with a green background for 4 seconds to help you easily spot the update.
+                    When you edit the status of a job application, the page will automatically scroll to that specific application and highlight it with a green background for 4 seconds to help you easily spot the update. If there no changes are made to the job status, there will be no animation.
                 </p>
                 <p>
                     Similarly, when you click the button labeled <code>Click here to view corresponding job application</code> in the Interviews section, it will scroll to and highlight the related job application in green for 4 seconds to make navigation clearer.

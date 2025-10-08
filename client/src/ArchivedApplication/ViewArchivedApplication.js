@@ -155,6 +155,8 @@ const ViewArchivedApplication = () => {
             return 'accepted'
         } else if (jobStatus === 'Applied') {
             return 'applied'
+        } else if (jobStatus === 'Declined') {
+            return 'declined'
         } else if (jobStatus === 'Ghosted') {
             return 'ghosted'
         } else if (jobStatus === 'Interview') {
@@ -176,6 +178,7 @@ const ViewArchivedApplication = () => {
                     <option value='Show All'>Show All</option>
                     <option value='Accepted'>Accepted</option>
                     <option value='Applied'>Applied</option>
+                    <option value='Declined'>Declined</option>
                     <option value='Ghosted'>Ghosted</option>
                     <option value='Interview'>Interview</option>
                     <option value='Offer'>Offer</option>
