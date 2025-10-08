@@ -13,18 +13,15 @@ const insertJobApplication = async (
 const getJobApplications = async (userId) => {
     const res = await pool.query(
         `SELECT * FROM job_applications WHERE user_id = $1 
-         ORDER BY 
-            CASE 
-                WHEN job_status = 'Accepted' THEN 1
-                WHEN job_status = 'Offer' THEN 2
-                WHEN job_status = 'Declined' THEN 3
-                WHEN job_status = 'Interview' THEN 4
-                WHEN job_status = 'Applied' THEN 5
-                WHEN job_status = 'Ghosted' THEN 6
-                WHEN job_status = 'Rejected' THEN 7
-                ELSE 8
-            END,
-         application_date DESC`,
+          ORDER BY 
+            job_status IN ('Accepted') DESC,
+            job_status IN ('Offer') DESC, 
+            job_status IN ('Declined') DESC,
+            job_status IN ('Interview') DESC,
+            job_status IN ('Applied') DESC,
+            job_status IN ('Ghosted') DESC,
+            job_status IN ('Rejected') DESC,
+            application_date DESC`,
         [userId]
     )
 
