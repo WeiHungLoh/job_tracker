@@ -53,7 +53,7 @@ router.post('/signin', async (req, res) => {
                 email: userEmail
             },
             ACCESS_TOKEN_SECRET,
-            { expiresIn: '3h' }
+            { expiresIn: '24h' }
         )
 
         // Saves token inside cookie to prevent XSS
@@ -61,7 +61,7 @@ router.post('/signin', async (req, res) => {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            maxAge: 3 * 60 * 60 * 1000
+            maxAge: 24 * 60 * 60 * 1000
         })
 
         res.status(200).json({ message: 'Successfully signed in' })
