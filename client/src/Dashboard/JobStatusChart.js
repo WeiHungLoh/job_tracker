@@ -21,6 +21,9 @@ const JobStatusChart = () => {
         if (status === 'Applied') {
             return '#17A2B8'
         }
+        if (status === 'Declined') {
+            return 'purple'
+        }
         if (status === 'Interview') {
             return '#0d6efd'
         }
@@ -41,6 +44,9 @@ const JobStatusChart = () => {
         }
         if (status === 'Applied') {
             return '#1495a9ff'
+        }
+        if (status === 'Declined') {
+            return 'rebeccapurple'
         }
         if (status === 'Ghosted') {
             return 'rgba(122, 122, 148, 1)'
