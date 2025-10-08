@@ -15,13 +15,13 @@ const getJobApplications = async (userId) => {
         `SELECT * FROM job_applications WHERE user_id = $1 
          ORDER BY 
             CASE 
-                WHEN job_status COLLATE "C" = 'Accepted' THEN 1
-                WHEN job_status COLLATE "C" = 'Offer' THEN 2
-                WHEN job_status COLLATE "C" = 'Declined' THEN 3
-                WHEN job_status COLLATE "C" = 'Interview' THEN 4
-                WHEN job_status COLLATE "C" = 'Applied' THEN 5
-                WHEN job_status COLLATE "C" = 'Ghosted' THEN 6
-                ELSE 7
+                WHEN job_status = 'Accepted' THEN 1
+                WHEN job_status = 'Offer' THEN 2
+                WHEN job_status = 'Interview' THEN 4
+                WHEN job_status = 'Applied' THEN 5
+                WHEN job_status = 'Ghosted' THEN 6
+                WHEN job_status = 'Rejected' THEN 7
+                ELSE 3
             END,
          application_date DESC`,
         [userId]
