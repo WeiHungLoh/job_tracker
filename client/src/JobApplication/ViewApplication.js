@@ -24,7 +24,6 @@ const ViewApplication = () => {
     const showCorrespondingAppTimeout = useRef({})
     const [notes, setNotes] = useState({})
 
-
     const filteredApplications = (applications ?? []).filter(app => {
         if (jobStatus === 'Show All') {
             return true
