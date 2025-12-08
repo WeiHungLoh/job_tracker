@@ -57,7 +57,7 @@ const ApplicationsLineChart = () => {
                 display: true,
                 text: 'Application Trend Over the Past 8 Weeks',
                 font: {
-                    size: 18,
+                    size: 16,
                     weight: 'bold'
                 },
                 padding: {

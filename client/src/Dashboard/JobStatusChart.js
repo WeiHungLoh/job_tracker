@@ -83,7 +83,7 @@ const JobStatusChart = () => {
                 display: true,
                 text: 'Application Status Overview',
                 font: {
-                    size: 18,
+                    size: 16,
                     weight: 'bold'
                 },
                 padding: {

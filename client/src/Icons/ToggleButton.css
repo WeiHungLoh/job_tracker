@@ -1,33 +1,33 @@
 .hide-archive-button {
-    font-size: 12px;
+    font-size: 0.75rem;
     position: absolute;
-    right: 157px;
-    top: 105px;
+    right: 9.8125rem;
+    top: 6.5625rem;
 }
 
 .hide-archive-button .toggle-button {
     background-color: #b7b9ba;
     border: 1px solid #aaa;
-    border-radius: 99px;
-    width: 50px;
-    height: 28px;
+    border-radius: 6.1875rem;
+    width: 3.125rem;
+    height: 1.75rem;
     transition: background-color 0.1s ease, border-color 0.2s ease;
     cursor: pointer;
-    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0,748);
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0, 748);
     position: relative;
     display: flex;
     margin: auto;
 }
 
 .hide-archive-button .toggle-button .thumb {
-    height: 20px;
-    width: 20px;
+    height: 1.25rem;
+    width: 1.25rem;
     background-color: #ffff;
-    border-radius: 99px;
+    border-radius: 6.1875rem;
     transform: translateX(0);
     transition: left 0.15s ease;
     position: absolute;
-    left: 3px;
+    left: 0.1875rem;
     top: 50%;
     transform: translateY(-50%);
 }
@@ -41,12 +41,12 @@
 }
 
 .hide-archive-button .toggle-button.active .thumb {
-    left: 25px;
+    left: 1.5625rem;
 }
 
 @media (max-width: 48rem) {
     .hide-archive-button {
-    right: 2.5rem;
-    top: 6.5625rem;
-}
+        right: 15%;
+        top: 15%;
+    }
 }
