@@ -43,3 +43,10 @@
 .hide-archive-button .toggle-button.active .thumb {
     left: 25px;
 }
+
+@media (max-width: 48rem) {
+    .hide-archive-button {
+    right: 2.5rem;
+    top: 6.5625rem;
+}
+}
