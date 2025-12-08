@@ -20,7 +20,8 @@ const startServer = async () => {
         'https://jobtracker-whloh.netlify.app',
         'https://jobtracker.weihungloh.com',
         'https://weihungloh.com',
-        'http://localhost:3000'
+        'http://localhost:3000',
+        'http://192.168.1.80:3000'
     ]
 
     app.use(cors({
