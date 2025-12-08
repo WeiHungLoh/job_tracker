@@ -102,3 +102,17 @@
   display: flex;
   gap: 70px;
 }
+
+@media (max-width: 71.875rem) {
+    .archived-interview-list {
+    width: 90%;
+  }
+
+  .archived-interview-list>h2 {
+    font-size: 1.2rem;
+  }
+
+  .archived-interview-list .interview-button {
+    gap: 3.375rem;
+  }
+}
