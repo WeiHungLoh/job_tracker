@@ -63,10 +63,10 @@
 }
 
 .archived-application-list .button-group button {
-  background-color:#f1356d;
+  background-color: #f1356d;
   border: 0;
   border-radius: 10px;
-  color:#fff;
+  color: #fff;
   cursor: pointer;
   padding: 8px 10px;
 }
@@ -76,7 +76,7 @@
   gap: 70px;
 }
 
-.archived-application-list .application-content {  
+.archived-application-list .application-content {
   color: #666;
   word-wrap: break-word;
   width: 500px;
@@ -93,18 +93,18 @@
 
 .archived-application-list .application-content .date {
   font-weight: bold;
-  color: 	#343a40;
+  color: #343a40;
 }
 
 .archived-application-list .application-content .url {
   background-color: darkgrey;
-  color: cornsilk;               
-  padding: 4px 20px;           
-  border-radius: 5px;            
-  font-weight: bolder;          
-  font-size: 13px;   
-  margin-top: 10px;            
-  letter-spacing: 0.5px; 
+  color: cornsilk;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: bolder;
+  font-size: 13px;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
   border: none;
   display: flex;
   max-width: fit-content;
@@ -116,81 +116,81 @@
 }
 
 .archived-application-list .application-content .applied {
-  background-color: #17A2B8;       
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;           
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #17A2B8;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .archived-application-list .application-content .interview {
-  background-color: #0d6efd;     
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #0d6efd;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .archived-application-list .application-content .offer {
-  background-color: #ffc107;   
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #ffc107;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .archived-application-list .application-content .accepted {
-  background-color: #198754;  
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #198754;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .archived-application-list .application-content .declined {
-  background-color: rebeccapurple;  
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: rebeccapurple;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .archived-application-list .application-content .rejected {
-  background-color: #dc3545; 
-  color: white;                   
-  padding: 4px 20px;              
-  border-radius: 5px;            
-  font-weight: 600;           
-  font-size: 13px;             
-  display: inline-flex;         
-  margin-top: 0px;               
-  margin-bottom: 0px;              
-  letter-spacing: 0.5px;           
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  letter-spacing: 0.5px;
 }
 
 .archived-application-list .application-content .ghosted {
@@ -206,10 +206,10 @@
 }
 
 .archived-application-list .application-button button {
-  background-color:#f1356d;
+  background-color: #f1356d;
   border: 0;
   border-radius: 10px;
-  color:#fff;
+  color: #fff;
   cursor: pointer;
   padding: 8px 10px;
   margin-top: 20px;
@@ -217,7 +217,7 @@
 
 .archived-application-list a {
   text-decoration: none;
-  color: 	#17a2b8
+  color: #17a2b8
 }
 
 /* Highlight archived-application div to make it more prominent for users to see */
@@ -229,7 +229,40 @@
   0% {
     background-color: #dfffd9;
   }
+
   100% {
     background-color: inherit;
+  }
+}
+
+@media (max-width: 71.875rem) {
+  .archived-application-list {
+    max-width: 90%;
+  }
+
+  .archived-application-list .application {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+  }
+
+  .archived-application-list .filter-option {
+    right: 65%;
+    top: 15%;
+  }
+
+  .archived-application-list>h2 {
+    font-size: 1.2rem;
+    margin-bottom: 5rem;
+  }
+
+  .archived-application-list .button-group {
+    justify-content: center;
+    flex-direction: column;
+    width: 50%;
+  }
+
+  .archived-application-list .application-button {
+    gap: 3.375rem;
   }
 }

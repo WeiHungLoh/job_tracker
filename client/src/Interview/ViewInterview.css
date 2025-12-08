@@ -1,5 +1,5 @@
 .interview-list {
-  max-width: 710px;
+  max-width: 44.375rem;
   margin: auto;
   display: flex;
   flex-direction: column;
@@ -8,10 +8,10 @@
 
 .interview-list .interview {
   width: 100%;
-  padding-bottom: 20px;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid #ddd;
   display: flex;
-  gap: 60px;
+  gap: 3.75rem;
 }
 
 .interview-list .button-group {
@@ -19,25 +19,25 @@
   margin-left: auto;
   cursor: pointer;
   align-items: center;
-  color:#fff;
-  gap: 10px;
+  color: #fff;
+  gap: 0.625rem;
 }
 
 .interview-list .button-group button {
-  background-color:#f1356d;
+  background-color: #f1356d;
   border: 0;
-  border-radius: 10px;
-  color:#fff;
+  border-radius: 0.625rem;
+  color: #fff;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 }
 
 .interview-list .interview-button {
   display: flex;
-  gap: 70px;
+  gap: 4.375rem;
 }
 
-.interview-list .interview-content {  
+.interview-list .interview-content {
   color: #666;
   word-wrap: break-word;
 }
@@ -51,37 +51,38 @@
 }
 
 .interview-list .interview-content .notes {
-  background-color: #fff9c4;;
-  border-left: 4px solid #fbc02d;
-  padding-left: 10px;
-  margin-top: 4px;
+  background-color: #fff9c4;
+  ;
+  border-left: 0.25rem solid #fbc02d;
+  padding-left: 0.625rem;
+  margin-top: 0.25rem;
   color: #495057;
 }
 
 .interview-list .interview-content h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
   color: black;
 }
 
 .interview-list .interview-content .date {
   font-weight: bold;
-  color: 	#343a40;
+  color: #343a40;
 }
 
 .interview-list .interview-content p:last-of-type {
   font-weight: bold;
-  color:red;
+  color: red;
 }
 
 .interview-list .interview-content a {
   background-color: #e0f0ff;
-  color: #0d6efd;                 
-  padding: 4px 20px;           
-  border-radius: 5px;            
-  font-weight: bolder;          
-  font-size: 13px;   
-  margin-top: 10px;            
-  letter-spacing: 0.5px; 
+  color: #0d6efd;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: bolder;
+  font-size: 0.8125rem;
+  margin-top: 0.625rem;
+  letter-spacing: 0.03125rem;
   border: none;
   display: flex;
   max-width: fit-content;
@@ -94,11 +95,25 @@
 }
 
 .interview-list .interview-button button {
-  background-color:#f1356d;
+  background-color: #f1356d;
   border: 0;
-  border-radius: 10px;
-  color:#fff;
+  border-radius: 0.625rem;
+  color: #fff;
   cursor: pointer;
-  padding: 8px 10px;
-  margin-top: 20px;
+  padding: 0.5rem 0.625rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 71.875rem) {
+  .interview-list {
+    width: 90%;
+  }
+
+  .interview-list>h2 {
+    font-size: 1.2rem;
+  }
+
+  .interview-list .interview-button {
+    gap: 3.375rem;
+  }
 }

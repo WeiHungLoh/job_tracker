@@ -46,7 +46,7 @@ const startServer = async () => {
     app.use('/archived-job-interviews', cookieJWTAuth, archivedInterviewRoute)
 
     const PORT = process.env.PORT || 5005
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`Server is running on port ${PORT}`)
     })
 }

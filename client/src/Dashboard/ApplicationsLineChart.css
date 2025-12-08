@@ -1,6 +1,6 @@
 .application-line-chart {
-    height: 400px;
-    width: 600px;
+    height: 25rem;
+    width: 37.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -8,10 +8,21 @@
 
 .application-line-chart .application {
     text-align: center;
-    font-size: 14px;
+    font-size: 0.8rem;
     font-weight: bold;
 }
 
 .application-line-chart .no-application-message {
     text-align: center;
+}
+
+@media (max-width: 48rem) {
+    .application-line-chart {
+        height: 20rem;
+        width: 24rem;
+    }
+
+    .application-line-chart .no-application-message {
+        text-align: center;
+    }
 }
