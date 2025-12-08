@@ -43,3 +43,12 @@
 .hide-notes-button .toggle-button.active .thumb {
     left: 25px;
 }
+
+@media (max-width: 48rem) {
+.hide-notes-button {
+    font-size: 12px;
+    position: absolute;
+    right: 9rem;
+    top: 6.5625rem;
+}
+}

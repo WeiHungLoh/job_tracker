@@ -1,33 +1,33 @@
-.application-list .filter-option {
-  font-size: 12px;
-  position: absolute;
-  right: 350px;
-  top: 105px;
-  text-align: center;
-}
-
-.application-list .filter-option select {
-  background: #e0f0ff;
-  color: #003366;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-}
-
 .application-list {
-  max-width: 750px;
+  max-width: 46.875rem;
   margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+.application-list .filter-option {
+  font-size: 0.75rem;
+  position: absolute;
+  right: 21.875rem;
+  top: 6.5625rem;
+  text-align: center;
+}
+
+.application-list .filter-option select {
+  background: #e0f0ff;
+  color: #003366;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6.1875rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
 .application-list .application {
   width: 100%;
-  padding-bottom: 20px;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid #ddd;
   display: flex;
   gap: 0;
@@ -40,36 +40,36 @@
   display: flex;
   align-items: center;
   color: #fff;
-  gap: 10px;
+  gap: 0.625rem;
   position: relative;
-  width: 190px;
+  width: 11.875rem;
 }
 
 .application-list .button-group .archive-button button {
   background-color: green;
   color: cornsilk;
-  padding: 7px 20px;
-  border-radius: 10px;
+  padding: 0.4375rem 1.25rem;
+  border-radius: 0.625rem;
   font-weight: bolder;
-  font-size: 13px;
-  letter-spacing: 2px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.125rem;
   border: none;
   cursor: pointer;
   position: absolute;
-  bottom: 0.5px;
-  right: 33px;
-  left: 1px;
+  bottom: 0.03125rem;
+  right: 2.0625rem;
+  left: 0.0625rem;
 }
 
 .application-list .notes textarea {
   position: absolute;
-  right: -330px;
-  top: 15px;
+  right: -20.625rem;
+  top: 0.9375rem;
   height: 89%;
-  width: 300px;
-  padding: 14px;
-  font-size: 15px;
-  border-radius: 10px;
+  width: 18.75rem;
+  padding: 0.875rem;
+  font-size: 0.9375rem;
+  border-radius: 0.625rem;
   border: 2px solid #fbc02d;
   background-color: #fff9c4;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
@@ -82,29 +82,29 @@
 .application-list .button-group button {
   background-color: #f1356d;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color: #fff;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 }
 
 .application-list .application-button {
   display: flex;
-  gap: 70px;
+  gap: 4.375rem;
 }
 
 .application-list .application-content {
   color: #666;
   word-wrap: break-word;
-  width: 500px;
+  width: 31.25rem;
 }
 
 .application-list .application-content .location {
-    color: #2a9d8f;
+  color: #2a9d8f;
 }
 
 .application-list .application-content h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
   color: black;
 }
 
@@ -116,11 +116,11 @@
 .application-list .application-content a {
   background-color: #e0f0ff;
   color: #0d6efd;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: bolder;
-  font-size: 13px;
-  margin-top: 10px;
+  font-size: 0.8125rem;
+  margin-top: 0.625rem;
   letter-spacing: 0.5px;
   border: none;
   display: flex;
@@ -132,12 +132,12 @@
 .application-list .application-content .url {
   background-color: darkgrey;
   color: cornsilk;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: bolder;
-  font-size: 13px;
-  margin-top: 10px;
-  letter-spacing: 0.5px;
+  font-size: 0.8125rem;
+  margin-top: 0.625rem;
+  letter-spacing: 0.03125rem;
   border: none;
   display: flex;
   max-width: fit-content;
@@ -147,13 +147,13 @@
 .application-list .application-content select {
   background: #e0f0ff;
   color: #003366;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: bolder;
-  font-size: 13px;
-  letter-spacing: 0.5px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03125rem;
   border: none;
-  margin-left: 10px;
+  margin-left: 0.625rem;
   cursor: pointer;
 }
 
@@ -168,100 +168,100 @@
 .application-list .application-content .applied {
   background-color: #17A2B8;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin-top: 0px;
   margin-bottom: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-content .interview {
   background-color: #0D6EFD;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin-top: 0px;
   margin-bottom: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-content .offer {
   background-color: #ffc107;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin-top: 0px;
   margin-bottom: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-content .accepted {
   background-color: #198754;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin-top: 0px;
   margin-bottom: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-content .rejected {
   background-color: #dc3545;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin-top: 0px;
   margin-bottom: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-content .ghosted {
   background-color: #6C757D;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-content .declined {
   background-color: rebeccapurple;
   color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   display: inline-flex;
   margin: 0px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .application-list .application-button button {
   background-color: #f1356d;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color: #fff;
   cursor: pointer;
-  padding: 8px 10px;
-  margin-top: 20px;
+  padding: 0.5rem 0.625rem;
+  margin-top: 1.25rem;
 }
 
 .application-list a,
@@ -282,5 +282,43 @@
 
   100% {
     background-color: inherit;
+  }
+}
+
+@media (max-width: 48rem) {
+  .application-list {
+    max-width: 90%;
+  }
+
+  .application-list>h2 {
+    font-size: 1.2rem;
+    margin-bottom: 5rem;
+  }
+
+  .application-list .filter-option {
+    right: 15.5rem;
+    top: 6.5625rem;
+  }
+
+  .application-list .application {
+    padding-right: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+  }
+
+  .application-list .button-group .archive-button button {
+    position: relative;
+  }
+
+  .application-list .application-content select {
+    margin-left: 0;
+    margin-top: 0.4375rem;
+  }
+
+  .application-list .button-group {
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
   }
 }

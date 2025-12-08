@@ -1,6 +1,6 @@
 .job-status-chart {
-    height: 400px;
-    width: 600px;
+    height: 25rem;
+    width: 37.5rem;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -8,10 +8,17 @@
 }
 
 .job-status-chart .application {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: bold;
 }
 
 .job-status-chart .no-application-message {
     text-align: center;
+}
+
+@media (max-width: 48rem) {
+    .job-status-chart {
+        height: 30rem;
+        width: 20.5rem;
+    }
 }
