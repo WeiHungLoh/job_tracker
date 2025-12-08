@@ -39,7 +39,6 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  color: #fff;
   gap: 0.625rem;
   position: relative;
   width: 11.875rem;
@@ -285,7 +284,7 @@
   }
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 71.875rem) {
   .application-list {
     max-width: 90%;
   }
@@ -296,12 +295,11 @@
   }
 
   .application-list .filter-option {
-    right: 15.5rem;
-    top: 6.5625rem;
+    right: 65%;
+    top: 15%;
   }
 
   .application-list .application {
-    padding-right: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     gap: 0.5rem;
@@ -319,6 +317,14 @@
   .application-list .button-group {
     justify-content: center;
     flex-direction: column;
-    width: 100%;
+    width: 50%;
+  }
+
+  .application-list .notes textarea {
+    right: -18.925rem;
+  }
+
+  .application-list .application-button {
+    gap: 3.375rem;
   }
 }

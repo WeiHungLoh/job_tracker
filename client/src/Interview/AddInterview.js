@@ -105,7 +105,9 @@ const AddInterview = () => {
             <div className='submit-button'>
                 <button data-testid='add-interview' onClick={handleAdd}>Add Interview</button>
                 <button onClick={() => navigate('/viewinterviews')}>View Interviews</button>
-                <Link to={`/viewapplications#${app.job_id}`}>Back</Link>
+                <Link className='back-button' to={`/viewapplications#${app.job_id}`}>
+                    Back
+                </Link>
             </div>
             <Notification data-testid='noti' message={notification} />
         </div>

@@ -69,7 +69,7 @@
   color: blue;
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 71.875rem) {
   .navbar {
     width: 100%;
     font-size: 0.8rem;
