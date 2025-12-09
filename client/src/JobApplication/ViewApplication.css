@@ -312,6 +312,7 @@
   .application-list .application-content select {
     margin-left: 0;
     margin-top: 0.4375rem;
+    display: block;
   }
 
   .application-list .button-group {
