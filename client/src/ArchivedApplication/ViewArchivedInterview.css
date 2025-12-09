@@ -103,7 +103,7 @@
   gap: 70px;
 }
 
-@media (max-width: 71.875rem) {
+@media (max-width: 71.875rem) and (orientation: portrait)  {
     .archived-interview-list {
     width: 90%;
   }

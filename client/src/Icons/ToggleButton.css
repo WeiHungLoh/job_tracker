@@ -44,7 +44,7 @@
     left: 1.5625rem;
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 71.875rem) and (orientation: portrait) {
     .hide-archive-button {
         right: 15%;
         top: 15%;
