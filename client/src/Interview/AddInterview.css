@@ -61,7 +61,7 @@
   font-size: 0.875rem;
 }
 
-@media (max-width: 71.875rem) {
+@media (max-width: 71.875rem) and (orientation: portrait) {
   .add-interview {
     max-width: 90%;
   }

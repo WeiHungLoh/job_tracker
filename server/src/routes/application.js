@@ -117,4 +117,18 @@ router.put('/:jobId/job-status', async (req, res) => {
     }
 })
 
+/* router.patch('/:jobId', async (req, res) => {
+    const userId = req.user.id
+    const { jobId } = req.params
+    const { jobStatus, notes } = req.body
+    const updates = []
+
+    if (jobStatus) {
+        updates.push(toggleJobStatus(...))
+    }
+        ...
+
+    await Promise.all(updates)
+    })
+*/
 export default router

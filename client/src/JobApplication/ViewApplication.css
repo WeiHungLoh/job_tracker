@@ -284,7 +284,7 @@
   }
 }
 
-@media (max-width: 71.875rem) {
+@media (max-width: 71.875rem) and (orientation: portrait) {
   .application-list {
     max-width: 90%;
   }
