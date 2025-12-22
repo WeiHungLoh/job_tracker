@@ -40,6 +40,8 @@
 .interview-list .interview-content {
   color: #666;
   word-wrap: break-word;
+  gap: 1em;
+  width: 31.25rem;
 }
 
 .interview-list .interview-content .location {

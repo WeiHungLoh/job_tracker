@@ -96,6 +96,7 @@
   color: #666;
   word-wrap: break-word;
   width: 31.25rem;
+  gap: 1em;
 }
 
 .application-list .application-content .location {

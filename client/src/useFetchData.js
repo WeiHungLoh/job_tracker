@@ -10,7 +10,7 @@ const useFetchData = (collectionName) => {
             const res = await fetch(collectionName, {
                 credentials: 'include'
             })
-
+            
             if (!res.ok) {
                 alert('Data not found')
             }
