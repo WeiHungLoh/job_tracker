@@ -1,5 +1,5 @@
 .archived-interview-list {
-  max-width: 710px;
+  max-width: 44.375rem;
   margin: auto;
   display: flex;
   flex-direction: column;
@@ -8,10 +8,10 @@
 
 .archived-interview-list .interview {
   width: 100%;
-  padding-bottom: 20px;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid #ddd;
   display: flex;
-  gap: 60px;
+  gap: 3.75rem;
 }
 
 .archived-interview-list .button-group {
@@ -20,21 +20,23 @@
   cursor: pointer;
   align-items: center;
   color:#fff;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .archived-interview-list .button-group button {
   background-color:#f1356d;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color:#fff;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 }
 
 .archived-interview-list .interview-content {  
   color: #666;
   word-break: break-all;
+  gap: 1em;
+  width: 31.25rem;
 }
 
 .archived-interview-list .interview-content .location {
@@ -48,13 +50,13 @@
 .archived-interview-list .interview-content .notes {
   background-color: #fff9c4;;
   border-left: 4px solid #fbc02d;
-  padding-left: 10px;
-  margin-top: 4px;
+  padding-left: 0.625rem;
+  margin-top: 0.25rem;
   color: #495057;
 }
 
 .archived-interview-list .interview-content h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
   color: black;
 }
 
@@ -71,12 +73,12 @@
 .archived-interview-list .interview-content a {
   background-color: #e0f0ff;
   color: #0d6efd;                 
-  padding: 4px 20px;           
-  border-radius: 5px;            
+  padding: 0.25rem 1.25rem;           
+  border-radius: 0.3125rem;            
   font-weight: bolder;          
-  font-size: 13px;   
-  margin-top: 10px;            
-  letter-spacing: 0.5px; 
+  font-size: 0.8125rem;   
+  margin-top: 0.625rem;            
+  letter-spacing: 0.03125rem; 
   border: none;
   display: flex;
   max-width: fit-content;
@@ -91,16 +93,16 @@
 .archived-interview-list .interview-button button {
   background-color:#f1356d;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color:#fff;
   cursor: pointer;
-  padding: 8px 10px;
-  margin-top: 20px;
+  padding: 0.5rem 0.625rem;
+  margin-top: 1.25rem;
 }
 
 .archived-interview-list .interview-button {
   display: flex;
-  gap: 70px;
+  gap: 4.375rem;
 }
 
 @media (max-width: 71.875rem) and (orientation: portrait)  {
