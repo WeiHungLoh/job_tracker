@@ -6,6 +6,21 @@ import jwt from 'jsonwebtoken'
 const router = express.Router()
 dotenv.config()
 
+const authCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 24 * 60 * 60 * 1000
+}
+
+const clearAuthCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/'
+}
+
 router.post('/signup', async (req, res) => {
     const { email, password } = req.body
 
@@ -57,12 +72,7 @@ router.post('/signin', async (req, res) => {
         )
 
         // Saves token inside cookie to prevent XSS
-        res.cookie('token', ACCESS_TOKEN, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: 24 * 60 * 60 * 1000
-        })
+        res.cookie('token', ACCESS_TOKEN, authCookieOptions)
 
         res.status(200).json({ message: 'Successfully signed in' })
     } catch (error) {
@@ -74,6 +84,11 @@ router.get('/token-verification', async (req, res) => {
     const token = req.cookies.token
 
     if (!token) {
+        console.warn('Token verification failed: no token cookie received', {
+            origin: req.get('origin'),
+            host: req.get('host'),
+            cookieHeaderPresent: Boolean(req.get('cookie'))
+        })
         return res.status(401).json({ message: 'No token found. Please login' })
     }
 
@@ -81,18 +96,18 @@ router.get('/token-verification', async (req, res) => {
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         res.status(200).json({ message: 'Authenticated user' })
     } catch (error) {
-        res.clearCookie('token')
+        console.warn('Token verification failed: invalid token', {
+            origin: req.get('origin'),
+            host: req.get('host'),
+            error: error.message
+        })
+        res.clearCookie('token', clearAuthCookieOptions)
         res.status(404).json({ message: 'Invalid token. Please login' })
     }
 })
 
 router.get('/logout', async (req, res) => {
-    res.clearCookie('token', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        path: '/'
-    })
+    res.clearCookie('token', clearAuthCookieOptions)
     res.status(200).json({ message: 'Successfully logged out '})
 })
 
