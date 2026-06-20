@@ -1,0 +1,120 @@
+.archivedInterviewList {
+  max-width: 44.375rem;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.archivedInterviewList .interview {
+  width: 100%;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  gap: 3.75rem;
+}
+
+.archivedInterviewList .buttonGroup {
+  display: flex;
+  margin-left: auto;
+  cursor: pointer;
+  align-items: center;
+  color:#fff;
+  gap: 0.625rem;
+}
+
+.archivedInterviewList .buttonGroup button {
+  background-color:#f1356d;
+  border: 0;
+  border-radius: 0.625rem;
+  color:#fff;
+  cursor: pointer;
+  padding: 0.5rem 0.625rem;
+}
+
+.archivedInterviewList .interviewContent {  
+  color: #666;
+  word-break: break-all;
+  gap: 1em;
+  width: 31.25rem;
+}
+
+.archivedInterviewList .interviewContent .location {
+  color: #2a9d8f;
+}
+
+.archivedInterviewList .interviewContent .type {
+  color: #5e60ce;
+}
+
+.archivedInterviewList .interviewContent .notes {
+  background-color: #fff9c4;;
+  border-left: 4px solid #fbc02d;
+  padding-left: 0.625rem;
+  margin-top: 0.25rem;
+  color: #495057;
+}
+
+.archivedInterviewList .interviewContent h2 {
+  font-size: 1.5rem;
+  color: black;
+}
+
+.archivedInterviewList .interviewContent .date {
+  font-weight: bold;
+  color: 	#343a40;
+}
+
+.archivedInterviewList .interviewContent p:last-of-type {
+  font-weight: bold;
+  color: 	red;
+}
+
+.archivedInterviewList .interviewContent a {
+  background-color: #e0f0ff;
+  color: #0d6efd;                 
+  padding: 0.25rem 1.25rem;           
+  border-radius: 0.3125rem;            
+  font-weight: bolder;          
+  font-size: 0.8125rem;   
+  margin-top: 0.625rem;            
+  letter-spacing: 0.03125rem; 
+  border: none;
+  display: flex;
+  max-width: fit-content;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.archivedInterviewList .interviewContent a:hover {
+  background-color: #d0e8ff;
+}
+
+.archivedInterviewList .interviewButton button {
+  background-color:#f1356d;
+  border: 0;
+  border-radius: 0.625rem;
+  color:#fff;
+  cursor: pointer;
+  padding: 0.5rem 0.625rem;
+  margin-top: 1.25rem;
+}
+
+.archivedInterviewList .interviewButton {
+  display: flex;
+  gap: 4.375rem;
+}
+
+@media (max-width: 71.875rem) and (orientation: portrait)  {
+    .archivedInterviewList {
+    width: 90%;
+  }
+
+  .archivedInterviewList>h2 {
+    font-size: 1.2rem;
+  }
+
+  .archivedInterviewList .interviewButton {
+    gap: 3.375rem;
+  }
+}

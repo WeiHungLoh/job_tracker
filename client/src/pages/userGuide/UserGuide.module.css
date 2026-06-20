@@ -1,0 +1,54 @@
+.userGuide {
+    padding-top: 10px;
+    max-width: 768px;
+    margin: auto;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+.userGuide h1 {
+    font-size: 1.75rem;
+    font-weight: bold;
+}
+
+.userGuide h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 30px;
+    margin-bottom: 16px;
+}
+
+.userGuide ul {
+    padding-left: 2rem;
+}
+
+.userGuide li {
+    margin-bottom: 0.5rem;
+}
+
+.userGuide p {
+    margin-bottom: 1rem;
+}
+
+.userGuide section {
+    border-bottom: 1px solid #ddd;
+}
+
+.userGuide .tip {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.userGuide code {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #e9ecef;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+@media (max-width: 71.875rem) {
+    .userGuide {
+        max-width: 90%;
+    }
+}

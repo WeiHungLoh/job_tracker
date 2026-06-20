@@ -1,0 +1,2 @@
+export type PingResponse = string
+
