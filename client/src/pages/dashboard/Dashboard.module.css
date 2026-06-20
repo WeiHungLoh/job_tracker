@@ -14,5 +14,6 @@
         padding: 16px;
         grid-template-columns: minmax(0, 1fr);
         gap: 32px;
+        margin-bottom: 20px;
     }
 }

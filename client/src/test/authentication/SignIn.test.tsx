@@ -47,7 +47,7 @@ describe('User sign in flow', () => {
         );
 
         userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
         // Checks that ping API request has been called
@@ -92,7 +92,7 @@ describe('User sign in flow', () => {
         );
 
         userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
         await waitFor(() =>
@@ -138,7 +138,7 @@ describe('User sign in flow', () => {
         );
 
         userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
         await waitFor(() =>
@@ -159,14 +159,13 @@ describe('User sign in flow', () => {
         await waitFor(() => expect(screen.getByText('Incorrect password')).toBeInTheDocument());
     });
 
-    test('redirects user to sign up page', async () => {
+    test('links user to sign up page', () => {
         render(
             <MemoryRouter initialEntries={['/']}>
                 <SignIn />
             </MemoryRouter>
         );
 
-        userEvent.click(screen.getByTestId('signup'));
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-up'), { timeout: 2000 });
+        expect(screen.getByRole('link', { name: /create one/i })).toHaveAttribute('href', '/sign-up');
     });
 });

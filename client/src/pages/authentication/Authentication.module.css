@@ -1,0 +1,153 @@
+.card {
+    width: 100%;
+    max-width: 400px;
+    padding: 32px;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: #fff;
+    border: 1px solid #f0e7eb;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgb(64 32 48 / 14%);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logoIcon {
+    display: flex;
+    margin: auto;
+    color: #f1356d;
+    font-size: 2.5rem;
+}
+
+.title {
+    margin: 10px 0 28px;
+    color: #f1356d;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.card label {
+    color: #343a40;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.inputBox,
+.passwordWrapper {
+    margin: 8px 0 20px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #d9dde3;
+    border-radius: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inputBox:focus-within,
+.passwordWrapper:focus-within {
+    border-color: #f1356d;
+    box-shadow: 0 0 0 3px rgb(241 53 109 / 12%);
+}
+
+.inputBox input,
+.passwordWrapper input {
+    min-width: 0;
+    padding: 12px 10px;
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: inherit;
+}
+
+.leftIcon {
+    flex-shrink: 0;
+    color: #8a8f98;
+}
+
+.toggleVisibility {
+    flex-shrink: 0;
+    color: #6c757d;
+}
+
+.toggleVisibility:hover {
+    color: #f1356d;
+}
+
+.authLink {
+    display: block;
+    margin-top: 20px;
+    color: #0d6efd;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+}
+
+.authLink:hover {
+    color: #084298;
+    text-decoration: underline;
+}
+
+.noticeWrapper {
+    margin-top: 24px;
+    padding: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background-color: #e6f4ff;
+    color: #084298;
+    border-left: 4px solid #0d6efd;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.noticeIcon {
+    flex-shrink: 0;
+}
+
+.userGuideLink {
+    padding: 8px 20px;
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    background-color: #0d6efd;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+}
+
+.userGuideLink:hover {
+    background-color: #084298;
+}
+
+/* Delay autofill background colour from appearing. */
+.card input:-webkit-autofill {
+    transition: background-color 1000s;
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 24px 20px;
+    }
+
+    .title {
+        margin-bottom: 24px;
+    }
+}
