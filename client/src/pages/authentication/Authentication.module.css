@@ -9,6 +9,7 @@
     border-radius: 12px;
     box-shadow: 0 16px 40px rgb(64 32 48 / 14%);
     animation: fadeIn 0.5s ease-in-out;
+    height: 100%;
 }
 
 @keyframes fadeIn {
