@@ -113,9 +113,7 @@ const ViewArchivedInterview = () => {
 
     return (
         <div className={styles.archivedInterviewList}>
-            <h2>Archived Job Interview Viewer</h2>
-
-            {showArchiveInterviewMessage(archivedInterviews) && <div>No archived job interview found. Start archiving now! </div>}
+            {showArchiveInterviewMessage(archivedInterviews) && <div><br/>No archived job interview found. Start archiving now! </div>}
 
             {archivedInterviews.map((interview, index) => (
                 <div className={styles.interview} key={interview.archived_interview_id}>

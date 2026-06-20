@@ -111,9 +111,7 @@ const ViewInterview = () => {
 
     return (
         <div className={styles.interviewList}>
-            <h2>Job Interview Viewer</h2>
-
-            {showAddinterviewMessage(interviews) && <div>No job interview found. Start adding one now! </div>}
+            {showAddinterviewMessage(interviews) && <div><br/>No job interview found. Start adding one now! </div>}
 
             {interviews.map((interview, index) => (
                 <div className={styles.interview} key={interview.interview_id}>

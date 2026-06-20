@@ -178,27 +178,27 @@ const ViewArchivedApplication = () => {
 
     return (
         <div className={styles.archivedApplicationList}>
-            <h2>Archived Job Application Viewer</h2>
+            <div className={styles.listControls}>
+                <div className={styles.filterOption}>
+                    <div>Filter by</div>
+                    <select role='listbox' value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
+                        <option value='Show All'>Show All</option>
+                        <option value='Accepted'>Accepted</option>
+                        <option value='Applied'>Applied</option>
+                        <option value='Declined'>Declined</option>
+                        <option value='Ghosted'>Ghosted</option>
+                        <option value='Interview'>Interview</option>
+                        <option value='Offer'>Offer</option>
+                        <option value='Rejected'>Rejected</option>
+                    </select>
+                </div>
 
-            <div className={styles.filterOption}>
-                <div>Filter by</div>
-                <select role='listbox' value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
-                    <option value='Show All'>Show All</option>
-                    <option value='Accepted'>Accepted</option>
-                    <option value='Applied'>Applied</option>
-                    <option value='Declined'>Declined</option>
-                    <option value='Ghosted'>Ghosted</option>
-                    <option value='Interview'>Interview</option>
-                    <option value='Offer'>Offer</option>
-                    <option value='Rejected'>Rejected</option>
-                </select>
+                {hasApplications(filteredApplications) &&
+                    <ShowNotesButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)}
+                 />}
             </div>
 
-            {hasApplications(filteredApplications) &&
-                <ShowNotesButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)}
-             />}
-
-            {showArchiveApplicationMessage(filteredApplications) && <div>No archived job application with that job status found. Start archiving now! </div>}
+            {showArchiveApplicationMessage(filteredApplications) && <div><br/>No archived job application with that job status found. Start archiving now! </div>}
 
             {filteredApplications && filteredApplications.map((application, index) => (
                 <div className={styles.application} key={application.archived_job_id} id={String(application.archived_job_id)}>
