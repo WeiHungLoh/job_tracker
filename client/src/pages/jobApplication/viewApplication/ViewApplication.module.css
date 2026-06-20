@@ -224,7 +224,37 @@
     }
 }
 
-@media (max-width: 1150px) and (orientation: portrait) {
+@media (min-width: 804px) and (max-width: 1469px) {
+    .application {
+        flex-wrap: wrap;
+    }
+
+    .applicationContent {
+        flex: 1 1 500px;
+        width: auto;
+        min-width: 0;
+        padding: 20px;
+    }
+
+    .buttonGroup {
+        flex: 0 0 190px;
+    }
+
+    .notes {
+        flex: 1 0 100%;
+        margin-top: 16px;
+    }
+
+    .notes textarea {
+        position: static;
+        display: block;
+        width: 95%;
+        height: 160px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 803px) {
     .applicationList {
         max-width: 90%;
     }
