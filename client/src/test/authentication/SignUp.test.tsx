@@ -53,7 +53,7 @@ describe('User sign up flow', () => {
         await waitFor(() => expect(screen.getByText(
             'Sign up succesful! Redirecting you to login page'
         )).toBeInTheDocument())
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/authentication/sign-in'), { timeout: 2000 })
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-in'), { timeout: 2000 })
     })
 
     test('shows alert on failed sign-up due to existing user', async () => {
@@ -93,12 +93,12 @@ describe('User sign up flow', () => {
 
     test('redirects user to sign in page', async () => {
         render(
-            <MemoryRouter initialEntries={['/authentication/sign-up']}>
+            <MemoryRouter initialEntries={['/sign-up']}>
                 <SignUp />
             </MemoryRouter>
         )
 
         userEvent.click(screen.getByText(/Already have an account?/i))
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/authentication/sign-in'), { timeout: 2000 })
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-in'), { timeout: 2000 })
     })
 })

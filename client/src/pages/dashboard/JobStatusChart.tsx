@@ -101,6 +101,7 @@ const JobStatusChart = () => {
 
     const options: ChartOptions<'pie'> = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             title: {
                 display: true,

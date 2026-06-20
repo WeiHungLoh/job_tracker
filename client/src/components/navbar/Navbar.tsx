@@ -1,11 +1,13 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { IoMdArchive } from 'react-icons/io'
-import { IoNewspaperOutline } from 'react-icons/io5'
+import Icon from '../icon/Icon'
+import PrimaryButton from '../button/PrimaryButton'
 import { routes } from '../../routes'
 import styles from './Navbar.module.css'
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI'
 import { useToast } from '../toast/ToastProvider'
+
+const archivedLocations: readonly string[] = [routes.archivedApplications, routes.archivedInterviews]
 
 const Navbar = () => {
     const location = useLocation()
@@ -14,44 +16,10 @@ const Navbar = () => {
     const [archived, setArchived] = useState(false)
     const api = useJobTrackerAPI()
     const { showErrorToast } = useToast()
-    const archivedLocations: readonly string[] = [routes.archivedApplications, routes.archivedInterviews]
 
     useEffect(() => {
-        if (archivedLocations.includes(currLocation)) {
-            setArchived(true)
-        } else {
-            setArchived(false)
-        }
-    }, [location])
-
-    const showArchivedMessage = (archived: boolean) => {
-        return archived ? 'Show Active' : 'Show Archived'
-    }
-
-    const showArchivedIcon = (archived: boolean) => {
-        return archived ? <IoMdArchive /> : <IoNewspaperOutline />
-    }
-
-    const isAddApplicationActive = (currentLocation: string) => {
-        if (currentLocation === routes.addApplication) {
-            return true
-        }
-        return false
-    }
-
-    const isDashBoardActive = (currentLocation: string) => {
-        if (currentLocation === routes.dashboard) {
-            return true
-        }
-        return false
-    }
-
-    const isViewApplicationsActive = (currentLocation: string) => {
-        if (currentLocation === routes.viewApplications) {
-            return true
-        }
-        return false
-    }
+        setArchived(archivedLocations.includes(currLocation))
+    }, [currLocation])
 
     const handleSignOut = async () => {
         try {
@@ -62,44 +30,24 @@ const Navbar = () => {
         }
     }
 
-    const isViewInterviewsActive = (currentLocation: string) => {
-        if (currentLocation === routes.viewInterviews) {
-            return true
-        }
-        return false
-    }
-
-    const isViewArchivedApplicationsActive = (currentLocation: string) => {
-        if (currentLocation === routes.archivedApplications) {
-            return true
-        }
-        return false
-    }
-    const isViewArchivedInterviewsActive = (currentLocation: string) => {
-        if (currentLocation === routes.archivedInterviews) {
-            return true
-        }
-        return false
-    }
-
     return (
         <nav className={styles.navbar}>
             <h1>Job Tracker</h1>
             <div className={styles.links}>
                 {!archived &&
                     <>
-                        <NavLink to={routes.dashboard} className={isDashBoardActive(currLocation) ? styles.active : styles.inactive} >
+                        <NavLink to={routes.dashboard} className={currLocation === routes.dashboard ? styles.active : styles.inactive} >
                             Dashboard
                         </NavLink>
-                        <NavLink to={routes.addApplication} className={isAddApplicationActive(currLocation) ? styles.active : styles.inactive}>
+                        <NavLink to={routes.addApplication} className={currLocation === routes.addApplication ? styles.active : styles.inactive}>
                             Add Job Application
                         </NavLink>
 
-                        <NavLink to={routes.viewApplications} className={isViewApplicationsActive(currLocation) ? styles.active : styles.inactive}>
+                        <NavLink to={routes.viewApplications} className={currLocation === routes.viewApplications ? styles.active : styles.inactive}>
                             View Job Applications
                         </NavLink>
 
-                        <NavLink to={routes.viewInterviews} className={isViewInterviewsActive(currLocation) ? styles.active : styles.inactive}>
+                        <NavLink to={routes.viewInterviews} className={currLocation === routes.viewInterviews ? styles.active : styles.inactive}>
                             View Interviews
                         </NavLink>
                     </>
@@ -107,18 +55,18 @@ const Navbar = () => {
 
                 {archived &&
                     <>
-                        <NavLink to={routes.archivedApplications} className={isViewArchivedApplicationsActive(currLocation) ? styles.active : styles.inactive}>
+                        <NavLink to={routes.archivedApplications} className={currLocation === routes.archivedApplications ? styles.active : styles.inactive}>
                             View Archived Applications
                         </NavLink>
-                        <NavLink to={routes.archivedInterviews} className={isViewArchivedInterviewsActive(currLocation) ? styles.active : styles.inactive}>
+                        <NavLink to={routes.archivedInterviews} className={currLocation === routes.archivedInterviews ? styles.active : styles.inactive}>
                             View Archived Interviews
                         </NavLink>
                     </>
                 }
-                <div role='set-archived' className={styles.archiveStatus} onClick={() => setArchived(!archived)}>
-                    <span>{showArchivedIcon(archived)} {' '}</span>
-                    <span>{showArchivedMessage(archived)}</span>
-                </div>
+                <PrimaryButton variant='navigation' type='button' className={styles.archiveStatus} onClick={() => setArchived(!archived)}>
+                    <Icon name={archived ? 'archive' : 'activeApplications'} />
+                    <span>{archived ? 'Show Active' : 'Show Archived'}</span>
+                </PrimaryButton>
 
                 <NavLink to={routes.signIn} className={styles.inactive} onClick={handleSignOut} >Logout</NavLink>
 

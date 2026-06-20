@@ -1,3 +1,4 @@
+import PrimaryButton from '../button/PrimaryButton'
 import type { ToastContainerProps } from './models'
 import styles from './ToastContainer.module.css'
 
@@ -16,14 +17,15 @@ const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
                     role={toast.type === 'error' ? 'alert' : 'status'}
                 >
                     <span>{toast.message}</span>
-                    <button
+                    <PrimaryButton
                         aria-label='Dismiss notification'
                         className={styles.dismissButton}
                         onClick={() => onDismiss(toast.id)}
                         type='button'
+                        variant='icon'
                     >
                         &times;
-                    </button>
+                    </PrimaryButton>
                 </div>
             ))}
         </div>

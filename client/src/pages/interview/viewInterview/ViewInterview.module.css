@@ -1,5 +1,5 @@
 .interviewList {
-  max-width: 44.375rem;
+  max-width: 710px;
   margin: auto;
   display: flex;
   flex-direction: column;
@@ -8,10 +8,10 @@
 
 .interviewList .interview {
   width: 100%;
-  padding-bottom: 1.25rem;
+  padding-bottom: 20px;
   border-bottom: 1px solid #ddd;
   display: flex;
-  gap: 3.75rem;
+  gap: 60px;
 }
 
 .interviewList .buttonGroup {
@@ -20,28 +20,19 @@
   cursor: pointer;
   align-items: center;
   color: #fff;
-  gap: 0.625rem;
-}
-
-.interviewList .buttonGroup button {
-  background-color: #f1356d;
-  border: 0;
-  border-radius: 0.625rem;
-  color: #fff;
-  cursor: pointer;
-  padding: 0.5rem 0.625rem;
+  gap: 10px;
 }
 
 .interviewList .interviewButton {
   display: flex;
-  gap: 4.375rem;
+  gap: 70px;
 }
 
 .interviewList .interviewContent {
   color: #666;
   word-wrap: break-word;
-  gap: 1em;
-  width: 31.25rem;
+  gap: 16px;
+  width: 500px;
 }
 
 .interviewList .interviewContent .location {
@@ -54,10 +45,9 @@
 
 .interviewList .interviewContent .notes {
   background-color: #fff9c4;
-  ;
-  border-left: 0.25rem solid #fbc02d;
-  padding-left: 0.625rem;
-  margin-top: 0.25rem;
+  border-left: 4px solid #fbc02d;
+  padding-left: 10px;
+  margin-top: 4px;
   color: #495057;
 }
 
@@ -79,12 +69,12 @@
 .interviewList .interviewContent a {
   background-color: #e0f0ff;
   color: #0d6efd;
-  padding: 0.25rem 1.25rem;
-  border-radius: 0.3125rem;
+  padding: 4px 20px;
+  border-radius: 5px;
   font-weight: bolder;
   font-size: 0.8125rem;
-  margin-top: 0.625rem;
-  letter-spacing: 0.03125rem;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
   border: none;
   display: flex;
   max-width: fit-content;
@@ -97,16 +87,10 @@
 }
 
 .interviewList .interviewButton button {
-  background-color: #f1356d;
-  border: 0;
-  border-radius: 0.625rem;
-  color: #fff;
-  cursor: pointer;
-  padding: 0.5rem 0.625rem;
-  margin-top: 1.25rem;
+  margin-top: 20px;
 }
 
-@media (max-width: 71.875rem) and (orientation: portrait)  {
+@media (max-width: 1150px) and (orientation: portrait)  {
   .interviewList {
     width: 90%;
   }
@@ -116,6 +100,6 @@
   }
 
   .interviewList .interviewButton {
-    gap: 3.375rem;
+    gap: 54px;
   }
 }

@@ -163,6 +163,6 @@ describe('User sign in flow', () => {
         )
 
         userEvent.click(screen.getByTestId('signup'))
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/authentication/sign-up'), { timeout: 2000 })
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-up'), { timeout: 2000 })
     })
 })

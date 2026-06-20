@@ -4,6 +4,7 @@ import type { ArchivedJobApplication } from '../models'
 import { CSVLink } from 'react-csv'
 import DateFormatter from '../../../helper/dateFormatter'
 import type { EntityId } from '../../jobApplication/models'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 import ShowNotesButton from '../../../components/showNotesButton/ShowNotesButton'
 import styles from './ViewArchivedApplication.module.css'
 import { useConfirm } from 'material-ui-confirm'
@@ -219,14 +220,14 @@ const ViewArchivedApplication = () => {
 
                     <div className={styles.buttonGroup}>
                         <div onClick={() => handleUnarchive(application.archived_job_id)}>
-                            <button>
+                            <PrimaryButton>
                                 Unarchive
-                            </button>
+                            </PrimaryButton>
                         </div>
 
-                        <button onClick={() => handleDelete(application.archived_job_id)}>
+                        <PrimaryButton onClick={() => handleDelete(application.archived_job_id)}>
                             Delete
-                        </button>
+                        </PrimaryButton>
                     </div>
                     {toggleNotes &&
                     <div className={styles.notes}>
@@ -245,8 +246,8 @@ const ViewArchivedApplication = () => {
 
             <div className={styles.applicationButton}>
                 {hasApplications(filteredApplications) && <>
-                    <button onClick={() => handleDeleteAll()}>Delete all archived applications</button>
-                    <button>
+                    <PrimaryButton onClick={() => handleDeleteAll()}>Delete all archived applications</PrimaryButton>
+                    <PrimaryButton>
                         <CSVLink
                             data={data}
                             headers={headers}
@@ -255,7 +256,7 @@ const ViewArchivedApplication = () => {
                         >
                             Export as CSV
                         </CSVLink>
-                    </button>
+                    </PrimaryButton>
                 </>}
             </div>
         </div>

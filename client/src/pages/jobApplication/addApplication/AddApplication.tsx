@@ -1,5 +1,6 @@
 import { JobTrackerAPIError } from '../../../api/models'
 import type { MouseEvent } from 'react'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 import { routes } from '../../../routes'
 import styles from './AddApplication.module.css'
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI'
@@ -127,8 +128,8 @@ const AddApplication = () => {
             />
 
             <div className={styles.submitButton}>
-                <button onClick={handleAdd}>Add Job Application</button>
-                <button onClick={() => navigate(routes.viewApplications)}>View Job Applications</button>
+                <PrimaryButton variant='compact' onClick={handleAdd}>Add Job Application</PrimaryButton>
+                <PrimaryButton variant='compact' onClick={() => navigate(routes.viewApplications)}>View Job Applications</PrimaryButton>
             </div>
         </div>
     )

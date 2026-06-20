@@ -5,6 +5,7 @@ import { CSVLink } from 'react-csv'
 import DateFormatter from '../../../helper/dateFormatter'
 import type { EntityId } from '../../jobApplication/models'
 import { Link } from 'react-router-dom'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 import { routes } from '../../../routes'
 import styles from './ViewArchivedInterview.module.css'
 import { useConfirm } from 'material-ui-confirm'
@@ -135,17 +136,17 @@ const ViewArchivedInterview = () => {
                     </div>
 
                     <div className={styles.buttonGroup}>
-                        <button onClick={() => handleDelete(interview.archived_interview_id)}>
+                        <PrimaryButton onClick={() => handleDelete(interview.archived_interview_id)}>
                             Delete
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </div>
             ))}
 
             <div className={styles.interviewButton}>
                 {hasInterviews(archivedInterviews) && <>
-                    <button onClick={() => handleDeleteAll()}>Delete all archived interviews</button>
-                    <button>
+                    <PrimaryButton onClick={() => handleDeleteAll()}>Delete all archived interviews</PrimaryButton>
+                    <PrimaryButton>
                         <CSVLink
                             data={data}
                             headers={headers}
@@ -154,7 +155,7 @@ const ViewArchivedInterview = () => {
                         >
                             Export as CSV
                         </CSVLink>
-                    </button>
+                    </PrimaryButton>
                 </>}
             </div>
         </div>

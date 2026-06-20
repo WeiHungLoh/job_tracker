@@ -3,6 +3,7 @@ import type { JobApplication } from '../../jobApplication/models'
 import { JobTrackerAPIError } from '../../../api/models'
 import type { Location } from 'react-router-dom'
 import type { MouseEvent } from 'react'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 import { routes } from '../../../routes'
 import styles from './AddInterview.module.css'
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI'
@@ -106,8 +107,8 @@ const AddInterview = () => {
             />
 
             <div className={styles.submitButton}>
-                <button data-testid='add-interview' onClick={handleAdd}>Add Interview</button>
-                <button onClick={() => navigate(routes.viewInterviews)}>View Interviews</button>
+                <PrimaryButton data-testid='add-interview' onClick={handleAdd}>Add Interview</PrimaryButton>
+                <PrimaryButton onClick={() => navigate(routes.viewInterviews)}>View Interviews</PrimaryButton>
                 <Link to={`${routes.viewApplications}#${app.job_id}`}>
                     Back
                 </Link>

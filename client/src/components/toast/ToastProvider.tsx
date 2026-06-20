@@ -5,7 +5,7 @@ import ToastContainer from './ToastContainer'
 const ToastContext = createContext<ToastContextValue | undefined>(undefined)
 const toastDurationMilliseconds = 5000
 
-export const ToastProvider = ({ children }: PropsWithChildren) => {
+export const ToastProvider = (props: PropsWithChildren) => {
     const [toasts, setToasts] = useState<ToastMessage[]>([])
     // To keep track of current toast ID
     const nextToastId = useRef(0)
@@ -47,7 +47,7 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
 
     return (
         <ToastContext.Provider value={contextValue}>
-            {children}
+            {props.children}
             <ToastContainer onDismiss={dismissToast} toasts={toasts} />
         </ToastContext.Provider>
     )

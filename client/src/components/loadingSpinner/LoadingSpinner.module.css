@@ -1,11 +1,23 @@
 .loadingSpinner {
+    position: relative;
     display: inline-block;
-    width: 0.625rem;
-    height: 0.625rem;
-    border: 0.125rem solid #dddd;
-    border-top-color: black;
+    flex-shrink: 0;
+    animation: loading 1.4s linear infinite;
+}
+
+.loadingSpinner::before {
+    position: absolute;
+    inset: 0;
     border-radius: 50%;
-    animation: loading 1s ease infinite;
+    background: conic-gradient(
+        transparent 0 4%,
+        #f1356d 4.2% 54%,
+        transparent 54.2% 58%,
+        #e1e3e6 58.2% 100%
+    );
+    content: '';
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(70% - 1px), #000 70%, #000 calc(100% - 1px), transparent 100%);
+    mask: radial-gradient(farthest-side, transparent calc(70% - 1px), #000 70%, #000 calc(100% - 1px), transparent 100%);
 }
 
 @keyframes loading {

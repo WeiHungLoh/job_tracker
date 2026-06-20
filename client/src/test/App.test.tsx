@@ -100,8 +100,8 @@ describe('App routing and authentication behavior', () => {
     },
   )
 
-  test('hides navigation bar on public routes like "/authentication/sign-up"', () => {
-    renderRoute('/authentication/sign-up')
+  test('hides navigation bar on public routes like "/sign-up"', () => {
+    renderRoute('/sign-up')
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
   })
 
