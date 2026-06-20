@@ -278,7 +278,7 @@
     .buttonGroup {
         justify-content: center;
         flex-direction: column;
-        width: 50%;
+        width: 20%;
     }
 
     .notes textarea {
