@@ -1,7 +1,7 @@
-import { MemoryRouter } from 'react-router-dom'
-import UserGuide from '../../pages/userGuide/UserGuide'
-import { render } from '../renderWithToast'
-import { screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom';
+import UserGuide from '../../pages/userGuide/UserGuide';
+import { render } from '../renderWithToast';
+import { screen } from '@testing-library/react';
 
 describe('renders user guide properly', () => {
     test('displays user guide', () => {
@@ -9,7 +9,7 @@ describe('renders user guide properly', () => {
             <MemoryRouter initialEntries={['/userGuide']}>
                 <UserGuide />
             </MemoryRouter>
-        )
-        expect(screen.getByTestId('ug')).toBeInTheDocument()
-    })
-})
+        );
+        expect(screen.getByTestId('ug')).toBeInTheDocument();
+    });
+});

@@ -1,15 +1,15 @@
-import PrimaryButton from '../button/PrimaryButton'
-import type { ToastContainerProps } from './models'
-import styles from './ToastContainer.module.css'
+import PrimaryButton from '../button/PrimaryButton';
+import type { ToastContainerProps } from './models';
+import styles from './ToastContainer.module.css';
 
 const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
     if (toasts.length === 0) {
-        return null
+        return null;
     }
 
     return (
         <div className={styles.toastContainer} data-testid='toast-container'>
-            {toasts.map(toast => (
+            {toasts.map((toast) => (
                 <div
                     className={`${styles.toast} ${toast.type === 'error' ? styles.errorToast : styles.successToast}`}
                     data-testid='toast'
@@ -29,7 +29,7 @@ const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
                 </div>
             ))}
         </div>
-    )
-}
+    );
+};
 
-export default ToastContainer
+export default ToastContainer;

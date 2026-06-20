@@ -9,8 +9,7 @@ const ArchiveToggleButton = ({ toggled, onToggle }: ArchiveToggleButtonProps) =>
     return (
         <div className={styles.archiveToggleButton}>
             <div>{buttonMessage(toggled)}</div>
-            <button className={`${styles.toggleButton} ${toggled ? styles.active : ''}`}
-                onClick={onToggle}>
+            <button className={`${styles.toggleButton} ${toggled ? styles.active : ''}`} onClick={onToggle}>
                 <div className={styles.thumb} />
             </button>
         </div>

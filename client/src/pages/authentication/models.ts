@@ -1,23 +1,23 @@
 export type SignInRequest = {
-    email: string
-    password: string
-}
+    email: string;
+    password: string;
+};
 
 export type SignInResponse = {
-    message: string
-}
+    message: string;
+};
 
 export type SignUpRequest = {
-    email: string
-    password: string
-}
+    email: string;
+    password: string;
+};
 
-export type SignUpResponse = string
+export type SignUpResponse = string;
 
-export type VerifyAuthenticationRequest = null
+export type VerifyAuthenticationRequest = null;
 export type VerifyAuthenticationResponse = {
-    message: string
-}
+    message: string;
+};
 
-export type LogoutRequest = null
-export type LogoutResponse = null
+export type LogoutRequest = null;
+export type LogoutResponse = null;

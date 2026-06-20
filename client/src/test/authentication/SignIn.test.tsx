@@ -1,28 +1,28 @@
-import { screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import SignIn from '../../pages/authentication/signIn/SignIn'
-import { render } from '../renderWithToast'
-import userEvent from '@testing-library/user-event'
+import { screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import SignIn from '../../pages/authentication/signIn/SignIn';
+import { render } from '../renderWithToast';
+import userEvent from '@testing-library/user-event';
 
-const mockNavigate = vi.fn()
+const mockNavigate = vi.fn();
 
 vi.mock('react-router-dom', async () => ({
-    ...await vi.importActual('react-router-dom'),
-    useNavigate: () => mockNavigate
-}))
+    ...(await vi.importActual('react-router-dom')),
+    useNavigate: () => mockNavigate,
+}));
 
-globalThis.fetch = vi.fn()
+globalThis.fetch = vi.fn();
 
-globalThis.alert = vi.fn()
+globalThis.alert = vi.fn();
 
 describe('User sign in flow', () => {
     // Resets the state of fetch and mockNavigate
     beforeEach(() => {
-        fetch.mockReset()
-        fetch.mockResolvedValue({ headers: new Headers(), ok: true, status: 200, statusText: '', url: '' })
-        mockNavigate.mockReset()
-        alert.mockReset()
-    })
+        fetch.mockReset();
+        fetch.mockResolvedValue({ headers: new Headers(), ok: true, status: 200, statusText: '', url: '' });
+        mockNavigate.mockReset();
+        alert.mockReset();
+    });
 
     test('signs in successfully and redirects to /application/add page', async () => {
         globalThis.fetch
@@ -30,42 +30,44 @@ describe('User sign in flow', () => {
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => 'testing'
+                text: async () => 'testing',
             })
             // For POST request to backend
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
                 headers: new Headers({ 'content-type': 'application/json' }),
-                json: async () => ({ message: 'Successfully signed in' })
-            })
+                json: async () => ({ message: 'Successfully signed in' }),
+            });
 
         render(
             <MemoryRouter>
                 <SignIn />
             </MemoryRouter>
-        )
+        );
 
-        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com')
-        userEvent.type(screen.getByLabelText(/password/i), '123456')
-        userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
+        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
         // Checks that ping API request has been called
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' }))
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' })
+        );
 
         // Checks that a fetch request that matches the format below has been
         // called after filling in email and password
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`,
-            {
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' })
-            }
-        ))
+                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
+            })
+        );
 
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/application/add'))
-    })
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/application/add'));
+    });
 
     test('shows alert on failed sign in due to non-existent email', async () => {
         globalThis.fetch
@@ -73,43 +75,45 @@ describe('User sign in flow', () => {
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => 'testing'
+                text: async () => 'testing',
             })
             // For POST request to backend
             .mockResolvedValueOnce({
                 ok: false,
                 status: 404,
                 headers: new Headers({ 'content-type': 'application/json' }),
-                json: async () => ({ message: 'User does not exist. Please create an account' })
-            })
+                json: async () => ({ message: 'User does not exist. Please create an account' }),
+            });
 
         render(
             <MemoryRouter>
                 <SignIn />
             </MemoryRouter>
-        )
+        );
 
-        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com')
-        userEvent.type(screen.getByLabelText(/password/i), '123456')
-        userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
+        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' }))
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' })
+        );
 
         // Checks that a fetch request that matches the format below has been
         // called after filling in email and password
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`,
-            {
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' })
-            }
-        ))
+                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
+            })
+        );
 
-        await waitFor(() => expect(screen.getByText(
-            'User does not exist. Please create an account'
-        )).toBeInTheDocument())
-    })
+        await waitFor(() =>
+            expect(screen.getByText('User does not exist. Please create an account')).toBeInTheDocument()
+        );
+    });
 
     test('shows alert on failed sign in due to incorrect password', async () => {
         globalThis.fetch
@@ -117,52 +121,52 @@ describe('User sign in flow', () => {
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => 'testing'
+                text: async () => 'testing',
             })
             // For POST request to backend
             .mockResolvedValueOnce({
                 ok: false,
                 status: 404,
                 headers: new Headers({ 'content-type': 'application/json' }),
-                json: async () => ({ message: 'Incorrect password' })
-            })
+                json: async () => ({ message: 'Incorrect password' }),
+            });
 
         render(
             <MemoryRouter>
                 <SignIn />
             </MemoryRouter>
-        )
+        );
 
-        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com')
-        userEvent.type(screen.getByLabelText(/password/i), '123456')
-        userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
+        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' }))
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' })
+        );
 
         // Checks that a fetch request that matches the format below has been
         // called after filling in email and password
-        await waitFor(() => expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`,
-            {
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' })
-            }
-        ))
+                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
+            })
+        );
 
-        await waitFor(() => expect(screen.getByText(
-            'Incorrect password'
-        )).toBeInTheDocument())
-    })
+        await waitFor(() => expect(screen.getByText('Incorrect password')).toBeInTheDocument());
+    });
 
     test('redirects user to sign up page', async () => {
         render(
             <MemoryRouter initialEntries={['/']}>
                 <SignIn />
             </MemoryRouter>
-        )
+        );
 
-        userEvent.click(screen.getByTestId('signup'))
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-up'), { timeout: 2000 })
-    })
-})
+        userEvent.click(screen.getByTestId('signup'));
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-up'), { timeout: 2000 });
+    });
+});

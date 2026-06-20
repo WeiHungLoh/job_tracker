@@ -8,12 +8,12 @@
     align-items: center;
 }
 
-.jobStatusChart .application {
+.application {
     font-size: 0.8rem;
     font-weight: bold;
 }
 
-.jobStatusChart .noApplicationMessage {
+.noApplicationMessage {
     text-align: center;
 }
 

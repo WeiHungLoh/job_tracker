@@ -1,105 +1,105 @@
 .interviewList {
-  max-width: 710px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    max-width: 710px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.interviewList .interview {
-  width: 100%;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  gap: 60px;
+.interview {
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 60px;
 }
 
-.interviewList .buttonGroup {
-  display: flex;
-  margin-left: auto;
-  cursor: pointer;
-  align-items: center;
-  color: #fff;
-  gap: 10px;
+.buttonGroup {
+    display: flex;
+    margin-left: auto;
+    cursor: pointer;
+    align-items: center;
+    color: #fff;
+    gap: 10px;
 }
 
-.interviewList .interviewButton {
-  display: flex;
-  gap: 70px;
+.interviewButton {
+    display: flex;
+    gap: 70px;
 }
 
-.interviewList .interviewContent {
-  color: #666;
-  word-wrap: break-word;
-  gap: 16px;
-  width: 500px;
+.interviewContent {
+    color: #666;
+    word-wrap: break-word;
+    gap: 16px;
+    width: 500px;
 }
 
-.interviewList .interviewContent .location {
-  color: #2a9d8f;
+.location {
+    color: #2a9d8f;
 }
 
-.interviewList .interviewContent .type {
-  color: #5e60ce;
+.type {
+    color: #5e60ce;
 }
 
-.interviewList .interviewContent .notes {
-  background-color: #fff9c4;
-  border-left: 4px solid #fbc02d;
-  padding-left: 10px;
-  margin-top: 4px;
-  color: #495057;
+.notes {
+    background-color: #fff9c4;
+    border-left: 4px solid #fbc02d;
+    padding-left: 10px;
+    margin-top: 4px;
+    color: #495057;
 }
 
-.interviewList .interviewContent h2 {
-  font-size: 1.5rem;
-  color: black;
+.interviewContent h2 {
+    font-size: 1.5rem;
+    color: black;
 }
 
-.interviewList .interviewContent .date {
-  font-weight: bold;
-  color: #343a40;
+.date {
+    font-weight: bold;
+    color: #343a40;
 }
 
-.interviewList .interviewContent p:last-of-type {
-  font-weight: bold;
-  color: red;
+.interviewContent p:last-of-type {
+    font-weight: bold;
+    color: red;
 }
 
-.interviewList .interviewContent a {
-  background-color: #e0f0ff;
-  color: #0d6efd;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: bolder;
-  font-size: 0.8125rem;
-  margin-top: 10px;
-  letter-spacing: 0.5px;
-  border: none;
-  display: flex;
-  max-width: fit-content;
-  cursor: pointer;
-  text-decoration: none;
+.interviewContent a {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.interviewList .interviewContent a:hover {
-  background-color: #d0e8ff;
+.interviewContent a:hover {
+    background-color: #d0e8ff;
 }
 
-.interviewList .interviewButton button {
-  margin-top: 20px;
+.interviewButton button {
+    margin-top: 20px;
 }
 
-@media (max-width: 1150px) and (orientation: portrait)  {
-  .interviewList {
-    width: 90%;
-  }
+@media (max-width: 1150px) and (orientation: portrait) {
+    .interviewList {
+        width: 90%;
+    }
 
-  .interviewList>h2 {
-    font-size: 1.2rem;
-  }
+    .interviewList > h2 {
+        font-size: 1.2rem;
+    }
 
-  .interviewList .interviewButton {
-    gap: 54px;
-  }
+    .interviewButton {
+        gap: 54px;
+    }
 }

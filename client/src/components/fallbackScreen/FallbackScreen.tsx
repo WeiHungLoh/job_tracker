@@ -1,7 +1,7 @@
-import type { FallbackScreenProps } from './models'
-import LoadingSpinner from '../loadingSpinner/LoadingSpinner'
-import PrimaryButton from '../button/PrimaryButton'
-import styles from './FallbackScreen.module.css'
+import type { FallbackScreenProps } from './models';
+import LoadingSpinner from '../loadingSpinner/LoadingSpinner';
+import PrimaryButton from '../button/PrimaryButton';
+import styles from './FallbackScreen.module.css';
 
 const FallbackScreen = ({ error = false, onRetry }: FallbackScreenProps) => (
     <main className={styles.fallback} aria-live='polite' aria-busy={!error}>
@@ -9,7 +9,9 @@ const FallbackScreen = ({ error = false, onRetry }: FallbackScreenProps) => (
             {error ? (
                 <>
                     <h2>Unable to verify authentication. Please try again.</h2>
-                    <PrimaryButton onClick={onRetry} type='button'>Try again</PrimaryButton>
+                    <PrimaryButton onClick={onRetry} type='button'>
+                        Try again
+                    </PrimaryButton>
                 </>
             ) : (
                 <>
@@ -19,6 +21,6 @@ const FallbackScreen = ({ error = false, onRetry }: FallbackScreenProps) => (
             )}
         </div>
     </main>
-)
+);
 
-export default FallbackScreen
+export default FallbackScreen;

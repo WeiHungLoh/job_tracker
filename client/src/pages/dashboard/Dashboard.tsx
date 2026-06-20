@@ -1,6 +1,6 @@
-import ApplicationsLineChart from './ApplicationsLineChart'
-import JobStatusChart from './JobStatusChart'
-import styles from './Dashboard.module.css'
+import ApplicationsLineChart from './ApplicationsLineChart';
+import JobStatusChart from './JobStatusChart';
+import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
     return (
@@ -8,7 +8,7 @@ const Dashboard = () => {
             <ApplicationsLineChart />
             <JobStatusChart />
         </div>
-    )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;
