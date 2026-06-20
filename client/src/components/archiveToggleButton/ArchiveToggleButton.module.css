@@ -1,0 +1,41 @@
+.archiveToggleButton {
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.toggleButton {
+    background-color: #b7b9ba;
+    border: 1px solid #aaa;
+    border-radius: 99px;
+    width: 50px;
+    height: 28px;
+    transition: background-color 0.1s ease, border-color 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    margin: auto;
+}
+
+.toggleButton .thumb {
+    height: 20px;
+    width: 20px;
+    background-color: #ffff;
+    border-radius: 99px;
+    transition: left 0.15s ease;
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.toggleButton.active {
+    background-color: #15b58e;
+}
+
+.toggleButton:hover {
+    border-color: #6f6f6f;
+}
+
+.toggleButton.active .thumb {
+    left: 25px;
+}
