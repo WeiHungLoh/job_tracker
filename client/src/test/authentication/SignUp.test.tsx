@@ -36,7 +36,7 @@ describe('User sign up flow', () => {
         );
 
         userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
         // Checks that a fetch request that matches the format below has been
@@ -73,7 +73,7 @@ describe('User sign up flow', () => {
         );
 
         userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/password/i), '123456');
+        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
         // Checks that a fetch request that matches the format below has been
@@ -89,14 +89,13 @@ describe('User sign up flow', () => {
         await waitFor(() => expect(screen.getByText('Failed to sign up: User already exists')).toBeInTheDocument());
     });
 
-    test('redirects user to sign in page', async () => {
+    test('links user to sign in page', () => {
         render(
             <MemoryRouter initialEntries={['/sign-up']}>
                 <SignUp />
             </MemoryRouter>
         );
 
-        userEvent.click(screen.getByText(/Already have an account?/i));
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-in'), { timeout: 2000 });
+        expect(screen.getByRole('link', { name: /already have an account/i })).toHaveAttribute('href', '/sign-in');
     });
 });
