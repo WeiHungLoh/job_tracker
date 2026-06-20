@@ -224,7 +224,7 @@
     }
 }
 
-@media (min-width: 804px) and (max-width: 1469px) {
+@media (min-width: 804px) and (max-width: 1422px) {
     .application {
         flex-wrap: wrap;
     }
