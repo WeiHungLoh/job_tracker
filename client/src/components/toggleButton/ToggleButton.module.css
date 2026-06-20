@@ -1,8 +1,6 @@
 .hideArchiveButton {
     font-size: 0.75rem;
-    position: absolute;
-    right: 157px;
-    top: 105px;
+    text-align: center;
 }
 
 .hideArchiveButton .toggleButton {
@@ -40,11 +38,4 @@
 
 .hideArchiveButton .toggleButton.active .thumb {
     left: 25px;
-}
-
-@media (max-width: 1150px) and (orientation: portrait) {
-    .hideArchiveButton {
-        right: 15%;
-        top: 15%;
-    }
 }

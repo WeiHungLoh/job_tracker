@@ -285,31 +285,31 @@ const ViewApplication = () => {
 
     return (
         <div className={styles.applicationList}>
-            <h2>Job Application Viewer</h2>
+            <div className={styles.listControls}>
+                <div className={styles.filterOption}>
+                    <div>Filter by</div>
+                    <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
+                        <option value='Show All'>Show All</option>
+                        <option value='Accepted'>Accepted</option>
+                        <option value='Applied'>Applied</option>
+                        <option value='Declined'>Declined</option>
+                        <option value='Ghosted'>Ghosted</option>
+                        <option value='Interview'>Interview</option>
+                        <option value='Offer'>Offer</option>
+                        <option value='Rejected'>Rejected</option>
+                    </select>
+                </div>
 
-            <div className={styles.filterOption}>
-                <div>Filter by</div>
-                <select value={jobStatus} onChange={e => setJobStatus(e.target.value)}>
-                    <option value='Show All'>Show All</option>
-                    <option value='Accepted'>Accepted</option>
-                    <option value='Applied'>Applied</option>
-                    <option value='Declined'>Declined</option>
-                    <option value='Ghosted'>Ghosted</option>
-                    <option value='Interview'>Interview</option>
-                    <option value='Offer'>Offer</option>
-                    <option value='Rejected'>Rejected</option>
-                </select>
+                {hasApplications(filteredApplications) &&
+                    <ToggleButton data-testid='unhide-archive' toggled={toggleArchived} onToggle={() => setToggleArchived(!toggleArchived)}
+                 />}
+
+                {hasApplications(filteredApplications) &&
+                    <ShowNotesButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)}
+                 />}
             </div>
 
-            {hasApplications(filteredApplications) &&
-                <ToggleButton data-testid='unhide-archive' toggled={toggleArchived} onToggle={() => setToggleArchived(!toggleArchived)}
-             />}
-
-            {hasApplications(filteredApplications) &&
-                <ShowNotesButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)}
-             />}
-
-            {showAddApplicationMessage(filteredApplications) && <div>No job application with that job status found. Start adding one now! </div>}
+            {showAddApplicationMessage(filteredApplications) && <div><br/>No job application with that job status found. Start adding one now! </div>}
 
             {filteredApplications && filteredApplications.map((application, index) => (
                 <div className={styles.application} key={application.job_id} id={String(application.job_id)}>
