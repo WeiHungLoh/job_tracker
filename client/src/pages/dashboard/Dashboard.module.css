@@ -1,0 +1,18 @@
+.dashboard {
+    max-width: 62.5rem;
+    max-height: 37.5rem;
+    margin: auto;
+    padding: 2rem;
+    display: flex;
+    gap: 3.125rem;
+}
+
+@media (max-width: 48rem) {
+    .dashboard {
+        padding: 0;
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}

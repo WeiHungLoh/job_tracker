@@ -1,0 +1,270 @@
+.archivedApplicationList .filterOption {
+  font-size: 0.75rem;
+  position: absolute;
+  right: 21.875rem;
+  top: 6.5625rem;
+  text-align: center;
+}
+
+.archivedApplicationList .filterOption select {
+  background: #e0f0ff;
+  color: #003366;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6.1875rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+.archivedApplicationList {
+  max-width: 46.875rem;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.archivedApplicationList .application {
+  width: 100%;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.archivedApplicationList .notes textarea {
+  position: absolute;
+  right: -20.625rem;
+  top: 0.9375rem;
+  height: 89%;
+  width: 18.75rem;
+  padding: 0.875rem;
+  font-size: 0.9375rem;
+  border-radius: 0.625rem;
+  border: 2px solid #fbc02d;
+  background-color: #fff9c4;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.archivedApplicationList .buttonGroup {
+  margin-left: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  gap: 0.625rem;
+  position: relative;
+  width: 11.875rem;
+}
+
+.archivedApplicationList .buttonGroup button {
+  background-color: #f1356d;
+  border: 0;
+  border-radius: 0.625rem;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem 0.625rem;
+}
+
+.archivedApplicationList .applicationButton {
+  display: flex;
+  gap: 4.375rem;
+}
+
+.archivedApplicationList .applicationContent {
+  color: #666;
+  word-wrap: break-word;
+  width: 31.25rem;
+  gap: 1em;
+}
+
+.archivedApplicationList .applicationContent .location {
+  color: #2a9d8f;
+}
+
+.archivedApplicationList .applicationContent h2 {
+  font-size: 24px;
+  color: black;
+}
+
+.archivedApplicationList .applicationContent .date {
+  font-weight: bold;
+  color: #343a40;
+}
+
+.archivedApplicationList .applicationContent .url {
+  background-color: darkgrey;
+  color: cornsilk;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: bolder;
+  font-size: 0.8125rem;
+  margin-top: 0.625rem;
+  letter-spacing: 0.03125rem;
+  border: none;
+  display: flex;
+  max-width: fit-content;
+  cursor: pointer;
+}
+
+.archivedApplicationList .applicationContent .url:hover {
+  background-color: #6c757d;
+}
+
+.archivedApplicationList .applicationContent .applied {
+  background-color: #17A2B8;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationContent .interview {
+  background-color: #0d6efd;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationContent .offer {
+  background-color: #ffc107;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationContent .accepted {
+  background-color: #198754;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationContent .declined {
+  background-color: rebeccapurple;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationContent .rejected {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationContent .ghosted {
+  background-color: #6C757D;
+  color: white;
+  padding: 0.25rem 1.25rem;
+  border-radius: 0.3125rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: inline-flex;
+  margin-top: 0;
+  margin-bottom: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.archivedApplicationList .applicationButton button {
+  background-color: #f1356d;
+  border: 0;
+  border-radius: 0.625rem;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem 0.625rem;
+  margin-top: 1.25rem;
+}
+
+.archivedApplicationList a {
+  text-decoration: none;
+  color: #17a2b8
+}
+
+/* Highlight archived-application div to make it more prominent for users to see */
+.highlighted {
+  animation: highlightFade 4s ease-in-out;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #dfffd9;
+  }
+
+  100% {
+    background-color: inherit;
+  }
+}
+
+@media (max-width: 71.875rem) and (orientation: portrait) {
+  .archivedApplicationList {
+    max-width: 90%;
+  }
+
+  .archivedApplicationList .application {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+  }
+
+  .archivedApplicationList .filterOption {
+    right: 65%;
+    top: 15%;
+  }
+
+  .archivedApplicationList>h2 {
+    font-size: 1.2rem;
+    margin-bottom: 5rem;
+  }
+
+  .archivedApplicationList .buttonGroup {
+    justify-content: center;
+    flex-direction: column;
+    width: 50%;
+  }
+
+  .archivedApplicationList .applicationButton {
+    gap: 3.375rem;
+  }
+}

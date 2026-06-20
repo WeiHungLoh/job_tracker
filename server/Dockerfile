@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of our app into the container
 COPY . .
 
+# Compile TypeScript before starting the server
+RUN npm run build
+
 ENV PORT=5005
 
 EXPOSE 5005

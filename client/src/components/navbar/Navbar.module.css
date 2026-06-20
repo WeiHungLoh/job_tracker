@@ -1,0 +1,60 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  max-width: 71.875rem;
+  margin: auto;
+  border-bottom: 1px solid #f2f2f2;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.links {
+  margin-left: auto;
+  display: flex;
+}
+
+.active {
+  color: red;
+  margin-left: 3.125rem;
+  font-weight: bold;
+}
+
+.inactive {
+  color: blue;
+  margin-left: 3.125rem;
+  text-decoration: none;
+}
+
+.navbar a:hover {
+  color: #f1356d;
+}
+
+.navbar h1 {
+  color: #4a148c;
+  font-size: 1.5625rem;
+}
+
+.archiveStatus {
+  margin-left: 3.125rem;
+  cursor: pointer;
+  color: blue;
+}
+
+@media (max-width: 71.875rem) {
+  .navbar {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+
+  .active,
+  .inactive,
+  .archiveStatus {
+    margin-left: 1.5rem;
+  }
+
+  .navbar h1 {
+    color: #4a148c;
+    font-size: 1rem;
+  }
+}

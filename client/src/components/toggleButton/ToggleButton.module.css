@@ -1,0 +1,52 @@
+.hideArchiveButton {
+    font-size: 0.75rem;
+    position: absolute;
+    right: 9.8125rem;
+    top: 6.5625rem;
+}
+
+.hideArchiveButton .toggleButton {
+    background-color: #b7b9ba;
+    border: 1px solid #aaa;
+    border-radius: 6.1875rem;
+    width: 3.125rem;
+    height: 1.75rem;
+    transition: background-color 0.1s ease, border-color 0.2s ease;
+    cursor: pointer;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0, 748);
+    position: relative;
+    display: flex;
+    margin: auto;
+}
+
+.hideArchiveButton .toggleButton .thumb {
+    height: 1.25rem;
+    width: 1.25rem;
+    background-color: #ffff;
+    border-radius: 6.1875rem;
+    transform: translateX(0);
+    transition: left 0.15s ease;
+    position: absolute;
+    left: 0.1875rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hideArchiveButton .toggleButton.active {
+    background-color: #15b58e;
+}
+
+.hideArchiveButton .toggleButton:hover {
+    border-color: #6f6f6f;
+}
+
+.hideArchiveButton .toggleButton.active .thumb {
+    left: 1.5625rem;
+}
+
+@media (max-width: 71.875rem) and (orientation: portrait) {
+    .hideArchiveButton {
+        right: 15%;
+        top: 15%;
+    }
+}
