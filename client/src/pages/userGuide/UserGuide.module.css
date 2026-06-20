@@ -19,15 +19,15 @@
 }
 
 .userGuide ul {
-    padding-left: 2rem;
+    padding-left: 32px;
 }
 
 .userGuide li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 8px;
 }
 
 .userGuide p {
-    margin-bottom: 1rem;
+    margin-bottom: 16px;
 }
 
 .userGuide section {
@@ -47,7 +47,7 @@
     border-radius: 3px;
 }
 
-@media (max-width: 71.875rem) {
+@media (max-width: 1150px) {
     .userGuide {
         max-width: 90%;
     }

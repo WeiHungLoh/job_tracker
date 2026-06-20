@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import DateFormatter from '../../../helper/dateFormatter'
 import type { JobInterview } from '../../interview/models'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 import ShowNotesButton from '../../../components/showNotesButton/ShowNotesButton'
 import ToggleButton from '../../../components/toggleButton/ToggleButton'
 import { routes } from '../../../routes'
@@ -355,20 +356,22 @@ const ViewApplication = () => {
                     </div>
 
                     <div className={styles.buttonGroup}>
-                        <button onClick={() => toggleEditStatus(application)}>
+                        <PrimaryButton onClick={() => toggleEditStatus(application)}>
                             {isEditStatus(application.edit_status) ? 'Save Changes' : 'Edit Status'}
-                        </button>
+                        </PrimaryButton>
 
-                        <button onClick={() => handleDelete(application.job_id)}>
+                        <PrimaryButton onClick={() => handleDelete(application.job_id)}>
                             Delete
-                        </button>
+                        </PrimaryButton>
 
                         {toggleArchived &&
-                            <div className={styles.archiveButton} onClick={() => handleArchive(application.job_id)}>
-                                <button>
-                                    Archive
-                                </button>
-                            </div>
+                            <PrimaryButton
+                                className={styles.archiveButton}
+                                onClick={() => handleArchive(application.job_id)}
+                                variant='success'
+                            >
+                                Archive
+                            </PrimaryButton>
                         }
                     </div>
 
@@ -385,11 +388,11 @@ const ViewApplication = () => {
             ))}
 
             <div className={styles.applicationButton}>
-                <button onClick={() => navigate(routes.addApplication)}>Add new application</button>
+                <PrimaryButton onClick={() => navigate(routes.addApplication)}>Add new application</PrimaryButton>
                 {hasApplications(filteredApplications) && <>
-                    <button onClick={() => handleDeleteAll()}>
-                        Delete all applications</button>
-                    <button>
+                    <PrimaryButton onClick={() => handleDeleteAll()}>
+                        Delete all applications</PrimaryButton>
+                    <PrimaryButton>
                         <CSVLink
                             data={data}
                             headers={headers}
@@ -398,7 +401,7 @@ const ViewApplication = () => {
                         >
                             Export as CSV
                         </CSVLink>
-                    </button>
+                    </PrimaryButton>
                 </>}
             </div>
         </div>

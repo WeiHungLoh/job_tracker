@@ -1,6 +1,7 @@
 .jobStatusChart {
-    height: 25rem;
-    width: 37.5rem;
+    width: 100%;
+    min-width: 0;
+    height: 400px;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -16,9 +17,8 @@
     text-align: center;
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 768px) {
     .jobStatusChart {
-        height: 30rem;
-        width: 20.5rem;
+        height: 480px;
     }
 }

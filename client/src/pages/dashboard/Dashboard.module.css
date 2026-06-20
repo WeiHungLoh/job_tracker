@@ -1,18 +1,18 @@
 .dashboard {
-    max-width: 62.5rem;
-    max-height: 37.5rem;
+    display: grid;
+    width: 100%;
+    max-width: 1200px;
     margin: auto;
-    padding: 2rem;
-    display: flex;
-    gap: 3.125rem;
+    padding: 32px;
+    box-sizing: border-box;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 50px;
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 768px) {
     .dashboard {
-        padding: 0;
-        gap: 1rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        padding: 16px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
     }
 }

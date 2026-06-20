@@ -69,6 +69,7 @@ const ApplicationsLineChart = () => {
 
     const options: ChartOptions<'line'> = {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
             y: {
                 ticks: {

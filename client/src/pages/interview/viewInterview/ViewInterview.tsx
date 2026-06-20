@@ -4,6 +4,7 @@ import { CSVLink } from 'react-csv'
 import DateFormatter from '../../../helper/dateFormatter'
 import type { EntityId } from '../../jobApplication/models'
 import type { JobInterview } from '../models'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 // Taken from: https://www.npmjs.com/package/react-csv
 import { routes } from '../../../routes'
 import styles from './ViewInterview.module.css'
@@ -133,18 +134,18 @@ const ViewInterview = () => {
                     </div>
 
                     <div className={styles.buttonGroup}>
-                        <button onClick={() => handleDelete(interview.interview_id)}>
+                        <PrimaryButton onClick={() => handleDelete(interview.interview_id)}>
                             Delete
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </div>
             ))}
 
             <div className={styles.interviewButton}>
-                <button onClick={() => navigate(routes.addInterview)}>Add new interview</button>
-                {hasInterviews(interviews) && <> <button onClick={() => handleDeleteAll()}>
-                    Delete all interviews</button>
-                    <button>
+                <PrimaryButton onClick={() => navigate(routes.addInterview)}>Add new interview</PrimaryButton>
+                {hasInterviews(interviews) && <> <PrimaryButton onClick={() => handleDeleteAll()}>
+                    Delete all interviews</PrimaryButton>
+                    <PrimaryButton>
                         <CSVLink
                             data={data}
                             headers={headers}
@@ -153,7 +154,7 @@ const ViewInterview = () => {
                         >
                             Export as CSV
                         </CSVLink>
-                    </button>
+                    </PrimaryButton>
                 </>}
             </div>
         </div>

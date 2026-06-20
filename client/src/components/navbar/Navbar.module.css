@@ -1,60 +1,113 @@
 .navbar {
   display: flex;
   align-items: center;
-  max-width: 71.875rem;
+  max-width: 1150px;
   margin: auto;
   border-bottom: 1px solid #f2f2f2;
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
 }
 
 .links {
   margin-left: auto;
   display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.links::-webkit-scrollbar {
+  display: none;
+}
+
+.active,
+.inactive,
+.archiveStatus {
+  position: relative;
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 6px;
+  margin-left: 32px;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.active,
+.inactive {
+  padding: 0 4px;
 }
 
 .active {
   color: red;
-  margin-left: 3.125rem;
   font-weight: bold;
 }
 
-.inactive {
-  color: blue;
-  margin-left: 3.125rem;
-  text-decoration: none;
+.active::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background-color: red;
+  content: '';
 }
 
-.navbar a:hover {
+.inactive,
+.archiveStatus {
+  color: blue;
+}
+
+.navbar a:hover,
+.archiveStatus:hover {
+  background-color: rgb(241 53 109 / 8%);
   color: #f1356d;
 }
 
 .navbar h1 {
+  flex-shrink: 0;
   color: #4a148c;
-  font-size: 1.5625rem;
+  font-size: 1.75rem;
 }
 
-.archiveStatus {
-  margin-left: 3.125rem;
-  cursor: pointer;
-  color: blue;
-}
-
-@media (max-width: 71.875rem) {
+@media (max-width: 1150px) {
   .navbar {
+    box-sizing: border-box;
     width: 100%;
-    font-size: 0.8rem;
   }
 
   .active,
   .inactive,
   .archiveStatus {
-    margin-left: 1.5rem;
+    margin-left: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 0 12px;
   }
 
   .navbar h1 {
-    color: #4a148c;
-    font-size: 1rem;
+    width: 100%;
+    margin: 12px 0 4px;
+    text-align: center;
+  }
+
+  .links {
+    width: 100%;
+  }
+
+  .active,
+  .inactive,
+  .archiveStatus {
+    min-height: 44px;
+    margin-left: 0;
+    margin-right: 24px;
+    font-size: 0.9375rem;
   }
 }

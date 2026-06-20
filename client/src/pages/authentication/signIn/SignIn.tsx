@@ -1,13 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { MdEmail, MdLock } from 'react-icons/md'
 import { useEffect, useState } from 'react'
-import { FaBriefcase } from 'react-icons/fa'
 import type { FormEvent } from 'react'
-import { GoAlertFill } from 'react-icons/go'
-import { IoEye } from 'react-icons/io5'
-import { IoMdEyeOff } from 'react-icons/io'
+import Icon from '../../../components/icon/Icon'
 import { JobTrackerAPIError } from '../../../api/models'
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner'
+import PrimaryButton from '../../../components/button/PrimaryButton'
 import { routes } from '../../../routes'
 import styles from './SignIn.module.css'
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI'
@@ -49,19 +46,15 @@ const SignIn = () => {
         navigate(routes.signUp)
     }
 
-    const showVisiblity = () => {
-        return visible ? <IoEye /> : <IoMdEyeOff />
-    }
-
     return (
         <div className={styles.signin}>
-            <FaBriefcase className={styles.logoIcon} />
+            <Icon name='briefcase' className={styles.logoIcon} />
             <h2>Sign in to Job Tracker</h2>
             <form onSubmit={handleSignIn}>
 
                 <label htmlFor='email'>Email</label>
                 <div className={styles.inputBox}>
-                    <MdEmail className={styles.leftIcon} />
+                    <Icon name='email' className={styles.leftIcon} />
                     <input
                         id='email'
                         type='email'
@@ -73,7 +66,7 @@ const SignIn = () => {
 
                 <label htmlFor='password'>Password</label>
                 <div className={styles.passwordWrapper}>
-                    <MdLock className={styles.leftIcon} />
+                    <Icon name='lock' className={styles.leftIcon} />
                     <input
                         id='password'
                         type={visible ? 'text' : 'password'}
@@ -82,13 +75,13 @@ const SignIn = () => {
                         required
                     />
                     <div className={styles.toggleVisibility} onClick={() => setVisiblity(!visible)}>
-                        {showVisiblity()}
+                        <Icon name={visible ? 'visibility' : 'visibilityOff'} />
                     </div>
                 </div>
 
                 {isPending
-                    ? <button>Loading...{' '}<LoadingSpinner /> </button>
-                    : <button type='submit'>Sign in</button>
+                    ? <PrimaryButton variant='form'><LoadingSpinner size={16} /> </PrimaryButton>
+                    : <PrimaryButton variant='form' type='submit'>Sign in</PrimaryButton>
                 }
 
                 <p data-testid='signup' onClick={toggleSignUp}>
@@ -97,7 +90,7 @@ const SignIn = () => {
             </form>
             <div className={styles.noticeWrapper}>
                 <span>
-                    <GoAlertFill />
+                    <Icon name='alert' />
                 </span>
                 {'  '}If the sign-in process seems to hang after you click the sign in button,
                 please wait at least 50 seconds. This may happen because the backend is hosted on a free tier,
