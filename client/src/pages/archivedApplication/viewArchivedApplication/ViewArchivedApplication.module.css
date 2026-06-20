@@ -1,211 +1,207 @@
 .archivedApplicationList {
-  max-width: 750px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    max-width: 750px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.archivedApplicationList .listControls {
-  width: 100%;
-  margin: 20px 0 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
+.listControls {
+    width: 100%;
+    margin: 20px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }
 
-.archivedApplicationList .filterOption {
-  font-size: 0.75rem;
-  text-align: center;
+.filterOption {
+    font-size: 0.75rem;
+    text-align: center;
 }
 
-.archivedApplicationList .filterOption select {
-  background: #e0f0ff;
-  color: #003366;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
+.filterOption select {
+    background: #e0f0ff;
+    color: #003366;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
 }
 
-.archivedApplicationList .application {
-  width: 100%;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  gap: 0;
-  position: relative;
+.application {
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 0;
+    position: relative;
 }
 
-.archivedApplicationList .notes textarea {
-  position: absolute;
-  right: -330px;
-  top: 15px;
-  height: 89%;
-  width: 300px;
-  padding: 14px;
-  font-size: 0.9375rem;
-  border-radius: 10px;
-  border: 2px solid #fbc02d;
-  background-color: #fff9c4;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  resize: none;
-  outline: none;
-  box-sizing: border-box;
+.notes textarea {
+    position: absolute;
+    right: -330px;
+    top: 15px;
+    height: 89%;
+    width: 300px;
+    padding: 14px;
+    font-size: 0.9375rem;
+    border-radius: 10px;
+    border: 2px solid #fbc02d;
+    background-color: #fff9c4;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
 }
 
-.archivedApplicationList .buttonGroup {
-  margin-left: auto;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  color: #fff;
-  gap: 10px;
-  position: relative;
-  width: 190px;
+.buttonGroup {
+    margin-left: auto;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    gap: 10px;
+    position: relative;
+    width: 190px;
 }
 
-.archivedApplicationList .applicationButton {
-  display: flex;
-  gap: 70px;
+.applicationButton {
+    display: flex;
+    gap: 70px;
 }
 
-.archivedApplicationList .applicationContent {
-  color: #666;
-  word-wrap: break-word;
-  width: 500px;
-  gap: 16px;
+.applicationContent {
+    color: #666;
+    word-wrap: break-word;
+    width: 500px;
+    gap: 16px;
 }
 
-.archivedApplicationList .applicationContent .location {
-  color: #2a9d8f;
+.location {
+    color: #2a9d8f;
 }
 
-.archivedApplicationList .applicationContent h2 {
-  font-size: 1.5rem;
-  color: black;
+.applicationContent h2 {
+    font-size: 1.5rem;
+    color: black;
 }
 
-.archivedApplicationList .applicationContent .date {
-  font-weight: bold;
-  color: #343a40;
+.date {
+    font-weight: bold;
+    color: #343a40;
 }
 
-.archivedApplicationList .applicationContent .url {
-  background-color: darkgrey;
-  color: cornsilk;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: bolder;
-  font-size: 0.8125rem;
-  margin-top: 10px;
-  letter-spacing: 0.5px;
-  border: none;
-  display: flex;
-  max-width: fit-content;
-  cursor: pointer;
+.url {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.archivedApplicationList .applicationContent .url:hover {
-  background-color: #6c757d;
+.url:hover {
+    background-color: #d0e8ff;
 }
 
-.archivedApplicationList .applicationContent .applied,
-.archivedApplicationList .applicationContent .interview,
-.archivedApplicationList .applicationContent .offer,
-.archivedApplicationList .applicationContent .accepted,
-.archivedApplicationList .applicationContent .declined,
-.archivedApplicationList .applicationContent .rejected,
-.archivedApplicationList .applicationContent .ghosted {
-  color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  display: inline-flex;
-  margin: 0;
-  letter-spacing: 0.5px;
+.applied,
+.interview,
+.offer,
+.accepted,
+.declined,
+.rejected,
+.ghosted {
+    color: white;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    display: inline-flex;
+    margin: 0;
+    letter-spacing: 0.5px;
 }
 
-.archivedApplicationList .applicationContent .applied {
-  background-color: #17A2B8;
+.applied {
+    background-color: #17a2b8;
 }
 
-.archivedApplicationList .applicationContent .interview {
-  background-color: #0d6efd;
+.interview {
+    background-color: #0d6efd;
 }
 
-.archivedApplicationList .applicationContent .offer {
-  background-color: #ffc107;
+.offer {
+    background-color: #ffc107;
 }
 
-.archivedApplicationList .applicationContent .accepted {
-  background-color: #198754;
+.accepted {
+    background-color: #198754;
 }
 
-.archivedApplicationList .applicationContent .declined {
-  background-color: rebeccapurple;
+.declined {
+    background-color: rebeccapurple;
 }
 
-.archivedApplicationList .applicationContent .rejected {
-  background-color: #dc3545;
+.rejected {
+    background-color: #dc3545;
 }
 
-.archivedApplicationList .applicationContent .ghosted {
-  background-color: #6C757D;
+.ghosted {
+    background-color: #6c757d;
 }
 
-.archivedApplicationList .applicationButton button {
-  margin-top: 20px;
+.applicationButton button {
+    margin-top: 20px;
 }
 
-.archivedApplicationList a {
-  text-decoration: none;
-  color: #17a2b8
+.applicationButton a {
+    text-decoration: none;
+    color: #17a2b8;
 }
 
 /* Highlight archived-application div to make it more prominent for users to see */
 .highlighted {
-  animation: highlightFade 4s ease-in-out;
+    animation: highlightFade 4s ease-in-out;
 }
 
 @keyframes highlightFade {
-  0% {
-    background-color: #dfffd9;
-  }
+    0% {
+        background-color: #dfffd9;
+    }
 
-  100% {
-    background-color: inherit;
-  }
+    100% {
+        background-color: inherit;
+    }
 }
 
 @media (max-width: 1150px) and (orientation: portrait) {
-  .archivedApplicationList {
-    max-width: 90%;
-  }
+    .archivedApplicationList {
+        max-width: 90%;
+    }
 
-  .archivedApplicationList .application {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 8px;
-  }
+    .application {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+    }
 
-  .archivedApplicationList>h2 {
-    font-size: 1.2rem;
-    margin-bottom: 80px;
-  }
+    .buttonGroup {
+        justify-content: center;
+        flex-direction: column;
+        width: 50%;
+    }
 
-  .archivedApplicationList .buttonGroup {
-    justify-content: center;
-    flex-direction: column;
-    width: 50%;
-  }
-
-  .archivedApplicationList .applicationButton {
-    gap: 54px;
-  }
+    .applicationButton {
+        gap: 54px;
+    }
 }

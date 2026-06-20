@@ -7,74 +7,67 @@ import {
     PointElement,
     Title,
     Tooltip,
-} from 'chart.js'
-import { useEffect, useState } from 'react'
-import type { ChartOptions } from 'chart.js'
-import DateFormatter from '../../helper/dateFormatter'
-import { Line } from 'react-chartjs-2'
-import type { WeeklyApplicationCount } from './models'
-import styles from './ApplicationsLineChart.module.css'
-import { useJobTrackerAPI } from '../../api/useJobTrackerAPI'
-import { useToast } from '../../components/toast/ToastProvider'
+} from 'chart.js';
+import { useEffect, useState } from 'react';
+import type { ChartOptions } from 'chart.js';
+import DateFormatter from '../../helper/dateFormatter';
+import { Line } from 'react-chartjs-2';
+import type { WeeklyApplicationCount } from './models';
+import styles from './ApplicationsLineChart.module.css';
+import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
+import { useToast } from '../../components/toast/ToastProvider';
 
-ChartJS.register(
-    CategoryScale,
-    Legend,
-    LineElement,
-    LinearScale,
-    PointElement,
-    Title,
-    Tooltip,
-)
+ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
 
 const ApplicationsLineChart = () => {
-    const api = useJobTrackerAPI()
-    const [applications, setApplications] = useState<WeeklyApplicationCount[]>([])
-    const { showErrorToast } = useToast()
+    const api = useJobTrackerAPI();
+    const [applications, setApplications] = useState<WeeklyApplicationCount[]>([]);
+    const { showErrorToast } = useToast();
 
     useEffect(() => {
-        let isActive = true
+        let isActive = true;
 
         const fetchApplications = async () => {
             try {
-                const data = await api.application.listWeeklyApplications()
-                if (isActive) setApplications(Array.isArray(data) ? data : [])
+                const data = await api.application.listWeeklyApplications();
+                if (isActive) setApplications(Array.isArray(data) ? data : []);
             } catch (error) {
-                showErrorToast((error as Error).message)
+                showErrorToast((error as Error).message);
             }
-        }
+        };
 
-        void fetchApplications()
-        return () => { isActive = false }
-    }, [])
+        void fetchApplications();
+        return () => {
+            isActive = false;
+        };
+    }, []);
 
     const applicationByWeekCountPair = applications.reduce<Record<string, string>>((acc, row) => {
-        acc[row.start_of_week] = row.applications_count
-        return acc
-    }, {})
+        acc[row.start_of_week] = row.applications_count;
+        return acc;
+    }, {});
 
-    const totalApplications = Object.values(applicationByWeekCountPair).reduce((sum, val) => sum + parseInt(val), 0)
+    const totalApplications = Object.values(applicationByWeekCountPair).reduce((sum, val) => sum + parseInt(val), 0);
 
     const data = {
-        labels: Object.keys(applicationByWeekCountPair).map(date => DateFormatter(date).formattedDay),
+        labels: Object.keys(applicationByWeekCountPair).map((date) => DateFormatter(date).formattedDay),
         datasets: [
             {
                 label: 'Applications Applied',
                 data: Object.values(applicationByWeekCountPair),
                 backgroundColor: '#17A2B8',
                 borderColor: '#0c8699ff',
-            }
+            },
         ],
-    }
+    };
 
     const options: ChartOptions<'line'> = {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
             y: {
-                ticks: {
-                }
-            }
+                ticks: {},
+            },
         },
         plugins: {
             title: {
@@ -82,13 +75,13 @@ const ApplicationsLineChart = () => {
                 text: 'Application Trend Over the Past 8 Weeks',
                 font: {
                     size: 16,
-                    weight: 'bold'
+                    weight: 'bold',
                 },
                 padding: {
                     top: 20,
-                    bottom: 20
+                    bottom: 20,
                 },
-                color: 'black'
+                color: 'black',
             },
             legend: {
                 position: 'bottom',
@@ -97,12 +90,12 @@ const ApplicationsLineChart = () => {
                     pointStyle: 'circle',
                     padding: 20,
                     font: {
-                        size: 14
-                    }
-                }
+                        size: 14,
+                    },
+                },
             },
-        }
-    }
+        },
+    };
 
     return (
         <div className={styles.applicationLineChart}>
@@ -119,7 +112,7 @@ const ApplicationsLineChart = () => {
                 </>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default ApplicationsLineChart
+export default ApplicationsLineChart;

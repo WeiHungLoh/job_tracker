@@ -9,8 +9,7 @@ const NotesToggleButton = ({ toggled, onToggle }: NotesToggleButtonProps) => {
     return (
         <div className={styles.notesToggleButton}>
             <div>{buttonMessage(toggled)}</div>
-            <button className={`${styles.toggleButton} ${toggled ? styles.active : ''}`}
-                onClick={onToggle}>
+            <button className={`${styles.toggleButton} ${toggled ? styles.active : ''}`} onClick={onToggle}>
                 <div className={styles.thumb} />
             </button>
         </div>

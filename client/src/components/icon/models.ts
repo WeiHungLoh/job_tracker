@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from 'react'
+import type { HTMLAttributes } from 'react';
 
 export type IconName =
     | 'activeApplications'
@@ -8,10 +8,10 @@ export type IconName =
     | 'email'
     | 'lock'
     | 'visibility'
-    | 'visibilityOff'
+    | 'visibilityOff';
 
 export type IconProps = HTMLAttributes<SVGElement> & {
-    name: IconName
-    size?: number | string
-    title?: string
-}
+    name: IconName;
+    size?: number | string;
+    title?: string;
+};

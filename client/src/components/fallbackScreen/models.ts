@@ -1,4 +1,4 @@
 export type FallbackScreenProps = {
-    error?: boolean
-    onRetry?: () => void
-}
+    error?: boolean;
+    onRetry?: () => void;
+};

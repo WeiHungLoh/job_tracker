@@ -1,264 +1,260 @@
 .applicationList {
-  max-width: 750px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    max-width: 750px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.applicationList .listControls {
-  width: 100%;
-  margin: 20px 0 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
+.listControls {
+    width: 100%;
+    margin: 20px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }
 
-.applicationList .filterOption {
-  font-size: 0.75rem;
-  text-align: center;
+.filterOption {
+    font-size: 0.75rem;
+    text-align: center;
 }
 
-.applicationList .filterOption select {
-  background: #e0f0ff;
-  color: #003366;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
+.filterOption select {
+    background: #e0f0ff;
+    color: #003366;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
 }
 
-.applicationList .application {
-  width: 100%;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  gap: 0;
-  position: relative;
+.application {
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 0;
+    position: relative;
 }
 
-.applicationList .buttonGroup {
-  margin-left: auto;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-  width: 190px;
+.buttonGroup {
+    margin-left: auto;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    width: 190px;
 }
 
-.applicationList .buttonGroup .archiveButton {
-  position: absolute;
-  bottom: 0.5px;
-  right: 33px;
-  left: 1px;
+.archiveButton {
+    position: absolute;
+    bottom: 0.5px;
+    right: 33px;
+    left: 1px;
 }
 
-.applicationList .notes textarea {
-  position: absolute;
-  right: -330px;
-  top: 15px;
-  height: 89%;
-  width: 300px;
-  padding: 14px;
-  font-size: 0.9375rem;
-  border-radius: 10px;
-  border: 2px solid #fbc02d;
-  background-color: #fff9c4;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  resize: none;
-  outline: none;
-  box-sizing: border-box;
+.notes textarea {
+    position: absolute;
+    right: -330px;
+    top: 15px;
+    height: 89%;
+    width: 300px;
+    padding: 14px;
+    font-size: 0.9375rem;
+    border-radius: 10px;
+    border: 2px solid #fbc02d;
+    background-color: #fff9c4;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
 }
 
-.applicationList .applicationButton {
-  display: flex;
-  gap: 70px;
+.applicationButton {
+    display: flex;
+    gap: 70px;
 }
 
-.applicationList .applicationContent {
-  color: #666;
-  word-wrap: break-word;
-  width: 500px;
-  gap: 16px;
+.applicationContent {
+    color: #666;
+    word-wrap: break-word;
+    width: 500px;
+    gap: 16px;
 }
 
-.applicationList .applicationContent .location {
-  color: #2a9d8f;
+.location {
+    color: #2a9d8f;
 }
 
-.applicationList .applicationContent h2 {
-  font-size: 1.5rem;
-  color: black;
+.applicationContent h2 {
+    font-size: 1.5rem;
+    color: black;
 }
 
-.applicationList .applicationContent .date {
-  font-weight: bold;
-  color: #343a40;
+.date {
+    font-weight: bold;
+    color: #343a40;
 }
 
-.applicationList .applicationContent a {
-  background-color: #e0f0ff;
-  color: #0d6efd;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: bolder;
-  font-size: 0.8125rem;
-  margin-top: 10px;
-  letter-spacing: 0.5px;
-  border: none;
-  display: flex;
-  max-width: fit-content;
-  cursor: pointer;
-  text-decoration: none;
+.applicationContent a {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.applicationList .applicationContent .url {
-  background-color: darkgrey;
-  color: cornsilk;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: bolder;
-  font-size: 0.8125rem;
-  margin-top: 10px;
-  letter-spacing: 0.5px;
-  border: none;
-  display: flex;
-  max-width: fit-content;
-  cursor: pointer;
+.url {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.applicationList .applicationContent select {
-  background: #e0f0ff;
-  color: #003366;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: bolder;
-  font-size: 0.8125rem;
-  letter-spacing: 0.5px;
-  border: none;
-  margin-left: 10px;
-  cursor: pointer;
+.applicationContent select {
+    background: #e0f0ff;
+    color: #003366;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    letter-spacing: 0.5px;
+    border: none;
+    margin-left: 10px;
+    cursor: pointer;
 }
 
-.applicationList .applicationContent a:hover {
-  background-color: #d0e8ff;
+.applicationContent a:hover {
+    background-color: #d0e8ff;
 }
 
-.applicationList .applicationContent .url:hover {
-  background-color: #6c757d;
+.url:hover {
+    background-color: #d0e8ff;
 }
 
-.applicationList .applicationContent .applied,
-.applicationList .applicationContent .interview,
-.applicationList .applicationContent .offer,
-.applicationList .applicationContent .accepted,
-.applicationList .applicationContent .rejected,
-.applicationList .applicationContent .ghosted,
-.applicationList .applicationContent .declined {
-  color: white;
-  padding: 4px 20px;
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  display: inline-flex;
-  margin: 0;
-  letter-spacing: 0.5px;
+.applied,
+.interview,
+.offer,
+.accepted,
+.rejected,
+.ghosted,
+.declined {
+    color: white;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    display: inline-flex;
+    margin: 0;
+    letter-spacing: 0.5px;
 }
 
-.applicationList .applicationContent .applied {
-  background-color: #17A2B8;
+.applied {
+    background-color: #17a2b8;
 }
 
-.applicationList .applicationContent .interview {
-  background-color: #0D6EFD;
+.interview {
+    background-color: #0d6efd;
 }
 
-.applicationList .applicationContent .offer {
-  background-color: #ffc107;
+.offer {
+    background-color: #ffc107;
 }
 
-.applicationList .applicationContent .accepted {
-  background-color: #198754;
+.accepted {
+    background-color: #198754;
 }
 
-.applicationList .applicationContent .rejected {
-  background-color: #dc3545;
+.rejected {
+    background-color: #dc3545;
 }
 
-.applicationList .applicationContent .ghosted {
-  background-color: #6C757D;
+.ghosted {
+    background-color: #6c757d;
 }
 
-.applicationList .applicationContent .declined {
-  background-color: rebeccapurple;
+.declined {
+    background-color: rebeccapurple;
 }
 
-.applicationList .applicationButton button {
-  margin-top: 20px;
+.applicationButton button {
+    margin-top: 20px;
 }
 
-.applicationList a {
-  text-decoration: none;
-  color: #17a2b8;
+.applicationButton a {
+    text-decoration: none;
+    color: #17a2b8;
 }
 
 /* Highlight application div to make it more prominent for users to see */
 .highlighted {
-  animation: highlightFade 4s ease-in-out;
+    animation: highlightFade 4s ease-in-out;
 }
 
 @keyframes highlightFade {
-  0% {
-    background-color: #dfffd9;
-  }
+    0% {
+        background-color: #dfffd9;
+    }
 
-  100% {
-    background-color: inherit;
-  }
+    100% {
+        background-color: inherit;
+    }
 }
 
 @media (max-width: 1150px) and (orientation: portrait) {
-  .applicationList {
-    max-width: 90%;
-  }
+    .applicationList {
+        max-width: 90%;
+    }
 
-  .applicationList>h2 {
-    font-size: 1.2rem;
-    margin-bottom: 80px;
-  }
+    .application {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+    }
 
-  .applicationList .application {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 8px;
-  }
+    .archiveButton {
+        position: relative;
+    }
 
-  .applicationList .buttonGroup .archiveButton {
-    position: relative;
-  }
+    .applicationContent select {
+        margin-left: 0;
+        margin-top: 7px;
+        display: block;
+    }
 
-  .applicationList .applicationContent select {
-    margin-left: 0;
-    margin-top: 7px;
-    display: block;
-  }
+    .buttonGroup {
+        justify-content: center;
+        flex-direction: column;
+        width: 50%;
+    }
 
-  .applicationList .buttonGroup {
-    justify-content: center;
-    flex-direction: column;
-    width: 50%;
-  }
+    .notes textarea {
+        right: -302.8px;
+    }
 
-  .applicationList .notes textarea {
-    right: -302.8px;
-  }
-
-  .applicationList .applicationButton {
-    gap: 54px;
-  }
+    .applicationButton {
+        gap: 54px;
+    }
 }

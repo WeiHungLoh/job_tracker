@@ -1,38 +1,33 @@
-import type {
-    JobApplication,
-    JobStatus,
-    JobStatusCount,
-    WeeklyApplicationCount
-} from '../../db/models.js'
-import type { ErrorResponse } from '../../http/models.js'
+import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../../db/models.js';
+import type { ErrorResponse } from '../../http/models.js';
 
 export type JobIdParams = {
-    jobId: string
-}
+    jobId: string;
+};
 
 export type CreateApplicationRequest = {
-    companyName: string
-    jobTitle: string
-    appDate: string
-    jobStatus: JobStatus
-    jobLocation: string
-    jobURL: string
-}
+    companyName: string;
+    jobTitle: string;
+    appDate: string;
+    jobStatus: JobStatus;
+    jobLocation: string;
+    jobURL: string;
+};
 
 export type UpdateNotesRequest = {
-    notes: string
-}
+    notes: string;
+};
 
 export type UpdateEditStatusRequest = {
-    editStatus: boolean
-}
+    editStatus: boolean;
+};
 
 export type UpdateJobStatusRequest = {
-    jobStatus: JobStatus
-}
+    jobStatus: JobStatus;
+};
 
-export type CreateApplicationResponse = string | ErrorResponse
-export type ListApplicationsResponse = JobApplication[] | ErrorResponse
-export type ListJobStatusCountsResponse = JobStatusCount[] | ErrorResponse
-export type ListWeeklyApplicationsResponse = WeeklyApplicationCount[] | ErrorResponse
-export type EmptyResponse = undefined | ErrorResponse
+export type CreateApplicationResponse = string | ErrorResponse;
+export type ListApplicationsResponse = JobApplication[] | ErrorResponse;
+export type ListJobStatusCountsResponse = JobStatusCount[] | ErrorResponse;
+export type ListWeeklyApplicationsResponse = WeeklyApplicationCount[] | ErrorResponse;
+export type EmptyResponse = undefined | ErrorResponse;

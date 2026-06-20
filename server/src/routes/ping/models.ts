@@ -1,2 +1,1 @@
-export type PingResponse = string
-
+export type PingResponse = string;

@@ -1,5 +1,5 @@
 const DateFormatter = (dueDate: string | number) => {
-    const date = new Date(dueDate)
+    const date = new Date(dueDate);
 
     const formattedDate = date.toLocaleString('en-GB', {
         day: 'numeric',
@@ -7,51 +7,51 @@ const DateFormatter = (dueDate: string | number) => {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true
-    })
+        hour12: true,
+    });
 
-      const formattedDay = date.toLocaleString('en-GB', {
+    const formattedDay = date.toLocaleString('en-GB', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
-    })
+    });
 
     // Returns the remaining time in ms
-    const dateBeforeInterview = date.getTime() - Date.now()
-    const dateSinceApplication = Date.now() - date.getTime()
+    const dateBeforeInterview = date.getTime() - Date.now();
+    const dateSinceApplication = Date.now() - date.getTime();
 
     const countFromApplication = (dateDiff: number) => {
-        const seconds = Math.floor(dateDiff / (1000))
-        const minutes = Math.floor(seconds / 60)
-        const hours = Math.floor(minutes / 60)
-        const days = Math.floor(hours / 24)
+        const seconds = Math.floor(dateDiff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
 
-        const remainingHours = hours % 24
-        const remainingMinutes = minutes % 60
-        const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`
-        return timeRemaining
-    }
+        const remainingHours = hours % 24;
+        const remainingMinutes = minutes % 60;
+        const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`;
+        return timeRemaining;
+    };
 
     const countDownToInterview = (dateDiff: number) => {
         if (dateDiff <= 0) {
-            return 'Past due'
+            return 'Past due';
         }
 
-        const seconds = Math.floor(dateDiff / (1000))
-        const minutes = Math.floor(seconds / 60)
-        const hours = Math.floor(minutes / 60)
-        const days = Math.floor(hours / 24)
+        const seconds = Math.floor(dateDiff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
 
-        const remainingHours = hours % 24
-        const remainingMinutes = minutes % 60
-        const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`
-        return timeRemaining
-    }
+        const remainingHours = hours % 24;
+        const remainingMinutes = minutes % 60;
+        const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`;
+        return timeRemaining;
+    };
 
-    const timeSinceApplication = countFromApplication(dateSinceApplication)
-    const timeBeforeInterview = countDownToInterview(dateBeforeInterview)
+    const timeSinceApplication = countFromApplication(dateSinceApplication);
+    const timeBeforeInterview = countDownToInterview(dateBeforeInterview);
 
-    return { formattedDay, formattedDate, timeSinceApplication, timeBeforeInterview }
-}
+    return { formattedDay, formattedDate, timeSinceApplication, timeBeforeInterview };
+};
 
-export default DateFormatter
+export default DateFormatter;

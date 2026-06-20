@@ -10,4 +10,4 @@ export const routes = {
     viewInterviews: '/interview/view',
     archivedApplications: '/application/archive',
     archivedInterviews: '/interview/archive',
-} as const
+} as const;

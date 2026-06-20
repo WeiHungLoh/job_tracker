@@ -1,11 +1,11 @@
 .invalidPage {
-  font-size: 1.25rem;
-  text-align: center;
-  margin-top: 200px;
-  color: #f1356d;
+    font-size: 1.25rem;
+    text-align: center;
+    margin-top: 200px;
+    color: #f1356d;
 }
 
 .invalidPage a {
-  text-decoration: none;
-  color: #007bff;
+    text-decoration: none;
+    color: #007bff;
 }

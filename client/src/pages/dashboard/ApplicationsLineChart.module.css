@@ -7,13 +7,13 @@
     align-items: center;
 }
 
-.applicationLineChart .application {
+.application {
     text-align: center;
     font-size: 0.8rem;
     font-weight: bold;
 }
 
-.applicationLineChart .noApplicationMessage {
+.noApplicationMessage {
     text-align: center;
 }
 

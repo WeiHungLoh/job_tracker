@@ -1,10 +1,9 @@
-import type { ArchivedJobInterview } from '../../db/models.js'
-import type { ErrorResponse } from '../../http/models.js'
+import type { ArchivedJobInterview } from '../../db/models.js';
+import type { ErrorResponse } from '../../http/models.js';
 
 export type ArchivedInterviewIdParams = {
-    archivedInterviewId: string
-}
+    archivedInterviewId: string;
+};
 
-export type ListArchivedInterviewsResponse = ArchivedJobInterview[] | ErrorResponse
-export type EmptyResponse = undefined | ErrorResponse
-
+export type ListArchivedInterviewsResponse = ArchivedJobInterview[] | ErrorResponse;
+export type EmptyResponse = undefined | ErrorResponse;

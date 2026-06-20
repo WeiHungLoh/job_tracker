@@ -1,89 +1,91 @@
-import { ArcElement, Chart as ChartJS, Legend, Title, Tooltip } from 'chart.js'
-import { useEffect, useState } from 'react'
-import type { ChartOptions } from 'chart.js'
-import type { JobStatusCount } from './models'
-import { Pie } from 'react-chartjs-2'
-import styles from './JobStatusChart.module.css'
-import { useJobTrackerAPI } from '../../api/useJobTrackerAPI'
-import { useToast } from '../../components/toast/ToastProvider'
+import { ArcElement, Chart as ChartJS, Legend, Title, Tooltip } from 'chart.js';
+import { useEffect, useState } from 'react';
+import type { ChartOptions } from 'chart.js';
+import type { JobStatusCount } from './models';
+import { Pie } from 'react-chartjs-2';
+import styles from './JobStatusChart.module.css';
+import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
+import { useToast } from '../../components/toast/ToastProvider';
 
-ChartJS.register(ArcElement, Title, Tooltip, Legend)
+ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
 const JobStatusChart = () => {
-    const api = useJobTrackerAPI()
-    const [applications, setApplications] = useState<JobStatusCount[]>([])
-    const { showErrorToast } = useToast()
+    const api = useJobTrackerAPI();
+    const [applications, setApplications] = useState<JobStatusCount[]>([]);
+    const { showErrorToast } = useToast();
 
     useEffect(() => {
-        let isActive = true
+        let isActive = true;
 
         const fetchApplications = async () => {
             try {
-                const data = await api.application.listJobStatusCounts()
-                if (isActive) setApplications(Array.isArray(data) ? data : [])
+                const data = await api.application.listJobStatusCounts();
+                if (isActive) setApplications(Array.isArray(data) ? data : []);
             } catch (error) {
-                showErrorToast((error as Error).message)
+                showErrorToast((error as Error).message);
             }
-        }
+        };
 
-        void fetchApplications()
-        return () => { isActive = false }
-    }, [])
+        void fetchApplications();
+        return () => {
+            isActive = false;
+        };
+    }, []);
 
     const jobStatusCountPair = applications.reduce<Record<string, string>>((acc, row) => {
-        acc[row.job_status] = row.count
-        return acc
-    }, {})
+        acc[row.job_status] = row.count;
+        return acc;
+    }, {});
 
-    const totalApplications = Object.values(jobStatusCountPair).reduce((sum, val) => sum + parseInt(val), 0)
+    const totalApplications = Object.values(jobStatusCountPair).reduce((sum, val) => sum + parseInt(val), 0);
 
     const getColourByStatus = (status: string) => {
         if (status === 'Accepted') {
-            return '#198754'
+            return '#198754';
         }
         if (status === 'Applied') {
-            return '#17A2B8'
+            return '#17A2B8';
         }
         if (status === 'Declined') {
-            return 'purple'
+            return 'purple';
         }
         if (status === 'Interview') {
-            return '#0d6efd'
+            return '#0d6efd';
         }
         if (status === 'Ghosted') {
-            return '#6C757D'
+            return '#6C757D';
         }
         if (status === 'Offer') {
-            return '#ffc107'
+            return '#ffc107';
         }
         if (status === 'Rejected') {
-            return '#dc3545'
+            return '#dc3545';
         }
-    }
+    };
 
     const getBorderColourByStatus = (status: string) => {
         if (status === 'Accepted') {
-            return '#0f7847ff'
+            return '#0f7847ff';
         }
         if (status === 'Applied') {
-            return '#1495a9ff'
+            return '#1495a9ff';
         }
         if (status === 'Declined') {
-            return 'rebeccapurple'
+            return 'rebeccapurple';
         }
         if (status === 'Ghosted') {
-            return 'rgba(122, 122, 148, 1)'
+            return 'rgba(122, 122, 148, 1)';
         }
         if (status === 'Interview') {
-            return 'rgba(48, 153, 153, 1)'
+            return 'rgba(48, 153, 153, 1)';
         }
         if (status === 'Offer') {
-            return '#d9a302ff'
+            return '#d9a302ff';
         }
         if (status === 'Rejected') {
-            return '#dc3545'
+            return '#dc3545';
         }
-    }
+    };
 
     const data = {
         labels: Object.keys(jobStatusCountPair),
@@ -91,13 +93,13 @@ const JobStatusChart = () => {
             {
                 label: '# of applications',
                 data: Object.values(jobStatusCountPair),
-                backgroundColor: Object.keys(jobStatusCountPair).map(status => getColourByStatus(status)),
-                borderColor: Object.keys(jobStatusCountPair).map(status => getBorderColourByStatus(status)),
+                backgroundColor: Object.keys(jobStatusCountPair).map((status) => getColourByStatus(status)),
+                borderColor: Object.keys(jobStatusCountPair).map((status) => getBorderColourByStatus(status)),
                 borderWidth: 0.7,
-                hoverOffset: 60
+                hoverOffset: 60,
             },
         ],
-    }
+    };
 
     const options: ChartOptions<'pie'> = {
         responsive: true,
@@ -108,13 +110,13 @@ const JobStatusChart = () => {
                 text: 'Application Status Overview',
                 font: {
                     size: 16,
-                    weight: 'bold'
+                    weight: 'bold',
                 },
                 padding: {
                     top: 20,
-                    bottom: 20
+                    bottom: 20,
                 },
-                color: 'black'
+                color: 'black',
             },
             legend: {
                 position: 'bottom',
@@ -123,12 +125,12 @@ const JobStatusChart = () => {
                     pointStyle: 'circle',
                     padding: 20,
                     font: {
-                        size: 14
-                    }
-                }
+                        size: 14,
+                    },
+                },
             },
-        }
-    }
+        },
+    };
 
     return (
         <div className={styles.jobStatusChart}>
@@ -139,13 +141,11 @@ const JobStatusChart = () => {
             ) : (
                 <>
                     <Pie data={data} options={options} />
-                    <div className={styles.application}>
-                        Total Applications Applied: {totalApplications}
-                    </div>
+                    <div className={styles.application}>Total Applications Applied: {totalApplications}</div>
                 </>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default JobStatusChart
+export default JobStatusChart;
