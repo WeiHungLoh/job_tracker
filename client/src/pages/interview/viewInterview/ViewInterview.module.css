@@ -91,7 +91,7 @@
     margin-top: 20px;
 }
 
-@media (max-width: 1150px) and (orientation: portrait) {
+@media (max-width: 803px) {
     .interviewList {
         width: 90%;
     }

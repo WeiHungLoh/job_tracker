@@ -8,6 +8,7 @@
 }
 
 .links {
+    align-self: stretch;
     margin-left: auto;
     display: flex;
     align-items: stretch;
