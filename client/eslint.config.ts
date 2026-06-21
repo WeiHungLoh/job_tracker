@@ -45,17 +45,7 @@ export default defineConfig([
                 },
             ],
             'eol-last': ['error', 'always'],
-            'no-multiple-empty-lines': ['error', { max: 1, maxEOF: 1 }],
-            'sort-imports': [
-                'error',
-                {
-                    ignoreCase: false,
-                    ignoreDeclarationSort: false,
-                    ignoreMemberSort: false,
-                    memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-                    allowSeparatedGroups: false,
-                },
-            ],
+            'no-multiple-empty-lines': ['error', { max: 1, maxEOF: 1 }]
         },
     },
 ]);
