@@ -1,4 +1,4 @@
-import { Navigate, type RouteObject, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { type RouteObject, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import AddApplication from './pages/jobApplication/addApplication/AddApplication';
 import AddInterview from './pages/interview/addInterview/AddInterview';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -15,7 +15,6 @@ import ViewInterview from './pages/interview/viewInterview/ViewInterview';
 import { routes } from './routes';
 
 export const appRoutes: RouteObject[] = [
-    { path: routes.root, element: <Navigate to={routes.signIn} replace /> },
     { path: routes.signIn, element: <SignIn /> },
     { path: routes.signUp, element: <SignUp /> },
     { path: routes.userGuide, element: <UserGuide /> },

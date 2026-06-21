@@ -53,7 +53,7 @@ describe('User sign up flow', () => {
         await waitFor(() =>
             expect(screen.getByText('Sign up succesful! Redirecting you to login page')).toBeInTheDocument()
         );
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/sign-in'), { timeout: 2000 });
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'), { timeout: 2000 });
     });
 
     test('shows alert on failed sign-up due to existing user', async () => {
@@ -96,6 +96,6 @@ describe('User sign up flow', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByRole('link', { name: /already have an account/i })).toHaveAttribute('href', '/sign-in');
+        expect(screen.getByRole('link', { name: /already have an account/i })).toHaveAttribute('href', '/');
     });
 });

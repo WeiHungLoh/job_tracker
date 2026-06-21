@@ -12,7 +12,7 @@ describe('renders user guide properly', () => {
             </MemoryRouter>
         );
         expect(screen.getByTestId('ug')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: /back to sign in/i })).toHaveAttribute('href', '/sign-in');
+        expect(screen.getByRole('link', { name: /back to sign in/i })).toHaveAttribute('href', '/');
         expect(screen.getByText(/quick visual overview/i)).not.toBeVisible();
 
         screen.getAllByRole('button').forEach((button) => {
