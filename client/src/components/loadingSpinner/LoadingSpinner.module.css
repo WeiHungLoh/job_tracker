@@ -9,7 +9,12 @@
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: conic-gradient(transparent 0 4%, #f1356d 4.2% 54%, transparent 54.2% 58%, #e1e3e6 58.2% 100%);
+    background: conic-gradient(
+        transparent 0 4%,
+        var(--colorPrimary) 4.2% 54%,
+        transparent 54.2% 58%,
+        #e1e3e6 58.2% 100%
+    );
     content: '';
     -webkit-mask: radial-gradient(
         farthest-side,

@@ -2,7 +2,7 @@
     min-height: 100svh;
     padding: 32px 20px 48px;
     box-sizing: border-box;
-    --guideAccent: #f1356d;
+    --guideAccent: var(--colorPrimary);
     --guideAccentDark: #c82457;
     --guideAccentSoft: #fff0f5;
     --guideBorder: #f0d8e0;
@@ -59,7 +59,6 @@
     place-items: center;
     border-radius: 16px;
     background-color: var(--guideAccent);
-    box-shadow: 0 8px 20px rgb(241 53 109 / 22%);
     color: #fff;
     font-size: 1.75rem;
 }

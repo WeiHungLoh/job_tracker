@@ -39,7 +39,7 @@
 
 .addInterview a {
     color: #ddd;
-    background: #f1356d;
+    background: var(--colorPrimary);
     border: 0;
     padding: 8px 10px;
     border-radius: 10px;
