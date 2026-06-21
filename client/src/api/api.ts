@@ -1,6 +1,7 @@
 import type { APIRequest, EndpointConfigEntry } from './models';
 import { FieldType } from './models';
 import { JobTrackerAPIError } from './models';
+import { notifyUnauthorizedResponse } from './authenticationEvents';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -79,6 +80,10 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
     }
 
     if (!response.ok) {
+        if (response.status === 401) {
+            notifyUnauthorizedResponse();
+        }
+
         let message = response.statusText || 'Unknown error';
         if (typeof data === 'string') {
             message = data;
