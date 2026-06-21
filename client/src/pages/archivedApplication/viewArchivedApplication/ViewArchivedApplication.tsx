@@ -4,6 +4,7 @@ import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
 import type { EntityId } from '../../jobApplication/models';
+import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import NotesToggleButton from '../../../components/notesToggleButton/NotesToggleButton';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import styles from './ViewArchivedApplication.module.css';
@@ -19,6 +20,7 @@ const ViewArchivedApplication = () => {
     const confirm = useConfirm();
     const [jobStatus, setJobStatus] = useState('Show All');
     const [toggleNotes, setToggleNotes] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
 
     const filteredApplications = archivedApplications.filter((app) => {
@@ -56,6 +58,8 @@ const ViewArchivedApplication = () => {
                 if (isActive) setArchivedApplications(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
+            } finally {
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -182,7 +186,11 @@ const ViewArchivedApplication = () => {
 
     return (
         <div className={styles.archivedApplicationList}>
-            <div className={styles.listControls}>
+            {isLoading && <><br /><LoadingSpinner /></>}
+
+            {!isLoading && (
+                <>
+                    <div className={styles.listControls}>
                 <div className={styles.filterOption}>
                     <div>Filter by</div>
                     <select role='listbox' value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
@@ -288,6 +296,8 @@ const ViewArchivedApplication = () => {
                     </>
                 )}
             </div>
+                </>
+            )}
         </div>
     );
 };

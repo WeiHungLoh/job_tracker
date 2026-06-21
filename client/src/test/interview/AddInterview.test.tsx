@@ -2,7 +2,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AddInterview from '../../pages/interview/addInterview/AddInterview';
 import ViewApplication from '../../pages/jobApplication/viewApplication/ViewApplication';
 import { render } from '../renderWithToast';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();
@@ -40,6 +40,13 @@ describe('AddInterview page', () => {
     });
 
     test('redirects to /viewapplication when no state is passed', async () => {
+        fetch.mockResolvedValue({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => [],
+        });
+
         render(
             <MemoryRouter initialEntries={['/interview/add']}>
                 <Routes>
@@ -49,6 +56,6 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText(/filter by/i)).toBeInTheDocument();
+        await waitFor(() => expect(screen.getByText(/filter by/i)).toBeInTheDocument());
     });
 });

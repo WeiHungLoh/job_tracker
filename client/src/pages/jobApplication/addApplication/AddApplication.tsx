@@ -1,5 +1,6 @@
 import { JobTrackerAPIError } from '../../../api/models';
 import type { MouseEvent } from 'react';
+import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
 import styles from './AddApplication.module.css';
@@ -17,6 +18,7 @@ const AddApplication = () => {
     const [jobURL, setJobURL] = useState('');
     const navigate = useNavigate();
     const currDate = new Date(Date.now());
+    const [isLoading, setIsLoading] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
 
@@ -46,6 +48,7 @@ const AddApplication = () => {
             return;
         }
 
+        setIsLoading(true);
         try {
             const message = await api.application.createApplication({
                 companyName,
@@ -76,9 +79,12 @@ const AddApplication = () => {
                 setJobLocation('');
                 setJobURL('');
 
+                setIsLoading(false);
                 return;
             }
             showErrorToast('Failed to add an application: ' + (error as Error).message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -118,8 +124,8 @@ const AddApplication = () => {
             <input value={jobURL} onChange={(e) => setJobURL(e.target.value)} />
 
             <div className={styles.submitButton}>
-                <PrimaryButton variant='compact' onClick={handleAdd}>
-                    Add Job Application
+                <PrimaryButton variant='compact' onClick={handleAdd} disabled={isLoading}>
+                    {isLoading ? <LoadingSpinner size='sm' variant='light' /> : 'Add Job Application'}
                 </PrimaryButton>
                 <PrimaryButton variant='compact' onClick={() => navigate(routes.viewApplications)}>
                     View Job Applications

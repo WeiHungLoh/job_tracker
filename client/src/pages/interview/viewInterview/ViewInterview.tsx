@@ -4,6 +4,7 @@ import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
 import type { EntityId } from '../../jobApplication/models';
 import type { JobInterview } from '../models';
+import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 // Taken from: https://www.npmjs.com/package/react-csv
 import { routes } from '../../../routes';
@@ -16,6 +17,7 @@ const ViewInterview = () => {
     const navigate = useNavigate();
     const api = useJobTrackerAPI();
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const confirm = useConfirm();
     const { showErrorToast } = useToast();
 
@@ -28,6 +30,8 @@ const ViewInterview = () => {
                 if (isActive) setInterviews(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
+            } finally {
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -115,7 +119,11 @@ const ViewInterview = () => {
 
     return (
         <div className={styles.interviewList}>
-            {showAddinterviewMessage(interviews) && (
+            {isLoading && <><br /><LoadingSpinner /></>}
+
+            {!isLoading && (
+                <>
+                    {showAddinterviewMessage(interviews) && (
                 <div>
                     <br />
                     No job interview found. Start adding one now!{' '}
@@ -170,6 +178,8 @@ const ViewInterview = () => {
                     </>
                 )}
             </div>
+                </>
+            )}
         </div>
     );
 };

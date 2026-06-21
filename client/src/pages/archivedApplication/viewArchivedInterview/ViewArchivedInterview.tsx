@@ -5,6 +5,7 @@ import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
 import type { EntityId } from '../../jobApplication/models';
 import { Link } from 'react-router-dom';
+import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
 import styles from './ViewArchivedInterview.module.css';
@@ -15,6 +16,7 @@ import { useToast } from '../../../components/toast/ToastProvider';
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const confirm = useConfirm();
     const { showErrorToast } = useToast();
 
@@ -27,6 +29,8 @@ const ViewArchivedInterview = () => {
                 if (isActive) setArchivedInterviews(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
+            } finally {
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -117,7 +121,11 @@ const ViewArchivedInterview = () => {
 
     return (
         <div className={styles.archivedInterviewList}>
-            {showArchiveInterviewMessage(archivedInterviews) && (
+            {isLoading && <><br /><LoadingSpinner /></>}
+
+            {!isLoading && (
+                <>
+                    {showArchiveInterviewMessage(archivedInterviews) && (
                 <div>
                     <br />
                     No archived job interview found. Start archiving now!{' '}
@@ -172,6 +180,8 @@ const ViewArchivedInterview = () => {
                     </>
                 )}
             </div>
+                </>
+            )}
         </div>
     );
 };
