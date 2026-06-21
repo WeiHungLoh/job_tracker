@@ -33,7 +33,7 @@ const cookieJWTAuth = (req: Request, res: Response<ErrorResponse>, next: NextFun
         req.user = { ...user, id: user.id, email: user.email };
         next();
     } catch (error: unknown) {
-        console.warn('Protected route rejected: invalid token.', error);
+        console.warn('Invalid token. ', error);
         res.clearCookie('token', clearAuthCookieOptions);
         sendError(res, 401, 'Invalid or expired token. Please sign in.');
     }
