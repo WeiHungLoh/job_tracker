@@ -15,6 +15,26 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 
+const jobStatusOrder: Record<JobStatus, number> = {
+    Accepted: 1,
+    Offer: 2,
+    Declined: 3,
+    Interview: 4,
+    Applied: 5,
+    Ghosted: 6,
+    Rejected: 7,
+};
+
+const sortApplications = (applications: JobApplication[]) => {
+    return [...applications].sort((firstApplication, secondApplication) => {
+        const byStatus = jobStatusOrder[firstApplication.job_status] - jobStatusOrder[secondApplication.job_status];
+
+        return (
+            byStatus || Date.parse(secondApplication.application_date) - Date.parse(firstApplication.application_date)
+        );
+    });
+};
+
 const ViewApplication = () => {
     const navigate = useNavigate();
     const api = useJobTrackerAPI();
@@ -192,16 +212,18 @@ const ViewApplication = () => {
                 )
             );
 
-            if (editStatus && newStatus != oldStatus) {
+            if (editStatus && newStatus !== oldStatus) {
                 await api.application.updateJobStatus({
                     jobId: application.job_id,
                     jobStatus: jobStatuses[application.job_id] ?? application.job_status,
                 });
-                setApplications((current) =>
-                    current.map((item) =>
+                setApplications((current) => {
+                    const updatedApplications = current.map((item) =>
                         item.job_id === application.job_id ? { ...item, job_status: newStatus } : item
-                    )
-                );
+                    );
+
+                    return sortApplications(updatedApplications);
+                });
 
                 setTimeout(() => {
                     const app = document.getElementById(String(application.job_id));
@@ -292,7 +314,12 @@ const ViewApplication = () => {
 
     return (
         <div className={styles.applicationList}>
-            {isLoading && <><br /><LoadingSpinner /></>}
+            {isLoading && (
+                <>
+                    <br />
+                    <LoadingSpinner />
+                </>
+            )}
 
             {!isLoading && (
                 <>
