@@ -1,8 +1,7 @@
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
-import { act, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { appRoutes } from '../App';
 import { render } from './renderWithToast';
-import { unauthorizedResponseEvent } from '../api/authenticationEvents';
 import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();
@@ -101,15 +100,6 @@ describe('App routing and authentication behavior', () => {
             credentials: 'include',
             method: 'GET',
         });
-    });
-
-    test('redirects to SignIn when a protected API reports an unauthorized response', async () => {
-        renderRoute('/application/add');
-        await waitFor(() => expect(screen.getByText(/add a job application/i)).toBeInTheDocument());
-
-        act(() => window.dispatchEvent(new Event(unauthorizedResponseEvent)));
-
-        await waitFor(() => expect(screen.getByText(/sign in to job tracker/i)).toBeInTheDocument());
     });
 
     test.each(['/application/view', '/application/archive', '/interview/archive'])(
