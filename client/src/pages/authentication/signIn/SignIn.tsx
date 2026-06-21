@@ -86,7 +86,7 @@ const SignIn = () => {
 
                     {isPending ? (
                         <PrimaryButton variant='form' type='submit' disabled>
-                            <LoadingSpinner size='sm' variant='light' />
+                            <LoadingSpinner size='sm' />
                         </PrimaryButton>
                     ) : (
                         <PrimaryButton variant='form' type='submit'>
