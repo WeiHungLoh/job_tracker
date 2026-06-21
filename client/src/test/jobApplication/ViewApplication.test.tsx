@@ -95,6 +95,49 @@ describe('Job application viewing flow', () => {
         });
     });
 
+    test('restores database ordering after changing an application status', async () => {
+        const applications = [
+            {
+                ...mockApplication,
+                job_id: 3,
+                company_name: 'Offer Pte Ltd',
+                job_status: 'Offer',
+                application_date: '2025-06-19T00:00:00Z',
+            },
+            mockApplication,
+            {
+                ...mockApplication,
+                job_id: 2,
+                company_name: 'XYZ Pte Ltd',
+                job_status: 'Rejected',
+                application_date: '2025-06-21T00:00:00Z',
+            },
+        ];
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (init?.method !== 'GET') return response(undefined, 204);
+            if (url.endsWith('/job-interviews')) return response([]);
+            return response(applications);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/XYZ Pte Ltd/i);
+        userEvent.click(screen.getAllByRole('button', { name: /edit status/i })[2]);
+        userEvent.selectOptions(await screen.findByRole('listbox'), 'Offer');
+        userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+        await waitFor(() => {
+            const companyHeadings = screen.getAllByRole('heading', { level: 2 });
+            expect(companyHeadings[0]).toHaveTextContent('1. XYZ Pte Ltd');
+            expect(companyHeadings[1]).toHaveTextContent('2. Offer Pte Ltd');
+            expect(companyHeadings[2]).toHaveTextContent('3. ABC Pte Ltd');
+        });
+    });
+
     test('deletes application after user confirms', async () => {
         render(
             <MemoryRouter>
