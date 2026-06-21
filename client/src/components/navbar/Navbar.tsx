@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { type MouseEvent, useEffect, useState } from 'react';
 import Icon from '../icon/Icon';
 import PrimaryButton from '../button/PrimaryButton';
 import { routes } from '../../routes';
@@ -21,7 +21,8 @@ const Navbar = () => {
         setArchived(archivedLocations.includes(currLocation));
     }, [currLocation]);
 
-    const handleSignOut = async () => {
+    const handleSignOut = async (e: MouseEvent) => {
+        e.preventDefault();
         try {
             await api.authentication.logout();
             navigate(routes.signIn);
