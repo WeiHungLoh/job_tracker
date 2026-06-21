@@ -10,6 +10,10 @@
     font-family: var(--fontFamilyBase);
 }
 
+html {
+    overscroll-behavior: none;
+}
+
 html,
 body {
     max-width: 100%;
