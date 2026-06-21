@@ -6,7 +6,7 @@ import { sendError } from '../http/responses.js';
 const clearAuthCookieOptions: CookieOptions = {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     path: '/',
 };
 
