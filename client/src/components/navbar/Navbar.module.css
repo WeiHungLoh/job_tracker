@@ -64,7 +64,7 @@
 .navbar a:hover,
 .archiveStatus:hover {
     background-color: rgb(241 53 109 / 8%);
-    color: #f1356d;
+    color: var(--colorPrimary);
 }
 
 .navbar h1 {

@@ -6,7 +6,7 @@
 .primary {
     padding: 8px 10px;
     border-radius: 10px;
-    background-color: #f1356d;
+    background-color: var(--colorPrimary);
     color: #fff;
 }
 
@@ -23,7 +23,7 @@
 }
 
 .form:hover {
-    background-color: #d12b5a;
+    background-color: var(--colorPrimaryHover);
 }
 
 .success {
