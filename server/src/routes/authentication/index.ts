@@ -16,7 +16,7 @@ const authCookieOptions: CookieOptions = {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 6 * 60 * 60 * 1000,
 };
 
 const clearAuthCookieOptions: CookieOptions = {
@@ -26,6 +26,7 @@ const clearAuthCookieOptions: CookieOptions = {
     path: '/',
 };
 
+// signup
 router.post(
     '/users',
     async (
@@ -53,6 +54,7 @@ router.post(
     }
 );
 
+// sign in
 router.post(
     '/sessions',
     async (
@@ -86,7 +88,7 @@ router.post(
             }
 
             const accessToken = jwt.sign({ id: userInfo.user_id, email: userInfo.email }, accessTokenSecret, {
-                expiresIn: '24h',
+                expiresIn: '6h',
             });
 
             res.cookie('token', accessToken, authCookieOptions);
@@ -97,6 +99,7 @@ router.post(
     }
 );
 
+// verify token
 router.get(
     '/sessions/current',
     (req: Request<Record<string, never>, AuthenticationResponse>, res: Response<AuthenticationResponse>): void => {
@@ -124,6 +127,7 @@ router.get(
     }
 );
 
+// logout
 router.delete(
     '/sessions/current',
     (_req: Request<Record<string, never>, EmptyResponse>, res: Response<EmptyResponse>): void => {
