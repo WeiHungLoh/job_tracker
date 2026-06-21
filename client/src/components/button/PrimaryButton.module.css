@@ -1,0 +1,55 @@
+.button {
+    border: 0;
+    cursor: pointer;
+}
+
+.primary {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background-color: var(--colorPrimary);
+    color: #fff;
+}
+
+.compact {
+    color: whitesmoke;
+    font-size: 0.875rem;
+}
+
+.form {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.form:hover {
+    background-color: var(--colorPrimaryHover);
+}
+
+.success {
+    padding: 7px 20px;
+    border-radius: 10px;
+    background-color: green;
+    color: cornsilk;
+    font-size: 0.8125rem;
+    font-weight: bolder;
+    letter-spacing: 2px;
+}
+
+.navigation {
+    background: transparent;
+    color: inherit;
+}
+
+.navigation {
+    padding: 0 4px;
+    font-size: inherit;
+}
+
+.icon {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 1.25rem;
+    line-height: 1;
+}

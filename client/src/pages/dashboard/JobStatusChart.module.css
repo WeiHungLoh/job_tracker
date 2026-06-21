@@ -1,0 +1,24 @@
+.jobStatusChart {
+    width: 100%;
+    min-width: 0;
+    height: 400px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.application {
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.noApplicationMessage {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .jobStatusChart {
+        height: 480px;
+    }
+}

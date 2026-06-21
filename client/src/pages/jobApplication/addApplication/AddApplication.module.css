@@ -1,0 +1,63 @@
+.addApplication {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.addApplication label {
+    justify-content: left;
+    display: flex;
+}
+
+.addApplication h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    word-break: break-all;
+}
+
+.addApplication input {
+    width: 100%;
+    padding: 6px 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1.5px solid #ddd;
+    box-sizing: border-box;
+    appearance: none;
+}
+
+.addApplication select {
+    width: 100%;
+    padding: 6px 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1.5px solid #ddd;
+    box-sizing: border-box;
+}
+
+.submitButton {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 70px;
+}
+
+@media (max-width: 1150px) and (orientation: portrait) {
+    .addApplication {
+        max-width: 80%;
+    }
+
+    .addApplication h2 {
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+    }
+
+    .addApplication label {
+        font-size: 0.8rem;
+    }
+
+    .addApplication button {
+        padding: 6.4px 8px;
+        border-radius: 9.6px;
+        font-size: 0.7rem;
+    }
+}

@@ -1,0 +1,53 @@
+.loadingSpinner {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    animation: loading 1.4s linear infinite;
+}
+
+.primary {
+    --spinnerColor: var(--colorPrimary);
+    --spinnerTrackColor: #e1e3e6;
+}
+
+.light {
+    --spinnerColor: #fff;
+    --spinnerTrackColor: rgb(255 255 255 / 35%);
+}
+
+.loadingSpinner::before {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        transparent 0 4%,
+        var(--spinnerColor) 4.2% 54%,
+        transparent 54.2% 58%,
+        var(--spinnerTrackColor) 58.2% 100%
+    );
+    content: '';
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(70% - 1px),
+        #000 70%,
+        #000 calc(100% - 1px),
+        transparent 100%
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(70% - 1px),
+        #000 70%,
+        #000 calc(100% - 1px),
+        transparent 100%
+    );
+}
+
+@keyframes loading {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(1turn);
+    }
+}

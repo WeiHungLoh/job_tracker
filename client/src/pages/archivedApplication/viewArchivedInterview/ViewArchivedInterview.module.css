@@ -1,0 +1,106 @@
+.archivedInterviewList {
+    max-width: 710px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.interview {
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 60px;
+}
+
+.buttonGroup {
+    display: flex;
+    margin-left: auto;
+    cursor: pointer;
+    align-items: center;
+    color: #fff;
+    gap: 10px;
+}
+
+.interviewContent {
+    color: #666;
+    word-break: break-all;
+    gap: 16px;
+    width: 500px;
+}
+
+.location {
+    color: #2a9d8f;
+}
+
+.type {
+    color: #5e60ce;
+}
+
+.notes {
+    background-color: #fff9c4;
+    border-left: 4px solid #fbc02d;
+    padding-left: 10px;
+    margin-top: 4px;
+    color: #495057;
+}
+
+.interviewContent h2 {
+    font-size: 1.5rem;
+    color: black;
+}
+
+.date {
+    font-weight: bold;
+    color: #343a40;
+}
+
+.interviewContent p:last-of-type {
+    font-weight: bold;
+    color: red;
+}
+
+.interviewContent a {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.interviewContent a:hover {
+    background-color: #d0e8ff;
+}
+
+.interviewButton button {
+    margin-top: 20px;
+}
+
+.interviewButton {
+    display: flex;
+    gap: 70px;
+}
+
+@media (max-width: 803px) {
+    .archivedInterviewList {
+        width: 90%;
+    }
+
+    .archivedInterviewList > h2 {
+        font-size: 1.2rem;
+    }
+
+    .interviewButton {
+        gap: 54px;
+    }
+}

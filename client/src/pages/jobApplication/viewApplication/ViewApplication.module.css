@@ -1,0 +1,294 @@
+.applicationList {
+    max-width: 750px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.listControls {
+    width: 100%;
+    margin: 20px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.filterOption {
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.filterOption select {
+    background: #e0f0ff;
+    color: #003366;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.application {
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 0;
+    position: relative;
+}
+
+.buttonGroup {
+    margin-left: auto;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    width: 190px;
+}
+
+.archiveButton {
+    position: absolute;
+    bottom: 0.5px;
+    right: 33px;
+    left: 1px;
+}
+
+.notes textarea {
+    position: absolute;
+    right: -330px;
+    top: 15px;
+    height: 89%;
+    width: 300px;
+    padding: 14px;
+    font-size: 0.9375rem;
+    border-radius: 10px;
+    border: 2px solid #fbc02d;
+    background-color: #fff9c4;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.applicationButton {
+    display: flex;
+    gap: 70px;
+}
+
+.applicationContent {
+    color: #666;
+    word-wrap: break-word;
+    width: 500px;
+    gap: 16px;
+}
+
+.location {
+    color: #2a9d8f;
+}
+
+.applicationContent h2 {
+    font-size: 1.5rem;
+    color: black;
+}
+
+.date {
+    font-weight: bold;
+    color: #343a40;
+}
+
+.applicationContent a {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.url {
+    background-color: #e0f0ff;
+    color: #0d6efd;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    border: none;
+    display: flex;
+    max-width: fit-content;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.applicationContent select {
+    background: #e0f0ff;
+    color: #003366;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: bolder;
+    font-size: 0.8125rem;
+    letter-spacing: 0.5px;
+    border: none;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.applicationContent a:hover {
+    background-color: #d0e8ff;
+}
+
+.url:hover {
+    background-color: #d0e8ff;
+}
+
+.applied,
+.interview,
+.offer,
+.accepted,
+.rejected,
+.ghosted,
+.declined {
+    color: white;
+    padding: 4px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    display: inline-flex;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.applied {
+    background-color: #17a2b8;
+}
+
+.interview {
+    background-color: #0d6efd;
+}
+
+.offer {
+    background-color: #ffc107;
+}
+
+.accepted {
+    background-color: #198754;
+}
+
+.rejected {
+    background-color: #dc3545;
+}
+
+.ghosted {
+    background-color: #6c757d;
+}
+
+.declined {
+    background-color: rebeccapurple;
+}
+
+.applicationButton button {
+    margin-top: 20px;
+}
+
+.applicationButton a {
+    text-decoration: none;
+    color: #17a2b8;
+}
+
+/* Highlight application div to make it more prominent for users to see */
+.highlighted {
+    animation: highlightFade 4s ease-in-out;
+}
+
+@keyframes highlightFade {
+    0% {
+        background-color: #dfffd9;
+    }
+
+    100% {
+        background-color: inherit;
+    }
+}
+
+@media (min-width: 804px) and (max-width: 1422px) {
+    .application {
+        flex-wrap: wrap;
+    }
+
+    .applicationContent {
+        flex: 1 1 500px;
+        width: auto;
+        min-width: 0;
+        padding-left: 20px;
+    }
+ 
+    .buttonGroup {
+        flex: 0 0 190px;
+    }
+
+    .notes {
+        flex: 1 0 100%;
+        margin-top: 16px;
+    }
+
+    .notes textarea {
+        position: static;
+        display: block;
+        width: 95%;
+        height: 160px;
+        margin: 0 auto;
+    }
+    .archiveButton {
+        bottom: 20px;
+    }
+}
+
+@media (max-width: 803px) {
+    .applicationList {
+        max-width: 90%;
+    }
+
+    .application {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+    }
+
+    .archiveButton {
+        position: relative;
+    }
+
+    .applicationContent select {
+        margin-left: 0;
+        margin-top: 7px;
+        display: block;
+    }
+
+    .buttonGroup {
+        justify-content: center;
+        flex-direction: column;
+        width: 20%;
+    }
+
+    .notes textarea {
+        right: -302.8px;
+    }
+
+    .applicationButton {
+        gap: 54px;
+    }
+}
