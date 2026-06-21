@@ -7,6 +7,7 @@ export type IconName =
     | 'archive'
     | 'briefcase'
     | 'chevronDown'
+    | 'error'
     | 'dashboard'
     | 'delete'
     | 'email'
@@ -17,6 +18,7 @@ export type IconName =
     | 'lock'
     | 'notes'
     | 'sort'
+    | 'success'
     | 'visibility'
     | 'visibilityOff';
 
