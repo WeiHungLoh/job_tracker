@@ -1,6 +1,8 @@
 import type { UserGuideSection } from './models';
 import Icon from '../../components/icon/Icon';
+import { Link } from 'react-router-dom';
 import PrimaryButton from '../../components/button/PrimaryButton';
+import { routes } from '../../routes';
 import styles from './UserGuide.module.css';
 import { useState } from 'react';
 
@@ -175,6 +177,10 @@ const UserGuide = () => {
     return (
         <main data-testid='ug' className={styles.userGuide}>
             <div className={styles.guideContainer}>
+                <Link className={styles.backButton} to={routes.signIn}>
+                    <Icon name='arrowBack' />
+                    Back to sign in
+                </Link>
                 <header className={styles.header}>
                     <span className={styles.headerIcon}>
                         <Icon name='guide' />

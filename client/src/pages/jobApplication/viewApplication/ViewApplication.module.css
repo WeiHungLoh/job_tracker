@@ -233,9 +233,9 @@
         flex: 1 1 500px;
         width: auto;
         min-width: 0;
-        padding: 20px;
+        padding-left: 20px;
     }
-
+ 
     .buttonGroup {
         flex: 0 0 190px;
     }
@@ -251,6 +251,9 @@
         width: 95%;
         height: 160px;
         margin: 0 auto;
+    }
+    .archiveButton {
+        bottom: 20px;
     }
 }
 

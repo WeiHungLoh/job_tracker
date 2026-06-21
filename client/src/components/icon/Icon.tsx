@@ -2,6 +2,7 @@ import type { IconName, IconProps } from './models';
 import { IoEye, IoNewspaperOutline } from 'react-icons/io5';
 import { IoMdArchive, IoMdEyeOff } from 'react-icons/io';
 import {
+    MdArrowBack,
     MdAutoAwesome,
     MdDashboard,
     MdDeleteOutline,
@@ -21,6 +22,7 @@ import type { IconType } from 'react-icons';
 const icons: Record<IconName, IconType> = {
     activeApplications: IoNewspaperOutline,
     alert: GoAlertFill,
+    arrowBack: MdArrowBack,
     archive: IoMdArchive,
     briefcase: FaBriefcase,
     chevronDown: MdExpandMore,
