@@ -3,6 +3,7 @@ import type { HTMLAttributes } from 'react';
 export type IconName =
     | 'activeApplications'
     | 'alert'
+    | 'arrowBack'
     | 'archive'
     | 'briefcase'
     | 'chevronDown'

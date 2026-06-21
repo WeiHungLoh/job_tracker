@@ -12,6 +12,7 @@ describe('renders user guide properly', () => {
             </MemoryRouter>
         );
         expect(screen.getByTestId('ug')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /back to sign in/i })).toHaveAttribute('href', '/sign-in');
         expect(screen.getByText(/quick visual overview/i)).toBeVisible();
 
         await userEvent.click(screen.getByRole('button', { name: /adding and managing applications/i }));

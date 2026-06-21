@@ -1,7 +1,6 @@
 .userGuide {
     min-height: 100vh;
-    padding: 48px 20px 64px;
-    background-color: #f8f7fb;
+    padding: 24px 20px 24px;
     box-sizing: border-box;
     color: #342d40;
 }
@@ -9,6 +8,26 @@
 .guideContainer {
     max-width: 900px;
     margin: 0 auto;
+}
+
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    color: #4a148c;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.backButton:hover {
+    background-color: #fbf5f8;
+}
+
+.backButton:focus-visible {
+    border-radius: 4px;
+    outline: 3px solid rgb(74 20 140 / 28%);
+    outline-offset: 3px;
 }
 
 .header {
