@@ -172,7 +172,7 @@ const guideSections: readonly UserGuideSection[] = [
 ];
 
 const UserGuide = () => {
-    const [activeSectionId, setActiveSectionId] = useState<string | null>(guideSections[0].id);
+    const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
     return (
         <main data-testid='ug' className={styles.userGuide}>

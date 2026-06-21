@@ -1,13 +1,20 @@
 .userGuide {
-    min-height: 100vh;
-    padding: 24px 20px 24px;
+    min-height: 100svh;
+    padding: 32px 20px 48px;
     box-sizing: border-box;
+    --guideAccent: #f1356d;
+    --guideAccentDark: #c82457;
+    --guideAccentSoft: #fff0f5;
+    --guideBorder: #f0d8e0;
+    --guideText: #342d40;
+    --guideMutedText: #6b6474;
+
     color: #342d40;
     background-color: #f8f7fb;
 }
 
 .guideContainer {
-    max-width: 900px;
+    max-width: 920px;
     margin: 0 auto;
 }
 
@@ -16,18 +23,19 @@
     align-items: center;
     gap: 6px;
     margin-bottom: 20px;
-    color: #4a148c;
+    color: var(--guideAccentDark);
     font-weight: 600;
     text-decoration: none;
 }
 
 .backButton:hover {
+    color: var(--guideAccent);
     text-decoration: underline;
 }
 
 .backButton:focus-visible {
     border-radius: 4px;
-    outline: 3px solid rgb(74 20 140 / 28%);
+    outline: 3px solid rgb(241 53 109 / 28%);
     outline-offset: 3px;
 }
 
@@ -35,7 +43,12 @@
     display: flex;
     align-items: center;
     gap: 18px;
-    margin-bottom: 32px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    border: 1px solid var(--guideBorder);
+    border-radius: 20px;
+    background-color: #fff;
+    box-shadow: 0 14px 38px rgb(91 42 59 / 8%);
 }
 
 .headerIcon {
@@ -45,7 +58,7 @@
     flex: 0 0 56px;
     place-items: center;
     border-radius: 16px;
-    background-color: #f1356d;
+    background-color: var(--guideAccent);
     box-shadow: 0 8px 20px rgb(241 53 109 / 22%);
     color: #fff;
     font-size: 1.75rem;
@@ -53,33 +66,33 @@
 
 .header h1 {
     margin: 0;
-    color: #4a148c;
+    color: var(--guideText);
     font-size: 2rem;
     line-height: 1.2;
 }
 
 .header p {
     margin: 8px 0 0;
-    color: #6b6474;
+    color: var(--guideMutedText);
     line-height: 1.5;
 }
 
 .accordion {
     display: grid;
-    gap: 16px;
+    gap: 12px;
 }
 
 .accordionItem {
     overflow: hidden;
-    border: 1px solid #ded9e8;
+    border: 1px solid var(--guideBorder);
     border-radius: 15px;
     background-color: #fff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .accordionItemOpen {
-    border-color: #c7a5e8;
-    box-shadow: 0 8px 24px rgb(74 20 140 / 9%);
+    border-color: #f2a8be;
+    box-shadow: 0 10px 28px rgb(241 53 109 / 10%);
 }
 
 .accordionHeading {
@@ -94,7 +107,7 @@
     gap: 14px;
     padding: 20px 24px;
     background-color: transparent;
-    color: #342d40;
+    color: var(--guideText);
     font-size: 1.05rem;
     font-weight: 600;
     line-height: 1.4;
@@ -102,7 +115,7 @@
 }
 
 .accordionButton:hover {
-    background-color: #fbf5f8;
+    background-color: #fff8fa;
 }
 
 .accordionButton:focus-visible {
@@ -116,8 +129,8 @@
     height: 42px;
     place-items: center;
     border-radius: 12px;
-    background-color: #f5edf9;
-    color: #6b2f91;
+    background-color: var(--guideAccentSoft);
+    color: var(--guideAccent);
     font-size: 1.35rem;
 }
 
@@ -140,7 +153,7 @@
 
 .accordionPanel h3 {
     margin: 18px 0 6px;
-    color: #4a148c;
+    color: var(--guideAccentDark);
     font-size: 1rem;
 }
 
@@ -169,18 +182,21 @@
 .accordionPanel code {
     padding: 2px 5px;
     border-radius: 4px;
-    background-color: #f0edf4;
-    color: #4a148c;
+    background-color: var(--guideAccentSoft);
+    color: var(--guideAccentDark);
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9em;
 }
 
 .tip {
-    margin: 24px 0 0;
-    color: #6b6474;
+    padding: 14px 18px;
+    margin: 20px 0 0;
+    border-left: 4px solid var(--guideAccent);
+    border-radius: 8px;
+    background-color: #fff;
+    color: var(--guideMutedText);
     font-size: 0.9rem;
-    font-style: italic;
-    text-align: center;
+    box-shadow: 0 8px 22px rgb(91 42 59 / 6%);
 }
 
 @media (max-width: 600px) {
@@ -190,6 +206,7 @@
 
     .header {
         align-items: flex-start;
+        padding: 20px;
         margin-bottom: 24px;
     }
 
@@ -225,6 +242,10 @@
 
     .accordionPanel {
         padding: 0 16px 20px;
+    }
+
+    .tip {
+        padding: 12px 14px;
     }
 }
 
