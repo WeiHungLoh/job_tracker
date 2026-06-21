@@ -14,7 +14,7 @@ const router = express.Router();
 const authCookieOptions: CookieOptions = {
     httpOnly: true,
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     path: '/',
     maxAge: 6 * 60 * 60 * 1000,
 };
@@ -22,7 +22,7 @@ const authCookieOptions: CookieOptions = {
 const clearAuthCookieOptions: CookieOptions = {
     httpOnly: true,
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     path: '/',
 };
 
