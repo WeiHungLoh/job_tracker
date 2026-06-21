@@ -26,6 +26,9 @@
     margin-bottom: 10px;
     border: 1.5px solid #ddd;
     box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    -webkit-appearance: none;
     appearance: none;
 }
 
