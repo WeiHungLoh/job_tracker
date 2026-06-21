@@ -79,7 +79,17 @@ describe('App routing and authentication behavior', () => {
             expect(screen.getByText(/Unable to verify authentication. Please try again./i)).toBeInTheDocument()
         );
         expect(screen.queryByText(/sign in to job tracker/i)).not.toBeInTheDocument();
+        expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
         expect(screen.getByText('Authentication is temporarily unavailable.')).toBeInTheDocument();
+    });
+
+    test('renders only the fallback screen while authentication is pending', () => {
+        fetch.mockReturnValueOnce(new Promise(() => undefined));
+        renderRoute('/application/view');
+
+        expect(screen.getByText(/checking authentication status/i)).toBeInTheDocument();
+        expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+        expect(screen.queryByText(/job application viewer/i)).not.toBeInTheDocument();
     });
 
     test('renders AddApplication page when user is authenticated', async () => {
@@ -107,7 +117,8 @@ describe('App routing and authentication behavior', () => {
 
     test('displays page 404 not found on unknown routes after authentication', async () => {
         renderRoute('/addassignment');
-        await waitFor(() => expect(screen.getByText(/Page 404 not found/i)).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText(/^Page not found$/i)).toBeInTheDocument());
+        expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     });
 
     test('displays active navigation bar when on dashboard page', async () => {

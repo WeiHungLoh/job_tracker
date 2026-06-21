@@ -1,7 +1,19 @@
 import type { IconName, IconProps } from './models';
 import { IoEye, IoNewspaperOutline } from 'react-icons/io5';
 import { IoMdArchive, IoMdEyeOff } from 'react-icons/io';
-import { MdEmail, MdLock } from 'react-icons/md';
+import {
+    MdAutoAwesome,
+    MdDashboard,
+    MdDeleteOutline,
+    MdEmail,
+    MdEventNote,
+    MdExpandMore,
+    MdFileDownload,
+    MdLock,
+    MdMenuBook,
+    MdOutlineStickyNote2,
+    MdSort,
+} from 'react-icons/md';
 import { FaBriefcase } from 'react-icons/fa';
 import { GoAlertFill } from 'react-icons/go';
 import type { IconType } from 'react-icons';
@@ -11,8 +23,17 @@ const icons: Record<IconName, IconType> = {
     alert: GoAlertFill,
     archive: IoMdArchive,
     briefcase: FaBriefcase,
+    chevronDown: MdExpandMore,
+    dashboard: MdDashboard,
+    delete: MdDeleteOutline,
     email: MdEmail,
+    export: MdFileDownload,
+    guide: MdMenuBook,
+    highlight: MdAutoAwesome,
+    interview: MdEventNote,
     lock: MdLock,
+    notes: MdOutlineStickyNote2,
+    sort: MdSort,
     visibility: IoEye,
     visibilityOff: IoMdEyeOff,
 };

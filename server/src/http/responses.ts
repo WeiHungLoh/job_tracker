@@ -28,21 +28,16 @@ const databaseUnavailableCodes = new Set([
     'ETIMEDOUT',
 ]);
 
-const databaseErrorResponses: Record<string, DatabaseErrorResponse> = {
-    '22007': { status: 422, message: 'The request contains an invalid date.' },
-    '22P02': { status: 422, message: 'The request contains invalid data.' },
-    '23502': { status: 422, message: 'A required value is missing.' },
-    '23503': { status: 422, message: 'A related resource does not exist.' },
-    '23505': { status: 409, message: 'A resource with the same value already exists.' },
-    '23514': { status: 422, message: 'The request contains an unsupported value.' },
-    '40001': { status: 409, message: 'The request conflicted with another update. Please try again.' },
-    '40P01': { status: 409, message: 'The request conflicted with another update. Please try again.' },
+const duplicateResourceResponse: DatabaseErrorResponse = {
+    status: 409,
+    message: 'A resource with the same value already exists.',
 };
 
 const getDatabaseErrorResponse = (code?: string): DatabaseErrorResponse | undefined => {
     if (!code) return undefined;
     if (code.startsWith('08') || databaseUnavailableCodes.has(code)) return databaseUnavailableResponse;
-    return databaseErrorResponses[code];
+    if (code === '23505') return duplicateResourceResponse;
+    return undefined;
 };
 
 export const sendError = <T>(res: Response<T | ErrorResponse>, status: ErrorStatus, message: string): void => {

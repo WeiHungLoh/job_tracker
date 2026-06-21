@@ -1,54 +1,216 @@
 .userGuide {
-    padding-top: 10px;
-    max-width: 768px;
-    margin: auto;
-    line-height: 1.6;
-    text-align: justify;
+    min-height: 100vh;
+    padding: 48px 20px 64px;
+    background-color: #f8f7fb;
+    box-sizing: border-box;
+    color: #342d40;
 }
 
-.userGuide h1 {
+.guideContainer {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 32px;
+}
+
+.headerIcon {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    place-items: center;
+    border-radius: 16px;
+    background-color: #f1356d;
+    box-shadow: 0 8px 20px rgb(241 53 109 / 22%);
+    color: #fff;
     font-size: 1.75rem;
-    font-weight: bold;
 }
 
-.userGuide h2 {
-    font-size: 1.25rem;
+.header h1 {
+    margin: 0;
+    color: #4a148c;
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+.header p {
+    margin: 8px 0 0;
+    color: #6b6474;
+    line-height: 1.5;
+}
+
+.accordion {
+    display: grid;
+    gap: 16px;
+}
+
+.accordionItem {
+    overflow: hidden;
+    border: 1px solid #ded9e8;
+    border-radius: 15px;
+    background-color: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.accordionItemOpen {
+    border-color: #c7a5e8;
+    box-shadow: 0 8px 24px rgb(74 20 140 / 9%);
+}
+
+.accordionHeading {
+    margin: 0;
+}
+
+.accordionButton.accordionButton {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 42px minmax(0, 1fr) 24px;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    background-color: transparent;
+    color: #342d40;
+    font-size: 1.05rem;
     font-weight: 600;
-    margin-top: 30px;
-    margin-bottom: 16px;
+    line-height: 1.4;
+    text-align: left;
 }
 
-.userGuide ul {
-    padding-left: 32px;
+.accordionButton:hover {
+    background-color: #fbf5f8;
 }
 
-.userGuide li {
+.accordionButton:focus-visible {
+    outline: 3px solid rgb(241 53 109 / 28%);
+    outline-offset: -3px;
+}
+
+.sectionIcon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 12px;
+    background-color: #f5edf9;
+    color: #6b2f91;
+    font-size: 1.35rem;
+}
+
+.chevron {
+    color: #766c80;
+    font-size: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.accordionPanel {
+    padding: 0 28px 24px 80px;
+    color: #55505c;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.accordionPanel h3 {
+    margin: 18px 0 6px;
+    color: #4a148c;
+    font-size: 1rem;
+}
+
+.accordionPanel h3:first-child {
+    margin-top: 0;
+}
+
+.accordionPanel p {
+    margin: 0 0 14px;
+}
+
+.accordionPanel p:last-child,
+.accordionPanel ul:last-child {
+    margin-bottom: 0;
+}
+
+.accordionPanel ul {
+    margin: 0 0 14px;
+    padding-left: 24px;
+}
+
+.accordionPanel li {
     margin-bottom: 8px;
 }
 
-.userGuide p {
-    margin-bottom: 16px;
-}
-
-.userGuide section {
-    border-bottom: 1px solid #ddd;
+.accordionPanel code {
+    padding: 2px 5px;
+    border-radius: 4px;
+    background-color: #f0edf4;
+    color: #4a148c;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
 }
 
 .tip {
-    font-style: italic;
+    margin: 24px 0 0;
+    color: #6b6474;
     font-size: 0.9rem;
-    color: #6b7280;
+    font-style: italic;
+    text-align: center;
 }
 
-.userGuide code {
-    font-family: 'Courier New', Courier, monospace;
-    background-color: #e9ecef;
-    padding: 2px 4px;
-    border-radius: 3px;
-}
-
-@media (max-width: 1150px) {
+@media (max-width: 600px) {
     .userGuide {
-        max-width: 90%;
+        padding: 28px 14px 44px;
+    }
+
+    .header {
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
+
+    .headerIcon {
+        width: 48px;
+        height: 48px;
+        flex-basis: 48px;
+        border-radius: 14px;
+        font-size: 1.5rem;
+    }
+
+    .header h1 {
+        font-size: 1.55rem;
+    }
+
+    .header p {
+        font-size: 0.9375rem;
+    }
+
+    .accordionButton.accordionButton {
+        grid-template-columns: 38px minmax(0, 1fr) 22px;
+        gap: 10px;
+        padding: 16px;
+        font-size: 1rem;
+    }
+
+    .sectionIcon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 1.2rem;
+    }
+
+    .accordionPanel {
+        padding: 0 16px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .accordionItem,
+    .chevron {
+        transition: none;
     }
 }

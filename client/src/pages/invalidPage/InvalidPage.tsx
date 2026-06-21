@@ -1,13 +1,11 @@
+import FallbackScreen from '../../components/fallbackScreen/FallbackScreen';
 import { routes } from '../../routes';
-import styles from './InvalidPage.module.css';
+import { useNavigate } from 'react-router-dom';
 
 const InvalidPage = () => {
-    return (
-        <div className={styles.invalidPage}>
-            <h2>Page 404 not found</h2>
-            <a href={routes.addApplication}>Click here to head to home page</a>
-        </div>
-    );
+    const navigate = useNavigate();
+
+    return <FallbackScreen variant='notFound' onAction={() => navigate(routes.viewApplications)} />;
 };
 
 export default InvalidPage;

@@ -1,11 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AuthLayout from '../../../components/authLayout/AuthLayout';
-import type { FormEvent } from 'react';
 import Icon from '../../../components/icon/Icon';
 import { JobTrackerAPIError } from '../../../api/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
+import type { SubmitEvent } from 'react';
 import { routes } from '../../../routes';
 import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -25,7 +25,7 @@ const SignIn = () => {
         void api.ping.wake();
     }, [api.ping]);
 
-    const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSignIn = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsPending(true);
         try {

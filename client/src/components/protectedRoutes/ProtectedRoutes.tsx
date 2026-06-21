@@ -39,14 +39,14 @@ const ProtectedRoutes = () => {
     }, [api.authentication]);
 
     if (authenticationError) {
-        return <FallbackScreen error onRetry={() => void checkIsAuth()} />;
+        return <FallbackScreen variant='authenticationError' onAction={() => void checkIsAuth()} />;
     }
 
     // Wait for auth check to complete before rendering
     // Without this, component renders with default false state
     // and immediately redirects to login before API call finishes
     if (isAuthenticated === undefined) {
-        return <FallbackScreen />;
+        return <FallbackScreen variant='loading' />;
     }
 
     return isAuthenticated ? <Outlet /> : <Navigate to={routes.signIn} replace />;
