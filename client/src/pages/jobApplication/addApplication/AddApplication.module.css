@@ -15,16 +15,7 @@
     word-break: break-all;
 }
 
-.addApplication input {
-    width: 100%;
-    padding: 6px 10px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border: 1.5px solid #ddd;
-    box-sizing: border-box;
-    appearance: none;
-}
-
+.addApplication input,
 .addApplication select {
     width: 100%;
     padding: 6px 10px;
@@ -32,6 +23,10 @@
     margin-bottom: 10px;
     border: 1.5px solid #ddd;
     box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .submitButton {
