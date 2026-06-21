@@ -3,6 +3,7 @@
     padding: 24px 20px 24px;
     box-sizing: border-box;
     color: #342d40;
+    background-color: #f8f7fb;
 }
 
 .guideContainer {
@@ -21,7 +22,7 @@
 }
 
 .backButton:hover {
-    background-color: #fbf5f8;
+    text-decoration: underline;
 }
 
 .backButton:focus-visible {
