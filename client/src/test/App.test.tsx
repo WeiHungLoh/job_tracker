@@ -43,7 +43,7 @@ describe('App routing and authentication behavior', () => {
         fetch.mockResolvedValue(response());
     });
 
-    test('redirects the root path to SignIn', async () => {
+    test('renders SignIn at the root path', async () => {
         renderRoute('/');
         expect(await screen.findByText(/sign in to job tracker/i)).toBeInTheDocument();
     });
