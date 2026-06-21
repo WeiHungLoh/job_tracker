@@ -8,7 +8,7 @@ import type { SubmitEvent } from 'react';
 import { routes } from '../../../routes';
 import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 
 const SignUp = () => {
@@ -19,6 +19,18 @@ const SignUp = () => {
     const [isPending, setIsPending] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
+
+    useEffect(() => {
+        const verifyAuth = async () => {
+            try {
+                await api.authentication.verify();
+                navigate(routes.viewApplications, { replace: true });
+            } catch {
+                // no valid token, stay on sign up
+            }
+        };
+        verifyAuth();
+    }, [api.authentication, navigate]);
 
     const handleSignUp = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();

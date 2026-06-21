@@ -25,6 +25,18 @@ const SignIn = () => {
         void api.ping.wake();
     }, [api.ping]);
 
+    useEffect(() => {
+        const verifyAuth = async () => {
+            try {
+                await api.authentication.verify();
+                navigate(routes.viewApplications, { replace: true });
+            } catch {
+                // no valid token, stay on sign in
+            }
+        };
+        verifyAuth();
+    }, [api.authentication, navigate]);
+
     const handleSignIn = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsPending(true);
