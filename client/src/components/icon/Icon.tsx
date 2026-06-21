@@ -4,6 +4,8 @@ import { IoMdArchive, IoMdEyeOff } from 'react-icons/io';
 import {
     MdArrowBack,
     MdAutoAwesome,
+    MdCancel,
+    MdCheckCircle,
     MdDashboard,
     MdDeleteOutline,
     MdEmail,
@@ -26,6 +28,7 @@ const icons: Record<IconName, IconType> = {
     archive: IoMdArchive,
     briefcase: FaBriefcase,
     chevronDown: MdExpandMore,
+    error: MdCancel,
     dashboard: MdDashboard,
     delete: MdDeleteOutline,
     email: MdEmail,
@@ -36,6 +39,7 @@ const icons: Record<IconName, IconType> = {
     lock: MdLock,
     notes: MdOutlineStickyNote2,
     sort: MdSort,
+    success: MdCheckCircle,
     visibility: IoEye,
     visibilityOff: IoMdEyeOff,
 };

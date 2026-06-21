@@ -102,7 +102,7 @@ const SignIn = () => {
                     <span className={styles.noticeIcon}>
                         <Icon name='alert' />
                     </span>
-                    The free-tier server may take up to 50 seconds to wake up. Please wait after submitting.
+                    The free-tier server may take up to 50 seconds to wake up. Please wait after clicking Sign in
                 </div>
                 <Link className={styles.userGuideLink} to={routes.userGuide} target='_blank'>
                     View user guide
