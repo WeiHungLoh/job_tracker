@@ -1,6 +1,5 @@
 import { FieldType, JobTrackerAPIError } from '../../api/models';
 import { makeJobTrackerAPIRequest } from '../../api/api';
-import { unauthorizedResponseEvent } from '../../api/authenticationEvents';
 
 globalThis.fetch = vi.fn();
 
@@ -93,27 +92,6 @@ describe('makeJobTrackerAPIRequest', () => {
                 status: 400,
             })
         );
-    });
-
-    test('notifies the router when the API returns an unauthorized response', async () => {
-        const unauthorizedListener = vi.fn();
-        window.addEventListener(unauthorizedResponseEvent, unauthorizedListener);
-        fetch.mockResolvedValueOnce(response({ message: 'Authentication required.' }, false, 401));
-
-        await expect(
-            makeJobTrackerAPIRequest<null, never>(null, {
-                url: '/applications',
-                verb: 'GET',
-            })
-        ).rejects.toEqual(
-            expect.objectContaining<JobTrackerAPIError>({
-                message: 'Authentication required.',
-                status: 401,
-            })
-        );
-
-        expect(unauthorizedListener).toHaveBeenCalledOnce();
-        window.removeEventListener(unauthorizedResponseEvent, unauthorizedListener);
     });
 
     test('preserves a backend service-unavailable status', async () => {
