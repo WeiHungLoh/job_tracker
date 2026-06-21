@@ -5,8 +5,8 @@ import { sendError } from '../http/responses.js';
 
 const clearAuthCookieOptions: CookieOptions = {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     path: '/',
 };
 
