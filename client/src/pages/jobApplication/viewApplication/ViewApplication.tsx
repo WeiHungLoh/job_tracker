@@ -6,6 +6,7 @@ import ArchiveToggleButton from '../../../components/archiveToggleButton/Archive
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
 import type { JobInterview } from '../../interview/models';
+import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import NotesToggleButton from '../../../components/notesToggleButton/NotesToggleButton';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
@@ -28,6 +29,7 @@ const ViewApplication = () => {
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [notes, setNotes] = useState<Record<EntityId, string>>({});
+    const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
 
     const filteredApplications = applications.filter((app) => {
@@ -74,6 +76,8 @@ const ViewApplication = () => {
                 }
             } catch (error) {
                 showErrorToast((error as Error).message);
+            } finally {
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -288,154 +292,171 @@ const ViewApplication = () => {
 
     return (
         <div className={styles.applicationList}>
-            <div className={styles.listControls}>
-                <div className={styles.filterOption}>
-                    <div>Filter by</div>
-                    <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
-                        <option value='Show All'>Show All</option>
-                        <option value='Accepted'>Accepted</option>
-                        <option value='Applied'>Applied</option>
-                        <option value='Declined'>Declined</option>
-                        <option value='Ghosted'>Ghosted</option>
-                        <option value='Interview'>Interview</option>
-                        <option value='Offer'>Offer</option>
-                        <option value='Rejected'>Rejected</option>
-                    </select>
-                </div>
+            {isLoading && <><br /><LoadingSpinner /></>}
 
-                {hasApplications(filteredApplications) && (
-                    <ArchiveToggleButton
-                        data-testid='unhide-archive'
-                        toggled={toggleArchived}
-                        onToggle={() => setToggleArchived(!toggleArchived)}
-                    />
-                )}
-
-                {hasApplications(filteredApplications) && (
-                    <NotesToggleButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)} />
-                )}
-            </div>
-
-            {showAddApplicationMessage(filteredApplications) && (
-                <div>
-                    <br />
-                    No job application with that job status found. Start adding one now!{' '}
-                </div>
-            )}
-
-            {filteredApplications &&
-                filteredApplications.map((application, index) => (
-                    <div className={styles.application} key={application.job_id} id={String(application.job_id)}>
-                        <div className={styles.applicationContent}>
-                            <h2>
-                                {index + 1}. {application.company_name}
-                            </h2>
-                            <p>Job Title: {application.job_title}</p>
-                            {showJobLocation(application) && (
-                                <p className={styles.location}>Location: {application.job_location}</p>
-                            )}
-                            <p className={styles.date}>
-                                Application Date: {DateFormatter(application.application_date).formattedDate}
-                            </p>
-                            <p>
-                                Time since application:{' '}
-                                {DateFormatter(application.application_date).timeSinceApplication}
-                            </p>
-                            <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
-
-                            {isEditStatus(application.edit_status) && (
-                                <select
-                                    role='listbox'
-                                    value={jobStatuses[application.job_id] ?? application.job_status}
-                                    onChange={(e) =>
-                                        setJobStatuses((app) => ({
-                                            ...app,
-                                            [application.job_id]: e.target.value as JobStatus,
-                                        }))
-                                    }
-                                >
-                                    <option value='Accepted'>Accepted</option>
-                                    <option value='Applied' disabled={interviewJobIds.includes(application.job_id)}>
-                                        Applied
-                                    </option>
-                                    <option value='Declined'>Declined</option>
-                                    <option value='Ghosted'>Ghosted</option>
-                                    <option value='Interview'>Interview</option>
-                                    <option value='Offer'>Offer</option>
-                                    <option value='Rejected'>Rejected</option>
-                                </select>
-                            )}
-
-                            {isStatusInterview(application.job_status) && (
-                                <Link
-                                    to={routes.addInterview}
-                                    state={{
-                                        app: application,
-                                    }}
-                                >
-                                    Click here to add an interview
-                                </Link>
-                            )}
-                            {showJobURL(application) && (
-                                <a
-                                    className={styles.url}
-                                    href={application.job_posting_url}
-                                    target='_blank'
-                                    rel='noreferrer'
-                                >
-                                    Click here to head to job application URL
-                                </a>
-                            )}
+            {!isLoading && (
+                <>
+                    <div className={styles.listControls}>
+                        <div className={styles.filterOption}>
+                            <div>Filter by</div>
+                            <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
+                                <option value='Show All'>Show All</option>
+                                <option value='Accepted'>Accepted</option>
+                                <option value='Applied'>Applied</option>
+                                <option value='Declined'>Declined</option>
+                                <option value='Ghosted'>Ghosted</option>
+                                <option value='Interview'>Interview</option>
+                                <option value='Offer'>Offer</option>
+                                <option value='Rejected'>Rejected</option>
+                            </select>
                         </div>
 
-                        <div className={styles.buttonGroup}>
-                            <PrimaryButton onClick={() => toggleEditStatus(application)}>
-                                {isEditStatus(application.edit_status) ? 'Save Changes' : 'Edit Status'}
-                            </PrimaryButton>
+                        {hasApplications(filteredApplications) && (
+                            <ArchiveToggleButton
+                                data-testid='unhide-archive'
+                                toggled={toggleArchived}
+                                onToggle={() => setToggleArchived(!toggleArchived)}
+                            />
+                        )}
 
-                            <PrimaryButton onClick={() => handleDelete(application.job_id)}>Delete</PrimaryButton>
-
-                            {toggleArchived && (
-                                <PrimaryButton
-                                    className={styles.archiveButton}
-                                    onClick={() => handleArchive(application.job_id)}
-                                    variant='success'
-                                >
-                                    Archive
-                                </PrimaryButton>
-                            )}
-                        </div>
-
-                        {toggleNotes && (
-                            <div className={styles.notes}>
-                                <textarea
-                                    value={notes[application.job_id] ?? application.notes}
-                                    onChange={(e) => handleEditNotes(application.job_id, e.target.value)}
-                                    placeholder='Add your notes here'
-                                />
-                            </div>
+                        {hasApplications(filteredApplications) && (
+                            <NotesToggleButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)} />
                         )}
                     </div>
-                ))}
 
-            <div className={styles.applicationButton}>
-                <PrimaryButton onClick={() => navigate(routes.addApplication)}>Add new application</PrimaryButton>
-                {hasApplications(filteredApplications) && (
-                    <>
-                        <PrimaryButton onClick={() => handleDeleteAll()}>Delete all applications</PrimaryButton>
-                        <PrimaryButton>
-                            <CSVLink
-                                data={data}
-                                headers={headers}
-                                filename={'job_applications.csv'}
-                                style={{ color: 'white' }}
+                    {showAddApplicationMessage(filteredApplications) && (
+                        <div>
+                            <br />
+                            No job application with that job status found. Start adding one now!{' '}
+                        </div>
+                    )}
+
+                    {filteredApplications &&
+                        filteredApplications.map((application, index) => (
+                            <div
+                                className={styles.application}
+                                key={application.job_id}
+                                id={String(application.job_id)}
                             >
-                                Export as CSV
-                            </CSVLink>
+                                <div className={styles.applicationContent}>
+                                    <h2>
+                                        {index + 1}. {application.company_name}
+                                    </h2>
+                                    <p>Job Title: {application.job_title}</p>
+                                    {showJobLocation(application) && (
+                                        <p className={styles.location}>Location: {application.job_location}</p>
+                                    )}
+                                    <p className={styles.date}>
+                                        Application Date: {DateFormatter(application.application_date).formattedDate}
+                                    </p>
+                                    <p>
+                                        Time since application:{' '}
+                                        {DateFormatter(application.application_date).timeSinceApplication}
+                                    </p>
+                                    <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
+
+                                    {isEditStatus(application.edit_status) && (
+                                        <select
+                                            role='listbox'
+                                            value={jobStatuses[application.job_id] ?? application.job_status}
+                                            onChange={(e) =>
+                                                setJobStatuses((app) => ({
+                                                    ...app,
+                                                    [application.job_id]: e.target.value as JobStatus,
+                                                }))
+                                            }
+                                        >
+                                            <option value='Accepted'>Accepted</option>
+                                            <option
+                                                value='Applied'
+                                                disabled={interviewJobIds.includes(application.job_id)}
+                                            >
+                                                Applied
+                                            </option>
+                                            <option value='Declined'>Declined</option>
+                                            <option value='Ghosted'>Ghosted</option>
+                                            <option value='Interview'>Interview</option>
+                                            <option value='Offer'>Offer</option>
+                                            <option value='Rejected'>Rejected</option>
+                                        </select>
+                                    )}
+
+                                    {isStatusInterview(application.job_status) && (
+                                        <Link
+                                            to={routes.addInterview}
+                                            state={{
+                                                app: application,
+                                            }}
+                                        >
+                                            Click here to add an interview
+                                        </Link>
+                                    )}
+                                    {showJobURL(application) && (
+                                        <a
+                                            className={styles.url}
+                                            href={application.job_posting_url}
+                                            target='_blank'
+                                            rel='noreferrer'
+                                        >
+                                            Click here to head to job application URL
+                                        </a>
+                                    )}
+                                </div>
+
+                                <div className={styles.buttonGroup}>
+                                    <PrimaryButton onClick={() => toggleEditStatus(application)}>
+                                        {isEditStatus(application.edit_status) ? 'Save Changes' : 'Edit Status'}
+                                    </PrimaryButton>
+
+                                    <PrimaryButton onClick={() => handleDelete(application.job_id)}>
+                                        Delete
+                                    </PrimaryButton>
+
+                                    {toggleArchived && (
+                                        <PrimaryButton
+                                            className={styles.archiveButton}
+                                            onClick={() => handleArchive(application.job_id)}
+                                            variant='success'
+                                        >
+                                            Archive
+                                        </PrimaryButton>
+                                    )}
+                                </div>
+
+                                {toggleNotes && (
+                                    <div className={styles.notes}>
+                                        <textarea
+                                            value={notes[application.job_id] ?? application.notes}
+                                            onChange={(e) => handleEditNotes(application.job_id, e.target.value)}
+                                            placeholder='Add your notes here'
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                    <div className={styles.applicationButton}>
+                        <PrimaryButton onClick={() => navigate(routes.addApplication)}>
+                            Add new application
                         </PrimaryButton>
-                    </>
-                )}
-            </div>
+                        {hasApplications(filteredApplications) && (
+                            <>
+                                <PrimaryButton onClick={() => handleDeleteAll()}>Delete all applications</PrimaryButton>
+                                <PrimaryButton>
+                                    <CSVLink
+                                        data={data}
+                                        headers={headers}
+                                        filename={'job_applications.csv'}
+                                        style={{ color: 'white' }}
+                                    >
+                                        Export as CSV
+                                    </CSVLink>
+                                </PrimaryButton>
+                            </>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

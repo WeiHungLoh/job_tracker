@@ -3,6 +3,7 @@ import type { JobApplication } from '../../jobApplication/models';
 import { JobTrackerAPIError } from '../../../api/models';
 import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
+import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
 import styles from './AddInterview.module.css';
@@ -19,6 +20,7 @@ const AddInterview = () => {
     const location = useLocation() as Location<{ app?: JobApplication }>;
     // Receives the state that has been passed when user clicks 'Click here to add an interview' button
     const app = location.state?.app;
+    const [isLoading, setIsLoading] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
 
@@ -40,6 +42,7 @@ const AddInterview = () => {
         // Decrements month by 1 since month starts from 0
         const localDate = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
 
+        setIsLoading(true);
         try {
             const message = await api.interview.createInterview({
                 jobId: app.job_id,
@@ -65,9 +68,12 @@ const AddInterview = () => {
                 setInterviewType('');
                 setNotes('');
 
+                setIsLoading(false);
                 return;
             }
             showErrorToast('Failed to add an application: ' + (error as Error).message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -108,8 +114,8 @@ const AddInterview = () => {
             <input id='notes' value={notes} onChange={(e) => setNotes(e.target.value)} />
 
             <div className={styles.submitButton}>
-                <PrimaryButton data-testid='add-interview' onClick={handleAdd}>
-                    Add Interview
+                <PrimaryButton data-testid='add-interview' onClick={handleAdd} disabled={isLoading}>
+                    {isLoading ? <LoadingSpinner size='sm' variant='light' /> : 'Add Interview'}
                 </PrimaryButton>
                 <PrimaryButton onClick={() => navigate(routes.viewInterviews)}>View Interviews</PrimaryButton>
                 <Link to={`${routes.viewApplications}#${app.job_id}`}>Back</Link>
