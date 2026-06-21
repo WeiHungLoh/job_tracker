@@ -1,10 +1,9 @@
-import { Navigate, Outlet, type RouteObject, RouterProvider, createBrowserRouter, useLocation } from 'react-router-dom';
+import { Navigate, type RouteObject, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import AddApplication from './pages/jobApplication/addApplication/AddApplication';
 import AddInterview from './pages/interview/addInterview/AddInterview';
-import { ConfirmProvider } from 'material-ui-confirm';
 import Dashboard from './pages/dashboard/Dashboard';
 import InvalidPage from './pages/invalidPage/InvalidPage';
-import Navbar from './components/navbar/Navbar';
+import ProtectedLayout from './components/protectedLayout/ProtectedLayout';
 import ProtectedRoutes from './components/protectedRoutes/ProtectedRoutes';
 import SignIn from './pages/authentication/signIn/SignIn';
 import SignUp from './pages/authentication/signUp/SignUp';
@@ -15,40 +14,16 @@ import ViewArchivedInterview from './pages/archivedApplication/viewArchivedInter
 import ViewInterview from './pages/interview/viewInterview/ViewInterview';
 import { routes } from './routes';
 
-const AppLayout = () => {
-    const location = useLocation();
-    // Stores all routes except for sign in and sign up
-    const navbarRoutes: readonly string[] = [
-        routes.addApplication,
-        routes.viewApplications,
-        routes.addInterview,
-        routes.viewInterviews,
-        routes.archivedApplications,
-        routes.archivedInterviews,
-        routes.dashboard,
-    ];
-    const showNavbar = navbarRoutes.includes(location.pathname);
-
-    return (
-        <div>
-            {showNavbar && <Navbar />}
-            <ConfirmProvider>
-                <Outlet />
-            </ConfirmProvider>
-        </div>
-    );
-};
-
 export const appRoutes: RouteObject[] = [
+    { path: routes.root, element: <Navigate to={routes.signIn} replace /> },
+    { path: routes.signIn, element: <SignIn /> },
+    { path: routes.signUp, element: <SignUp /> },
+    { path: routes.userGuide, element: <UserGuide /> },
     {
-        element: <AppLayout />,
+        element: <ProtectedRoutes />,
         children: [
-            { path: routes.root, element: <Navigate to={routes.signIn} replace /> },
-            { path: routes.signIn, element: <SignIn /> },
-            { path: routes.signUp, element: <SignUp /> },
-            { path: routes.userGuide, element: <UserGuide /> },
             {
-                element: <ProtectedRoutes />,
+                element: <ProtectedLayout />,
                 children: [
                     { path: routes.dashboard, element: <Dashboard /> },
                     { path: routes.addApplication, element: <AddApplication /> },
@@ -57,9 +32,9 @@ export const appRoutes: RouteObject[] = [
                     { path: routes.viewInterviews, element: <ViewInterview /> },
                     { path: routes.archivedApplications, element: <ViewArchivedApplication /> },
                     { path: routes.archivedInterviews, element: <ViewArchivedInterview /> },
-                    { path: '*', element: <InvalidPage /> },
                 ],
             },
+            { path: '*', element: <InvalidPage /> },
         ],
     },
 ];

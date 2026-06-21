@@ -1,4 +1,6 @@
+export type FallbackScreenVariant = 'authenticationError' | 'loading' | 'notFound';
+
 export type FallbackScreenProps = {
-    error?: boolean;
-    onRetry?: () => void;
+    variant?: FallbackScreenVariant;
+    onAction?: () => void;
 };

@@ -5,8 +5,17 @@ export type IconName =
     | 'alert'
     | 'archive'
     | 'briefcase'
+    | 'chevronDown'
+    | 'dashboard'
+    | 'delete'
     | 'email'
+    | 'export'
+    | 'guide'
+    | 'highlight'
+    | 'interview'
     | 'lock'
+    | 'notes'
+    | 'sort'
     | 'visibility'
     | 'visibilityOff';
 

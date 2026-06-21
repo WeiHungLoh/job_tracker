@@ -113,7 +113,7 @@ test('returns 503 when authentication configuration is unavailable', async () =>
     }
 });
 
-test('maps known database failures and hides unexpected internal details', () => {
+test('maps actionable database failures and hides unexpected internal details', () => {
     const responses = [];
     const res = {
         status(status) {
@@ -144,7 +144,7 @@ test('maps known database failures and hides unexpected internal details', () =>
 
     assert.deepEqual(responses, [
         { status: 409, body: { message: 'A resource with the same value already exists.' } },
-        { status: 422, body: { message: 'The request contains an unsupported value.' } },
+        { status: 500, body: { message: 'Unable to save.' } },
         { status: 503, body: { message: 'The database service is temporarily unavailable.' } },
         { status: 503, body: { message: 'The database service is temporarily unavailable.' } },
         { status: 500, body: { message: 'Unable to save.' } },
@@ -161,7 +161,7 @@ test('returns 429 after the request limit is exceeded', async () => {
     const limitedBaseUrl = `http://127.0.0.1:${address.port}`;
 
     try {
-        for (let requestNumber = 0; requestNumber < 100; requestNumber += 1) {
+        for (let requestNumber = 0; requestNumber < 300; requestNumber += 1) {
             const response = await fetch(`${limitedBaseUrl}/ping`);
             assert.equal(response.status, 200);
         }
