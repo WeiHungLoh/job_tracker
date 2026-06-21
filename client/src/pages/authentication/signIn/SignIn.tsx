@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AuthLayout from '../../../components/authLayout/AuthLayout';
 import Icon from '../../../components/icon/Icon';
@@ -14,6 +14,7 @@ import { useToast } from '../../../components/toast/ToastProvider';
 const SignIn = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const location = useLocation();
     const navigate = useNavigate();
     const [visible, setVisiblity] = useState(false);
     const [isPending, setIsPending] = useState(false);
@@ -26,6 +27,7 @@ const SignIn = () => {
     }, [api.ping]);
 
     useEffect(() => {
+        if (location.state?.fromLogout) return; // just logged out, skip
         const verifyAuth = async () => {
             try {
                 await api.authentication.verify();
