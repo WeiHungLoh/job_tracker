@@ -31,6 +31,7 @@ const allowedOrigins = new Set([
 
 const createApp = (): express.Express => {
     const app = express();
+    app.set('trust proxy', 1);
 
     app.use(
         rateLimit({
