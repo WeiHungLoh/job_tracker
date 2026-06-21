@@ -25,7 +25,7 @@ const Navbar = () => {
         e.preventDefault();
         try {
             await api.authentication.logout();
-            navigate(routes.signIn);
+            navigate(routes.signIn, { state: { fromLogout: true } });
         } catch (error) {
             showErrorToast(error instanceof Error ? error.message : 'Unable to sign out.');
         }
