@@ -20,21 +20,9 @@ const DateFormatter = (dueDate: string | number) => {
     const dateBeforeInterview = date.getTime() - Date.now();
     const dateSinceApplication = Date.now() - date.getTime();
 
-    const countFromApplication = (dateDiff: number) => {
-        const seconds = Math.floor(dateDiff / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
-
-        const remainingHours = hours % 24;
-        const remainingMinutes = minutes % 60;
-        const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`;
-        return timeRemaining;
-    };
-
-    const countDownToInterview = (dateDiff: number) => {
-        if (dateDiff <= 0) {
-            return 'Past due';
+    const formatDuration = (dateDiff: number, pastDueLabel?: string) => {
+        if (pastDueLabel && dateDiff <= 0) {
+            return pastDueLabel;
         }
 
         const seconds = Math.floor(dateDiff / 1000);
@@ -44,12 +32,11 @@ const DateFormatter = (dueDate: string | number) => {
 
         const remainingHours = hours % 24;
         const remainingMinutes = minutes % 60;
-        const timeRemaining = `${days} days ${remainingHours} hours ${remainingMinutes} minutes`;
-        return timeRemaining;
+        return `${days} days ${remainingHours} hours ${remainingMinutes} minutes`;
     };
 
-    const timeSinceApplication = countFromApplication(dateSinceApplication);
-    const timeBeforeInterview = countDownToInterview(dateBeforeInterview);
+    const timeSinceApplication = formatDuration(dateSinceApplication);
+    const timeBeforeInterview = formatDuration(dateBeforeInterview, 'Past due');
 
     return { formattedDay, formattedDate, timeSinceApplication, timeBeforeInterview };
 };

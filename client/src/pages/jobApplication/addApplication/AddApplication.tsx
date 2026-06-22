@@ -23,6 +23,15 @@ const AddApplication = () => {
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
 
+    const resetForm = () => {
+        setCompanyName('');
+        setJobTitle('');
+        setJobStatus('Applied');
+        setApplicationDate('');
+        setJobLocation('');
+        setJobURL('');
+    };
+
     const isAppDatePresent = (appDate: string) => {
         if (appDate === '') {
             return currDate;
@@ -60,26 +69,11 @@ const AddApplication = () => {
                 jobURL,
             });
             showSuccessToast(message);
-
-            // Resets assignment form after successfully adding a new assignment
-            setCompanyName('');
-            setJobTitle('');
-            setJobStatus('Applied');
-            setApplicationDate('');
-            setJobLocation('');
-            setJobURL('');
+            resetForm();
         } catch (error) {
             if (error instanceof JobTrackerAPIError) {
                 showErrorToast(error.message);
-
-                // The original flow clears the form after an HTTP error response.
-                setCompanyName('');
-                setJobTitle('');
-                setJobStatus('Applied');
-                setApplicationDate('');
-                setJobLocation('');
-                setJobURL('');
-
+                resetForm();
                 setIsLoading(false);
                 return;
             }

@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
-import type { JobStatusFilter } from '../../jobApplication/models';
+import type { JobStatus, JobStatusFilter } from '../../jobApplication/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
-import NotesToggleButton from '../../../components/notesToggleButton/NotesToggleButton';
 import PrimaryButton from '../../../components/button/PrimaryButton';
+import ToggleButton from '../../../components/toggleButton/ToggleButton';
 import styles from './ViewArchivedApplication.module.css';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -153,47 +153,17 @@ const ViewArchivedApplication = () => {
         }
     };
 
-    const showArchiveApplicationMessage = (archivedApplications: ArchivedJobApplication[]) => {
-        return archivedApplications && archivedApplications.length === 0;
+    const jobStatusClassMap: Record<JobStatus, string> = {
+        Accepted: styles.accepted,
+        Applied: styles.applied,
+        Declined: styles.declined,
+        Ghosted: styles.ghosted,
+        Interview: styles.interview,
+        Offer: styles.offer,
+        Rejected: styles.rejected,
     };
 
-    const hasApplications = (applications: ArchivedJobApplication[]) => {
-        return applications && applications.length !== 0;
-    };
-
-    const showJobLocation = (field: ArchivedJobApplication) => {
-        if (field.job_location === '') {
-            return false;
-        }
-        return true;
-    };
-
-    const showJobURL = (field: ArchivedJobApplication) => {
-        if (field.job_posting_url === '') {
-            return false;
-        }
-        return true;
-    };
-
-    const checkJobStatus = (application: ArchivedJobApplication) => {
-        const jobStatus = application.job_status;
-
-        if (jobStatus === 'Accepted') {
-            return styles.accepted;
-        } else if (jobStatus === 'Applied') {
-            return styles.applied;
-        } else if (jobStatus === 'Declined') {
-            return styles.declined;
-        } else if (jobStatus === 'Ghosted') {
-            return styles.ghosted;
-        } else if (jobStatus === 'Interview') {
-            return styles.interview;
-        } else if (jobStatus === 'Offer') {
-            return styles.offer;
-        } else {
-            return styles.rejected;
-        }
-    };
+    const hasApplications = filteredApplications.length !== 0;
 
     return (
         <div className={styles.archivedApplicationList}>
@@ -225,12 +195,18 @@ const ViewArchivedApplication = () => {
                             </select>
                         </div>
 
-                        {hasApplications(filteredApplications) && (
-                            <NotesToggleButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)} />
+                        {hasApplications && (
+                            <ToggleButton
+                                toggled={toggleNotes}
+                                onToggle={() => setToggleNotes(!toggleNotes)}
+                                label='Unhide Notes'
+                                toggledLabel='Hide Notes'
+                                color='yellow'
+                            />
                         )}
                     </div>
 
-                    {showArchiveApplicationMessage(filteredApplications) && (
+                    {!hasApplications && (
                         <div>
                             <br />
                             No archived job application with that job status found. Start archiving now!{' '}
@@ -249,7 +225,7 @@ const ViewArchivedApplication = () => {
                                         {index + 1}. {application.company_name}
                                     </h2>
                                     <p>Job Title: {application.job_title}</p>
-                                    {showJobLocation(application) && (
+                                    {application.job_location !== '' && (
                                         <p className={styles.location}>Location: {application.job_location}</p>
                                     )}
                                     <p className={styles.date}>
@@ -259,9 +235,9 @@ const ViewArchivedApplication = () => {
                                         Time since application:{' '}
                                         {DateFormatter(application.application_date).timeSinceApplication}
                                     </p>
-                                    <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
+                                    <p className={jobStatusClassMap[application.job_status]}>Job Status: {application.job_status}</p>
 
-                                    {showJobURL(application) && (
+                                    {application.job_posting_url !== '' && (
                                         <a
                                             className={styles.url}
                                             href={application.job_posting_url}
@@ -298,7 +274,7 @@ const ViewArchivedApplication = () => {
                         ))}
 
                     <div className={styles.applicationButton}>
-                        {hasApplications(filteredApplications) && (
+                        {hasApplications && (
                             <>
                                 <PrimaryButton onClick={() => handleDeleteAll()}>
                                     Delete all archived applications

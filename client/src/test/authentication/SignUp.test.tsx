@@ -21,13 +21,19 @@ describe('User sign up flow', () => {
     });
 
     test('signs up successfully and redirects to SignIn page', async () => {
-        // Mocks a successful user registered fetch response with text since res.text is used in SignUp.js
-        globalThis.fetch.mockResolvedValueOnce({
-            ok: true,
-            status: 201,
-            headers: new Headers({ 'content-type': 'text/plain' }),
-            text: async () => 'User successfully registered',
-        });
+        globalThis.fetch
+            // For verify GET request — must fail so the page stays on sign up
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+            })
+            // Mocks a successful user registered fetch response with text since res.text is used in SignUp.js
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 201,
+                headers: new Headers({ 'content-type': 'text/plain' }),
+                text: async () => 'User successfully registered',
+            });
 
         render(
             <MemoryRouter>
@@ -59,12 +65,18 @@ describe('User sign up flow', () => {
     test('shows alert on failed sign-up due to existing user', async () => {
         globalThis.alert = vi.fn();
 
-        globalThis.fetch.mockResolvedValueOnce({
-            ok: false,
-            status: 201,
-            headers: new Headers({ 'content-type': 'text/plain' }),
-            text: async () => 'User already exists',
-        });
+        globalThis.fetch
+            // For verify GET request — must fail so the page stays on sign up
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+            })
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 409,
+                headers: new Headers({ 'content-type': 'text/plain' }),
+                text: async () => 'User already exists',
+            });
 
         render(
             <MemoryRouter>

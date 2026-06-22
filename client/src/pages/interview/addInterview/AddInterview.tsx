@@ -29,6 +29,13 @@ const AddInterview = () => {
         return <Navigate to={routes.viewApplications} replace />;
     }
 
+    const resetForm = () => {
+        setInterviewDate('');
+        setInterviewLocation('');
+        setInterviewType('');
+        setNotes('');
+    };
+
     const handleAdd = async (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
@@ -52,22 +59,11 @@ const AddInterview = () => {
                 notes,
             });
             showSuccessToast(message);
-
-            // Resets interview z after successfully adding a new interview
-            setInterviewDate('');
-            setInterviewLocation('');
-            setInterviewType('');
-            setNotes('');
+            resetForm();
         } catch (error) {
             if (error instanceof JobTrackerAPIError) {
                 showErrorToast(error.message);
-
-                // The original flow clears the form after an HTTP error response.
-                setInterviewDate('');
-                setInterviewLocation('');
-                setInterviewType('');
-                setNotes('');
-
+                resetForm();
                 setIsLoading(false);
                 return;
             }

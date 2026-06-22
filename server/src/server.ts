@@ -75,7 +75,6 @@ const createApp = (): express.Express => {
     app.use(notFoundHandler);
 
     const errorHandler: ErrorRequestHandler = (error: MiddlewareError, _req, res, _next) => {
-        void _next;
         if (error.status === 403) {
             res.status(403).send({ message: 'Origin is not allowed.' });
             return;

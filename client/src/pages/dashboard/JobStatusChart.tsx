@@ -6,7 +6,7 @@ import { Pie } from 'react-chartjs-2';
 import styles from './JobStatusChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
-import type { JobStatus } from '../jobApplication/models';
+import { JOB_STATUS_COLORS } from '../jobApplication/models';
 
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
@@ -38,62 +38,14 @@ const JobStatusChart = () => {
 
     const totalApplications = statusCounts.reduce((sum, value) => sum + parseInt(value), 0);
 
-    const getColourByStatus = (status: JobStatus) => {
-        if (status === 'Accepted') {
-            return '#198754';
-        }
-        if (status === 'Applied') {
-            return '#17A2B8';
-        }
-        if (status === 'Declined') {
-            return 'purple';
-        }
-        if (status === 'Interview') {
-            return '#0d6efd';
-        }
-        if (status === 'Ghosted') {
-            return '#6C757D';
-        }
-        if (status === 'Offer') {
-            return '#ffc107';
-        }
-        if (status === 'Rejected') {
-            return '#dc3545';
-        }
-    };
-
-    const getBorderColourByStatus = (status: JobStatus) => {
-        if (status === 'Accepted') {
-            return '#0f7847ff';
-        }
-        if (status === 'Applied') {
-            return '#1495a9ff';
-        }
-        if (status === 'Declined') {
-            return 'rebeccapurple';
-        }
-        if (status === 'Ghosted') {
-            return 'rgba(122, 122, 148, 1)';
-        }
-        if (status === 'Interview') {
-            return 'rgba(48, 153, 153, 1)';
-        }
-        if (status === 'Offer') {
-            return '#d9a302ff';
-        }
-        if (status === 'Rejected') {
-            return '#dc3545';
-        }
-    };
-
     const data = {
         labels: statuses,
         datasets: [
             {
                 label: '# of applications',
                 data: statusCounts,
-                backgroundColor: statuses.map((status) => getColourByStatus(status)),
-                borderColor: statuses.map((status) => getBorderColourByStatus(status)),
+                backgroundColor: statuses.map((status) => JOB_STATUS_COLORS[status].color),
+                borderColor: statuses.map((status) => JOB_STATUS_COLORS[status].borderColor),
                 borderWidth: 0.7,
                 hoverOffset: 60,
             },

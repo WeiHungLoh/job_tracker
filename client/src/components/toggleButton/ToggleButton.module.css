@@ -1,9 +1,9 @@
-.archiveToggleButton {
+.toggleButton {
     font-size: 0.75rem;
     text-align: center;
 }
 
-.toggleButton {
+.switch {
     background-color: #b7b9ba;
     border: 1px solid #aaa;
     border-radius: 99px;
@@ -28,14 +28,19 @@
     transform: translateY(-50%);
 }
 
-.toggleButton.active {
+.switch.green {
     background-color: #15b58e;
 }
 
-.toggleButton:hover {
+.switch.yellow {
+    background-color: #fbc02d;
+}
+
+.switch:hover {
     border-color: #6f6f6f;
 }
 
-.toggleButton.active .thumb {
+.switch.green .thumb,
+.switch.yellow .thumb {
     left: 25px;
 }

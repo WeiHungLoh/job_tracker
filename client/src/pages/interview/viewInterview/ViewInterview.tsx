@@ -94,27 +94,7 @@ const ViewInterview = () => {
         }
     };
 
-    const showAddinterviewMessage = (interviews: JobInterview[]) => {
-        return interviews.length === 0;
-    };
-
-    const hasInterviews = (applications: JobInterview[]) => {
-        return applications.length !== 0;
-    };
-
-    const showInterviewType = (field: JobInterview) => {
-        if (field.interview_type === '') {
-            return false;
-        }
-        return true;
-    };
-
-    const showInterviewNotes = (field: JobInterview) => {
-        if (field.interview_notes === '') {
-            return false;
-        }
-        return true;
-    };
+    const hasInterviews = interviews.length !== 0;
 
     return (
         <div className={styles.interviewList}>
@@ -127,7 +107,7 @@ const ViewInterview = () => {
 
             {!isLoading && (
                 <>
-                    {showAddinterviewMessage(interviews) && (
+                    {!hasInterviews && (
                         <div>
                             <br />
                             No job interview found. Start adding one now!{' '}
@@ -142,10 +122,10 @@ const ViewInterview = () => {
                                 </h2>
                                 <p>Job Title: {interview.job_title}</p>
                                 <p className={styles.location}>Location: {interview.interview_location}</p>
-                                {showInterviewType(interview) && (
+                                {interview.interview_type !== '' && (
                                     <p className={styles.type}>Interview Type: {interview.interview_type}</p>
                                 )}
-                                {showInterviewNotes(interview) && (
+                                {interview.interview_notes !== '' && (
                                     <p className={styles.notes}>Notes: {interview.interview_notes}</p>
                                 )}
                                 <p className={styles.date}>
@@ -167,7 +147,7 @@ const ViewInterview = () => {
 
                     <div className={styles.interviewButton}>
                         <PrimaryButton onClick={() => navigate(routes.addInterview)}>Add new interview</PrimaryButton>
-                        {hasInterviews(interviews) && (
+                        {hasInterviews && (
                             <>
                                 {' '}
                                 <PrimaryButton onClick={() => handleDeleteAll()}>Delete all interviews</PrimaryButton>

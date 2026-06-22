@@ -1,4 +1,3 @@
-import type { EndpointConfigEntry } from './models';
 import { FieldType } from './models';
 
 export const endpointConfig = {
@@ -72,4 +71,4 @@ export const endpointConfig = {
         },
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },
-} satisfies Record<string, Record<string, EndpointConfigEntry>>;
+};
