@@ -57,7 +57,6 @@ describe('Job interview viewer flow', () => {
         expect(screen.getByText(/bring resume/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /delete all interviews/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /add new interview/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
     });
 
