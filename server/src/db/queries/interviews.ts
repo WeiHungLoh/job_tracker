@@ -23,10 +23,13 @@ const insertInterview = async (
 
 const getInterviews = async (userId: number): Promise<JobInterview[]> => {
     const res = await pool.query<JobInterview>(
-        `SELECT * FROM interviews, job_applications WHERE interviews.user_id = $1
+        `SELECT interviews.*, job_applications.company_name, job_applications.job_title
+         FROM interviews
+         INNER JOIN job_applications ON interviews.job_id = job_applications.job_id
+         WHERE interviews.user_id = $1
             AND interviews.is_archived = false
             AND job_applications.is_archived = false
-            AND interviews.job_id = job_applications.job_id ORDER BY interviews.interview_date ASC`,
+         ORDER BY interviews.interview_date ASC`,
         [userId]
     );
     return res.rows;

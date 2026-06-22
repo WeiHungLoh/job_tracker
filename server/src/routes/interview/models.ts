@@ -1,4 +1,5 @@
 import type { ErrorResponse } from '../../http/models.js';
+export type { EmptyResponse } from '../../http/models.js';
 import type { JobInterview } from '../../db/models.js';
 
 export type InterviewIdParams = {
@@ -15,4 +16,3 @@ export type CreateInterviewRequest = {
 
 export type CreateInterviewResponse = string | ErrorResponse;
 export type ListInterviewsResponse = JobInterview[] | ErrorResponse;
-export type EmptyResponse = undefined | ErrorResponse;

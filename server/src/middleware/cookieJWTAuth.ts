@@ -3,7 +3,7 @@ import type { ErrorResponse } from '../http/models.js';
 import jwt from 'jsonwebtoken';
 import { sendError } from '../http/responses.js';
 
-const clearAuthCookieOptions: CookieOptions = {
+export const clearAuthCookieOptions: CookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -30,7 +30,7 @@ const cookieJWTAuth = (req: Request, res: Response<ErrorResponse>, next: NextFun
             throw new jwt.JsonWebTokenError('Token payload is invalid');
         }
 
-        req.user = { ...user, id: user.id, email: user.email };
+        req.user = { id: user.id, email: user.email };
         next();
     } catch (error: unknown) {
         console.warn('Invalid token. ', error);

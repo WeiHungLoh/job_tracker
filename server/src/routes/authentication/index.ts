@@ -1,6 +1,7 @@
 import type { AuthenticationResponse, CredentialsRequest, EmptyResponse, SignUpResponse } from './models.js';
 import type { CookieOptions, Request, Response } from 'express';
 import { findUser, findUserInfo, insertUser } from '../../db/queries/users.js';
+import { clearAuthCookieOptions } from '../../middleware/cookieJWTAuth.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import { isNonEmptyString, isValidEmail } from '../../http/validation.js';
 import bcrypt from 'bcryptjs';
@@ -17,13 +18,6 @@ const authCookieOptions: CookieOptions = {
     sameSite: 'lax',
     path: '/',
     maxAge: 6 * 60 * 60 * 1000,
-};
-
-const clearAuthCookieOptions: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
 };
 
 // signup
