@@ -2,6 +2,7 @@
     max-width: 600px;
     margin: 0 auto;
     text-align: center;
+    margin-bottom: 3V0px;
 }
 
 .addApplication label {
@@ -18,15 +19,24 @@
 .addApplication input,
 .addApplication select {
     width: 100%;
-    padding: 6px 10px;
+    padding: 8px 10px;
     margin-top: 10px;
     margin-bottom: 10px;
-    border: 1.5px solid #ddd;
+    border: 1px solid #f0d8e0;
+    border-radius: 10px;
+    outline: none;
     box-sizing: border-box;
     font-family: inherit;
     font-size: inherit;
     -webkit-appearance: none;
     appearance: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addApplication input:focus,
+.addApplication select:focus {
+    border-color: var(--colorPrimary);
+    box-shadow: 0 0 0 3px rgb(241 53 109 / 12%);
 }
 
 .submitButton {

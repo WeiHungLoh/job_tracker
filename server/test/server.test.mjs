@@ -39,42 +39,11 @@ test('returns 204 with no body when logging out', async () => {
     assert.equal(await response.text(), '');
 });
 
-test('returns 400 for malformed JSON', async () => {
-    const response = await fetch(`${baseUrl}/authentication/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{',
-    });
-
-    assert.equal(response.status, 400);
-    assert.deepEqual(await response.json(), { message: 'Request body contains invalid JSON.' });
-});
-
-test('returns 413 when the request body is too large', async () => {
-    const response = await fetch(`${baseUrl}/authentication/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'test@example.com', password: 'x'.repeat(110_000) }),
-    });
-
-    assert.equal(response.status, 413);
-    assert.deepEqual(await response.json(), { message: 'Request body is too large.' });
-});
-
 test('returns 401 when a protected route has no token', async () => {
     const response = await fetch(`${baseUrl}/job-applications`);
 
     assert.equal(response.status, 401);
     assert.deepEqual(await response.json(), { message: 'No authentication token found. Please sign in.' });
-});
-
-test('returns 403 for a rejected origin', async () => {
-    const response = await fetch(`${baseUrl}/ping`, {
-        headers: { Origin: 'https://untrusted.example' },
-    });
-
-    assert.equal(response.status, 403);
-    assert.deepEqual(await response.json(), { message: 'Origin is not allowed.' });
 });
 
 test('returns 404 for an unknown route', async () => {

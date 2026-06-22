@@ -115,7 +115,7 @@ const ViewArchivedInterview = () => {
                             No archived job interview found. Start archiving now!{' '}
                         </div>
                     )}
-
+                    <br />
                     {archivedInterviews.map((interview, index) => (
                         <div className={styles.interview} key={interview.archived_interview_id}>
                             <div className={styles.interviewContent}>

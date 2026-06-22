@@ -7,6 +7,7 @@
     box-sizing: border-box;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 50px;
+    margin-bottom: 30px;
 }
 
 .dashboard > :first-child {
@@ -18,6 +19,6 @@
         padding: 16px;
         grid-template-columns: minmax(0, 1fr);
         gap: 32px;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
 }

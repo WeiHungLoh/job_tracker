@@ -112,7 +112,7 @@ const ViewInterview = () => {
                             No job interview found. Start adding one now!{' '}
                         </div>
                     )}
-
+                    <br />
                     {interviews.map((interview, index) => (
                         <div className={styles.interview} key={interview.interview_id}>
                             <div className={styles.interviewContent}>

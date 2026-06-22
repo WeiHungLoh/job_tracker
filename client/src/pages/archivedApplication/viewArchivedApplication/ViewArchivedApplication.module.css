@@ -4,7 +4,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .listControls {
@@ -37,11 +37,15 @@
 
 .application {
     width: 100%;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #ddd;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #f0d8e0;
+    border-radius: 15px;
     display: flex;
     gap: 0;
     position: relative;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 
 .notes textarea {
@@ -217,6 +221,7 @@
 @media (max-width: 803px) {
     .archivedApplicationList {
         max-width: 90%;
+        padding-right: 20px;
     }
 
     .application {
@@ -228,6 +233,10 @@
     .buttonGroup {
         grid-template-columns: 1fr;
         width: auto;
+    }
+
+    .notes textarea {
+        right: -302.8px;
     }
 
     .applicationButton {
