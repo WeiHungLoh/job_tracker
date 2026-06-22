@@ -71,4 +71,4 @@ export const endpointConfig = {
         },
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },
-};
+} as const;
