@@ -3,7 +3,6 @@ import type {
     CreateApplicationResponse,
     EmptyResponse,
     JobIdParams,
-    ListApplicationsQuery,
     ListApplicationsResponse,
     ListJobStatusCountsResponse,
     ListWeeklyApplicationsResponse,
@@ -61,18 +60,11 @@ router.post(
 router.get(
     '/',
     async (
-        req: Request<Record<string, never>, ListApplicationsResponse, Record<string, never>, ListApplicationsQuery>,
+        _req: Request<Record<string, never>, ListApplicationsResponse>,
         res: Response<ListApplicationsResponse>
     ): Promise<void> => {
-        const requestedStatus = req.query.jobStatus ?? 'Show All';
-        if (requestedStatus !== 'Show All' && !isJobStatus(requestedStatus)) {
-            sendError(res, 422, 'A supported job status or Show All is required.');
-            return;
-        }
-
         try {
-            const jobStatus = requestedStatus === 'Show All' ? null : requestedStatus;
-            res.status(200).json(await getJobApplications(req.user.id, jobStatus));
+            res.status(200).json(await getJobApplications(_req.user.id));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load job applications.');
         }

@@ -1,4 +1,4 @@
-import type { JobStatus, JobStatusFilter } from '../jobApplication/models';
+import type { JobStatus } from '../jobApplication/models';
 
 export type ArchivedJobApplication = {
     archived_job_id: number;
@@ -23,9 +23,7 @@ export type ArchivedJobInterview = {
     notes?: string;
 };
 
-export type ListArchivedApplicationsRequest = {
-    jobStatus: JobStatusFilter;
-};
+export type ListArchivedApplicationsRequest = null;
 export type ListArchivedApplicationsResponse = ArchivedJobApplication[];
 
 export type ArchiveApplicationRequest = {

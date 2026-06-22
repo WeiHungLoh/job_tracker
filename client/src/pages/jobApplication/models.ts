@@ -25,9 +25,7 @@ export type JobApplication = {
     notes: string;
 };
 
-export type ListApplicationsRequest = {
-    jobStatus: JobStatusFilter;
-};
+export type ListApplicationsRequest = null;
 export type ListApplicationsResponse = JobApplication[];
 
 export type ListWeeklyApplicationsRequest = null;
