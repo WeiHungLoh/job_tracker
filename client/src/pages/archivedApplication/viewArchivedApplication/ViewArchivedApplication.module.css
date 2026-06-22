@@ -228,6 +228,7 @@
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         gap: 8px;
+        padding-right: 0;
     }
 
     .buttonGroup {
@@ -241,6 +242,8 @@
         height: 100%;
         border: none;
         box-shadow: none;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
     }
 
     .applicationButton {
