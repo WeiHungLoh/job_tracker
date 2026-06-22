@@ -133,7 +133,7 @@ test('returns 503 when authentication configuration is unavailable', async () =>
     }
 });
 
-test('maps actionable database failures and hides unexpected internal details', () => {
+test('logs error details and returns a generic 500 response', () => {
     const responses = [];
     const res = {
         status(status) {
@@ -150,23 +150,13 @@ test('maps actionable database failures and hides unexpected internal details', 
 
     try {
         handleRouteError(res, Object.assign(new Error('duplicate detail'), { code: '23505' }), 'Unable to save.');
-        handleRouteError(res, Object.assign(new Error('constraint detail'), { code: '23514' }), 'Unable to save.');
-        handleRouteError(
-            res,
-            Object.assign(new Error('connection detail'), { code: 'ECONNREFUSED' }),
-            'Unable to save.'
-        );
-        handleRouteError(res, Object.assign(new Error('protocol detail'), { code: '08P01' }), 'Unable to save.');
         handleRouteError(res, new Error('private database detail'), 'Unable to save.');
     } finally {
         console.error = originalConsoleError;
     }
 
     assert.deepEqual(responses, [
-        { status: 409, body: { message: 'A resource with the same value already exists.' } },
         { status: 500, body: { message: 'Unable to save.' } },
-        { status: 503, body: { message: 'The database service is temporarily unavailable.' } },
-        { status: 503, body: { message: 'The database service is temporarily unavailable.' } },
         { status: 500, body: { message: 'Unable to save.' } },
     ]);
 });

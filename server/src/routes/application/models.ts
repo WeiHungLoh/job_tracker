@@ -6,6 +6,7 @@ import type {
     WeeklyApplicationCount,
 } from '../../db/models.js';
 import type { ErrorResponse } from '../../http/models.js';
+export type { EmptyResponse } from '../../http/models.js';
 
 export type JobIdParams = {
     jobId: string;
@@ -40,4 +41,3 @@ export type CreateApplicationResponse = string | ErrorResponse;
 export type ListApplicationsResponse = JobApplication[] | ErrorResponse;
 export type ListJobStatusCountsResponse = JobStatusCount[] | ErrorResponse;
 export type ListWeeklyApplicationsResponse = WeeklyApplicationCount[] | ErrorResponse;
-export type EmptyResponse = undefined | ErrorResponse;

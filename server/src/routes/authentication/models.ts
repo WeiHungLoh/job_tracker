@@ -1,4 +1,5 @@
 import type { ErrorResponse } from '../../http/models.js';
+export type { EmptyResponse } from '../../http/models.js';
 
 export type CredentialsRequest = {
     email: string;
@@ -11,4 +12,3 @@ export type MessageResponse = {
 
 export type AuthenticationResponse = MessageResponse | ErrorResponse;
 export type SignUpResponse = string | ErrorResponse;
-export type EmptyResponse = undefined | ErrorResponse;

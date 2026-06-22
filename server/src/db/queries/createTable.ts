@@ -32,7 +32,7 @@ const createTable = async (): Promise<void> => {
             interview_location TEXT NOT NULL,
             interview_type TEXT,
             interview_notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             is_archived BOOLEAN NOT NULL DEFAULT false
         )`;
 
@@ -53,10 +53,8 @@ const createTable = async (): Promise<void> => {
         await pool.query(createInterviewArchiveIndex);
         await pool.query(createInterviewJobIdIndex);
     } catch (error: unknown) {
-        {
-            const message = error instanceof Error ? error.message : String(error);
-            console.log('Unable to create table ' + message);
-        }
+        const message = error instanceof Error ? error.message : String(error);
+        console.log('Unable to create table ' + message);
     }
 };
 

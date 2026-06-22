@@ -1,6 +1,6 @@
 import type { JobStatus } from '../db/models.js';
 
-const jobStatuses: ReadonlySet<string> = new Set([
+const JOB_STATUSES: readonly string[] = [
     'Accepted',
     'Applied',
     'Declined',
@@ -8,7 +8,7 @@ const jobStatuses: ReadonlySet<string> = new Set([
     'Interview',
     'Offer',
     'Rejected',
-]);
+];
 
 export const isNonEmptyString = (value: unknown): value is string =>
     typeof value === 'string' && value.trim().length > 0;
@@ -26,4 +26,5 @@ export const isValidDate = (value: unknown): value is string =>
 export const isValidEmail = (value: unknown): value is string =>
     typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-export const isJobStatus = (value: unknown): value is JobStatus => typeof value === 'string' && jobStatuses.has(value);
+export const isJobStatus = (value: unknown): value is JobStatus =>
+    typeof value === 'string' && JOB_STATUSES.includes(value);
