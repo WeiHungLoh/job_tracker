@@ -78,6 +78,17 @@ const ViewApplication = () => {
 
     const interviewJobIds = useMemo(() => interviews.map((interview) => interview.job_id), [interviews]);
 
+    const upcomingInterviewCountByJob = useMemo(() => {
+        const now = new Date();
+        const counts: Record<number, number> = {};
+        interviews.forEach((iv) => {
+            if (new Date(iv.interview_date) > now) {
+                counts[iv.job_id] = (counts[iv.job_id] || 0) + 1;
+            }
+        });
+        return counts;
+    }, [interviews]);
+
     useEffect(() => {
         let isActive = true;
 
@@ -359,7 +370,15 @@ const ViewApplication = () => {
                                         Time since application:{' '}
                                         {DateFormatter(application.application_date).timeSinceApplication}
                                     </p>
-                                    <p className={jobStatusClassMap[application.job_status]}>Job Status: {application.job_status}</p>
+                                    <div className={styles.badgeGroup}>
+                                        <p className={jobStatusClassMap[application.job_status]}>Job Status: {application.job_status}</p>
+                                        {upcomingInterviewCountByJob[application.job_id] > 0 && (
+                                            <span className={styles.upcomingBadge}>
+                                                {upcomingInterviewCountByJob[application.job_id]} Upcoming Interview
+                                                {upcomingInterviewCountByJob[application.job_id] > 1 ? 's' : ''}
+                                            </span>
+                                        )}
+                                    </div>
 
                                     {application.edit_status && (
                                         <select
