@@ -138,7 +138,10 @@ const ViewInterview = () => {
                             </div>
 
                             <div className={styles.buttonGroup}>
-                                <PrimaryButton onClick={() => handleDelete(interview.interview_id)}>
+                                <PrimaryButton
+                                    variant='destructive'
+                                    onClick={() => handleDelete(interview.interview_id)}
+                                >
                                     Delete
                                 </PrimaryButton>
                             </div>
@@ -146,17 +149,21 @@ const ViewInterview = () => {
                     ))}
 
                     <div className={styles.interviewButton}>
-                        <PrimaryButton onClick={() => navigate(routes.addInterview)}>Add new interview</PrimaryButton>
+                        <PrimaryButton variant='success' onClick={() => navigate(routes.addInterview)}>
+                            Add new interview
+                        </PrimaryButton>
                         {hasInterviews && (
                             <>
                                 {' '}
-                                <PrimaryButton onClick={() => handleDeleteAll()}>Delete all interviews</PrimaryButton>
-                                <PrimaryButton>
+                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
+                                    Delete all interviews
+                                </PrimaryButton>
+                                <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
                                         headers={headers}
                                         filename='job_interviews.csv'
-                                        style={{ color: 'white', textDecoration: 'none' }}
+                                        style={{ color: 'inherit', textDecoration: 'none' }}
                                     >
                                         Export as CSV
                                     </CSVLink>

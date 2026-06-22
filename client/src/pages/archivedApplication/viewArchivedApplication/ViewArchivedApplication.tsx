@@ -251,10 +251,13 @@ const ViewArchivedApplication = () => {
 
                                 <div className={styles.buttonGroup}>
                                     <div onClick={() => handleUnarchive(application.archived_job_id)}>
-                                        <PrimaryButton>Unarchive</PrimaryButton>
+                                        <PrimaryButton variant='secondary'>Unarchive</PrimaryButton>
                                     </div>
 
-                                    <PrimaryButton onClick={() => handleDelete(application.archived_job_id)}>
+                                    <PrimaryButton
+                                        variant='destructive'
+                                        onClick={() => handleDelete(application.archived_job_id)}
+                                    >
                                         Delete
                                     </PrimaryButton>
                                 </div>
@@ -276,15 +279,15 @@ const ViewArchivedApplication = () => {
                     <div className={styles.applicationButton}>
                         {hasApplications && (
                             <>
-                                <PrimaryButton onClick={() => handleDeleteAll()}>
+                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
                                     Delete all archived applications
                                 </PrimaryButton>
-                                <PrimaryButton>
+                                <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
                                         headers={headers}
                                         filename={'archived_job_applications.csv'}
-                                        style={{ color: 'white' }}
+                                        style={{ color: 'inherit', textDecoration: 'none' }}
                                     >
                                         Export as CSV
                                     </CSVLink>

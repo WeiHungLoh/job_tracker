@@ -122,7 +122,7 @@ const AddApplication = () => {
                 <PrimaryButton variant='compact' onClick={handleAdd} disabled={isLoading}>
                     {isLoading ? <LoadingSpinner size='sm' variant='light' /> : 'Add Job Application'}
                 </PrimaryButton>
-                <PrimaryButton variant='compact' onClick={() => navigate(routes.viewApplications)}>
+                <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewApplications)}>
                     View Job Applications
                 </PrimaryButton>
             </div>

@@ -410,11 +410,17 @@ const ViewApplication = () => {
                                 </div>
 
                                 <div className={styles.buttonGroup}>
-                                    <PrimaryButton onClick={() => toggleEditStatus(application)}>
+                                    <PrimaryButton
+                                        variant='secondary'
+                                        onClick={() => toggleEditStatus(application)}
+                                    >
                                         {application.edit_status ? 'Save Changes' : 'Edit Status'}
                                     </PrimaryButton>
 
-                                    <PrimaryButton onClick={() => handleDelete(application.job_id)}>
+                                    <PrimaryButton
+                                        variant='destructive'
+                                        onClick={() => handleDelete(application.job_id)}
+                                    >
                                         Delete
                                     </PrimaryButton>
 
@@ -422,7 +428,7 @@ const ViewApplication = () => {
                                         <PrimaryButton
                                             className={styles.archiveButton}
                                             onClick={() => handleArchive(application.job_id)}
-                                            variant='success'
+                                            variant='secondary'
                                         >
                                             Archive
                                         </PrimaryButton>
@@ -442,18 +448,17 @@ const ViewApplication = () => {
                         ))}
 
                     <div className={styles.applicationButton}>
-                        <PrimaryButton onClick={() => navigate(routes.addApplication)}>
-                            Add new application
-                        </PrimaryButton>
                         {hasApplications && (
                             <>
-                                <PrimaryButton onClick={() => handleDeleteAll()}>Delete all applications</PrimaryButton>
-                                <PrimaryButton>
+                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
+                                    Delete all applications
+                                </PrimaryButton>
+                                <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
                                         headers={headers}
                                         filename={'job_applications.csv'}
-                                        style={{ color: 'white' }}
+                                        style={{ color: 'inherit', textDecoration: 'none' }}
                                     >
                                         Export as CSV
                                     </CSVLink>

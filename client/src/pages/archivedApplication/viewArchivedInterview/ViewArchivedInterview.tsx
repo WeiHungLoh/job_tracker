@@ -140,7 +140,10 @@ const ViewArchivedInterview = () => {
                             </div>
 
                             <div className={styles.buttonGroup}>
-                                <PrimaryButton onClick={() => handleDelete(interview.archived_interview_id)}>
+                                <PrimaryButton
+                                    variant='destructive'
+                                    onClick={() => handleDelete(interview.archived_interview_id)}
+                                >
                                     Delete
                                 </PrimaryButton>
                             </div>
@@ -150,15 +153,15 @@ const ViewArchivedInterview = () => {
                     <div className={styles.interviewButton}>
                         {hasInterviews && (
                             <>
-                                <PrimaryButton onClick={() => handleDeleteAll()}>
+                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
                                     Delete all archived interviews
                                 </PrimaryButton>
-                                <PrimaryButton>
+                                <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
                                         headers={headers}
                                         filename='archived_job_interviews.csv'
-                                        style={{ color: 'white', textDecoration: 'none' }}
+                                        style={{ color: 'inherit', textDecoration: 'none' }}
                                     >
                                         Export as CSV
                                     </CSVLink>
