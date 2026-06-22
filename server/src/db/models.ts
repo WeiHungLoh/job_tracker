@@ -1,5 +1,4 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
-export type JobStatusFilter = JobStatus | 'Show All';
 
 export type JobApplication = {
     job_id: number;

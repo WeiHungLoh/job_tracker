@@ -7,8 +7,7 @@ export type PrimaryButtonVariant =
     | 'form'
     | 'icon'
     | 'navigation'
-    | 'secondary'
-    | 'success';
+    | 'secondary';
 
 export type PrimaryButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: PrimaryButtonVariant;
