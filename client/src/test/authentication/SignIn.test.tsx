@@ -77,6 +77,11 @@ describe('User sign in flow', () => {
                 status: 200,
                 text: async () => 'testing',
             })
+            // For verify GET request — must fail so the page stays on sign in
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+            })
             // For POST request to backend
             .mockResolvedValueOnce({
                 ok: false,
@@ -123,10 +128,15 @@ describe('User sign in flow', () => {
                 status: 200,
                 text: async () => 'testing',
             })
+            // For verify GET request — must fail so the page stays on sign in
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+            })
             // For POST request to backend
             .mockResolvedValueOnce({
                 ok: false,
-                status: 404,
+                status: 401,
                 headers: new Headers({ 'content-type': 'application/json' }),
                 json: async () => ({ message: 'Incorrect password' }),
             });

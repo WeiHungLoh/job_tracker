@@ -3,6 +3,16 @@ import type { JobStatusCount, WeeklyApplicationCount } from '../dashboard/models
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
 export type JobStatusFilter = JobStatus | 'Show All';
 
+export const JOB_STATUS_COLORS: Record<JobStatus, { color: string; borderColor: string }> = {
+    Accepted: { color: '#198754', borderColor: '#0f7847ff' },
+    Applied: { color: '#17A2B8', borderColor: '#1495a9ff' },
+    Declined: { color: 'purple', borderColor: 'rebeccapurple' },
+    Ghosted: { color: '#6C757D', borderColor: 'rgba(122, 122, 148, 1)' },
+    Interview: { color: '#0d6efd', borderColor: 'rgba(48, 153, 153, 1)' },
+    Offer: { color: '#ffc107', borderColor: '#d9a302ff' },
+    Rejected: { color: '#dc3545', borderColor: '#dc3545' },
+};
+
 export type JobApplication = {
     job_id: number;
     company_name: string;

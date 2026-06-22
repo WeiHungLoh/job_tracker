@@ -7,13 +7,7 @@ const insertUser = async (email: string, hashed_password: string): Promise<void>
 
 const findUser = async (email: string): Promise<boolean> => {
     const res = await pool.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
-
-    const rowCount = res.rowCount;
-    if (rowCount === null || rowCount === undefined) {
-        return false;
-    } else {
-        return rowCount > 0;
-    }
+    return (res.rowCount ?? 0) > 0;
 };
 
 const findUserInfo = async (email: string): Promise<User | undefined> => {

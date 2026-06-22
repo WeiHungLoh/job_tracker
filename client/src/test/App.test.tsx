@@ -44,6 +44,8 @@ describe('App routing and authentication behavior', () => {
     });
 
     test('renders SignIn at the root path', async () => {
+        fetch.mockResolvedValueOnce(response(true, 200)); // ping
+        fetch.mockResolvedValueOnce(response(false, 401)); // verify fails → stay on sign in
         renderRoute('/');
         expect(await screen.findByText(/sign in to job tracker/i)).toBeInTheDocument();
     });

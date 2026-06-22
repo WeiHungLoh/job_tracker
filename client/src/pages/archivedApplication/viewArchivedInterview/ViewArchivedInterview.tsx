@@ -96,27 +96,7 @@ const ViewArchivedInterview = () => {
         }
     };
 
-    const showArchiveInterviewMessage = (archivedInterviews: ArchivedJobInterview[]) => {
-        return archivedInterviews.length === 0;
-    };
-
-    const hasInterviews = (applications: ArchivedJobInterview[]) => {
-        return applications.length !== 0;
-    };
-
-    const showInterviewType = (field: ArchivedJobInterview) => {
-        if (field.interview_type === '') {
-            return false;
-        }
-        return true;
-    };
-
-    const showInterviewNotes = (field: ArchivedJobInterview) => {
-        if (field.interview_notes === '') {
-            return false;
-        }
-        return true;
-    };
+    const hasInterviews = archivedInterviews.length !== 0;
 
     return (
         <div className={styles.archivedInterviewList}>
@@ -129,7 +109,7 @@ const ViewArchivedInterview = () => {
 
             {!isLoading && (
                 <>
-                    {showArchiveInterviewMessage(archivedInterviews) && (
+                    {!hasInterviews && (
                         <div>
                             <br />
                             No archived job interview found. Start archiving now!{' '}
@@ -144,10 +124,10 @@ const ViewArchivedInterview = () => {
                                 </h2>
                                 <p>Job Title: {interview.job_title}</p>
                                 <p className={styles.location}>Location: {interview.interview_location}</p>
-                                {showInterviewType(interview) && (
+                                {interview.interview_type !== '' && (
                                     <p className={styles.type}>Interview Type: {interview.interview_type}</p>
                                 )}
-                                {showInterviewNotes(interview) && (
+                                {interview.interview_notes !== '' && (
                                     <p className={styles.notes}>Notes: {interview.interview_notes}</p>
                                 )}
                                 <p className={styles.date}>
@@ -168,7 +148,7 @@ const ViewArchivedInterview = () => {
                     ))}
 
                     <div className={styles.interviewButton}>
-                        {hasInterviews(archivedInterviews) && (
+                        {hasInterviews && (
                             <>
                                 <PrimaryButton onClick={() => handleDeleteAll()}>
                                     Delete all archived interviews

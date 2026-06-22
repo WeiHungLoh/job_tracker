@@ -1,16 +1,14 @@
 import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import ArchiveToggleButton from '../../../components/archiveToggleButton/ArchiveToggleButton';
-// Taken from: https://www.npmjs.com/package/react-csv
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
 import type { JobInterview } from '../../interview/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
-import NotesToggleButton from '../../../components/notesToggleButton/NotesToggleButton';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
 import styles from './ViewApplication.module.css';
+import ToggleButton from '../../../components/toggleButton/ToggleButton';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
@@ -78,7 +76,7 @@ const ViewApplication = () => {
         notes: app.notes ? app.notes : 'N/A',
     }));
 
-    const interviewJobIds = interviews.map((interview) => interview.job_id);
+    const interviewJobIds = useMemo(() => interviews.map((interview) => interview.job_id), [interviews]);
 
     useEffect(() => {
         let isActive = true;
@@ -270,58 +268,17 @@ const ViewApplication = () => {
         }
     };
 
-    const isEditStatus = (editStatus: boolean) => {
-        return editStatus;
+    const jobStatusClassMap: Record<JobStatus, string> = {
+        Accepted: styles.accepted,
+        Applied: styles.applied,
+        Declined: styles.declined,
+        Ghosted: styles.ghosted,
+        Interview: styles.interview,
+        Offer: styles.offer,
+        Rejected: styles.rejected,
     };
 
-    const isStatusInterview = (jobStatus: JobStatus) => {
-        if (jobStatus === 'Interview') {
-            return true;
-        }
-        return false;
-    };
-
-    const showAddApplicationMessage = (applications: JobApplication[]) => {
-        return applications && applications.length === 0;
-    };
-
-    const hasApplications = (applications: JobApplication[]) => {
-        return applications && applications.length !== 0;
-    };
-
-    const showJobLocation = (field: JobApplication) => {
-        if (field.job_location === '') {
-            return false;
-        }
-        return true;
-    };
-
-    const showJobURL = (field: JobApplication) => {
-        if (field.job_posting_url === '') {
-            return false;
-        }
-        return true;
-    };
-
-    const checkJobStatus = (application: JobApplication) => {
-        const jobStatus = application.job_status;
-
-        if (jobStatus === 'Accepted') {
-            return styles.accepted;
-        } else if (jobStatus === 'Applied') {
-            return styles.applied;
-        } else if (jobStatus === 'Declined') {
-            return styles.declined;
-        } else if (jobStatus === 'Ghosted') {
-            return styles.ghosted;
-        } else if (jobStatus === 'Interview') {
-            return styles.interview;
-        } else if (jobStatus === 'Offer') {
-            return styles.offer;
-        } else {
-            return styles.rejected;
-        }
-    };
+    const hasApplications = filteredApplications.length !== 0;
 
     return (
         <div className={styles.applicationList}>
@@ -352,20 +309,28 @@ const ViewApplication = () => {
                             </select>
                         </div>
 
-                        {hasApplications(filteredApplications) && (
-                            <ArchiveToggleButton
+                        {hasApplications && (
+                            <ToggleButton
                                 data-testid='unhide-archive'
                                 toggled={toggleArchived}
                                 onToggle={() => setToggleArchived(!toggleArchived)}
+                                label='Unhide Archive'
+                                toggledLabel='Hide Archive'
                             />
                         )}
 
-                        {hasApplications(filteredApplications) && (
-                            <NotesToggleButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)} />
+                        {hasApplications && (
+                            <ToggleButton
+                                toggled={toggleNotes}
+                                onToggle={() => setToggleNotes(!toggleNotes)}
+                                label='Unhide Notes'
+                                toggledLabel='Hide Notes'
+                                color='yellow'
+                            />
                         )}
                     </div>
 
-                    {showAddApplicationMessage(filteredApplications) && (
+                    {!hasApplications && (
                         <div>
                             <br />
                             No job application with that job status found. Start adding one now!{' '}
@@ -384,7 +349,7 @@ const ViewApplication = () => {
                                         {index + 1}. {application.company_name}
                                     </h2>
                                     <p>Job Title: {application.job_title}</p>
-                                    {showJobLocation(application) && (
+                                    {application.job_location !== '' && (
                                         <p className={styles.location}>Location: {application.job_location}</p>
                                     )}
                                     <p className={styles.date}>
@@ -394,9 +359,9 @@ const ViewApplication = () => {
                                         Time since application:{' '}
                                         {DateFormatter(application.application_date).timeSinceApplication}
                                     </p>
-                                    <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
+                                    <p className={jobStatusClassMap[application.job_status]}>Job Status: {application.job_status}</p>
 
-                                    {isEditStatus(application.edit_status) && (
+                                    {application.edit_status && (
                                         <select
                                             role='listbox'
                                             value={jobStatuses[application.job_id] ?? application.job_status}
@@ -422,7 +387,7 @@ const ViewApplication = () => {
                                         </select>
                                     )}
 
-                                    {isStatusInterview(application.job_status) && (
+                                    {application.job_status === 'Interview' && (
                                         <Link
                                             to={routes.addInterview}
                                             state={{
@@ -432,7 +397,7 @@ const ViewApplication = () => {
                                             Click here to add an interview
                                         </Link>
                                     )}
-                                    {showJobURL(application) && (
+                                    {application.job_posting_url !== '' && (
                                         <a
                                             className={styles.url}
                                             href={application.job_posting_url}
@@ -446,7 +411,7 @@ const ViewApplication = () => {
 
                                 <div className={styles.buttonGroup}>
                                     <PrimaryButton onClick={() => toggleEditStatus(application)}>
-                                        {isEditStatus(application.edit_status) ? 'Save Changes' : 'Edit Status'}
+                                        {application.edit_status ? 'Save Changes' : 'Edit Status'}
                                     </PrimaryButton>
 
                                     <PrimaryButton onClick={() => handleDelete(application.job_id)}>
@@ -480,7 +445,7 @@ const ViewApplication = () => {
                         <PrimaryButton onClick={() => navigate(routes.addApplication)}>
                             Add new application
                         </PrimaryButton>
-                        {hasApplications(filteredApplications) && (
+                        {hasApplications && (
                             <>
                                 <PrimaryButton onClick={() => handleDeleteAll()}>Delete all applications</PrimaryButton>
                                 <PrimaryButton>

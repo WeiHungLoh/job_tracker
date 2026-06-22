@@ -42,10 +42,13 @@ const ApplicationsLineChart = () => {
         };
     }, []);
 
-    const applicationByWeekCountPair = applications.reduce<Record<string, string>>((acc, row) => {
-        acc[row.start_of_week] = row.applications_count;
-        return acc;
-    }, {});
+    const applicationByWeekCountPair = applications.reduce<Record<string, string>>(
+        (acc, row) => {
+            acc[row.start_of_week] = row.applications_count;
+            return acc;
+        },
+        {} as Record<string, string>
+    );
 
     const totalApplications = Object.values(applicationByWeekCountPair).reduce((sum, val) => sum + parseInt(val), 0);
 
