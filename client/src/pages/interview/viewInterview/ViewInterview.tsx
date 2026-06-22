@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
-import type { EntityId } from '../../jobApplication/models';
 import type { JobInterview } from '../models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -57,7 +56,7 @@ const ViewInterview = () => {
         notes: interview.notes ? interview.notes : 'N/A',
     }));
 
-    const handleDelete = async (interviewId: EntityId) => {
+    const handleDelete = async (interviewId: number) => {
         try {
             const { confirmed } = await confirm({
                 title: 'Confirm Deletion',
@@ -119,65 +118,72 @@ const ViewInterview = () => {
 
     return (
         <div className={styles.interviewList}>
-            {isLoading && <><br /><LoadingSpinner /></>}
+            {isLoading && (
+                <>
+                    <br />
+                    <LoadingSpinner />
+                </>
+            )}
 
             {!isLoading && (
                 <>
                     {showAddinterviewMessage(interviews) && (
-                <div>
-                    <br />
-                    No job interview found. Start adding one now!{' '}
-                </div>
-            )}
+                        <div>
+                            <br />
+                            No job interview found. Start adding one now!{' '}
+                        </div>
+                    )}
 
-            {interviews.map((interview, index) => (
-                <div className={styles.interview} key={interview.interview_id}>
-                    <div className={styles.interviewContent}>
-                        <h2>
-                            {index + 1}. {interview.company_name}
-                        </h2>
-                        <p>Job Title: {interview.job_title}</p>
-                        <p className={styles.location}>Location: {interview.interview_location}</p>
-                        {showInterviewType(interview) && (
-                            <p className={styles.type}>Interview Type: {interview.interview_type}</p>
+                    {interviews.map((interview, index) => (
+                        <div className={styles.interview} key={interview.interview_id}>
+                            <div className={styles.interviewContent}>
+                                <h2>
+                                    {index + 1}. {interview.company_name}
+                                </h2>
+                                <p>Job Title: {interview.job_title}</p>
+                                <p className={styles.location}>Location: {interview.interview_location}</p>
+                                {showInterviewType(interview) && (
+                                    <p className={styles.type}>Interview Type: {interview.interview_type}</p>
+                                )}
+                                {showInterviewNotes(interview) && (
+                                    <p className={styles.notes}>Notes: {interview.interview_notes}</p>
+                                )}
+                                <p className={styles.date}>
+                                    Interview Date: {DateFormatter(interview.interview_date).formattedDate}
+                                </p>
+                                <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
+                                <Link to={`${routes.viewApplications}#${interview.job_id}`}>
+                                    Click here to review corresponding job application
+                                </Link>
+                            </div>
+
+                            <div className={styles.buttonGroup}>
+                                <PrimaryButton onClick={() => handleDelete(interview.interview_id)}>
+                                    Delete
+                                </PrimaryButton>
+                            </div>
+                        </div>
+                    ))}
+
+                    <div className={styles.interviewButton}>
+                        <PrimaryButton onClick={() => navigate(routes.addInterview)}>Add new interview</PrimaryButton>
+                        {hasInterviews(interviews) && (
+                            <>
+                                {' '}
+                                <PrimaryButton onClick={() => handleDeleteAll()}>Delete all interviews</PrimaryButton>
+                                <PrimaryButton>
+                                    <CSVLink
+                                        data={data}
+                                        headers={headers}
+                                        filename='job_interviews.csv'
+                                        style={{ color: 'white', textDecoration: 'none' }}
+                                    >
+                                        Export as CSV
+                                    </CSVLink>
+                                </PrimaryButton>
+                            </>
                         )}
-                        {showInterviewNotes(interview) && (
-                            <p className={styles.notes}>Notes: {interview.interview_notes}</p>
-                        )}
-                        <p className={styles.date}>
-                            Interview Date: {DateFormatter(interview.interview_date).formattedDate}
-                        </p>
-                        <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
-                        <Link to={`${routes.viewApplications}#${interview.job_id}`}>
-                            Click here to review corresponding job application
-                        </Link>
                     </div>
-
-                    <div className={styles.buttonGroup}>
-                        <PrimaryButton onClick={() => handleDelete(interview.interview_id)}>Delete</PrimaryButton>
-                    </div>
-                </div>
-            ))}
-
-            <div className={styles.interviewButton}>
-                <PrimaryButton onClick={() => navigate(routes.addInterview)}>Add new interview</PrimaryButton>
-                {hasInterviews(interviews) && (
-                    <>
-                        {' '}
-                        <PrimaryButton onClick={() => handleDeleteAll()}>Delete all interviews</PrimaryButton>
-                        <PrimaryButton>
-                            <CSVLink
-                                data={data}
-                                headers={headers}
-                                filename='job_interviews.csv'
-                                style={{ color: 'white', textDecoration: 'none' }}
-                            >
-                                Export as CSV
-                            </CSVLink>
-                        </PrimaryButton>
-                    </>
-                )}
-            </div>
                 </>
             )}
         </div>

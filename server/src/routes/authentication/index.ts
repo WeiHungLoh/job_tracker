@@ -46,7 +46,7 @@ router.post(
                 return;
             }
 
-            await insertUser(email, await bcrypt.hash(password, 10), 'DEFAULT');
+            await insertUser(email, await bcrypt.hash(password, 10));
             res.status(201).send('User successfully registered');
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to register the user.');

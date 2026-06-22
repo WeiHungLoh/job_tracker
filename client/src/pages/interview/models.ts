@@ -1,8 +1,6 @@
-import type { EntityId } from '../jobApplication/models';
-
 export type JobInterview = {
-    interview_id: EntityId;
-    job_id: EntityId;
+    interview_id: number;
+    job_id: number;
     company_name: string;
     job_title: string;
     interview_date: string;
@@ -16,7 +14,7 @@ export type ListInterviewsRequest = null;
 export type ListInterviewsResponse = JobInterview[];
 
 export type CreateInterviewRequest = {
-    jobId: EntityId;
+    jobId: number;
     interviewDate: Date;
     interviewLocation: string;
     interviewType: string;
@@ -25,7 +23,7 @@ export type CreateInterviewRequest = {
 export type CreateInterviewResponse = string;
 
 export type DeleteInterviewRequest = {
-    interviewId: EntityId;
+    interviewId: number;
 };
 export type DeleteInterviewResponse = null;
 

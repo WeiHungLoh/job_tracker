@@ -12,7 +12,11 @@ export const endpointConfig = {
         logout: { url: '/authentication/sessions/current', verb: 'DELETE' },
     },
     application: {
-        listApplications: { url: '/job-applications', verb: 'GET' },
+        listApplications: {
+            url: '/job-applications',
+            verb: 'GET',
+            fieldMap: { jobStatus: FieldType.query },
+        },
         listWeeklyApplications: { url: '/job-applications/weekly-counts', verb: 'GET' },
         listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET' },
         createApplication: { url: '/job-applications', verb: 'POST' },
@@ -41,7 +45,11 @@ export const endpointConfig = {
         deleteAllInterviews: { url: '/job-interviews', verb: 'DELETE' },
     },
     archivedApplication: {
-        listApplications: { url: '/archived-job-applications', verb: 'GET' },
+        listApplications: {
+            url: '/archived-job-applications',
+            verb: 'GET',
+            fieldMap: { jobStatus: FieldType.query },
+        },
         archiveApplication: { url: '/archived-job-applications', verb: 'POST' },
         deleteApplication: {
             url: '/archived-job-applications/:archivedApplicationId',

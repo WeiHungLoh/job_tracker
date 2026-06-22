@@ -6,7 +6,6 @@ const createTable = async (): Promise<void> => {
             user_id SERIAL PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             hashed_password TEXT NOT NULL,
-            sorting_preferences TEXT CHECK (sorting_preferences IN ('DEFAULT', 'APPLICATION_DATE')),
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         )`;
 
@@ -16,6 +15,7 @@ const createTable = async (): Promise<void> => {
             company_name TEXT NOT NULL,
             job_title TEXT NOT NULL,
             application_date TIMESTAMPTZ,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
             edit_status BOOLEAN DEFAULT false,
             job_location TEXT,

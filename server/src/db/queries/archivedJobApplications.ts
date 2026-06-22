@@ -1,4 +1,4 @@
-import type { ArchivedJobApplication } from '../models.js';
+import type { ArchivedJobApplication, JobStatus } from '../models.js';
 import { pool } from '../connectDB.js';
 
 const archiveJobApplication = async (jobId: string | number, userId: number): Promise<boolean> => {
@@ -66,7 +66,10 @@ const unarchiveJobApplication = async (archivedJobId: string | number, userId: n
     }
 };
 
-const getArchivedJobApplications = async (userId: number): Promise<ArchivedJobApplication[]> => {
+const getArchivedJobApplications = async (
+    userId: number,
+    jobStatus: JobStatus | null = null
+): Promise<ArchivedJobApplication[]> => {
     const res = await pool.query<ArchivedJobApplication>(
         `SELECT
             job_id AS archived_job_id,
@@ -74,12 +77,14 @@ const getArchivedJobApplications = async (userId: number): Promise<ArchivedJobAp
             company_name,
             job_title,
             application_date,
+            created_at,
             job_status,
             job_location,
             job_posting_url,
             notes
          FROM job_applications
          WHERE user_id = $1 AND is_archived = true
+            AND ($2::text IS NULL OR job_status = $2)
          ORDER BY
             CASE
                 WHEN job_status = 'Accepted' THEN 1
@@ -91,7 +96,7 @@ const getArchivedJobApplications = async (userId: number): Promise<ArchivedJobAp
                 ELSE 7
             END,
             application_date DESC`,
-        [userId]
+        [userId, jobStatus]
     );
 
     return res.rows;
