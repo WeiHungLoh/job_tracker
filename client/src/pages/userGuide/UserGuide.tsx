@@ -59,6 +59,10 @@ const guideSections: readonly UserGuideSection[] = [
                     Use <strong>Filter by</strong> to show one status or select <code>Show All</code>. The archive
                     toggle reveals or hides the archive action for each application.
                 </p>
+                <p>
+                    An orange <strong>Upcoming Interviews</strong> badge appears below the status when an application
+                    has one or more interviews scheduled in the future.
+                </p>
             </>
         ),
     },
