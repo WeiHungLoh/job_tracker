@@ -424,15 +424,13 @@ const ViewApplication = () => {
                                         Delete
                                     </PrimaryButton>
 
-                                    {toggleArchived && (
-                                        <PrimaryButton
-                                            className={styles.archiveButton}
-                                            onClick={() => handleArchive(application.job_id)}
-                                            variant='secondary'
-                                        >
-                                            Archive
-                                        </PrimaryButton>
-                                    )}
+                                    <PrimaryButton
+                                        className={`${styles.archiveButton} ${!toggleArchived ? styles.archiveHidden : ''}`}
+                                        onClick={() => handleArchive(application.job_id)}
+                                        variant='secondary'
+                                    >
+                                        Archive
+                                    </PrimaryButton>
                                 </div>
 
                                 {toggleNotes && (

@@ -46,19 +46,19 @@
 
 .buttonGroup {
     margin-left: auto;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
-    position: relative;
+    align-items: center;
     width: 190px;
 }
 
 .archiveButton {
-    position: absolute;
-    bottom: 0.5px;
-    right: 33px;
-    left: 1px;
+    grid-column: 1 / -1;
+}
+
+.archiveHidden {
+    visibility: hidden;
 }
 
 .notes textarea {
@@ -240,10 +240,6 @@
         padding-left: 20px;
     }
  
-    .buttonGroup {
-        flex: 0 0 190px;
-    }
-
     .notes {
         flex: 1 0 100%;
         margin-top: 16px;
@@ -252,12 +248,9 @@
     .notes textarea {
         position: static;
         display: block;
-        width: 95%;
+        width: 100%;
         height: 160px;
         margin: 0 auto;
-    }
-    .archiveButton {
-        bottom: 20px;
     }
 }
 
@@ -272,10 +265,6 @@
         gap: 8px;
     }
 
-    .archiveButton {
-        position: relative;
-    }
-
     .applicationContent select {
         margin-left: 0;
         margin-top: 7px;
@@ -283,9 +272,8 @@
     }
 
     .buttonGroup {
-        justify-content: center;
-        flex-direction: column;
-        width: 20%;
+        grid-template-columns: 1fr;
+        width: auto;
     }
 
     .notes textarea {

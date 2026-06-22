@@ -9,6 +9,10 @@
     gap: 50px;
 }
 
+.dashboard > :first-child {
+    grid-column: 1 / -1;
+}
+
 @media (max-width: 768px) {
     .dashboard {
         padding: 16px;

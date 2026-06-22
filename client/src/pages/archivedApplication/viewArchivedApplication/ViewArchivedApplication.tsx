@@ -250,9 +250,12 @@ const ViewArchivedApplication = () => {
                                 </div>
 
                                 <div className={styles.buttonGroup}>
-                                    <div onClick={() => handleUnarchive(application.archived_job_id)}>
-                                        <PrimaryButton variant='secondary'>Unarchive</PrimaryButton>
-                                    </div>
+                                    <PrimaryButton
+                                        variant='secondary'
+                                        onClick={() => handleUnarchive(application.archived_job_id)}
+                                    >
+                                        Unarchive
+                                    </PrimaryButton>
 
                                     <PrimaryButton
                                         variant='destructive'
