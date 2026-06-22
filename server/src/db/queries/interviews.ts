@@ -29,7 +29,9 @@ const getInterviews = async (userId: number): Promise<JobInterview[]> => {
          WHERE interviews.user_id = $1
             AND interviews.is_archived = false
             AND job_applications.is_archived = false
-         ORDER BY interviews.interview_date ASC`,
+         ORDER BY
+             interviews.interview_date > NOW() DESC,
+             interviews.interview_date ASC`,
         [userId]
     );
     return res.rows;

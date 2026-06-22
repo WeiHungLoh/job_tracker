@@ -19,7 +19,9 @@ const getArchivedJobInterviews = async (userId: number): Promise<ArchivedJobInte
          WHERE interviews.user_id = $1
             AND interviews.is_archived = true
             AND job_applications.is_archived = true
-         ORDER BY interviews.interview_date ASC`,
+         ORDER BY
+            interviews.interview_date > NOW() DESC,
+            interviews.interview_date ASC`,
         [userId]
     );
     return res.rows;
