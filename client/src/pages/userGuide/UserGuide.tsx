@@ -16,6 +16,10 @@ const guideSections: readonly UserGuideSection[] = [
                 <p>The dashboard gives you a quick visual overview of your job search progress:</p>
                 <ul>
                     <li>
+                        <strong>Stat cards:</strong> Shows total applications, active (upcoming) interviews, offers
+                        received, response rate and applications added this week.
+                    </li>
+                    <li>
                         <strong>Line chart:</strong> Shows applications added over the past eight weeks. Each x-axis
                         label is the Monday that begins that week.
                     </li>
@@ -71,6 +75,10 @@ const guideSections: readonly UserGuideSection[] = [
                     Select <code>Click here to view corresponding job application</code> to return to the related
                     application. The application is scrolled into view and highlighted for four seconds.
                 </p>
+                <p>
+                    Both active and archived interviews are sorted with upcoming interviews first (closest date at the
+                    top), followed by past interviews (earliest date first).
+                </p>
             </>
         ),
     },
@@ -108,10 +116,9 @@ const guideSections: readonly UserGuideSection[] = [
                     </li>
                     <li>
                         <strong>Archived interviews:</strong> These are read-only. Unarchive their related application
-                        to restore them.
+                        to restore them. Sorted with upcoming first, past last.
                     </li>
                 </ul>
-                <p>Archive mode keeps active views focused while preserving older records.</p>
             </>
         ),
     },
@@ -151,7 +158,10 @@ const guideSections: readonly UserGuideSection[] = [
                     <code>Interview</code>, <code>Applied</code>, <code>Ghosted</code> and <code>Rejected</code>. Within
                     a status, the most recent application appears first.
                 </p>
-                <p>Interviews are ordered by interview date, with the earliest interview first.</p>
+                <p>
+                    Interviews are grouped with upcoming dates first (closest at the top), then past dates (earliest
+                    first). This applies to both active and archived interview views.
+                </p>
             </>
         ),
     },
