@@ -79,12 +79,8 @@ const createApp = (): express.Express => {
             res.status(403).send({ message: 'Origin is not allowed.' });
             return;
         }
-        if (error.type === 'entity.too.large') {
-            res.status(413).send({ message: 'Request body is too large.' });
-            return;
-        }
-        if (error instanceof SyntaxError && error.status === 400) {
-            res.status(400).send({ message: 'Request body contains invalid JSON.' });
+        if (error.type === 'entity.too.large' || error.type === 'entity.parse.failed') {
+            res.status(error.status ?? 400).send({ message: error.type === 'entity.too.large' ? 'Request body is too large.' : 'Request body contains invalid JSON.' });
             return;
         }
 
