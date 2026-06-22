@@ -58,7 +58,7 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByText(/filter by/i)).toBeInTheDocument();
         expect(screen.getByText(/unhide notes/i)).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
-            `${import.meta.env.VITE_API_URL}/archived-job-applications`,
+            `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatus=Show+All`,
             {
                 method: 'GET',
                 credentials: 'include',
@@ -66,7 +66,7 @@ describe('Archived job application viewing flow', () => {
         );
     });
 
-    test('filters archived applications client-side when the status filter changes', async () => {
+    test('fetches archived applications from the server when the status filter changes', async () => {
         render(
             <MemoryRouter>
                 <ViewArchivedApplication />
@@ -74,13 +74,17 @@ describe('Archived job application viewing flow', () => {
         );
 
         await screen.findByText(/ABC Pte Ltd/i);
-
-        // Select "Offer" — filters client-side, no extra fetch
         userEvent.selectOptions(screen.getByRole('listbox'), 'Offer');
 
-        await waitFor(() => {
-            expect(screen.getByText(/no archived job application with that job status found/i)).toBeInTheDocument();
-        });
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(
+                `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatus=Offer`,
+                {
+                    method: 'GET',
+                    credentials: 'include',
+                }
+            )
+        );
     });
 
     test('deletes application after user confirms', async () => {

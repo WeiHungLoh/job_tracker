@@ -88,13 +88,24 @@ const ViewApplication = () => {
         return counts;
     }, [interviews]);
 
+    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+        setJobStatus(selectedStatus);
+
+        try {
+            const jobApplications = await api.application.listApplications({ jobStatus: selectedStatus });
+            setApplications(Array.isArray(jobApplications) ? jobApplications : []);
+        } catch (error) {
+            showErrorToast((error as Error).message);
+        }
+    };
+
     useEffect(() => {
         let isActive = true;
 
         const fetchData = async () => {
             try {
                 const [jobApplications, jobInterviews] = await Promise.all([
-                    api.application.listApplications(),
+                    api.application.listApplications({ jobStatus: 'Show All' }),
                     api.interview.listInterviews(),
                 ]);
 
@@ -295,7 +306,7 @@ const ViewApplication = () => {
                             <div>Filter by</div>
                             <select
                                 value={jobStatus}
-                                onChange={(event) => setJobStatus(event.target.value as JobStatusFilter)}
+                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
                             >
                                 <option value='Show All'>Show All</option>
                                 <option value='Accepted'>Accepted</option>

@@ -3,6 +3,7 @@ import type {
     ArchiveApplicationResponse,
     ArchivedJobIdParams,
     EmptyResponse,
+    ListArchivedApplicationsQuery,
     ListArchivedApplicationsResponse,
 } from './models.js';
 import type { Request, Response } from 'express';
@@ -15,7 +16,7 @@ import {
 } from '../../db/queries/archivedJobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
-import { isPositiveInteger } from '../../http/validation.js';
+import { isJobStatus, isPositiveInteger } from '../../http/validation.js';
 
 const router = express.Router();
 
@@ -45,11 +46,23 @@ router.post(
 router.get(
     '/',
     async (
-        _req: Request<Record<string, never>, ListArchivedApplicationsResponse>,
+        req: Request<
+            Record<string, never>,
+            ListArchivedApplicationsResponse,
+            Record<string, never>,
+            ListArchivedApplicationsQuery
+        >,
         res: Response<ListArchivedApplicationsResponse>
     ): Promise<void> => {
+        const requestedStatus = req.query.jobStatus ?? 'Show All';
+        if (requestedStatus !== 'Show All' && !isJobStatus(requestedStatus)) {
+            sendError(res, 422, 'A supported job status or Show All is required.');
+            return;
+        }
+
         try {
-            res.status(200).json(await getArchivedJobApplications(_req.user.id));
+            const jobStatus = requestedStatus === 'Show All' ? null : requestedStatus;
+            res.status(200).json(await getArchivedJobApplications(req.user.id, jobStatus));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived job applications.');
         }
