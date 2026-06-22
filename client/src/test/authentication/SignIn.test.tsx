@@ -19,20 +19,22 @@ describe('User sign in flow', () => {
     // Resets the state of fetch and mockNavigate
     beforeEach(() => {
         fetch.mockReset();
-        fetch.mockResolvedValue({ headers: new Headers(), ok: true, status: 200, statusText: '', url: '' });
+        fetch.mockResolvedValue({
+            headers: new Headers(),
+            ok: true,
+            status: 200,
+            statusText: '',
+            url: '',
+            json: async () => ({}),
+            text: async () => '',
+        });
         mockNavigate.mockReset();
         alert.mockReset();
     });
 
     test('signs in successfully and redirects to /application/add page', async () => {
         globalThis.fetch
-            // For ping GET request to backemd
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => 'testing',
-            })
-            // For POST request to backend
+            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' })
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
@@ -50,13 +52,6 @@ describe('User sign in flow', () => {
         userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-        // Checks that ping API request has been called
-        await waitFor(() =>
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' })
-        );
-
-        // Checks that a fetch request that matches the format below has been
-        // called after filling in email and password
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
@@ -71,18 +66,8 @@ describe('User sign in flow', () => {
 
     test('shows alert on failed sign in due to non-existent email', async () => {
         globalThis.fetch
-            // For ping GET request to backemd
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => 'testing',
-            })
-            // For verify GET request — must fail so the page stays on sign in
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 401,
-            })
-            // For POST request to backend
+            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' })
+            .mockResolvedValueOnce({ ok: false, status: 401 })
             .mockResolvedValueOnce({
                 ok: false,
                 status: 404,
@@ -101,12 +86,6 @@ describe('User sign in flow', () => {
         userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
         await waitFor(() =>
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' })
-        );
-
-        // Checks that a fetch request that matches the format below has been
-        // called after filling in email and password
-        await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
                 credentials: 'include',
@@ -122,18 +101,8 @@ describe('User sign in flow', () => {
 
     test('shows alert on failed sign in due to incorrect password', async () => {
         globalThis.fetch
-            // For ping GET request to backemd
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => 'testing',
-            })
-            // For verify GET request — must fail so the page stays on sign in
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 401,
-            })
-            // For POST request to backend
+            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' })
+            .mockResolvedValueOnce({ ok: false, status: 401 })
             .mockResolvedValueOnce({
                 ok: false,
                 status: 401,
@@ -151,12 +120,6 @@ describe('User sign in flow', () => {
         userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-        await waitFor(() =>
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/ping`, { method: 'GET' })
-        );
-
-        // Checks that a fetch request that matches the format below has been
-        // called after filling in email and password
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
