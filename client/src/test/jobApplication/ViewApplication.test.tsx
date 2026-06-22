@@ -63,13 +63,13 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/unhide archive/i)).toBeInTheDocument();
         expect(screen.getByText(/filter by/i)).toBeInTheDocument();
         expect(screen.getByText(/unhide notes/i)).toBeInTheDocument();
-        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications?jobStatus=Show+All`, {
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications`, {
             method: 'GET',
             credentials: 'include',
         });
     });
 
-    test('fetches applications from the server when the status filter changes', async () => {
+    test('filters applications client-side when the status filter changes', async () => {
         render(
             <MemoryRouter>
                 <ViewApplication />
@@ -77,14 +77,13 @@ describe('Job application viewing flow', () => {
         );
 
         await screen.findByText(/ABC Pte Ltd/i);
+
+        // Select "Offer" — should filter client-side, no extra fetch
         userEvent.selectOptions(screen.getByRole('combobox'), 'Offer');
 
-        await waitFor(() =>
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications?jobStatus=Offer`, {
-                method: 'GET',
-                credentials: 'include',
-            })
-        );
+        await waitFor(() => {
+            expect(screen.getByText(/no job application with that job status found/i)).toBeInTheDocument();
+        });
     });
 
     test('button should switch to Save Changes button after toggle', async () => {
