@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { ChartOptions } from 'chart.js';
 import type { JobStatusCount } from './models';
 import { Pie } from 'react-chartjs-2';
+import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import styles from './JobStatusChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
@@ -13,6 +14,7 @@ ChartJS.register(ArcElement, Title, Tooltip, Legend);
 const JobStatusChart = () => {
     const api = useJobTrackerAPI();
     const [applications, setApplications] = useState<JobStatusCount[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
 
     useEffect(() => {
@@ -24,6 +26,8 @@ const JobStatusChart = () => {
                 if (isActive) setApplications(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
+            } finally {
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -85,7 +89,9 @@ const JobStatusChart = () => {
 
     return (
         <div className={styles.jobStatusChart}>
-            {totalApplications === 0 ? (
+            {isLoading ? (
+                <LoadingSpinner size='sm' />
+            ) : totalApplications === 0 ? (
                 <div className={styles.noApplicationMessage}>
                     No job applications found. Start adding one now to see your application status breakdown!
                 </div>

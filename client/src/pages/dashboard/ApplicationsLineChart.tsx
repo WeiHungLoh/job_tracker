@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import type { ChartOptions } from 'chart.js';
 import DateFormatter from '../../helper/dateFormatter';
 import { Line } from 'react-chartjs-2';
+import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import type { WeeklyApplicationCount } from './models';
 import styles from './ApplicationsLineChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
@@ -22,6 +23,7 @@ ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, 
 const ApplicationsLineChart = () => {
     const api = useJobTrackerAPI();
     const [applications, setApplications] = useState<WeeklyApplicationCount[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
 
     useEffect(() => {
@@ -33,6 +35,8 @@ const ApplicationsLineChart = () => {
                 if (isActive) setApplications(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
+            } finally {
+                if (isActive) setIsLoading(false);
             }
         };
 
@@ -102,7 +106,9 @@ const ApplicationsLineChart = () => {
 
     return (
         <div className={styles.applicationLineChart}>
-            {totalApplications === 0 ? (
+            {isLoading ? (
+                <LoadingSpinner size='sm' />
+            ) : totalApplications === 0 ? (
                 <div className={styles.noApplicationMessage}>
                     No job applications applied in the last eight weeks. Start adding some to see your progress here!
                 </div>
