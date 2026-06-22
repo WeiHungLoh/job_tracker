@@ -110,10 +110,17 @@ const AddInterview = () => {
             <input id='notes' value={notes} onChange={(e) => setNotes(e.target.value)} />
 
             <div className={styles.submitButton}>
-                <PrimaryButton data-testid='add-interview' onClick={handleAdd} disabled={isLoading}>
+                <PrimaryButton
+                    variant='compact'
+                    data-testid='add-interview'
+                    onClick={handleAdd}
+                    disabled={isLoading}
+                >
                     {isLoading ? <LoadingSpinner size='sm' variant='light' /> : 'Add Interview'}
                 </PrimaryButton>
-                <PrimaryButton onClick={() => navigate(routes.viewInterviews)}>View Interviews</PrimaryButton>
+                <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewInterviews)}>
+                    View Interviews
+                </PrimaryButton>
                 <Link to={`${routes.viewApplications}#${app.job_id}`}>Back</Link>
             </div>
         </div>

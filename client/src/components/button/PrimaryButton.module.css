@@ -39,11 +39,33 @@
 .navigation {
     background: transparent;
     color: inherit;
-}
-
-.navigation {
     padding: 0 4px;
     font-size: inherit;
+}
+
+.secondary {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--colorPrimary);
+    border: 1.5px solid var(--colorPrimary);
+    transition: background-color 0.2s ease;
+}
+
+.secondary:hover {
+    background-color: rgb(241 53 109 / 8%);
+}
+
+.destructive {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background-color: #dc3545;
+    color: #fff;
+    transition: background-color 0.2s ease;
+}
+
+.destructive:hover {
+    background-color: #c82333;
 }
 
 .icon {

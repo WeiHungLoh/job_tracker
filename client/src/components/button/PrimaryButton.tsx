@@ -4,9 +4,11 @@ import styles from './PrimaryButton.module.css';
 const VARIANT_CLASS: Record<PrimaryButtonVariant, string> = {
     compact: `${styles.primary} ${styles.compact}`,
     default: styles.primary,
+    destructive: styles.destructive,
     form: `${styles.primary} ${styles.form}`,
     icon: styles.icon,
     navigation: styles.navigation,
+    secondary: styles.secondary,
     success: styles.success,
 };
 
