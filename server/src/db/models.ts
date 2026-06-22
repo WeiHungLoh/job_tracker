@@ -13,9 +13,10 @@ export type JobApplication = {
     job_location: string | null;
     job_posting_url: string | null;
     notes: string | null;
+    is_archived: boolean;
 };
 
-export type ArchivedJobApplication = Omit<JobApplication, 'edit_status' | 'job_id'> & {
+export type ArchivedJobApplication = Omit<JobApplication, 'edit_status' | 'is_archived' | 'job_id'> & {
     archived_job_id: EntityId;
 };
 
@@ -28,11 +29,12 @@ export type JobInterview = {
     interview_type: string | null;
     interview_notes: string | null;
     created_at: Date;
+    is_archived: boolean;
     company_name?: string;
     job_title?: string;
 };
 
-export type ArchivedJobInterview = Omit<JobInterview, 'interview_id' | 'job_id'> & {
+export type ArchivedJobInterview = Omit<JobInterview, 'interview_id' | 'is_archived' | 'job_id'> & {
     archived_interview_id: EntityId;
     archived_job_id: EntityId;
 };

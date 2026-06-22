@@ -13,7 +13,8 @@ const insertInterview = async (
         `INSERT INTO interviews (job_id, user_id, interview_date, interview_location, interview_type, interview_notes)
         SELECT $1, $2, $3, $4, $5, $6
         WHERE EXISTS (
-            SELECT 1 FROM job_applications WHERE job_id = $1 AND user_id = $2
+            SELECT 1 FROM job_applications
+            WHERE job_id = $1 AND user_id = $2 AND is_archived = false
         )`,
         [jobId, userId, interview_date, location, interview_type, notes]
     );
@@ -22,7 +23,9 @@ const insertInterview = async (
 
 const getInterviews = async (userId: number): Promise<JobInterview[]> => {
     const res = await pool.query<JobInterview>(
-        `SELECT * FROM interviews, job_applications WHERE interviews.user_id = $1 
+        `SELECT * FROM interviews, job_applications WHERE interviews.user_id = $1
+            AND interviews.is_archived = false
+            AND job_applications.is_archived = false
             AND interviews.job_id = job_applications.job_id ORDER BY interviews.interview_date ASC`,
         [userId]
     );
@@ -30,15 +33,15 @@ const getInterviews = async (userId: number): Promise<JobInterview[]> => {
 };
 
 const deleteJobInterview = async (interviewId: string | number, userId: number): Promise<boolean> => {
-    const result = await pool.query(`DELETE FROM interviews WHERE interview_id = $1 and user_id = $2`, [
-        interviewId,
-        userId,
-    ]);
+    const result = await pool.query(
+        `DELETE FROM interviews WHERE interview_id = $1 AND user_id = $2 AND is_archived = false`,
+        [interviewId, userId]
+    );
     return (result.rowCount ?? 0) > 0;
 };
 
 const deleteAllJobInterviews = async (userId: number): Promise<void> => {
-    await pool.query(`DELETE FROM interviews WHERE user_id = $1`, [userId]);
+    await pool.query(`DELETE FROM interviews WHERE user_id = $1 AND is_archived = false`, [userId]);
 };
 
 export { insertInterview, getInterviews, deleteJobInterview, deleteAllJobInterviews };

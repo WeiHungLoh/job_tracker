@@ -7,11 +7,11 @@ import type {
 } from './models.js';
 import type { Request, Response } from 'express';
 import {
+    archiveJobApplication,
     deleteAllArchivedJobApplications,
     deleteArchivedJobApplication,
     getArchivedJobApplications,
-    insertArchivedJobApplication,
-    removeArchivedJobApplication,
+    unarchiveJobApplication,
 } from '../../db/queries/archivedJobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
@@ -31,7 +31,7 @@ router.post(
         }
 
         try {
-            if (!(await insertArchivedJobApplication(req.body.jobId, req.user.id))) {
+            if (!(await archiveJobApplication(req.body.jobId, req.user.id))) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
@@ -100,7 +100,7 @@ router.post(
         }
 
         try {
-            if (!(await removeArchivedJobApplication(req.params.archivedJobId, req.user.id))) {
+            if (!(await unarchiveJobApplication(req.params.archivedJobId, req.user.id))) {
                 sendError(res, 404, 'Archived job application not found.');
                 return;
             }
