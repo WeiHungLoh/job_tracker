@@ -64,6 +64,28 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/unhide archive/i)).toBeInTheDocument();
         expect(screen.getByText(/filter by/i)).toBeInTheDocument();
         expect(screen.getByText(/unhide notes/i)).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications?jobStatus=Show+All`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+    });
+
+    test('fetches applications from the server when the status filter changes', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        userEvent.selectOptions(screen.getByRole('combobox'), 'Offer');
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications?jobStatus=Offer`, {
+                method: 'GET',
+                credentials: 'include',
+            })
+        );
     });
 
     test('button should switch to Save Changes button after toggle', async () => {

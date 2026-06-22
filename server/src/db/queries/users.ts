@@ -1,16 +1,8 @@
 import type { User } from '../models.js';
 import { pool } from '../connectDB.js';
 
-const insertUser = async (
-    email: string,
-    hashed_password: string,
-    sorting_preferences: User['sorting_preferences']
-): Promise<void> => {
-    await pool.query(`INSERT INTO users (email, hashed_password, sorting_preferences) VALUES ($1, $2, $3)`, [
-        email,
-        hashed_password,
-        sorting_preferences,
-    ]);
+const insertUser = async (email: string, hashed_password: string): Promise<void> => {
+    await pool.query(`INSERT INTO users (email, hashed_password) VALUES ($1, $2)`, [email, hashed_password]);
 };
 
 const findUser = async (email: string): Promise<boolean> => {

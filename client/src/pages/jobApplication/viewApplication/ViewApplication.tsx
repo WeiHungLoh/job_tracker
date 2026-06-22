@@ -1,4 +1,4 @@
-import type { EntityId, JobApplication, JobStatus } from '../models';
+import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import ArchiveToggleButton from '../../../components/archiveToggleButton/ArchiveToggleButton';
@@ -39,16 +39,16 @@ const ViewApplication = () => {
     const navigate = useNavigate();
     const api = useJobTrackerAPI();
     const [applications, setApplications] = useState<JobApplication[]>([]);
-    const [jobStatuses, setJobStatuses] = useState<Record<EntityId, JobStatus>>({});
+    const [jobStatuses, setJobStatuses] = useState<Record<number, JobStatus>>({});
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [toggleArchived, setToggleArchived] = useState(false);
     const [toggleNotes, setToggleNotes] = useState(false);
     const confirm = useConfirm();
-    const [jobStatus, setJobStatus] = useState('Show All');
-    const showNotesTimeout = useRef<Record<EntityId, ReturnType<typeof setTimeout>>>({});
+    const [jobStatus, setJobStatus] = useState<JobStatusFilter>('Show All');
+    const showNotesTimeout = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-    const [notes, setNotes] = useState<Record<EntityId, string>>({});
+    const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
 
@@ -86,7 +86,7 @@ const ViewApplication = () => {
         const fetchData = async () => {
             try {
                 const [jobApplications, jobInterviews] = await Promise.all([
-                    api.application.listApplications(),
+                    api.application.listApplications({ jobStatus: 'Show All' }),
                     api.interview.listInterviews(),
                 ]);
 
@@ -106,6 +106,17 @@ const ViewApplication = () => {
             isActive = false;
         };
     }, []);
+
+    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+        setJobStatus(selectedStatus);
+
+        try {
+            const jobApplications = await api.application.listApplications({ jobStatus: selectedStatus });
+            setApplications(Array.isArray(jobApplications) ? jobApplications : []);
+        } catch (error) {
+            showErrorToast((error as Error).message);
+        }
+    };
 
     useEffect(() => {
         // Obtain application.job_id from <Link> in AddInterview
@@ -133,7 +144,7 @@ const ViewApplication = () => {
         }
     }, [location]);
 
-    const handleEditNotes = (jobId: EntityId, editedNotes: string) => {
+    const handleEditNotes = (jobId: number, editedNotes: string) => {
         setNotes({ ...notes, [jobId]: editedNotes });
 
         const taskId = showNotesTimeout.current[jobId];
@@ -155,7 +166,7 @@ const ViewApplication = () => {
         }, 500);
     };
 
-    const handleDelete = async (applicationId: EntityId) => {
+    const handleDelete = async (applicationId: number) => {
         try {
             const { confirmed } = await confirm({
                 title: 'Confirm Deletion',
@@ -249,7 +260,7 @@ const ViewApplication = () => {
         }
     };
 
-    const handleArchive = async (jobId: EntityId) => {
+    const handleArchive = async (jobId: number) => {
         try {
             await api.archivedApplication.archiveApplication({ jobId });
             setApplications((current) => current.filter((application) => application.job_id !== jobId));
@@ -326,7 +337,10 @@ const ViewApplication = () => {
                     <div className={styles.listControls}>
                         <div className={styles.filterOption}>
                             <div>Filter by</div>
-                            <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
+                            <select
+                                value={jobStatus}
+                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
+                            >
                                 <option value='Show All'>Show All</option>
                                 <option value='Accepted'>Accepted</option>
                                 <option value='Applied'>Applied</option>
@@ -423,7 +437,7 @@ const ViewApplication = () => {
                                             className={styles.url}
                                             href={application.job_posting_url}
                                             target='_blank'
-                                            rel='noreferrer'
+                                            rel='noreferrer noopenner'
                                         >
                                             Click here to head to job application URL
                                         </a>

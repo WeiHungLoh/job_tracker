@@ -57,6 +57,34 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
         expect(screen.getByText(/filter by/i)).toBeInTheDocument();
         expect(screen.getByText(/unhide notes/i)).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatus=Show+All`,
+            {
+                method: 'GET',
+                credentials: 'include',
+            }
+        );
+    });
+
+    test('fetches archived applications from the server when the status filter changes', async () => {
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        userEvent.selectOptions(screen.getByRole('listbox'), 'Offer');
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(
+                `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatus=Offer`,
+                {
+                    method: 'GET',
+                    credentials: 'include',
+                }
+            )
+        );
     });
 
     test('deletes application after user confirms', async () => {

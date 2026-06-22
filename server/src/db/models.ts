@@ -1,13 +1,12 @@
-export type EntityId = number;
-
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
 
 export type JobApplication = {
-    job_id: EntityId;
-    user_id: EntityId;
+    job_id: number;
+    user_id: number;
     company_name: string;
     job_title: string;
     application_date: Date | null;
+    created_at: Date;
     job_status: JobStatus | null;
     edit_status: boolean;
     job_location: string | null;
@@ -17,13 +16,13 @@ export type JobApplication = {
 };
 
 export type ArchivedJobApplication = Omit<JobApplication, 'edit_status' | 'is_archived' | 'job_id'> & {
-    archived_job_id: EntityId;
+    archived_job_id: number;
 };
 
 export type JobInterview = {
-    interview_id: EntityId;
-    job_id: EntityId;
-    user_id: EntityId;
+    interview_id: number;
+    job_id: number;
+    user_id: number;
     interview_date: Date;
     interview_location: string;
     interview_type: string | null;
@@ -35,8 +34,8 @@ export type JobInterview = {
 };
 
 export type ArchivedJobInterview = Omit<JobInterview, 'interview_id' | 'is_archived' | 'job_id'> & {
-    archived_interview_id: EntityId;
-    archived_job_id: EntityId;
+    archived_interview_id: number;
+    archived_job_id: number;
 };
 
 export type JobStatusCount = {
@@ -50,9 +49,8 @@ export type WeeklyApplicationCount = {
 };
 
 export type User = {
-    user_id: EntityId;
+    user_id: number;
     email: string;
     hashed_password: string;
-    sorting_preferences: 'DEFAULT' | 'APPLICATION_DATE';
     created_at: Date;
 };

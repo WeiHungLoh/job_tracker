@@ -17,9 +17,10 @@ const insertJobApplication = async (
     );
 };
 
-const getJobApplications = async (userId: number): Promise<JobApplication[]> => {
+const getJobApplications = async (userId: number, jobStatus: JobStatus | null = null): Promise<JobApplication[]> => {
     const res = await pool.query<JobApplication>(
         `SELECT * FROM job_applications WHERE user_id = $1 AND is_archived = false
+          AND ($2::text IS NULL OR job_status = $2)
           ORDER BY 
             CASE 
                 WHEN job_status = 'Accepted' THEN 1
@@ -31,7 +32,7 @@ const getJobApplications = async (userId: number): Promise<JobApplication[]> => 
                 ELSE 7
             END,
          application_date DESC`,
-        [userId]
+        [userId, jobStatus]
     );
 
     return res.rows;

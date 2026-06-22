@@ -5,6 +5,10 @@ export type JobIdParams = {
     jobId: string;
 };
 
+export type ListApplicationsQuery = {
+    jobStatus?: string;
+};
+
 export type CreateApplicationRequest = {
     companyName: string;
     jobTitle: string;

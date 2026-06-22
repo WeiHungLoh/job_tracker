@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
-import type { EntityId } from '../../jobApplication/models';
+import type { JobStatusFilter } from '../../jobApplication/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import NotesToggleButton from '../../../components/notesToggleButton/NotesToggleButton';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -18,7 +18,7 @@ const ViewArchivedApplication = () => {
     const [archivedApplications, setArchivedApplications] = useState<ArchivedJobApplication[]>([]);
     const location = useLocation();
     const confirm = useConfirm();
-    const [jobStatus, setJobStatus] = useState('Show All');
+    const [jobStatus, setJobStatus] = useState<JobStatusFilter>('Show All');
     const [toggleNotes, setToggleNotes] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
@@ -54,7 +54,7 @@ const ViewArchivedApplication = () => {
 
         const fetchApplications = async () => {
             try {
-                const data = await api.archivedApplication.listApplications();
+                const data = await api.archivedApplication.listApplications({ jobStatus: 'Show All' });
                 if (isActive) setArchivedApplications(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
@@ -68,6 +68,17 @@ const ViewArchivedApplication = () => {
             isActive = false;
         };
     }, []);
+
+    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+        setJobStatus(selectedStatus);
+
+        try {
+            const data = await api.archivedApplication.listApplications({ jobStatus: selectedStatus });
+            setArchivedApplications(Array.isArray(data) ? data : []);
+        } catch (error) {
+            showErrorToast((error as Error).message);
+        }
+    };
 
     useEffect(() => {
         // Obtains application.job_id from <Link> in AddInterview
@@ -90,7 +101,7 @@ const ViewArchivedApplication = () => {
         }
     }, [location]);
 
-    const handleDelete = async (archivedApplicationId: EntityId) => {
+    const handleDelete = async (archivedApplicationId: number) => {
         try {
             const { confirmed } = await confirm({
                 title: 'Confirm Deletion',
@@ -131,7 +142,7 @@ const ViewArchivedApplication = () => {
         }
     };
 
-    const handleUnarchive = async (archivedJobId: EntityId) => {
+    const handleUnarchive = async (archivedJobId: number) => {
         try {
             await api.archivedApplication.unarchiveApplication({ archivedJobId });
             setArchivedApplications((current) =>
@@ -186,116 +197,125 @@ const ViewArchivedApplication = () => {
 
     return (
         <div className={styles.archivedApplicationList}>
-            {isLoading && <><br /><LoadingSpinner /></>}
+            {isLoading && (
+                <>
+                    <br />
+                    <LoadingSpinner />
+                </>
+            )}
 
             {!isLoading && (
                 <>
                     <div className={styles.listControls}>
-                <div className={styles.filterOption}>
-                    <div>Filter by</div>
-                    <select role='listbox' value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
-                        <option value='Show All'>Show All</option>
-                        <option value='Accepted'>Accepted</option>
-                        <option value='Applied'>Applied</option>
-                        <option value='Declined'>Declined</option>
-                        <option value='Ghosted'>Ghosted</option>
-                        <option value='Interview'>Interview</option>
-                        <option value='Offer'>Offer</option>
-                        <option value='Rejected'>Rejected</option>
-                    </select>
-                </div>
-
-                {hasApplications(filteredApplications) && (
-                    <NotesToggleButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)} />
-                )}
-            </div>
-
-            {showArchiveApplicationMessage(filteredApplications) && (
-                <div>
-                    <br />
-                    No archived job application with that job status found. Start archiving now!{' '}
-                </div>
-            )}
-
-            {filteredApplications &&
-                filteredApplications.map((application, index) => (
-                    <div
-                        className={styles.application}
-                        key={application.archived_job_id}
-                        id={String(application.archived_job_id)}
-                    >
-                        <div className={styles.applicationContent}>
-                            <h2>
-                                {index + 1}. {application.company_name}
-                            </h2>
-                            <p>Job Title: {application.job_title}</p>
-                            {showJobLocation(application) && (
-                                <p className={styles.location}>Location: {application.job_location}</p>
-                            )}
-                            <p className={styles.date}>
-                                Application Date: {DateFormatter(application.application_date).formattedDate}
-                            </p>
-                            <p>
-                                Time since application:{' '}
-                                {DateFormatter(application.application_date).timeSinceApplication}
-                            </p>
-                            <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
-
-                            {showJobURL(application) && (
-                                <a
-                                    className={styles.url}
-                                    href={application.job_posting_url}
-                                    target='_blank'
-                                    rel='noreferrer'
-                                >
-                                    Click here to head to job application URL
-                                </a>
-                            )}
+                        <div className={styles.filterOption}>
+                            <div>Filter by</div>
+                            <select
+                                role='listbox'
+                                value={jobStatus}
+                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
+                            >
+                                <option value='Show All'>Show All</option>
+                                <option value='Accepted'>Accepted</option>
+                                <option value='Applied'>Applied</option>
+                                <option value='Declined'>Declined</option>
+                                <option value='Ghosted'>Ghosted</option>
+                                <option value='Interview'>Interview</option>
+                                <option value='Offer'>Offer</option>
+                                <option value='Rejected'>Rejected</option>
+                            </select>
                         </div>
 
-                        <div className={styles.buttonGroup}>
-                            <div onClick={() => handleUnarchive(application.archived_job_id)}>
-                                <PrimaryButton>Unarchive</PrimaryButton>
-                            </div>
-
-                            <PrimaryButton onClick={() => handleDelete(application.archived_job_id)}>
-                                Delete
-                            </PrimaryButton>
-                        </div>
-                        {toggleNotes && (
-                            <div className={styles.notes}>
-                                <textarea
-                                    value={
-                                        !application.notes || application.notes.trim() === ''
-                                            ? 'You do not have any notes here'
-                                            : application.notes
-                                    }
-                                    disabled
-                                />
-                            </div>
+                        {hasApplications(filteredApplications) && (
+                            <NotesToggleButton toggled={toggleNotes} onToggle={() => setToggleNotes(!toggleNotes)} />
                         )}
                     </div>
-                ))}
 
-            <div className={styles.applicationButton}>
-                {hasApplications(filteredApplications) && (
-                    <>
-                        <PrimaryButton onClick={() => handleDeleteAll()}>
-                            Delete all archived applications
-                        </PrimaryButton>
-                        <PrimaryButton>
-                            <CSVLink
-                                data={data}
-                                headers={headers}
-                                filename={'archived_job_applications.csv'}
-                                style={{ color: 'white' }}
+                    {showArchiveApplicationMessage(filteredApplications) && (
+                        <div>
+                            <br />
+                            No archived job application with that job status found. Start archiving now!{' '}
+                        </div>
+                    )}
+
+                    {filteredApplications &&
+                        filteredApplications.map((application, index) => (
+                            <div
+                                className={styles.application}
+                                key={application.archived_job_id}
+                                id={String(application.archived_job_id)}
                             >
-                                Export as CSV
-                            </CSVLink>
-                        </PrimaryButton>
-                    </>
-                )}
-            </div>
+                                <div className={styles.applicationContent}>
+                                    <h2>
+                                        {index + 1}. {application.company_name}
+                                    </h2>
+                                    <p>Job Title: {application.job_title}</p>
+                                    {showJobLocation(application) && (
+                                        <p className={styles.location}>Location: {application.job_location}</p>
+                                    )}
+                                    <p className={styles.date}>
+                                        Application Date: {DateFormatter(application.application_date).formattedDate}
+                                    </p>
+                                    <p>
+                                        Time since application:{' '}
+                                        {DateFormatter(application.application_date).timeSinceApplication}
+                                    </p>
+                                    <p className={checkJobStatus(application)}>Job Status: {application.job_status}</p>
+
+                                    {showJobURL(application) && (
+                                        <a
+                                            className={styles.url}
+                                            href={application.job_posting_url}
+                                            target='_blank'
+                                            rel='noreferrer'
+                                        >
+                                            Click here to head to job application URL
+                                        </a>
+                                    )}
+                                </div>
+
+                                <div className={styles.buttonGroup}>
+                                    <div onClick={() => handleUnarchive(application.archived_job_id)}>
+                                        <PrimaryButton>Unarchive</PrimaryButton>
+                                    </div>
+
+                                    <PrimaryButton onClick={() => handleDelete(application.archived_job_id)}>
+                                        Delete
+                                    </PrimaryButton>
+                                </div>
+                                {toggleNotes && (
+                                    <div className={styles.notes}>
+                                        <textarea
+                                            value={
+                                                !application.notes || application.notes.trim() === ''
+                                                    ? 'You do not have any notes here'
+                                                    : application.notes
+                                            }
+                                            disabled
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                    <div className={styles.applicationButton}>
+                        {hasApplications(filteredApplications) && (
+                            <>
+                                <PrimaryButton onClick={() => handleDeleteAll()}>
+                                    Delete all archived applications
+                                </PrimaryButton>
+                                <PrimaryButton>
+                                    <CSVLink
+                                        data={data}
+                                        headers={headers}
+                                        filename={'archived_job_applications.csv'}
+                                        style={{ color: 'white' }}
+                                    >
+                                        Export as CSV
+                                    </CSVLink>
+                                </PrimaryButton>
+                            </>
+                        )}
+                    </div>
                 </>
             )}
         </div>

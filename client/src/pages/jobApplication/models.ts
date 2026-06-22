@@ -1,11 +1,10 @@
 import type { JobStatusCount, WeeklyApplicationCount } from '../dashboard/models';
 
-export type EntityId = number;
-
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
+export type JobStatusFilter = JobStatus | 'Show All';
 
 export type JobApplication = {
-    job_id: EntityId;
+    job_id: number;
     company_name: string;
     job_title: string;
     application_date: string;
@@ -16,7 +15,9 @@ export type JobApplication = {
     notes: string;
 };
 
-export type ListApplicationsRequest = null;
+export type ListApplicationsRequest = {
+    jobStatus: JobStatusFilter;
+};
 export type ListApplicationsResponse = JobApplication[];
 
 export type ListWeeklyApplicationsRequest = null;
@@ -36,7 +37,7 @@ export type CreateApplicationRequest = {
 export type CreateApplicationResponse = string;
 
 export type DeleteApplicationRequest = {
-    applicationId: EntityId;
+    applicationId: number;
 };
 export type DeleteApplicationResponse = null;
 
@@ -44,19 +45,19 @@ export type DeleteAllApplicationsRequest = null;
 export type DeleteAllApplicationsResponse = null;
 
 export type UpdateNotesRequest = {
-    jobId: EntityId;
+    jobId: number;
     notes: string;
 };
 export type UpdateNotesResponse = null;
 
 export type UpdateEditStatusRequest = {
-    jobId: EntityId;
+    jobId: number;
     editStatus: boolean;
 };
 export type UpdateEditStatusResponse = null;
 
 export type UpdateJobStatusRequest = {
-    jobId: EntityId;
+    jobId: number;
     jobStatus: JobStatus;
 };
 export type UpdateJobStatusResponse = null;

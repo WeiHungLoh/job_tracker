@@ -9,6 +9,10 @@ export type ArchivedJobIdParams = {
     archivedJobId: string;
 };
 
+export type ListArchivedApplicationsQuery = {
+    jobStatus?: string;
+};
+
 export type ArchiveApplicationResponse = string | ErrorResponse;
 export type ListArchivedApplicationsResponse = ArchivedJobApplication[] | ErrorResponse;
 export type EmptyResponse = undefined | ErrorResponse;

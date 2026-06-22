@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import type { ArchivedJobInterview } from '../models';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
-import type { EntityId } from '../../jobApplication/models';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -56,7 +55,7 @@ const ViewArchivedInterview = () => {
         notes: interview.notes ? interview.notes : 'N/A',
     }));
 
-    const handleDelete = async (interviewId: EntityId) => {
+    const handleDelete = async (interviewId: number) => {
         try {
             const { confirmed } = await confirm({
                 title: 'Confirm Deletion',
@@ -121,65 +120,72 @@ const ViewArchivedInterview = () => {
 
     return (
         <div className={styles.archivedInterviewList}>
-            {isLoading && <><br /><LoadingSpinner /></>}
+            {isLoading && (
+                <>
+                    <br />
+                    <LoadingSpinner />
+                </>
+            )}
 
             {!isLoading && (
                 <>
                     {showArchiveInterviewMessage(archivedInterviews) && (
-                <div>
-                    <br />
-                    No archived job interview found. Start archiving now!{' '}
-                </div>
-            )}
+                        <div>
+                            <br />
+                            No archived job interview found. Start archiving now!{' '}
+                        </div>
+                    )}
 
-            {archivedInterviews.map((interview, index) => (
-                <div className={styles.interview} key={interview.archived_interview_id}>
-                    <div className={styles.interviewContent}>
-                        <h2>
-                            {index + 1}. {interview.company_name}
-                        </h2>
-                        <p>Job Title: {interview.job_title}</p>
-                        <p className={styles.location}>Location: {interview.interview_location}</p>
-                        {showInterviewType(interview) && (
-                            <p className={styles.type}>Interview Type: {interview.interview_type}</p>
+                    {archivedInterviews.map((interview, index) => (
+                        <div className={styles.interview} key={interview.archived_interview_id}>
+                            <div className={styles.interviewContent}>
+                                <h2>
+                                    {index + 1}. {interview.company_name}
+                                </h2>
+                                <p>Job Title: {interview.job_title}</p>
+                                <p className={styles.location}>Location: {interview.interview_location}</p>
+                                {showInterviewType(interview) && (
+                                    <p className={styles.type}>Interview Type: {interview.interview_type}</p>
+                                )}
+                                {showInterviewNotes(interview) && (
+                                    <p className={styles.notes}>Notes: {interview.interview_notes}</p>
+                                )}
+                                <p className={styles.date}>
+                                    Interview Date: {DateFormatter(interview.interview_date).formattedDate}
+                                </p>
+                                <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
+                                <Link to={`${routes.archivedApplications}#${interview.archived_job_id}`}>
+                                    Click here to review corresponding job application
+                                </Link>
+                            </div>
+
+                            <div className={styles.buttonGroup}>
+                                <PrimaryButton onClick={() => handleDelete(interview.archived_interview_id)}>
+                                    Delete
+                                </PrimaryButton>
+                            </div>
+                        </div>
+                    ))}
+
+                    <div className={styles.interviewButton}>
+                        {hasInterviews(archivedInterviews) && (
+                            <>
+                                <PrimaryButton onClick={() => handleDeleteAll()}>
+                                    Delete all archived interviews
+                                </PrimaryButton>
+                                <PrimaryButton>
+                                    <CSVLink
+                                        data={data}
+                                        headers={headers}
+                                        filename='archived_job_interviews.csv'
+                                        style={{ color: 'white', textDecoration: 'none' }}
+                                    >
+                                        Export as CSV
+                                    </CSVLink>
+                                </PrimaryButton>
+                            </>
                         )}
-                        {showInterviewNotes(interview) && (
-                            <p className={styles.notes}>Notes: {interview.interview_notes}</p>
-                        )}
-                        <p className={styles.date}>
-                            Interview Date: {DateFormatter(interview.interview_date).formattedDate}
-                        </p>
-                        <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
-                        <Link to={`${routes.archivedApplications}#${interview.archived_job_id}`}>
-                            Click here to review corresponding job application
-                        </Link>
                     </div>
-
-                    <div className={styles.buttonGroup}>
-                        <PrimaryButton onClick={() => handleDelete(interview.archived_interview_id)}>
-                            Delete
-                        </PrimaryButton>
-                    </div>
-                </div>
-            ))}
-
-            <div className={styles.interviewButton}>
-                {hasInterviews(archivedInterviews) && (
-                    <>
-                        <PrimaryButton onClick={() => handleDeleteAll()}>Delete all archived interviews</PrimaryButton>
-                        <PrimaryButton>
-                            <CSVLink
-                                data={data}
-                                headers={headers}
-                                filename='archived_job_interviews.csv'
-                                style={{ color: 'white', textDecoration: 'none' }}
-                            >
-                                Export as CSV
-                            </CSVLink>
-                        </PrimaryButton>
-                    </>
-                )}
-            </div>
                 </>
             )}
         </div>

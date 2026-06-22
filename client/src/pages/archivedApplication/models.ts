@@ -1,25 +1,27 @@
-import type { EntityId, JobApplication } from '../jobApplication/models';
+import type { JobApplication, JobStatusFilter } from '../jobApplication/models';
 import type { JobInterview } from '../interview/models';
 
 export type ArchivedJobApplication = Omit<JobApplication, 'job_id' | 'edit_status'> & {
-    archived_job_id: EntityId;
+    archived_job_id: number;
 };
 
 export type ArchivedJobInterview = Omit<JobInterview, 'interview_id' | 'job_id'> & {
-    archived_interview_id: EntityId;
-    archived_job_id: EntityId;
+    archived_interview_id: number;
+    archived_job_id: number;
 };
 
-export type ListArchivedApplicationsRequest = null;
+export type ListArchivedApplicationsRequest = {
+    jobStatus: JobStatusFilter;
+};
 export type ListArchivedApplicationsResponse = ArchivedJobApplication[];
 
 export type ArchiveApplicationRequest = {
-    jobId: EntityId;
+    jobId: number;
 };
 export type ArchiveApplicationResponse = string;
 
 export type DeleteArchivedApplicationRequest = {
-    archivedApplicationId: EntityId;
+    archivedApplicationId: number;
 };
 export type DeleteArchivedApplicationResponse = null;
 
@@ -27,7 +29,7 @@ export type DeleteAllArchivedApplicationsRequest = null;
 export type DeleteAllArchivedApplicationsResponse = null;
 
 export type UnarchiveApplicationRequest = {
-    archivedJobId: EntityId;
+    archivedJobId: number;
 };
 export type UnarchiveApplicationResponse = string;
 
@@ -35,7 +37,7 @@ export type ListArchivedInterviewsRequest = null;
 export type ListArchivedInterviewsResponse = ArchivedJobInterview[];
 
 export type DeleteArchivedInterviewRequest = {
-    interviewId: EntityId;
+    interviewId: number;
 };
 export type DeleteArchivedInterviewResponse = null;
 
