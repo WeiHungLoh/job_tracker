@@ -1,3 +1,15 @@
+import type { JobStatus } from '../db/models.js';
+
+const jobStatuses: ReadonlySet<string> = new Set([
+    'Accepted',
+    'Applied',
+    'Declined',
+    'Ghosted',
+    'Interview',
+    'Offer',
+    'Rejected',
+]);
+
 export const isNonEmptyString = (value: unknown): value is string =>
     typeof value === 'string' && value.trim().length > 0;
 
@@ -15,14 +27,3 @@ export const isValidEmail = (value: unknown): value is string =>
     typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 export const isJobStatus = (value: unknown): value is JobStatus => typeof value === 'string' && jobStatuses.has(value);
-import type { JobStatus } from '../db/models.js';
-
-const jobStatuses: ReadonlySet<string> = new Set([
-    'Accepted',
-    'Applied',
-    'Declined',
-    'Ghosted',
-    'Interview',
-    'Offer',
-    'Rejected',
-]);

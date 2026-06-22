@@ -8,11 +8,12 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
+import type { JobStatus } from '../models';
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState('');
     const [jobTitle, setJobTitle] = useState('');
-    const [jobStatus, setJobStatus] = useState('Applied');
+    const [jobStatus, setJobStatus] = useState<JobStatus>('Applied');
     const [applicationDate, setApplicationDate] = useState('');
     const [jobLocation, setJobLocation] = useState('');
     const [jobURL, setJobURL] = useState('');
@@ -99,7 +100,7 @@ const AddApplication = () => {
             <input id='job-title' value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} required />
 
             <label>Input Job Status</label>
-            <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
+            <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value as JobStatus)}>
                 <option value='Accepted'>Accepted</option>
                 <option value='Applied'>Applied</option>
                 <option value='Declined'>Declined</option>

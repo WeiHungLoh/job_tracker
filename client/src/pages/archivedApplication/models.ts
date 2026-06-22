@@ -1,13 +1,26 @@
-import type { JobApplication, JobStatusFilter } from '../jobApplication/models';
-import type { JobInterview } from '../interview/models';
+import type { JobStatus, JobStatusFilter } from '../jobApplication/models';
 
-export type ArchivedJobApplication = Omit<JobApplication, 'job_id' | 'edit_status'> & {
+export type ArchivedJobApplication = {
     archived_job_id: number;
+    company_name: string;
+    job_title: string;
+    application_date: string;
+    job_status: JobStatus;
+    job_location: string;
+    job_posting_url: string;
+    notes: string;
 };
 
-export type ArchivedJobInterview = Omit<JobInterview, 'interview_id' | 'job_id'> & {
+export type ArchivedJobInterview = {
     archived_interview_id: number;
     archived_job_id: number;
+    company_name: string;
+    job_title: string;
+    interview_date: string;
+    interview_location: string;
+    interview_type: string;
+    interview_notes: string;
+    notes?: string;
 };
 
 export type ListArchivedApplicationsRequest = {
