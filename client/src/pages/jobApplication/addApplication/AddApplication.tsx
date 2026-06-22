@@ -85,8 +85,7 @@ const AddApplication = () => {
 
     return (
         <div className={styles.addApplication}>
-            <h2>Add a job application</h2>
-
+            <br/>
             <label htmlFor='company-name'>Input Company Name</label>
             <input id='company-name' value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
 

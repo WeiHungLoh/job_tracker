@@ -21,15 +21,23 @@
 
 .addInterview input {
     width: 100%;
-    padding: 6px 10px;
+    padding: 12px 10px;
     margin-top: 10px;
     margin-bottom: 10px;
-    border: 1.5px solid #ddd;
+    border: 1px solid #d9dde3;
+    border-radius: 10px;
+    outline: none;
     box-sizing: border-box;
     font-family: inherit;
     font-size: inherit;
     -webkit-appearance: none;
     appearance: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addInterview input:focus {
+    border-color: var(--colorPrimary);
+    box-shadow: 0 0 0 3px rgb(241 53 109 / 12%);
 }
 
 .submitButton {
