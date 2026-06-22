@@ -1,4 +1,4 @@
-import type { ArchivedJobApplication, JobStatus } from '../models.js';
+import type { ArchivedJobApplication } from '../models.js';
 import { pool } from '../connectDB.js';
 
 const archiveJobApplication = async (jobId: string | number, userId: number): Promise<boolean> => {

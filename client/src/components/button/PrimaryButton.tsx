@@ -9,7 +9,6 @@ const VARIANT_CLASS: Record<PrimaryButtonVariant, string> = {
     icon: styles.icon,
     navigation: styles.navigation,
     secondary: styles.secondary,
-    success: styles.success,
 };
 
 const PrimaryButton = ({ className = '', variant = 'default', ...props }: PrimaryButtonProps) => {

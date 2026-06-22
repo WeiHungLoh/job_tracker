@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
@@ -13,7 +13,6 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 
 const ViewInterview = () => {
-    const navigate = useNavigate();
     const api = useJobTrackerAPI();
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
