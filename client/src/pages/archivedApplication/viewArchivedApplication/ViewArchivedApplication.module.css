@@ -63,12 +63,10 @@
 
 .buttonGroup {
     margin-left: auto;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
-    position: relative;
+    align-items: center;
     width: 190px;
 }
 
@@ -199,7 +197,7 @@
     }
 
     .buttonGroup {
-        flex: 0 0 190px;
+        width: 190px;
     }
 
     .notes {
@@ -228,9 +226,8 @@
     }
 
     .buttonGroup {
-        justify-content: center;
-        flex-direction: column;
-        width: 20%;
+        grid-template-columns: 1fr;
+        width: auto;
     }
 
     .applicationButton {

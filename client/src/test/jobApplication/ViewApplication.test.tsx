@@ -58,7 +58,6 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/job status/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /add new application/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /delete all/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
         expect(screen.getByText(/unhide archive/i)).toBeInTheDocument();

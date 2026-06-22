@@ -149,12 +149,8 @@ const ViewInterview = () => {
                     ))}
 
                     <div className={styles.interviewButton}>
-                        <PrimaryButton variant='success' onClick={() => navigate(routes.addInterview)}>
-                            Add new interview
-                        </PrimaryButton>
                         {hasInterviews && (
                             <>
-                                {' '}
                                 <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
                                     Delete all interviews
                                 </PrimaryButton>
