@@ -39,6 +39,26 @@ test('returns 204 with no body when logging out', async () => {
     assert.equal(await response.text(), '');
 });
 
+test('returns 422 for an unsupported active application status filter', async () => {
+    const token = jwt.sign({ id: 1, email: 'test@example.com' }, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications?jobStatus=Unknown`, {
+        headers: { Cookie: `token=${token}` },
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), { message: 'A supported job status or Show All is required.' });
+});
+
+test('returns 422 for an unsupported archived application status filter', async () => {
+    const token = jwt.sign({ id: 1, email: 'test@example.com' }, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/archived-job-applications?jobStatus=Unknown`, {
+        headers: { Cookie: `token=${token}` },
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), { message: 'A supported job status or Show All is required.' });
+});
+
 test('returns 401 when a protected route has no token', async () => {
     const response = await fetch(`${baseUrl}/job-applications`);
 
