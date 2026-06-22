@@ -16,7 +16,7 @@ const guideSections: readonly UserGuideSection[] = [
                 <p>The dashboard gives you a quick visual overview of your job search progress:</p>
                 <ul>
                     <li>
-                        <strong>Stat cards:</strong> Shows total applications, active (upcoming) interviews, offers
+                        <strong>Stat cards:</strong> Shows total applications, upcoming interviews, offers
                         received, response rate and applications added this week.
                     </li>
                     <li>
@@ -164,7 +164,7 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <p>
                     Interviews are grouped with upcoming dates first (closest at the top), then past dates (earliest
-                    first). This applies to both active and archived interview views.
+                    first). This applies to both upcoming and archived interviews.
                 </p>
             </>
         ),
