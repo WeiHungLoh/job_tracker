@@ -6,6 +6,7 @@ import { Pie } from 'react-chartjs-2';
 import styles from './JobStatusChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
+import type { JobStatus } from '../jobApplication/models';
 
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
@@ -32,14 +33,12 @@ const JobStatusChart = () => {
         };
     }, []);
 
-    const jobStatusCountPair = applications.reduce<Record<string, string>>((acc, row) => {
-        acc[row.job_status] = row.count;
-        return acc;
-    }, {});
+    const statuses = applications.map((application) => application.job_status);
+    const statusCounts = applications.map((application) => application.count);
 
-    const totalApplications = Object.values(jobStatusCountPair).reduce((sum, val) => sum + parseInt(val), 0);
+    const totalApplications = statusCounts.reduce((sum, value) => sum + parseInt(value), 0);
 
-    const getColourByStatus = (status: string) => {
+    const getColourByStatus = (status: JobStatus) => {
         if (status === 'Accepted') {
             return '#198754';
         }
@@ -63,7 +62,7 @@ const JobStatusChart = () => {
         }
     };
 
-    const getBorderColourByStatus = (status: string) => {
+    const getBorderColourByStatus = (status: JobStatus) => {
         if (status === 'Accepted') {
             return '#0f7847ff';
         }
@@ -88,13 +87,13 @@ const JobStatusChart = () => {
     };
 
     const data = {
-        labels: Object.keys(jobStatusCountPair),
+        labels: statuses,
         datasets: [
             {
                 label: '# of applications',
-                data: Object.values(jobStatusCountPair),
-                backgroundColor: Object.keys(jobStatusCountPair).map((status) => getColourByStatus(status)),
-                borderColor: Object.keys(jobStatusCountPair).map((status) => getBorderColourByStatus(status)),
+                data: statusCounts,
+                backgroundColor: statuses.map((status) => getColourByStatus(status)),
+                borderColor: statuses.map((status) => getBorderColourByStatus(status)),
                 borderWidth: 0.7,
                 hoverOffset: 60,
             },

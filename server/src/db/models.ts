@@ -1,4 +1,5 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
+export type JobStatusFilter = JobStatus | 'Show All';
 
 export type JobApplication = {
     job_id: number;
@@ -15,8 +16,17 @@ export type JobApplication = {
     is_archived: boolean;
 };
 
-export type ArchivedJobApplication = Omit<JobApplication, 'edit_status' | 'is_archived' | 'job_id'> & {
+export type ArchivedJobApplication = {
     archived_job_id: number;
+    user_id: number;
+    company_name: string;
+    job_title: string;
+    application_date: Date | null;
+    created_at: Date;
+    job_status: JobStatus | null;
+    job_location: string | null;
+    job_posting_url: string | null;
+    notes: string | null;
 };
 
 export type JobInterview = {
@@ -33,9 +43,17 @@ export type JobInterview = {
     job_title?: string;
 };
 
-export type ArchivedJobInterview = Omit<JobInterview, 'interview_id' | 'is_archived' | 'job_id'> & {
+export type ArchivedJobInterview = {
     archived_interview_id: number;
     archived_job_id: number;
+    user_id: number;
+    interview_date: Date;
+    interview_location: string;
+    interview_type: string | null;
+    interview_notes: string | null;
+    created_at: Date;
+    company_name?: string;
+    job_title?: string;
 };
 
 export type JobStatusCount = {

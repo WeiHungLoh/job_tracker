@@ -30,7 +30,7 @@ export type CreateApplicationRequest = {
     companyName: string;
     jobTitle: string;
     appDate: Date;
-    jobStatus: string;
+    jobStatus: JobStatus;
     jobLocation: string;
     jobURL: string;
 };

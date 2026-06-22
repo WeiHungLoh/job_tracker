@@ -1,4 +1,4 @@
-import type { ArchivedJobApplication } from '../../db/models.js';
+import type { ArchivedJobApplication, JobStatusFilter } from '../../db/models.js';
 import type { ErrorResponse } from '../../http/models.js';
 
 export type ArchiveApplicationRequest = {
@@ -10,7 +10,7 @@ export type ArchivedJobIdParams = {
 };
 
 export type ListArchivedApplicationsQuery = {
-    jobStatus?: string;
+    jobStatus?: JobStatusFilter;
 };
 
 export type ArchiveApplicationResponse = string | ErrorResponse;
