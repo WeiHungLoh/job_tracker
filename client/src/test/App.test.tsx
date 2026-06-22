@@ -97,7 +97,7 @@ describe('App routing and authentication behavior', () => {
     test('renders AddApplication page when user is authenticated', async () => {
         renderRoute('/application/add');
 
-        await waitFor(() => expect(screen.getByText(/add a job application/i)).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText(/input company name/i)).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/current`, {
             credentials: 'include',
             method: 'GET',
