@@ -54,7 +54,7 @@ const ViewArchivedApplication = () => {
 
         const fetchApplications = async () => {
             try {
-                const data = await api.archivedApplication.listApplications({ jobStatus: 'Show All' });
+                const data = await api.archivedApplication.listApplications();
                 if (isActive) setArchivedApplications(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
@@ -68,17 +68,6 @@ const ViewArchivedApplication = () => {
             isActive = false;
         };
     }, []);
-
-    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
-        setJobStatus(selectedStatus);
-
-        try {
-            const data = await api.archivedApplication.listApplications({ jobStatus: selectedStatus });
-            setArchivedApplications(Array.isArray(data) ? data : []);
-        } catch (error) {
-            showErrorToast((error as Error).message);
-        }
-    };
 
     useEffect(() => {
         // Obtains application.job_id from <Link> in AddInterview
@@ -182,7 +171,7 @@ const ViewArchivedApplication = () => {
                             <select
                                 role='listbox'
                                 value={jobStatus}
-                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
+                                onChange={(event) => setJobStatus(event.target.value as JobStatusFilter)}
                             >
                                 <option value='Show All'>Show All</option>
                                 <option value='Accepted'>Accepted</option>

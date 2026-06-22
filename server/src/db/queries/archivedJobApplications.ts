@@ -66,10 +66,7 @@ const unarchiveJobApplication = async (archivedJobId: string | number, userId: n
     }
 };
 
-const getArchivedJobApplications = async (
-    userId: number,
-    jobStatus: JobStatus | null = null
-): Promise<ArchivedJobApplication[]> => {
+const getArchivedJobApplications = async (userId: number): Promise<ArchivedJobApplication[]> => {
     const res = await pool.query<ArchivedJobApplication>(
         `SELECT
             job_id AS archived_job_id,
@@ -84,7 +81,6 @@ const getArchivedJobApplications = async (
             notes
          FROM job_applications
          WHERE user_id = $1 AND is_archived = true
-            AND ($2::text IS NULL OR job_status = $2)
          ORDER BY
             CASE
                 WHEN job_status = 'Accepted' THEN 1
@@ -96,7 +92,7 @@ const getArchivedJobApplications = async (
                 ELSE 7
             END,
             application_date DESC`,
-        [userId, jobStatus]
+        [userId]
     );
 
     return res.rows;

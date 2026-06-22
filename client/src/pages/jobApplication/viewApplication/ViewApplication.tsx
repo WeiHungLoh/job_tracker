@@ -1,5 +1,5 @@
 import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import DateFormatter from '../../../helper/dateFormatter';
@@ -34,7 +34,6 @@ const sortApplications = (applications: JobApplication[]) => {
 };
 
 const ViewApplication = () => {
-    const navigate = useNavigate();
     const api = useJobTrackerAPI();
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [jobStatuses, setJobStatuses] = useState<Record<number, JobStatus>>({});
@@ -95,7 +94,7 @@ const ViewApplication = () => {
         const fetchData = async () => {
             try {
                 const [jobApplications, jobInterviews] = await Promise.all([
-                    api.application.listApplications({ jobStatus: 'Show All' }),
+                    api.application.listApplications(),
                     api.interview.listInterviews(),
                 ]);
 
@@ -115,17 +114,6 @@ const ViewApplication = () => {
             isActive = false;
         };
     }, []);
-
-    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
-        setJobStatus(selectedStatus);
-
-        try {
-            const jobApplications = await api.application.listApplications({ jobStatus: selectedStatus });
-            setApplications(Array.isArray(jobApplications) ? jobApplications : []);
-        } catch (error) {
-            showErrorToast((error as Error).message);
-        }
-    };
 
     useEffect(() => {
         // Obtain application.job_id from <Link> in AddInterview
@@ -307,7 +295,7 @@ const ViewApplication = () => {
                             <div>Filter by</div>
                             <select
                                 value={jobStatus}
-                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
+                                onChange={(event) => setJobStatus(event.target.value as JobStatusFilter)}
                             >
                                 <option value='Show All'>Show All</option>
                                 <option value='Accepted'>Accepted</option>

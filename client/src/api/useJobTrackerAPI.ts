@@ -103,9 +103,9 @@ export const useJobTrackerAPI = () => {
         };
 
         const application = {
-            async listApplications(req: ListApplicationsRequest) {
+            async listApplications() {
                 return await makeJobTrackerAPIRequest<ListApplicationsRequest, ListApplicationsResponse>(
-                    req,
+                    null,
                     endpointConfig.application.listApplications,
                     'include'
                 );
@@ -211,11 +211,11 @@ export const useJobTrackerAPI = () => {
         };
 
         const archivedApplication = {
-            async listApplications(req: ListArchivedApplicationsRequest) {
+            async listApplications() {
                 return await makeJobTrackerAPIRequest<
                     ListArchivedApplicationsRequest,
                     ListArchivedApplicationsResponse
-                >(req, endpointConfig.archivedApplication.listApplications, 'include');
+                >(null, endpointConfig.archivedApplication.listApplications, 'include');
             },
 
             async archiveApplication(req: ArchiveApplicationRequest) {
