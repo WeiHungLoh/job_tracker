@@ -140,4 +140,20 @@ describe('Job interview viewer flow', () => {
 
         expect(await screen.findByText(/no job interview found/i)).toBeInTheDocument();
     });
+
+    test('shows error toast when corresponding job application is not available', async () => {
+        fetch.mockResolvedValueOnce(response([mockInterview])).mockResolvedValueOnce(response([]));
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>
+        );
+
+        await userEvent.click(await screen.findByRole('link', { name: /review corresponding job application/i }));
+
+        expect(
+            await screen.findByText(/this job application is not available in active applications/i)
+        ).toBeInTheDocument();
+    });
 });

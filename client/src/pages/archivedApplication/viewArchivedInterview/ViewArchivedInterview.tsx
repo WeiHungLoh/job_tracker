@@ -3,7 +3,8 @@ import { type MouseEvent, useEffect, useState } from 'react';
 import type { ArchivedJobInterview } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
-import { Link } from 'react-router-dom';
+import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
+import { Link, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
@@ -19,6 +20,7 @@ const ViewArchivedInterview = () => {
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const confirm = useConfirm();
+    const navigate = useNavigate();
     const { showErrorToast } = useToast();
 
     useEffect(() => {
@@ -100,20 +102,40 @@ const ViewArchivedInterview = () => {
 
     const hasInterviews = archivedInterviews.length !== 0;
 
-    const handleViewApplicationClick = (event: MouseEvent<HTMLAnchorElement>, interview: ArchivedJobInterview) => {
-        const selectedStatus = preferences.archived_application_job_status;
-        const applicationStatus = interview.job_status;
-        const applicationIsHiddenByFilter =
-            selectedStatus !== 'Show All' && applicationStatus !== undefined && applicationStatus !== selectedStatus;
+    const handleViewApplicationClick = async (
+        event: MouseEvent<HTMLAnchorElement>,
+        interview: ArchivedJobInterview
+    ) => {
+        event.preventDefault();
 
-        if (!applicationIsHiddenByFilter) {
+        try {
+            const applications = await api.archivedApplication.listApplications({
+                jobStatus: preferences.archived_application_job_status,
+            });
+            const applicationExists = applications.some(
+                (application) => application.archived_job_id === interview.archived_job_id
+            );
+
+            if (!applicationExists) {
+                showErrorToast(
+                    getApplicationUnavailableMessage(
+                        preferences.archived_application_job_status,
+                        interview.job_status,
+                        {
+                            applicationLabel: 'This archived job application',
+                            applicationsPageLabel: 'archived applications',
+                            statusFilterLabel: 'archived job status filter',
+                        }
+                    )
+                );
+                return;
+            }
+
+            navigate(`${routes.archivedApplications}#${interview.archived_job_id}`);
+        } catch (error) {
+            showErrorToast((error as Error).message);
             return;
         }
-
-        event.preventDefault();
-        showErrorToast(
-            `This archived job application is not inside the current ${selectedStatus} filter. Change the archived job status filter to Show All or ${applicationStatus}.`
-        );
     };
 
     return (
@@ -154,7 +176,7 @@ const ViewArchivedInterview = () => {
                                 <p>Time left: {formatDate(interview.interview_date).timeBeforeInterview}</p>
                                 <Link
                                     to={`${routes.archivedApplications}#${interview.archived_job_id}`}
-                                    onClick={(event) => handleViewApplicationClick(event, interview)}
+                                    onClick={(event) => void handleViewApplicationClick(event, interview)}
                                 >
                                     Click here to review corresponding job application
                                 </Link>

@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { type MouseEvent, useEffect, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
+import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
 import type { JobInterview } from '../models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -19,6 +20,7 @@ const ViewInterview = () => {
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const confirm = useConfirm();
+    const navigate = useNavigate();
     const { showErrorToast } = useToast();
 
     useEffect(() => {
@@ -97,20 +99,31 @@ const ViewInterview = () => {
 
     const hasInterviews = interviews.length !== 0;
 
-    const handleViewApplicationClick = (event: MouseEvent<HTMLAnchorElement>, interview: JobInterview) => {
-        const selectedStatus = preferences.application_job_status;
-        const applicationStatus = interview.job_status;
-        const applicationIsHiddenByFilter =
-            selectedStatus !== 'Show All' && applicationStatus !== undefined && applicationStatus !== selectedStatus;
+    const handleViewApplicationClick = async (event: MouseEvent<HTMLAnchorElement>, interview: JobInterview) => {
+        event.preventDefault();
 
-        if (!applicationIsHiddenByFilter) {
+        try {
+            const applications = await api.application.listApplications({
+                jobStatus: preferences.application_job_status,
+            });
+            const applicationExists = applications.some((application) => application.job_id === interview.job_id);
+
+            if (!applicationExists) {
+                showErrorToast(
+                    getApplicationUnavailableMessage(preferences.application_job_status, interview.job_status, {
+                        applicationLabel: 'This job application',
+                        applicationsPageLabel: 'active applications',
+                        statusFilterLabel: 'job status filter',
+                    })
+                );
+                return;
+            }
+
+            navigate(`${routes.viewApplications}#${interview.job_id}`);
+        } catch (error) {
+            showErrorToast((error as Error).message);
             return;
         }
-
-        event.preventDefault();
-        showErrorToast(
-            `This job application is not inside the current ${selectedStatus} filter. Change the job status filter to Show All or ${applicationStatus}.`
-        );
     };
 
     return (
@@ -151,7 +164,7 @@ const ViewInterview = () => {
                                 <p>Time left: {formatDate(interview.interview_date).timeBeforeInterview}</p>
                                 <Link
                                     to={`${routes.viewApplications}#${interview.job_id}`}
-                                    onClick={(event) => handleViewApplicationClick(event, interview)}
+                                    onClick={(event) => void handleViewApplicationClick(event, interview)}
                                 >
                                     Click here to review corresponding job application
                                 </Link>

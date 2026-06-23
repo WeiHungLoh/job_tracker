@@ -141,4 +141,20 @@ describe('Archived job interview viewer flow', () => {
 
         expect(await screen.findByText(/no archived job interview found/i)).toBeInTheDocument();
     });
+
+    test('shows error toast when corresponding archived job application is not available', async () => {
+        fetch.mockResolvedValueOnce(response([mockInterview])).mockResolvedValueOnce(response([]));
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>
+        );
+
+        await userEvent.click(await screen.findByRole('link', { name: /review corresponding job application/i }));
+
+        expect(
+            await screen.findByText(/this archived job application is not available in archived applications/i)
+        ).toBeInTheDocument();
+    });
 });
