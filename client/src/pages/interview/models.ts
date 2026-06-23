@@ -7,7 +7,6 @@ export type JobInterview = {
     interview_location: string;
     interview_type: string;
     interview_notes: string;
-    notes?: string;
 };
 
 export type ListInterviewsRequest = null;

@@ -71,3 +71,13 @@ export type UpdateJobStatusRequest = {
     jobStatus: JobStatus;
 };
 export type UpdateJobStatusResponse = null;
+
+export const APPLICATION_CSV_HEADERS = [
+    { label: 'Company', key: 'company_name' },
+    { label: 'Job Title', key: 'job_title' },
+    { label: 'Application Date', key: 'application_date' },
+    { label: 'Status', key: 'job_status' },
+    { label: 'Location', key: 'job_location' },
+    { label: 'Job URL', key: 'job_posting_url' },
+    { label: 'Notes', key: 'notes' },
+] as const;

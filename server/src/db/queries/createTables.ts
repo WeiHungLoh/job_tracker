@@ -1,6 +1,6 @@
 import { pool } from '../connectDB.js';
 
-const createTable = async (): Promise<void> => {
+const createTables = async (): Promise<void> => {
     const createUsersTable = `
         CREATE TABLE IF NOT EXISTS users (
             user_id SERIAL PRIMARY KEY,
@@ -79,8 +79,8 @@ const createTable = async (): Promise<void> => {
         await pool.query(createInterviewJobIdIndex);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        console.log('Unable to create table ' + message);
+        console.log('Unable to create tables ' + message);
     }
 };
 
-export default createTable;
+export default createTables;

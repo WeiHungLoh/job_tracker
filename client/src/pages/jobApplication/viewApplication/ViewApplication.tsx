@@ -2,11 +2,13 @@ import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
-import DateFormatter from '../../../helper/dateFormatter';
+import formatDate from '../../../helper/dateFormatter';
 import type { JobInterview } from '../../interview/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
+import { APPLICATION_CSV_HEADERS } from '../models';
 import { routes } from '../../../routes';
+import { scrollAndHighlight } from '../../../helper/highlightElement';
 import styles from './ViewApplication.module.css';
 import ToggleButton from '../../../components/toggleButton/ToggleButton';
 import { useConfirm } from 'material-ui-confirm';
@@ -51,19 +53,9 @@ const ViewApplication = () => {
     const toggleArchived = preferences.application_show_archive;
     const toggleNotes = preferences.application_show_notes;
 
-    const headers = [
-        { label: 'Company', key: 'company_name' },
-        { label: 'Job Title', key: 'job_title' },
-        { label: 'Application Date', key: 'application_date' },
-        { label: 'Status', key: 'job_status' },
-        { label: 'Location', key: 'job_location' },
-        { label: 'Job URL', key: 'job_posting_url' },
-        { label: 'Notes', key: 'notes' },
-    ];
-
     const data = applications.map((app) => ({
         ...app,
-        application_date: DateFormatter(app.application_date).formattedDate,
+        application_date: formatDate(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
         job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
         notes: app.notes ? app.notes : 'N/A',
@@ -126,25 +118,7 @@ const ViewApplication = () => {
         const hash = location.hash;
         if (hash) {
             setTimeout(() => {
-                // Ignores the first string character # to get job_id
-                const app = document.getElementById(hash.substring(1));
-                if (app) {
-                    const taskId = showCorrespondingAppTimeout.current[app as unknown as string];
-                    if (taskId) {
-                        clearTimeout(taskId);
-                    }
-                    app.classList.remove(styles.highlighted);
-
-                    if (typeof app.scrollIntoView === 'function') {
-                        app.scrollIntoView({ behavior: 'smooth' });
-                    }
-                    // Add the 'highlighted' class when the application scrolls into view,
-                    // and remove it after 4 seconds to match transition time
-                    app.classList.add(styles.highlighted);
-                    showCorrespondingAppTimeout.current[app as unknown as string] = setTimeout(() => {
-                        app.classList.remove(styles.highlighted);
-                    }, 4000);
-                }
+                scrollAndHighlight(hash.substring(1), styles.highlighted, showCorrespondingAppTimeout.current);
             }, 100);
         }
     }, [location]);
@@ -242,24 +216,7 @@ const ViewApplication = () => {
                 });
 
                 setTimeout(() => {
-                    const app = document.getElementById(String(application.job_id));
-                    if (app) {
-                        const taskId = showEditStatusTimeout.current[app as unknown as string];
-                        if (taskId) {
-                            clearTimeout(taskId);
-                        }
-                        app.classList.remove(styles.highlighted);
-                        if (typeof app.scrollIntoView === 'function') {
-                            app.scrollIntoView({ behavior: 'smooth' });
-                        }
-
-                        // Add the 'highlighted' class when the application scrolls into view,
-                        // and remove it after 4 seconds to match transition time
-                        app.classList.add(styles.highlighted);
-                        showEditStatusTimeout.current[app as unknown as string] = setTimeout(() => {
-                            app.classList.remove(styles.highlighted);
-                        }, 4000);
-                    }
+                    scrollAndHighlight(String(application.job_id), styles.highlighted, showEditStatusTimeout.current);
                 }, 100);
             }
         } catch (error) {
@@ -362,11 +319,11 @@ const ViewApplication = () => {
                                         <p className={styles.location}>Location: {application.job_location}</p>
                                     )}
                                     <p className={styles.date}>
-                                        Application Date: {DateFormatter(application.application_date).formattedDate}
+                                        Application Date: {formatDate(application.application_date).formattedDate}
                                     </p>
                                     <p>
                                         Time since application:{' '}
-                                        {DateFormatter(application.application_date).timeSinceApplication}
+                                        {formatDate(application.application_date).timeSinceApplication}
                                     </p>
                                     <div className={styles.badgeGroup}>
                                         <p className={jobStatusClassMap[application.job_status]}>
@@ -472,7 +429,7 @@ const ViewApplication = () => {
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
-                                        headers={headers}
+                                        headers={APPLICATION_CSV_HEADERS}
                                         filename={'job_applications.csv'}
                                         style={{ color: 'inherit', textDecoration: 'none' }}
                                     >

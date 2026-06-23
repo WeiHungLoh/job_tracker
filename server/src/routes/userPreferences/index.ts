@@ -6,13 +6,10 @@ import type {
 import type { Request, Response } from 'express';
 import { getUserPreferences, updateUserPreferences } from '../../db/queries/userPreferences.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isJobStatusFilter } from '../../http/validation.js';
+import { isJobStatusFilter, isOptionalBoolean } from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
-
-const isOptionalBoolean = (value: unknown): value is boolean | undefined =>
-    value === undefined || typeof value === 'boolean';
 
 router.get(
     '/',

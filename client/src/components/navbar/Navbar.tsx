@@ -9,6 +9,18 @@ import { useToast } from '../toast/ToastProvider';
 
 const archivedLocations: readonly string[] = [routes.archivedApplications, routes.archivedInterviews];
 
+const ACTIVE_NAV_LINKS = [
+    { to: routes.dashboard, label: 'Dashboard' },
+    { to: routes.addApplication, label: 'Add Job Application' },
+    { to: routes.viewApplications, label: 'View Job Applications' },
+    { to: routes.viewInterviews, label: 'View Interviews' },
+] as const;
+
+const ARCHIVED_NAV_LINKS = [
+    { to: routes.archivedApplications, label: 'View Archived Applications' },
+    { to: routes.archivedInterviews, label: 'View Archived Interviews' },
+] as const;
+
 const Navbar = () => {
     const location = useLocation();
     const currLocation = location.pathname;
@@ -31,57 +43,17 @@ const Navbar = () => {
         }
     };
 
+    const navLinks = archived ? ARCHIVED_NAV_LINKS : ACTIVE_NAV_LINKS;
+
     return (
         <nav className={styles.navbar}>
             <h1>Job Tracker</h1>
             <div className={styles.links}>
-                {!archived && (
-                    <>
-                        <NavLink
-                            to={routes.dashboard}
-                            className={currLocation === routes.dashboard ? styles.active : styles.inactive}
-                        >
-                            Dashboard
-                        </NavLink>
-                        <NavLink
-                            to={routes.addApplication}
-                            className={currLocation === routes.addApplication ? styles.active : styles.inactive}
-                        >
-                            Add Job Application
-                        </NavLink>
-
-                        <NavLink
-                            to={routes.viewApplications}
-                            className={currLocation === routes.viewApplications ? styles.active : styles.inactive}
-                        >
-                            View Job Applications
-                        </NavLink>
-
-                        <NavLink
-                            to={routes.viewInterviews}
-                            className={currLocation === routes.viewInterviews ? styles.active : styles.inactive}
-                        >
-                            View Interviews
-                        </NavLink>
-                    </>
-                )}
-
-                {archived && (
-                    <>
-                        <NavLink
-                            to={routes.archivedApplications}
-                            className={currLocation === routes.archivedApplications ? styles.active : styles.inactive}
-                        >
-                            View Archived Applications
-                        </NavLink>
-                        <NavLink
-                            to={routes.archivedInterviews}
-                            className={currLocation === routes.archivedInterviews ? styles.active : styles.inactive}
-                        >
-                            View Archived Interviews
-                        </NavLink>
-                    </>
-                )}
+                {navLinks.map(({ to, label }) => (
+                    <NavLink key={to} to={to} className={currLocation === to ? styles.active : styles.inactive}>
+                        {label}
+                    </NavLink>
+                ))}
                 <PrimaryButton
                     variant='navigation'
                     type='button'

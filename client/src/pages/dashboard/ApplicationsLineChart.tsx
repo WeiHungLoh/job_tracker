@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import { useEffect, useState } from 'react';
 import type { ChartOptions } from 'chart.js';
-import DateFormatter from '../../helper/dateFormatter';
+import formatDate from '../../helper/dateFormatter';
 import { Line } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import type { WeeklyApplicationCount } from './models';
@@ -57,7 +57,7 @@ const ApplicationsLineChart = () => {
     const totalApplications = Object.values(applicationByWeekCountPair).reduce((sum, val) => sum + parseInt(val), 0);
 
     const data = {
-        labels: Object.keys(applicationByWeekCountPair).map((date) => DateFormatter(date).formattedDay),
+        labels: Object.keys(applicationByWeekCountPair).map((date) => formatDate(date).formattedDay),
         datasets: [
             {
                 label: 'Applications Applied',

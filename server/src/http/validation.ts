@@ -31,3 +31,6 @@ export const isJobStatus = (value: unknown): value is JobStatus =>
 
 export const isJobStatusFilter = (value: unknown): value is JobStatusFilter =>
     value === 'Show All' || isJobStatus(value);
+
+export const isOptionalBoolean = (value: unknown): value is boolean | undefined =>
+    value === undefined || typeof value === 'boolean';

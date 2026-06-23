@@ -1,4 +1,12 @@
-const DateFormatter = (dueDate: string | number) => {
+/**
+ * Parse a datetime-local input value (YYYY-MM-DDThh:mm) into a local Date.
+ */
+export const parseDatetimeLocal = (value: string): Date => {
+    const [year, month, day, hour, minute] = value.split(/[-T:]/);
+    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+};
+
+const formatDate = (dueDate: string | number) => {
     const date = new Date(dueDate);
 
     const formattedDate = date.toLocaleString('en-GB', {
@@ -41,4 +49,4 @@ const DateFormatter = (dueDate: string | number) => {
     return { formattedDay, formattedDate, timeSinceApplication, timeBeforeInterview };
 };
 
-export default DateFormatter;
+export default formatDate;

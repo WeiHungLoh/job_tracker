@@ -1,5 +1,6 @@
 import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../models.js';
 import { pool } from '../connectDB.js';
+import { JOB_STATUS_SORT_ORDER } from './shared.js';
 
 const insertJobApplication = async (
     userId: number,
@@ -21,16 +22,7 @@ const getJobApplications = async (userId: number, jobStatus: JobStatus | null = 
     const res = await pool.query<JobApplication>(
         `SELECT * FROM job_applications WHERE user_id = $1 AND is_archived = false
           AND ($2::text IS NULL OR job_status = $2)
-          ORDER BY
-            CASE
-                WHEN job_status = 'Accepted' THEN 1
-                WHEN job_status = 'Offer' THEN 2
-                WHEN job_status = 'Declined' THEN 3
-                WHEN job_status = 'Interview' THEN 4
-                WHEN job_status = 'Applied' THEN 5
-                WHEN job_status = 'Ghosted' THEN 6
-                ELSE 7
-            END,
+          ORDER BY ${JOB_STATUS_SORT_ORDER},
          application_date DESC`,
         [userId, jobStatus]
     );

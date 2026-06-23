@@ -7,7 +7,7 @@ import { connectDB } from './db/connectDB.js';
 import cookieJWTAuth from './middleware/cookieJWTAuth.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import createTable from './db/queries/createTable.js';
+import createTables from './db/queries/createTables.js';
 import express from 'express';
 import interviewRoute from './routes/interview/index.js';
 import { pathToFileURL } from 'node:url';
@@ -101,7 +101,7 @@ const createApp = (): express.Express => {
 
 const startServer = async (): Promise<void> => {
     await connectDB();
-    await createTable();
+    await createTables();
 
     const app = createApp();
     const port = Number(process.env.PORT ?? 5005);

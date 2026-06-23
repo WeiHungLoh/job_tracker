@@ -1,4 +1,5 @@
-import type { JobStatusFilter, UserPreferences } from '../models.js';
+import type { UpdateUserPreferencesRequest } from '../../routes/userPreferences/models.js';
+import type { UserPreferences } from '../models.js';
 import { pool } from '../connectDB.js';
 
 const getUserPreferences = async (userId: number): Promise<UserPreferences | undefined> => {
@@ -7,17 +8,9 @@ const getUserPreferences = async (userId: number): Promise<UserPreferences | und
     return res.rows[0];
 };
 
-type UpdateUserPreferencesInput = Partial<{
-    application_job_status: JobStatusFilter;
-    application_show_notes: boolean;
-    application_show_archive: boolean;
-    archived_application_job_status: JobStatusFilter;
-    archived_application_show_notes: boolean;
-}>;
-
 const updateUserPreferences = async (
     userId: number,
-    preferences: UpdateUserPreferencesInput
+    preferences: UpdateUserPreferencesRequest
 ): Promise<UserPreferences | undefined> => {
     const res = await pool.query<UserPreferences>(
         `UPDATE user_preferences
@@ -43,4 +36,3 @@ const updateUserPreferences = async (
 };
 
 export { getUserPreferences, updateUserPreferences };
-export type { UpdateUserPreferencesInput };

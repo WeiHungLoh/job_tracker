@@ -5,6 +5,7 @@ import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
+import { parseDatetimeLocal } from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -44,10 +45,7 @@ const AddInterview = () => {
             return;
         }
 
-        // datetime-local displays in the format of YYYY-MM-DDThh:mm:sssZ
-        const [year, month, day, hour, minute] = interviewDate.split(/[-T:]/);
-        // Decrements month by 1 since month starts from 0
-        const localDate = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+        const localDate = parseDatetimeLocal(interviewDate);
 
         setIsLoading(true);
         try {
@@ -67,7 +65,7 @@ const AddInterview = () => {
                 setIsLoading(false);
                 return;
             }
-            showErrorToast('Failed to add an application: ' + (error as Error).message);
+            showErrorToast('Failed to add an interview: ' + (error as Error).message);
         } finally {
             setIsLoading(false);
         }

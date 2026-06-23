@@ -2,6 +2,7 @@ import { JobTrackerAPIError } from '../../../api/models';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
+import { parseDatetimeLocal } from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddApplication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -32,17 +33,6 @@ const AddApplication = () => {
         setJobURL('');
     };
 
-    const isAppDatePresent = (appDate: string) => {
-        if (appDate === '') {
-            return currDate;
-        }
-        // datetime-local displays in the format of YYYY-MM-DDThh:mm:sssZ
-        const [year, month, day, hour, minute] = appDate.split(/[-T:]/);
-        // Decrements month by 1 since month starts from 0
-        const localDate = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
-        return localDate;
-    };
-
     const handleAdd = async (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
@@ -51,7 +41,7 @@ const AddApplication = () => {
             return;
         }
 
-        const appDate = isAppDatePresent(applicationDate);
+        const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currDate;
 
         if (appDate > currDate) {
             showErrorToast('Application date cannot be later than current date');

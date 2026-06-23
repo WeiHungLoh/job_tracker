@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
-import DateFormatter from '../../../helper/dateFormatter';
+import formatDate from '../../../helper/dateFormatter';
+import { APPLICATION_CSV_HEADERS } from '../../jobApplication/models';
 import type { JobStatus, JobStatusFilter } from '../../jobApplication/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -25,19 +26,9 @@ const ViewArchivedApplication = () => {
     const jobStatus = preferences.archived_application_job_status;
     const toggleNotes = preferences.archived_application_show_notes;
 
-    const headers = [
-        { label: 'Company', key: 'company_name' },
-        { label: 'Job Title', key: 'job_title' },
-        { label: 'Application Date', key: 'application_date' },
-        { label: 'Status', key: 'job_status' },
-        { label: 'Location', key: 'job_location' },
-        { label: 'Job URL', key: 'job_posting_url' },
-        { label: 'Notes', key: 'notes' },
-    ];
-
     const data = archivedApplications.map((app) => ({
         ...app,
-        application_date: DateFormatter(app.application_date).formattedDate,
+        application_date: formatDate(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
         job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
         notes: app.notes ? app.notes : 'N/A',
@@ -228,11 +219,11 @@ const ViewArchivedApplication = () => {
                                         <p className={styles.location}>Location: {application.job_location}</p>
                                     )}
                                     <p className={styles.date}>
-                                        Application Date: {DateFormatter(application.application_date).formattedDate}
+                                        Application Date: {formatDate(application.application_date).formattedDate}
                                     </p>
                                     <p>
                                         Time since application:{' '}
-                                        {DateFormatter(application.application_date).timeSinceApplication}
+                                        {formatDate(application.application_date).timeSinceApplication}
                                     </p>
                                     <p className={jobStatusClassMap[application.job_status]}>
                                         Job Status: {application.job_status}
@@ -289,7 +280,7 @@ const ViewArchivedApplication = () => {
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
-                                        headers={headers}
+                                        headers={APPLICATION_CSV_HEADERS}
                                         filename={'archived_job_applications.csv'}
                                         style={{ color: 'inherit', textDecoration: 'none' }}
                                     >

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import type { ArchivedJobInterview } from '../models';
 import { CSVLink } from 'react-csv';
-import DateFormatter from '../../../helper/dateFormatter';
+import formatDate from '../../../helper/dateFormatter';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -50,9 +50,9 @@ const ViewArchivedInterview = () => {
 
     const data = archivedInterviews.map((interview) => ({
         ...interview,
-        interview_date: DateFormatter(interview.interview_date).formattedDate,
+        interview_date: formatDate(interview.interview_date).formattedDate,
         interview_type: interview.interview_type ? interview.interview_type : 'N/A',
-        notes: interview.notes ? interview.notes : 'N/A',
+        notes: interview.interview_notes ? interview.interview_notes : 'N/A',
     }));
 
     const handleDelete = async (interviewId: number) => {
@@ -131,9 +131,9 @@ const ViewArchivedInterview = () => {
                                     <p className={styles.notes}>Notes: {interview.interview_notes}</p>
                                 )}
                                 <p className={styles.date}>
-                                    Interview Date: {DateFormatter(interview.interview_date).formattedDate}
+                                    Interview Date: {formatDate(interview.interview_date).formattedDate}
                                 </p>
-                                <p>Time left: {DateFormatter(interview.interview_date).timeBeforeInterview}</p>
+                                <p>Time left: {formatDate(interview.interview_date).timeBeforeInterview}</p>
                                 <Link to={`${routes.archivedApplications}#${interview.archived_job_id}`}>
                                     Click here to review corresponding job application
                                 </Link>
