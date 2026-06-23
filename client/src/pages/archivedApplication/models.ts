@@ -16,7 +16,7 @@ export type ArchivedJobInterview = {
     archived_job_id: number;
     company_name: string;
     job_title: string;
-    job_status: JobStatus;
+    job_status?: JobStatus;
     interview_date: string;
     interview_location: string;
     interview_type: string;

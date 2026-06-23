@@ -102,7 +102,9 @@ const ViewArchivedInterview = () => {
 
     const handleViewApplicationClick = (event: MouseEvent<HTMLAnchorElement>, interview: ArchivedJobInterview) => {
         const selectedStatus = preferences.archived_application_job_status;
-        const applicationIsHiddenByFilter = selectedStatus !== 'Show All' && interview.job_status !== selectedStatus;
+        const applicationStatus = interview.job_status;
+        const applicationIsHiddenByFilter =
+            selectedStatus !== 'Show All' && applicationStatus !== undefined && applicationStatus !== selectedStatus;
 
         if (!applicationIsHiddenByFilter) {
             return;
@@ -110,7 +112,7 @@ const ViewArchivedInterview = () => {
 
         event.preventDefault();
         showErrorToast(
-            `This archived job application is not inside the current ${selectedStatus} filter. Change the archived job status filter to Show All or ${interview.job_status}.`
+            `This archived job application is not inside the current ${selectedStatus} filter. Change the archived job status filter to Show All or ${applicationStatus}.`
         );
     };
 

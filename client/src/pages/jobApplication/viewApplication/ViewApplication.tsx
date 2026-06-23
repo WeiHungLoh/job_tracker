@@ -1,5 +1,5 @@
 import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
@@ -40,6 +40,7 @@ const ViewApplication = () => {
     const api = useJobTrackerAPI();
     const { preferences, updatePreferences } = useUserPreferences();
     const location = useLocation();
+    const navigate = useNavigate();
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [jobStatuses, setJobStatuses] = useState<Record<number, JobStatus>>({});
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
@@ -133,7 +134,9 @@ const ViewApplication = () => {
         }
 
         scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
-    }, [applications, isLoading, location.hash]);
+        // to remove the hash
+        navigate({ pathname: location.pathname, search: location.search }, { replace: true });
+    }, [applications, isLoading, location.hash, location.pathname, location.search, navigate]);
 
     const handleEditNotes = (jobId: number, editedNotes: string) => {
         setNotes({ ...notes, [jobId]: editedNotes });

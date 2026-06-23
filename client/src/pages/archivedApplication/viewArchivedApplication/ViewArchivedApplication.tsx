@@ -12,7 +12,7 @@ import ToggleButton from '../../../components/toggleButton/ToggleButton';
 import styles from './ViewArchivedApplication.module.css';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 
@@ -21,6 +21,7 @@ const ViewArchivedApplication = () => {
     const { preferences, updatePreferences } = useUserPreferences();
     const [archivedApplications, setArchivedApplications] = useState<ArchivedJobApplication[]>([]);
     const location = useLocation();
+    const navigate = useNavigate();
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const confirm = useConfirm();
     const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +88,8 @@ const ViewArchivedApplication = () => {
         }
 
         scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
-    }, [archivedApplications, isLoading, location.hash]);
+        navigate({ pathname: location.pathname, search: location.search }, { replace: true });
+    }, [archivedApplications, isLoading, location.hash, location.pathname, location.search, navigate]);
 
     const handleDelete = async (archivedApplicationId: number) => {
         try {
