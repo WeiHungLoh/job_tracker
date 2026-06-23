@@ -21,10 +21,10 @@
 
 .addInterview input {
     width: 100%;
-    padding: 12px 10px;
+    padding: 8px 10px;
     margin-top: 10px;
     margin-bottom: 10px;
-    border: 1px solid #d9dde3;
+    border: 1px solid #f0d8e0;
     border-radius: 10px;
     outline: none;
     box-sizing: border-box;
@@ -45,23 +45,12 @@
     justify-content: center;
     margin-top: 20px;
     gap: 70px;
-    color: white;
 }
 
-.addInterview a {
-    color: #ddd;
-    background: var(--colorPrimary);
-    border: 0;
-    padding: 8px 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 0.875rem;
-}
 
 @media (max-width: 1150px) and (orientation: portrait) {
     .addInterview {
-        max-width: 90%;
+        max-width: 80%;
     }
 
     .addInterview h2 {

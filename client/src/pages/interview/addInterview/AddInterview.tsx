@@ -1,4 +1,4 @@
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../jobApplication/models';
 import { JobTrackerAPIError } from '../../../api/models';
 import type { Location } from 'react-router-dom';
@@ -119,7 +119,9 @@ const AddInterview = () => {
                 <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewInterviews)}>
                     View Interviews
                 </PrimaryButton>
-                <Link to={`${routes.viewApplications}#${app.job_id}`}>Back</Link>
+                <PrimaryButton variant='secondary' onClick={() => navigate(`${routes.viewApplications}#${app.job_id}`)}>
+                    Back
+                </PrimaryButton>
             </div>
         </div>
     );
