@@ -238,6 +238,8 @@
     .buttonGroup {
         grid-template-columns: 1fr;
         width: auto;
+        padding-right: 16px;
+        padding-left: 24px;
     }
 
     .notes textarea {
