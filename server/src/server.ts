@@ -13,6 +13,7 @@ import interviewRoute from './routes/interview/index.js';
 import { pathToFileURL } from 'node:url';
 import pingRoute from './routes/ping/index.js';
 import rateLimit from 'express-rate-limit';
+import userPreferencesRoute from './routes/userPreferences/index.js';
 
 type MiddlewareError = Error & {
     status?: number;
@@ -68,6 +69,7 @@ const createApp = (): express.Express => {
     app.use('/job-interviews', cookieJWTAuth, interviewRoute);
     app.use('/archived-job-applications', cookieJWTAuth, archivedApplicationRoute);
     app.use('/archived-job-interviews', cookieJWTAuth, archivedInterviewRoute);
+    app.use('/user-preferences', cookieJWTAuth, userPreferencesRoute);
 
     const notFoundHandler: RequestHandler = (_req, res) => {
         res.status(404).send({ message: 'Route not found.' });
@@ -80,7 +82,12 @@ const createApp = (): express.Express => {
             return;
         }
         if (error.type === 'entity.too.large' || error.type === 'entity.parse.failed') {
-            res.status(error.status ?? 400).send({ message: error.type === 'entity.too.large' ? 'Request body is too large.' : 'Request body contains invalid JSON.' });
+            res.status(error.status ?? 400).send({
+                message:
+                    error.type === 'entity.too.large'
+                        ? 'Request body is too large.'
+                        : 'Request body contains invalid JSON.',
+            });
             return;
         }
 

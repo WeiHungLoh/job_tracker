@@ -71,4 +71,8 @@ export const endpointConfig = {
         },
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },
+    userPreferences: {
+        get: { url: '/user-preferences', verb: 'GET' },
+        update: { url: '/user-preferences', verb: 'PATCH' },
+    },
 } as const;

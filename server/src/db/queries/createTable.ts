@@ -36,6 +36,19 @@ const createTable = async (): Promise<void> => {
             is_archived BOOLEAN NOT NULL DEFAULT false
         )`;
 
+    const createUserPreferencesTable = `CREATE TABLE IF NOT EXISTS user_preferences (
+            user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+            application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
+                application_job_status IN ('Show All', 'Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')
+            ),
+            application_show_notes BOOLEAN NOT NULL DEFAULT false,
+            application_show_archive BOOLEAN NOT NULL DEFAULT false,
+            archived_application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
+                archived_application_job_status IN ('Show All', 'Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')
+            ),
+            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false
+        )`;
+
     const createJobApplicationArchiveIndex = `CREATE INDEX IF NOT EXISTS job_applications_user_archived_idx
         ON job_applications (user_id, is_archived)`;
 
@@ -45,10 +58,22 @@ const createTable = async (): Promise<void> => {
     const createInterviewJobIdIndex = `CREATE INDEX IF NOT EXISTS interviews_job_id_idx
         ON interviews (job_id)`;
 
+    const populateUserPreferences = `
+        INSERT INTO user_preferences (user_id)
+        SELECT users.user_id
+        FROM users
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM user_preferences
+            WHERE user_preferences.user_id = users.user_id
+        )`;
+
     try {
         await pool.query(createUsersTable);
         await pool.query(createJobAppTable);
         await pool.query(createInterviewTable);
+        await pool.query(createUserPreferencesTable);
+        await pool.query(populateUserPreferences);
         await pool.query(createJobApplicationArchiveIndex);
         await pool.query(createInterviewArchiveIndex);
         await pool.query(createInterviewJobIdIndex);

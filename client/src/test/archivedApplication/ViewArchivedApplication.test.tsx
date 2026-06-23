@@ -17,6 +17,15 @@ const mockApplication = {
     notes: '',
 };
 
+const mockPreferences = {
+    user_id: 1,
+    application_job_status: 'Show All',
+    application_show_notes: false,
+    application_show_archive: false,
+    archived_application_job_status: 'Show All',
+    archived_application_show_notes: false,
+};
+
 const response = (data?: unknown, status = 200) => ({
     headers: new Headers(data === undefined ? undefined : { 'content-type': 'application/json' }),
     json: async () => data,
@@ -36,9 +45,15 @@ describe('Archived job application viewing flow', () => {
     beforeEach(() => {
         vi.resetAllMocks();
         fetch.mockReset();
-        fetch.mockImplementation(async (_url: string, init?: RequestInit) =>
-            init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204)
-        );
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
     });
 
     test('displays archived job application details and action buttons', async () => {

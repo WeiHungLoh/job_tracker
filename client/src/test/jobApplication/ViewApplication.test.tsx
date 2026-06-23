@@ -18,6 +18,15 @@ const mockApplication = {
     notes: '',
 };
 
+const mockPreferences = {
+    user_id: 1,
+    application_job_status: 'Show All',
+    application_show_notes: false,
+    application_show_archive: false,
+    archived_application_job_status: 'Show All',
+    archived_application_show_notes: false,
+};
+
 const response = (data?: unknown, status = 200) => ({
     headers: new Headers(data === undefined ? undefined : { 'content-type': 'application/json' }),
     json: async () => data,
@@ -40,6 +49,12 @@ describe('Job application viewing flow', () => {
         vi.resetAllMocks();
         fetch.mockReset();
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
             if (init?.method !== 'GET') return response(undefined, 204);
             if (url.endsWith('/job-interviews')) return response([]);
             return response([mockApplication]);
@@ -135,6 +150,12 @@ describe('Job application viewing flow', () => {
             },
         ];
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
             if (init?.method !== 'GET') return response(undefined, 204);
             if (url.endsWith('/job-interviews')) return response([]);
             return response(applications);

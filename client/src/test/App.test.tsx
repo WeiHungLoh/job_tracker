@@ -31,6 +31,25 @@ const response = (ok = true, status = 200, data?: string, contentType?: string) 
     url: '',
 });
 
+const jsonResponse = (data: unknown, status = 200) => ({
+    headers: new Headers({ 'content-type': 'application/json' }),
+    json: async () => data,
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: '',
+    text: async () => JSON.stringify(data),
+    url: '',
+});
+
+const mockPreferences = {
+    user_id: 1,
+    application_job_status: 'Show All',
+    application_show_notes: false,
+    application_show_archive: false,
+    archived_application_job_status: 'Show All',
+    archived_application_show_notes: false,
+};
+
 const renderRoute = (path: string) => {
     const router = createMemoryRouter(appRoutes, { initialEntries: [path] });
     render(<RouterProvider router={router} />);
@@ -40,7 +59,12 @@ const renderRoute = (path: string) => {
 describe('App routing and authentication behavior', () => {
     beforeEach(() => {
         fetch.mockReset();
-        fetch.mockResolvedValue(response());
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/user-preferences')) {
+                return jsonResponse(mockPreferences);
+            }
+            return response();
+        });
     });
 
     test('renders SignIn at the root path', async () => {

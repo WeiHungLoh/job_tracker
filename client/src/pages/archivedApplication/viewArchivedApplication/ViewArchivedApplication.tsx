@@ -12,16 +12,18 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
+    const { preferences, updatePreferences } = useUserPreferences();
     const [archivedApplications, setArchivedApplications] = useState<ArchivedJobApplication[]>([]);
     const location = useLocation();
     const confirm = useConfirm();
-    const [jobStatus, setJobStatus] = useState<JobStatusFilter>('Show All');
-    const [toggleNotes, setToggleNotes] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
+    const jobStatus = preferences.archived_application_job_status;
+    const toggleNotes = preferences.archived_application_show_notes;
 
     const headers = [
         { label: 'Company', key: 'company_name' },
@@ -42,10 +44,11 @@ const ViewArchivedApplication = () => {
     }));
 
     const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
-        setJobStatus(selectedStatus);
-
         try {
-            const data = await api.archivedApplication.listApplications({ jobStatus: selectedStatus });
+            const [, data] = await Promise.all([
+                updatePreferences({ archived_application_job_status: selectedStatus }),
+                api.archivedApplication.listApplications({ jobStatus: selectedStatus }),
+            ]);
             setArchivedApplications(Array.isArray(data) ? data : []);
         } catch (error) {
             showErrorToast((error as Error).message);
@@ -57,7 +60,7 @@ const ViewArchivedApplication = () => {
 
         const fetchApplications = async () => {
             try {
-                const data = await api.archivedApplication.listApplications({ jobStatus: 'Show All' });
+                const data = await api.archivedApplication.listApplications({ jobStatus });
                 if (isActive) setArchivedApplications(Array.isArray(data) ? data : []);
             } catch (error) {
                 showErrorToast((error as Error).message);
@@ -80,7 +83,9 @@ const ViewArchivedApplication = () => {
                 // Ignores the first string character # to get job_id
                 const app = document.getElementById(hash.substring(1));
                 if (app) {
-                    app.scrollIntoView({ behavior: 'smooth' });
+                    if (typeof app.scrollIntoView === 'function') {
+                        app.scrollIntoView({ behavior: 'smooth' });
+                    }
 
                     // Add the 'highlighted' class when the application scrolls into view,
                     // and remove it after 4 seconds to match transition time
@@ -190,7 +195,9 @@ const ViewArchivedApplication = () => {
                         {hasApplications && (
                             <ToggleButton
                                 toggled={toggleNotes}
-                                onToggle={() => setToggleNotes(!toggleNotes)}
+                                onToggle={() =>
+                                    void updatePreferences({ archived_application_show_notes: !toggleNotes })
+                                }
                                 label='Unhide Notes'
                                 toggledLabel='Hide Notes'
                                 color='yellow'
@@ -227,7 +234,9 @@ const ViewArchivedApplication = () => {
                                         Time since application:{' '}
                                         {DateFormatter(application.application_date).timeSinceApplication}
                                     </p>
-                                    <p className={jobStatusClassMap[application.job_status]}>Job Status: {application.job_status}</p>
+                                    <p className={jobStatusClassMap[application.job_status]}>
+                                        Job Status: {application.job_status}
+                                    </p>
 
                                     {application.job_posting_url !== '' && (
                                         <a
