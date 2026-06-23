@@ -41,6 +41,7 @@ export type JobInterview = {
     is_archived: boolean;
     company_name?: string;
     job_title?: string;
+    job_status?: JobStatus | null;
 };
 
 export type ArchivedJobInterview = {
@@ -54,6 +55,7 @@ export type ArchivedJobInterview = {
     created_at: Date;
     company_name?: string;
     job_title?: string;
+    job_status?: JobStatus | null;
 };
 
 export type JobStatusCount = {

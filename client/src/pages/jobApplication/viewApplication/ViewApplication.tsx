@@ -1,5 +1,5 @@
 import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
@@ -39,6 +39,7 @@ const sortApplications = (applications: JobApplication[]) => {
 const ViewApplication = () => {
     const api = useJobTrackerAPI();
     const { preferences, updatePreferences } = useUserPreferences();
+    const location = useLocation();
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [jobStatuses, setJobStatuses] = useState<Record<number, JobStatus>>({});
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
@@ -119,14 +120,20 @@ const ViewApplication = () => {
     }, []);
 
     useEffect(() => {
-        // Obtain application.job_id from <Link> in AddInterview
-        const hash = location.hash;
-        if (hash) {
-            setTimeout(() => {
-                scrollAndHighlight(hash.substring(1), styles.highlighted, showCorrespondingAppTimeout.current);
-            }, 100);
+        const targetApplicationId = location.hash.substring(1);
+        if (isLoading || !targetApplicationId) {
+            return;
         }
-    }, [location]);
+
+        const targetApplicationIsVisible = applications.some(
+            (application) => String(application.job_id) === targetApplicationId
+        );
+        if (!targetApplicationIsVisible) {
+            return;
+        }
+
+        scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
+    }, [applications, isLoading, location.hash]);
 
     const handleEditNotes = (jobId: number, editedNotes: string) => {
         setNotes({ ...notes, [jobId]: editedNotes });

@@ -1,5 +1,5 @@
 // Taken from: https://www.npmjs.com/package/react-csv
-import { useEffect, useState } from 'react';
+import { type MouseEvent, useEffect, useState } from 'react';
 import type { ArchivedJobInterview } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
@@ -11,9 +11,11 @@ import styles from './ViewArchivedInterview.module.css';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
+    const { preferences } = useUserPreferences();
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const confirm = useConfirm();
@@ -98,6 +100,20 @@ const ViewArchivedInterview = () => {
 
     const hasInterviews = archivedInterviews.length !== 0;
 
+    const handleViewApplicationClick = (event: MouseEvent<HTMLAnchorElement>, interview: ArchivedJobInterview) => {
+        const selectedStatus = preferences.archived_application_job_status;
+        const applicationIsHiddenByFilter = selectedStatus !== 'Show All' && interview.job_status !== selectedStatus;
+
+        if (!applicationIsHiddenByFilter) {
+            return;
+        }
+
+        event.preventDefault();
+        showErrorToast(
+            `This archived job application is not inside the current ${selectedStatus} filter. Change the archived job status filter to Show All or ${interview.job_status}.`
+        );
+    };
+
     return (
         <div className={styles.archivedInterviewList}>
             {isLoading && (
@@ -134,7 +150,10 @@ const ViewArchivedInterview = () => {
                                     Interview Date: {formatDate(interview.interview_date).formattedDate}
                                 </p>
                                 <p>Time left: {formatDate(interview.interview_date).timeBeforeInterview}</p>
-                                <Link to={`${routes.archivedApplications}#${interview.archived_job_id}`}>
+                                <Link
+                                    to={`${routes.archivedApplications}#${interview.archived_job_id}`}
+                                    onClick={(event) => handleViewApplicationClick(event, interview)}
+                                >
                                     Click here to review corresponding job application
                                 </Link>
                             </div>

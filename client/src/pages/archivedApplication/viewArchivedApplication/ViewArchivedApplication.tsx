@@ -1,5 +1,5 @@
 // Taken from: https://www.npmjs.com/package/react-csv
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
@@ -7,6 +7,7 @@ import { APPLICATION_CSV_HEADERS } from '../../jobApplication/models';
 import type { JobStatus, JobStatusFilter } from '../../jobApplication/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
+import { scrollAndHighlight } from '../../../helper/highlightElement';
 import ToggleButton from '../../../components/toggleButton/ToggleButton';
 import styles from './ViewArchivedApplication.module.css';
 import { useConfirm } from 'material-ui-confirm';
@@ -20,6 +21,7 @@ const ViewArchivedApplication = () => {
     const { preferences, updatePreferences } = useUserPreferences();
     const [archivedApplications, setArchivedApplications] = useState<ArchivedJobApplication[]>([]);
     const location = useLocation();
+    const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const confirm = useConfirm();
     const [isLoading, setIsLoading] = useState(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState(false);
@@ -72,27 +74,20 @@ const ViewArchivedApplication = () => {
     }, []);
 
     useEffect(() => {
-        // Obtains application.job_id from <Link> in AddInterview
-        const hash = location.hash;
-        if (hash) {
-            setTimeout(() => {
-                // Ignores the first string character # to get job_id
-                const app = document.getElementById(hash.substring(1));
-                if (app) {
-                    if (typeof app.scrollIntoView === 'function') {
-                        app.scrollIntoView({ behavior: 'smooth' });
-                    }
-
-                    // Add the 'highlighted' class when the application scrolls into view,
-                    // and remove it after 4 seconds to match transition time
-                    app.classList.add(styles.highlighted);
-                    setTimeout(() => {
-                        app.classList.remove(styles.highlighted);
-                    }, 4000);
-                }
-            }, 100);
+        const targetApplicationId = location.hash.substring(1);
+        if (isLoading || !targetApplicationId) {
+            return;
         }
-    }, [location]);
+
+        const targetApplicationIsVisible = archivedApplications.some(
+            (application) => String(application.archived_job_id) === targetApplicationId
+        );
+        if (!targetApplicationIsVisible) {
+            return;
+        }
+
+        scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
+    }, [archivedApplications, isLoading, location.hash]);
 
     const handleDelete = async (archivedApplicationId: number) => {
         try {

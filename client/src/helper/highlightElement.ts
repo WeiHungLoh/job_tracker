@@ -8,6 +8,8 @@ export const scrollAndHighlight = (
     timeouts: Record<string, ReturnType<typeof setTimeout>>
 ): void => {
     setTimeout(() => {
+        if (typeof document === 'undefined') return;
+
         const element = document.getElementById(elementId);
         if (!element) return;
 

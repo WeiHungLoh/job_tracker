@@ -12,6 +12,7 @@ const mockInterview = {
     user_id: 1,
     company_name: 'ABC Pte Ltd',
     job_title: 'Software Engineer',
+    job_status: 'Applied',
     interview_location: 'Changi Business Park',
     interview_type: 'HR',
     interview_notes: 'Bring resume',
