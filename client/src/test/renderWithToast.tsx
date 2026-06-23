@@ -11,6 +11,7 @@ const testPreferences: UserPreferences = {
     application_job_status: 'Show All',
     application_show_notes: false,
     application_show_archive: false,
+    application_enable_scroll: false,
     archived_application_job_status: 'Show All',
     archived_application_show_notes: false,
 };
