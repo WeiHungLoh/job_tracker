@@ -222,17 +222,27 @@ const ViewApplication = () => {
                     jobId: application.job_id,
                     jobStatus: jobStatuses[application.job_id] ?? application.job_status,
                 });
-                setApplications((current) => {
-                    const updatedApplications = current.map((item) =>
-                        item.job_id === application.job_id ? { ...item, job_status: newStatus } : item
+
+                if (jobStatus === 'Show All') {
+                    setApplications((current) => {
+                        const updatedApplications = current.map((item) =>
+                            item.job_id === application.job_id ? { ...item, job_status: newStatus } : item
+                        );
+                        return sortApplications(updatedApplications);
+                    });
+
+                    setTimeout(() => {
+                        scrollAndHighlight(
+                            String(application.job_id),
+                            styles.highlighted,
+                            showEditStatusTimeout.current
+                        );
+                    }, 100);
+                } else {
+                    setApplications((current) =>
+                        current.filter((item) => item.job_id !== application.job_id)
                     );
-
-                    return sortApplications(updatedApplications);
-                });
-
-                setTimeout(() => {
-                    scrollAndHighlight(String(application.job_id), styles.highlighted, showEditStatusTimeout.current);
-                }, 100);
+                }
             }
         } catch (error) {
             showErrorToast((error as Error).message);
