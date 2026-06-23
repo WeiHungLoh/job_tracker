@@ -35,6 +35,10 @@
     appearance: none;
 }
 
+.filterLoading {
+    margin-bottom: 20px;
+}
+
 .application {
     width: 100%;
     padding: 16px;
@@ -260,7 +264,7 @@
         width: auto;
         min-width: 0;
     }
- 
+
     .notes {
         flex: 1 0 100%;
         margin-top: 16px;

@@ -22,6 +22,7 @@ const ViewArchivedApplication = () => {
     const location = useLocation();
     const confirm = useConfirm();
     const [isLoading, setIsLoading] = useState(true);
+    const [isFilteringApplications, setIsFilteringApplications] = useState(false);
     const { showErrorToast } = useToast();
     const jobStatus = preferences.archived_application_job_status;
     const toggleNotes = preferences.archived_application_show_notes;
@@ -35,6 +36,8 @@ const ViewArchivedApplication = () => {
     }));
 
     const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+        setIsFilteringApplications(true);
+
         try {
             const [, data] = await Promise.all([
                 updatePreferences({ archived_application_job_status: selectedStatus }),
@@ -43,6 +46,8 @@ const ViewArchivedApplication = () => {
             setArchivedApplications(Array.isArray(data) ? data : []);
         } catch (error) {
             showErrorToast((error as Error).message);
+        } finally {
+            setIsFilteringApplications(false);
         }
     };
 
@@ -168,6 +173,7 @@ const ViewArchivedApplication = () => {
                         <div className={styles.filterOption}>
                             <div>Filter by</div>
                             <select
+                                disabled={isFilteringApplications}
                                 role='listbox'
                                 value={jobStatus}
                                 onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
@@ -195,6 +201,12 @@ const ViewArchivedApplication = () => {
                             />
                         )}
                     </div>
+
+                    {isFilteringApplications && (
+                        <div className={styles.filterLoading}>
+                            <LoadingSpinner />
+                        </div>
+                    )}
 
                     {!hasApplications && (
                         <div>

@@ -48,6 +48,7 @@ const ViewApplication = () => {
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState(true);
+    const [isFilteringApplications, setIsFilteringApplications] = useState(false);
     const { showErrorToast } = useToast();
     const jobStatus = preferences.application_job_status;
     const toggleArchived = preferences.application_show_archive;
@@ -75,6 +76,8 @@ const ViewApplication = () => {
     }, [interviews]);
 
     const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+        setIsFilteringApplications(true);
+
         try {
             const [, jobApplications] = await Promise.all([
                 updatePreferences({ application_job_status: selectedStatus }),
@@ -83,6 +86,8 @@ const ViewApplication = () => {
             setApplications(Array.isArray(jobApplications) ? jobApplications : []);
         } catch (error) {
             showErrorToast((error as Error).message);
+        } finally {
+            setIsFilteringApplications(false);
         }
     };
 
@@ -261,6 +266,7 @@ const ViewApplication = () => {
                         <div className={styles.filterOption}>
                             <div>Filter by</div>
                             <select
+                                disabled={isFilteringApplications}
                                 value={jobStatus}
                                 onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
                             >
@@ -295,6 +301,12 @@ const ViewApplication = () => {
                             />
                         )}
                     </div>
+
+                    {isFilteringApplications && (
+                        <div className={styles.filterLoading}>
+                            <LoadingSpinner />
+                        </div>
+                    )}
 
                     {!hasApplications && (
                         <div>
