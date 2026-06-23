@@ -135,8 +135,8 @@ const ViewApplication = () => {
 
         scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
         // to remove the hash
-        navigate({ pathname: location.pathname, search: location.search }, { replace: true });
-    }, [applications, isLoading, location.hash, location.pathname, location.search, navigate]);
+        navigate(location.pathname, { replace: true });
+    }, [applications, isLoading, location.hash, location.pathname, navigate]);
 
     const handleEditNotes = (jobId: number, editedNotes: string) => {
         setNotes({ ...notes, [jobId]: editedNotes });

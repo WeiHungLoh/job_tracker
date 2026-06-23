@@ -88,8 +88,8 @@ const ViewArchivedApplication = () => {
         }
 
         scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
-        navigate({ pathname: location.pathname, search: location.search }, { replace: true });
-    }, [archivedApplications, isLoading, location.hash, location.pathname, location.search, navigate]);
+        navigate(location.pathname, { replace: true });
+    }, [archivedApplications, isLoading, location.hash, location.pathname, navigate]);
 
     const handleDelete = async (archivedApplicationId: number) => {
         try {
