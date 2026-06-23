@@ -12,6 +12,7 @@ import ToggleButton from '../../../components/toggleButton/ToggleButton';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 
 const jobStatusOrder: Record<JobStatus, number> = {
     Accepted: 1,
@@ -35,19 +36,20 @@ const sortApplications = (applications: JobApplication[]) => {
 
 const ViewApplication = () => {
     const api = useJobTrackerAPI();
+    const { preferences, updatePreferences } = useUserPreferences();
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [jobStatuses, setJobStatuses] = useState<Record<number, JobStatus>>({});
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
-    const [toggleArchived, setToggleArchived] = useState(false);
-    const [toggleNotes, setToggleNotes] = useState(false);
     const confirm = useConfirm();
-    const [jobStatus, setJobStatus] = useState<JobStatusFilter>('Show All');
     const showNotesTimeout = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
+    const jobStatus = preferences.application_job_status;
+    const toggleArchived = preferences.application_show_archive;
+    const toggleNotes = preferences.application_show_notes;
 
     const headers = [
         { label: 'Company', key: 'company_name' },
@@ -81,10 +83,11 @@ const ViewApplication = () => {
     }, [interviews]);
 
     const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
-        setJobStatus(selectedStatus);
-
         try {
-            const jobApplications = await api.application.listApplications({ jobStatus: selectedStatus });
+            const [, jobApplications] = await Promise.all([
+                updatePreferences({ application_job_status: selectedStatus }),
+                api.application.listApplications({ jobStatus: selectedStatus }),
+            ]);
             setApplications(Array.isArray(jobApplications) ? jobApplications : []);
         } catch (error) {
             showErrorToast((error as Error).message);
@@ -97,7 +100,7 @@ const ViewApplication = () => {
         const fetchData = async () => {
             try {
                 const [jobApplications, jobInterviews] = await Promise.all([
-                    api.application.listApplications({ jobStatus: 'Show All' }),
+                    api.application.listApplications({ jobStatus }),
                     api.interview.listInterviews(),
                 ]);
 
@@ -132,7 +135,9 @@ const ViewApplication = () => {
                     }
                     app.classList.remove(styles.highlighted);
 
-                    app.scrollIntoView({ behavior: 'smooth' });
+                    if (typeof app.scrollIntoView === 'function') {
+                        app.scrollIntoView({ behavior: 'smooth' });
+                    }
                     // Add the 'highlighted' class when the application scrolls into view,
                     // and remove it after 4 seconds to match transition time
                     app.classList.add(styles.highlighted);
@@ -244,7 +249,9 @@ const ViewApplication = () => {
                             clearTimeout(taskId);
                         }
                         app.classList.remove(styles.highlighted);
-                        app.scrollIntoView({ behavior: 'smooth' });
+                        if (typeof app.scrollIntoView === 'function') {
+                            app.scrollIntoView({ behavior: 'smooth' });
+                        }
 
                         // Add the 'highlighted' class when the application scrolls into view,
                         // and remove it after 4 seconds to match transition time
@@ -315,7 +322,7 @@ const ViewApplication = () => {
                             <ToggleButton
                                 data-testid='unhide-archive'
                                 toggled={toggleArchived}
-                                onToggle={() => setToggleArchived(!toggleArchived)}
+                                onToggle={() => void updatePreferences({ application_show_archive: !toggleArchived })}
                                 label='Unhide Archive'
                                 toggledLabel='Hide Archive'
                             />
@@ -324,7 +331,7 @@ const ViewApplication = () => {
                         {hasApplications && (
                             <ToggleButton
                                 toggled={toggleNotes}
-                                onToggle={() => setToggleNotes(!toggleNotes)}
+                                onToggle={() => void updatePreferences({ application_show_notes: !toggleNotes })}
                                 label='Unhide Notes'
                                 toggledLabel='Hide Notes'
                                 color='yellow'
@@ -362,7 +369,9 @@ const ViewApplication = () => {
                                         {DateFormatter(application.application_date).timeSinceApplication}
                                     </p>
                                     <div className={styles.badgeGroup}>
-                                        <p className={jobStatusClassMap[application.job_status]}>Job Status: {application.job_status}</p>
+                                        <p className={jobStatusClassMap[application.job_status]}>
+                                            Job Status: {application.job_status}
+                                        </p>
                                         {upcomingInterviewCountByJob[application.job_id] > 0 && (
                                             <span className={styles.upcomingBadge}>
                                                 {upcomingInterviewCountByJob[application.job_id]} Upcoming Interview
@@ -420,10 +429,7 @@ const ViewApplication = () => {
                                 </div>
 
                                 <div className={styles.buttonGroup}>
-                                    <PrimaryButton
-                                        variant='secondary'
-                                        onClick={() => toggleEditStatus(application)}
-                                    >
+                                    <PrimaryButton variant='secondary' onClick={() => toggleEditStatus(application)}>
                                         {application.edit_status ? 'Save Changes' : 'Edit Status'}
                                     </PrimaryButton>
 
@@ -435,7 +441,9 @@ const ViewApplication = () => {
                                     </PrimaryButton>
 
                                     <PrimaryButton
-                                        className={`${styles.archiveButton} ${!toggleArchived ? styles.archiveHidden : ''}`}
+                                        className={`${styles.archiveButton} ${
+                                            !toggleArchived ? styles.archiveHidden : ''
+                                        }`}
                                         onClick={() => handleArchive(application.job_id)}
                                         variant='secondary'
                                     >

@@ -47,6 +47,12 @@ import type {
     ListInterviewsResponse,
 } from '../pages/interview/models';
 import type {
+    GetUserPreferencesRequest,
+    GetUserPreferencesResponse,
+    UpdateUserPreferencesRequest,
+    UpdateUserPreferencesResponse,
+} from '../components/userPreferences/models';
+import type {
     LogoutRequest,
     LogoutResponse,
     SignInRequest,
@@ -274,6 +280,24 @@ export const useJobTrackerAPI = () => {
             },
         };
 
+        const userPreferences = {
+            async get() {
+                return await makeJobTrackerAPIRequest<GetUserPreferencesRequest, GetUserPreferencesResponse>(
+                    null,
+                    endpointConfig.userPreferences.get,
+                    'include'
+                );
+            },
+
+            async update(req: UpdateUserPreferencesRequest) {
+                return await makeJobTrackerAPIRequest<UpdateUserPreferencesRequest, UpdateUserPreferencesResponse>(
+                    req,
+                    endpointConfig.userPreferences.update,
+                    'include'
+                );
+            },
+        };
+
         return {
             ping,
             authentication,
@@ -281,6 +305,7 @@ export const useJobTrackerAPI = () => {
             interview,
             archivedApplication,
             archivedInterview,
+            userPreferences,
         };
     }, []);
 

@@ -72,3 +72,12 @@ export type User = {
     hashed_password: string;
     created_at: Date;
 };
+
+export type UserPreferences = {
+    user_id: number;
+    application_job_status: JobStatusFilter;
+    application_show_notes: boolean;
+    application_show_archive: boolean;
+    archived_application_job_status: JobStatusFilter;
+    archived_application_show_notes: boolean;
+};

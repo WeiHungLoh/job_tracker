@@ -1,4 +1,4 @@
-import type { JobStatus } from '../db/models.js';
+import type { JobStatus, JobStatusFilter } from '../db/models.js';
 
 const JOB_STATUSES: readonly string[] = [
     'Accepted',
@@ -28,3 +28,6 @@ export const isValidEmail = (value: unknown): value is string =>
 
 export const isJobStatus = (value: unknown): value is JobStatus =>
     typeof value === 'string' && JOB_STATUSES.includes(value);
+
+export const isJobStatusFilter = (value: unknown): value is JobStatusFilter =>
+    value === 'Show All' || isJobStatus(value);
