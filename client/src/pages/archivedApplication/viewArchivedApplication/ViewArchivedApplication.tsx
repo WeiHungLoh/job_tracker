@@ -23,14 +23,6 @@ const ViewArchivedApplication = () => {
     const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
 
-    const filteredApplications = archivedApplications.filter((app) => {
-        if (jobStatus === 'Show All') {
-            return true;
-        } else {
-            return app.job_status === jobStatus;
-        }
-    });
-
     const headers = [
         { label: 'Company', key: 'company_name' },
         { label: 'Job Title', key: 'job_title' },
@@ -41,7 +33,7 @@ const ViewArchivedApplication = () => {
         { label: 'Notes', key: 'notes' },
     ];
 
-    const data = filteredApplications.map((app) => ({
+    const data = archivedApplications.map((app) => ({
         ...app,
         application_date: DateFormatter(app.application_date).formattedDate,
         job_location: app.job_location ? app.job_location : 'N/A',
@@ -163,7 +155,7 @@ const ViewArchivedApplication = () => {
         Rejected: styles.rejected,
     };
 
-    const hasApplications = filteredApplications.length !== 0;
+    const hasApplications = archivedApplications.length !== 0;
 
     return (
         <div className={styles.archivedApplicationList}>
@@ -213,8 +205,8 @@ const ViewArchivedApplication = () => {
                         </div>
                     )}
 
-                    {filteredApplications &&
-                        filteredApplications.map((application, index) => (
+                    {archivedApplications &&
+                        archivedApplications.map((application, index) => (
                             <div
                                 className={styles.application}
                                 key={application.archived_job_id}
