@@ -36,11 +36,16 @@
     background-color: #fbc02d;
 }
 
+.switch.blue {
+    background-color: #2b83f6;
+}
+
 .switch:hover {
     border-color: #6f6f6f;
 }
 
 .switch.green .thumb,
-.switch.yellow .thumb {
+.switch.yellow .thumb,
+.switch.blue .thumb {
     left: 25px;
 }

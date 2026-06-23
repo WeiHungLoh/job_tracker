@@ -1,4 +1,4 @@
-export type ToggleButtonColor = 'green' | 'yellow';
+export type ToggleButtonColor = 'green' | 'yellow' | 'blue';
 
 export type ToggleButtonProps = {
     toggled: boolean;

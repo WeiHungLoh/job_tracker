@@ -18,8 +18,9 @@ const updateUserPreferences = async (
             application_job_status = COALESCE($2, application_job_status),
             application_show_notes = COALESCE($3, application_show_notes),
             application_show_archive = COALESCE($4, application_show_archive),
-            archived_application_job_status = COALESCE($5, archived_application_job_status),
-            archived_application_show_notes = COALESCE($6, archived_application_show_notes)
+            application_enable_scroll = COALESCE($5, application_enable_scroll),
+            archived_application_job_status = COALESCE($6, archived_application_job_status),
+            archived_application_show_notes = COALESCE($7, archived_application_show_notes)
          WHERE user_id = $1
          RETURNING *`,
         [
@@ -27,6 +28,7 @@ const updateUserPreferences = async (
             preferences.application_job_status,
             preferences.application_show_notes,
             preferences.application_show_archive,
+            preferences.application_enable_scroll,
             preferences.archived_application_job_status,
             preferences.archived_application_show_notes,
         ]

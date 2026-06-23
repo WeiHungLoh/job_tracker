@@ -50,6 +50,7 @@
     position: relative;
     margin-bottom: 20px;
     box-sizing: border-box;
+    overflow-anchor: none;
 }
 
 .buttonGroup {

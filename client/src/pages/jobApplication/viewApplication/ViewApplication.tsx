@@ -55,6 +55,7 @@ const ViewApplication = () => {
     const jobStatus = preferences.application_job_status;
     const toggleArchived = preferences.application_show_archive;
     const toggleNotes = preferences.application_show_notes;
+    const toggleScroll = preferences.application_enable_scroll;
 
     const data = applications.map((app) => ({
         ...app,
@@ -231,13 +232,15 @@ const ViewApplication = () => {
                         return sortApplications(updatedApplications);
                     });
 
-                    setTimeout(() => {
-                        scrollAndHighlight(
-                            String(application.job_id),
-                            styles.highlighted,
-                            showEditStatusTimeout.current
-                        );
-                    }, 100);
+                    if (toggleScroll) {
+                        setTimeout(() => {
+                            scrollAndHighlight(
+                                String(application.job_id),
+                                styles.highlighted,
+                                showEditStatusTimeout.current
+                            );
+                        }, 100);
+                    }
                 } else {
                     setApplications((current) =>
                         current.filter((item) => item.job_id !== application.job_id)
@@ -300,6 +303,18 @@ const ViewApplication = () => {
                                 <option value='Rejected'>Rejected</option>
                             </select>
                         </div>
+
+                        {hasApplications && (
+                            <ToggleButton
+                                toggled={toggleScroll}
+                                onToggle={() =>
+                                    void updatePreferences({ application_enable_scroll: !toggleScroll })
+                                }
+                                label='Enable Auto-Scroll'
+                                toggledLabel='Disable Auto-Scroll'
+                                color='blue'
+                            />
+                        )}
 
                         {hasApplications && (
                             <ToggleButton

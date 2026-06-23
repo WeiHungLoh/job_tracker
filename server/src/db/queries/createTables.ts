@@ -43,6 +43,7 @@ const createTables = async (): Promise<void> => {
             ),
             application_show_notes BOOLEAN NOT NULL DEFAULT false,
             application_show_archive BOOLEAN NOT NULL DEFAULT false,
+            application_enable_scroll BOOLEAN NOT NULL DEFAULT false,
             archived_application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
                 archived_application_job_status IN ('Show All', 'Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')
             ),

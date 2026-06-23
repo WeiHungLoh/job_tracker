@@ -41,6 +41,7 @@ router.patch(
             application_job_status,
             application_show_notes,
             application_show_archive,
+            application_enable_scroll,
             archived_application_job_status,
             archived_application_show_notes,
         } = req.body;
@@ -60,6 +61,7 @@ router.patch(
         if (
             !isOptionalBoolean(application_show_notes) ||
             !isOptionalBoolean(application_show_archive) ||
+            !isOptionalBoolean(application_enable_scroll) ||
             !isOptionalBoolean(archived_application_show_notes)
         ) {
             sendError(res, 422, 'Show notes and show archive preferences must be boolean values.');
