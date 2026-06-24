@@ -1,7 +1,10 @@
 import type { JobStatusCount, WeeklyApplicationCount } from '../dashboard/models';
 
-export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
-export type JobStatusFilter = JobStatus | 'Show All';
+export const JOB_STATUSES = ['Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected'] as const;
+export const JOB_STATUS_FILTER_OPTIONS = ['Show All', ...JOB_STATUSES] as const;
+
+export type JobStatus = (typeof JOB_STATUSES)[number];
+export type JobStatusFilter = (typeof JOB_STATUS_FILTER_OPTIONS)[number];
 
 export const JOB_STATUS_COLORS: Record<JobStatus, { color: string; borderColor: string }> = {
     Accepted: { color: '#198754', borderColor: '#0f7847ff' },

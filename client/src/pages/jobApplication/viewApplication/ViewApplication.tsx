@@ -1,4 +1,3 @@
-import type { JobApplication, JobStatus, JobStatusFilter } from '../models';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
@@ -6,7 +5,14 @@ import formatDate from '../../../helper/dateFormatter';
 import type { JobInterview } from '../../interview/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { APPLICATION_CSV_HEADERS } from '../models';
+import {
+    APPLICATION_CSV_HEADERS,
+    JOB_STATUSES,
+    JOB_STATUS_FILTER_OPTIONS,
+    type JobApplication,
+    type JobStatus,
+    type JobStatusFilter,
+} from '../models';
 import { routes } from '../../../routes';
 import { scrollAndHighlight } from '../../../helper/highlightElement';
 import styles from './ViewApplication.module.css';
@@ -65,7 +71,7 @@ const ViewApplication = () => {
         notes: app.notes ? app.notes : 'N/A',
     }));
 
-    const interviewJobIds = useMemo(() => interviews.map((interview) => interview.job_id), [interviews]);
+    const interviewJobIdSet = useMemo(() => new Set(interviews.map((interview) => interview.job_id)), [interviews]);
 
     const upcomingInterviewCountByJob = useMemo(() => {
         const now = new Date();
@@ -242,9 +248,7 @@ const ViewApplication = () => {
                         }, 100);
                     }
                 } else {
-                    setApplications((current) =>
-                        current.filter((item) => item.job_id !== application.job_id)
-                    );
+                    setApplications((current) => current.filter((item) => item.job_id !== application.job_id));
                 }
             }
         } catch (error) {
@@ -293,23 +297,18 @@ const ViewApplication = () => {
                                 value={jobStatus}
                                 onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
                             >
-                                <option value='Show All'>Show All</option>
-                                <option value='Accepted'>Accepted</option>
-                                <option value='Applied'>Applied</option>
-                                <option value='Declined'>Declined</option>
-                                <option value='Ghosted'>Ghosted</option>
-                                <option value='Interview'>Interview</option>
-                                <option value='Offer'>Offer</option>
-                                <option value='Rejected'>Rejected</option>
+                                {JOB_STATUS_FILTER_OPTIONS.map((status) => (
+                                    <option key={status} value={status}>
+                                        {status}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
                         {hasApplications && (
                             <ToggleButton
                                 toggled={toggleScroll}
-                                onToggle={() =>
-                                    void updatePreferences({ application_enable_scroll: !toggleScroll })
-                                }
+                                onToggle={() => void updatePreferences({ application_enable_scroll: !toggleScroll })}
                                 label='Enable Auto-Scroll'
                                 toggledLabel='Disable Auto-Scroll'
                                 color='blue'
@@ -395,18 +394,18 @@ const ViewApplication = () => {
                                                 }))
                                             }
                                         >
-                                            <option value='Accepted'>Accepted</option>
-                                            <option
-                                                value='Applied'
-                                                disabled={interviewJobIds.includes(application.job_id)}
-                                            >
-                                                Applied
-                                            </option>
-                                            <option value='Declined'>Declined</option>
-                                            <option value='Ghosted'>Ghosted</option>
-                                            <option value='Interview'>Interview</option>
-                                            <option value='Offer'>Offer</option>
-                                            <option value='Rejected'>Rejected</option>
+                                            {JOB_STATUSES.map((status) => (
+                                                <option
+                                                    key={status}
+                                                    value={status}
+                                                    disabled={
+                                                        status === 'Applied' &&
+                                                        interviewJobIdSet.has(application.job_id)
+                                                    }
+                                                >
+                                                    {status}
+                                                </option>
+                                            ))}
                                         </select>
                                     )}
 

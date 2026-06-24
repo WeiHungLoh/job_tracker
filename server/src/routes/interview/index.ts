@@ -27,8 +27,7 @@ router.post(
         const { jobId, interviewDate, interviewLocation, interviewType, notes } = req.body;
 
         if (
-            !Number.isInteger(jobId) ||
-            jobId <= 0 ||
+            !isPositiveInteger(jobId) ||
             !isValidDate(interviewDate) ||
             !isNonEmptyString(interviewLocation) ||
             !isString(interviewType) ||

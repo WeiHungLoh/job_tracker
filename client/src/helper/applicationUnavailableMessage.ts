@@ -13,5 +13,7 @@ export const getApplicationUnavailableMessage = (
         return `${labels.applicationLabel} is not available in ${labels.applicationsPageLabel}.`;
     }
 
-    return `${labels.applicationLabel} is not inside the current ${selectedStatus} filter. Change the ${labels.statusFilterLabel} to Show All${applicationStatus ? ` or ${applicationStatus}` : ''}.`;
+    return `${labels.applicationLabel} is not inside the current ${selectedStatus} filter. Change the ${
+        labels.statusFilterLabel
+    } to Show All${applicationStatus ? ` or ${applicationStatus}` : ''}.`;
 };

@@ -16,8 +16,8 @@ const guideSections: readonly UserGuideSection[] = [
                 <p>The dashboard gives you a quick visual overview of your job search progress:</p>
                 <ul>
                     <li>
-                        <strong>Stat cards:</strong> Shows total applications, applications added this week, upcoming interviews, offers
-                        received, and response rate.
+                        <strong>Stat cards:</strong> Shows total applications, applications added this week, upcoming
+                        interviews, offers received, and response rate.
                     </li>
                     <li>
                         <strong>Line chart:</strong> Shows applications added over the past eight weeks. Each x-axis

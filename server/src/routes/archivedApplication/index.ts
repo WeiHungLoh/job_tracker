@@ -16,7 +16,7 @@ import {
 } from '../../db/queries/archivedJobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
-import { isJobStatus, isPositiveInteger } from '../../http/validation.js';
+import { isPositiveInteger, toJobStatusQueryValue } from '../../http/validation.js';
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ router.post(
         req: Request<Record<string, never>, ArchiveApplicationResponse, ArchiveApplicationRequest>,
         res: Response<ArchiveApplicationResponse>
     ): Promise<void> => {
-        if (!Number.isInteger(req.body.jobId) || req.body.jobId <= 0) {
+        if (!isPositiveInteger(req.body.jobId)) {
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
@@ -54,14 +54,13 @@ router.get(
         >,
         res: Response<ListArchivedApplicationsResponse>
     ): Promise<void> => {
-        const requestedStatus = req.query.jobStatus ?? 'Show All';
-        if (requestedStatus !== 'Show All' && !isJobStatus(requestedStatus)) {
+        const jobStatus = toJobStatusQueryValue(req.query.jobStatus);
+        if (jobStatus === undefined) {
             sendError(res, 422, 'A supported job status or Show All is required.');
             return;
         }
 
         try {
-            const jobStatus = requestedStatus === 'Show All' ? null : requestedStatus;
             res.status(200).json(await getArchivedJobApplications(req.user.id, jobStatus));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived job applications.');

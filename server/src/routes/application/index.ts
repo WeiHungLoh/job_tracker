@@ -24,7 +24,14 @@ import {
     updateJobStatus,
 } from '../../db/queries/jobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isJobStatus, isNonEmptyString, isPositiveInteger, isString, isValidDate } from '../../http/validation.js';
+import {
+    isJobStatus,
+    isNonEmptyString,
+    isPositiveInteger,
+    isString,
+    isValidDate,
+    toJobStatusQueryValue,
+} from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -64,14 +71,13 @@ router.get(
         req: Request<Record<string, never>, ListApplicationsResponse, Record<string, never>, ListApplicationsQuery>,
         res: Response<ListApplicationsResponse>
     ): Promise<void> => {
-        const requestedStatus = req.query.jobStatus ?? 'Show All';
-        if (requestedStatus !== 'Show All' && !isJobStatus(requestedStatus)) {
+        const jobStatus = toJobStatusQueryValue(req.query.jobStatus);
+        if (jobStatus === undefined) {
             sendError(res, 422, 'A supported job status or Show All is required.');
             return;
         }
 
         try {
-            const jobStatus = requestedStatus === 'Show All' ? null : requestedStatus;
             res.status(200).json(await getJobApplications(req.user.id, jobStatus));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load job applications.');

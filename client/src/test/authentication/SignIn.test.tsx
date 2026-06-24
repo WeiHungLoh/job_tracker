@@ -33,14 +33,12 @@ describe('User sign in flow', () => {
     });
 
     test('signs in successfully and redirects to /application/add page', async () => {
-        globalThis.fetch
-            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' })
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                headers: new Headers({ 'content-type': 'application/json' }),
-                json: async () => ({ message: 'Successfully signed in' }),
-            });
+        globalThis.fetch.mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' }).mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ message: 'Successfully signed in' }),
+        });
 
         render(
             <MemoryRouter>

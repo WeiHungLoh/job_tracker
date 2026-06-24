@@ -69,15 +69,21 @@ const createTables = async (): Promise<void> => {
             WHERE user_preferences.user_id = users.user_id
         )`;
 
+    const setupQueries = [
+        createUsersTable,
+        createJobAppTable,
+        createInterviewTable,
+        createUserPreferencesTable,
+        populateUserPreferences,
+        createJobApplicationArchiveIndex,
+        createInterviewArchiveIndex,
+        createInterviewJobIdIndex,
+    ];
+
     try {
-        await pool.query(createUsersTable);
-        await pool.query(createJobAppTable);
-        await pool.query(createInterviewTable);
-        await pool.query(createUserPreferencesTable);
-        await pool.query(populateUserPreferences);
-        await pool.query(createJobApplicationArchiveIndex);
-        await pool.query(createInterviewArchiveIndex);
-        await pool.query(createInterviewJobIdIndex);
+        for (const query of setupQueries) {
+            await pool.query(query);
+        }
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         console.log('Unable to create tables ' + message);

@@ -4,6 +4,7 @@ import type { ArchivedJobInterview } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
+import { INTERVIEW_CSV_HEADERS } from '../../interview/models';
 import { Link, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -42,15 +43,6 @@ const ViewArchivedInterview = () => {
             isActive = false;
         };
     }, []);
-
-    const headers = [
-        { label: 'Company', key: 'company_name' },
-        { label: 'Job Title', key: 'job_title' },
-        { label: 'Location', key: 'interview_location' },
-        { label: 'Interview Date', key: 'interview_date' },
-        { label: 'Interview Type', key: 'interview_type' },
-        { label: 'Additional Notes', key: 'notes' },
-    ];
 
     const data = archivedInterviews.map((interview) => ({
         ...interview,
@@ -202,7 +194,7 @@ const ViewArchivedInterview = () => {
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
-                                        headers={headers}
+                                        headers={INTERVIEW_CSV_HEADERS}
                                         filename='archived_job_interviews.csv'
                                         style={{ color: 'inherit', textDecoration: 'none' }}
                                     >

@@ -3,8 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
-import { APPLICATION_CSV_HEADERS } from '../../jobApplication/models';
-import type { JobStatus, JobStatusFilter } from '../../jobApplication/models';
+import {
+    APPLICATION_CSV_HEADERS,
+    JOB_STATUS_FILTER_OPTIONS,
+    type JobStatus,
+    type JobStatusFilter,
+} from '../../jobApplication/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { scrollAndHighlight } from '../../../helper/highlightElement';
@@ -175,14 +179,11 @@ const ViewArchivedApplication = () => {
                                 value={jobStatus}
                                 onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
                             >
-                                <option value='Show All'>Show All</option>
-                                <option value='Accepted'>Accepted</option>
-                                <option value='Applied'>Applied</option>
-                                <option value='Declined'>Declined</option>
-                                <option value='Ghosted'>Ghosted</option>
-                                <option value='Interview'>Interview</option>
-                                <option value='Offer'>Offer</option>
-                                <option value='Rejected'>Rejected</option>
+                                {JOB_STATUS_FILTER_OPTIONS.map((status) => (
+                                    <option key={status} value={status}>
+                                        {status}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 

@@ -9,7 +9,7 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
-import type { JobStatus } from '../models';
+import { JOB_STATUSES, type JobStatus } from '../models';
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState('');
@@ -75,7 +75,7 @@ const AddApplication = () => {
 
     return (
         <div className={styles.addApplication}>
-            <br/>
+            <br />
             <label htmlFor='company-name'>Input Company Name</label>
             <input id='company-name' value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
 
@@ -84,13 +84,11 @@ const AddApplication = () => {
 
             <label>Input Job Status</label>
             <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value as JobStatus)}>
-                <option value='Accepted'>Accepted</option>
-                <option value='Applied'>Applied</option>
-                <option value='Declined'>Declined</option>
-                <option value='Ghosted'>Ghosted</option>
-                <option value='Interview'>Interview</option>
-                <option value='Offer'>Offer</option>
-                <option value='Rejected'>Rejected</option>
+                {JOB_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                        {status}
+                    </option>
+                ))}
             </select>
 
             <label htmlFor='app-date'>Input Application Date (uses current date if left blank)</label>

@@ -46,12 +46,11 @@ const DashboardStats = () => {
                     .reduce((sum, row) => sum + Number(row.count), 0);
                 const responseRate = total > 0 ? `${Math.round((responded / total) * 100)}%` : '—';
 
-                const thisWeek = weeklyList.length > 0 ? Number(weeklyList[weeklyList.length - 1].applications_count) : 0;
+                const thisWeek =
+                    weeklyList.length > 0 ? Number(weeklyList[weeklyList.length - 1].applications_count) : 0;
 
                 const now = new Date();
-                const activeInterviews = interviewList.filter(
-                    (i) => new Date(i.interview_date) > now
-                ).length;
+                const activeInterviews = interviewList.filter((i) => new Date(i.interview_date) > now).length;
 
                 setStats({
                     total,
@@ -84,7 +83,7 @@ const DashboardStats = () => {
         { icon: 'briefcase' as const, label: 'Applied this Week', value: stats.thisWeek },
         { icon: 'interview' as const, label: 'Upcoming Interviews', value: stats.activeInterviews },
         { icon: 'success' as const, label: 'Offers Received', value: stats.offers },
-        { icon: 'highlight' as const, label: 'Response Rate', value: stats.responseRate }
+        { icon: 'highlight' as const, label: 'Response Rate', value: stats.responseRate },
     ];
 
     return (

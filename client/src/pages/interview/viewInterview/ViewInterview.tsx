@@ -3,7 +3,7 @@ import { type MouseEvent, useEffect, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
-import type { JobInterview } from '../models';
+import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 // Taken from: https://www.npmjs.com/package/react-csv
@@ -42,15 +42,6 @@ const ViewInterview = () => {
             isActive = false;
         };
     }, []);
-
-    const headers = [
-        { label: 'Company', key: 'company_name' },
-        { label: 'Job Title', key: 'job_title' },
-        { label: 'Location', key: 'interview_location' },
-        { label: 'Interview Date', key: 'interview_date' },
-        { label: 'Interview Type', key: 'interview_type' },
-        { label: 'Additional Notes', key: 'notes' },
-    ];
 
     const data = interviews.map((interview) => ({
         ...interview,
@@ -190,7 +181,7 @@ const ViewInterview = () => {
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
                                         data={data}
-                                        headers={headers}
+                                        headers={INTERVIEW_CSV_HEADERS}
                                         filename='job_interviews.csv'
                                         style={{ color: 'inherit', textDecoration: 'none' }}
                                     >

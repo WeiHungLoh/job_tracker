@@ -31,3 +31,17 @@ export type DeleteInterviewResponse = null;
 
 export type DeleteAllInterviewsRequest = null;
 export type DeleteAllInterviewsResponse = null;
+
+export type InterviewCsvHeader = {
+    label: string;
+    key: string;
+};
+
+export const INTERVIEW_CSV_HEADERS: InterviewCsvHeader[] = [
+    { label: 'Company', key: 'company_name' },
+    { label: 'Job Title', key: 'job_title' },
+    { label: 'Location', key: 'interview_location' },
+    { label: 'Interview Date', key: 'interview_date' },
+    { label: 'Interview Type', key: 'interview_type' },
+    { label: 'Additional Notes', key: 'notes' },
+];
