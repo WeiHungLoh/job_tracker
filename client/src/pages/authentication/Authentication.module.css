@@ -4,10 +4,10 @@
     padding: 32px;
     margin: 0;
     box-sizing: border-box;
-    background-color: #fff;
-    border: 1px solid #f0e7eb;
+    background-color: var(--colorAuthCardBg);
+    border: 1px solid var(--colorAuthCardBorder);
     border-radius: 12px;
-    box-shadow: 0 16px 40px rgb(64 32 48 / 10%);
+    box-shadow: 0 16px 40px var(--colorAuthCardShadow);
     animation: fadeIn 0.5s ease-in-out;
     height: 100%;
 }
@@ -39,7 +39,7 @@
 }
 
 .card label {
-    color: #343a40;
+    color: var(--colorLabel);
     font-size: 1rem;
     font-weight: 600;
 }
@@ -50,8 +50,8 @@
     padding: 0 12px;
     display: flex;
     align-items: center;
-    background: #fff;
-    border: 1px solid #d9dde3;
+    background: var(--colorInputBg);
+    border: 1px solid var(--colorInputBorder);
     border-radius: 10px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -59,7 +59,7 @@
 .inputBox:focus-within,
 .passwordWrapper:focus-within {
     border-color: var(--colorPrimary);
-    box-shadow: 0 0 0 3px rgb(241 53 109 / 12%);
+    box-shadow: 0 0 0 3px var(--colorPrimaryFocusShadow);
 }
 
 .inputBox input,
@@ -75,12 +75,12 @@
 
 .leftIcon {
     flex-shrink: 0;
-    color: #8a8f98;
+    color: var(--colorInputIcon);
 }
 
 .toggleVisibility {
     flex-shrink: 0;
-    color: #6c757d;
+    color: var(--colorVisibilityIcon);
 }
 
 .toggleVisibility:hover {
@@ -90,7 +90,7 @@
 .authLink {
     display: block;
     margin-top: 20px;
-    color: #0d6efd;
+    color: var(--colorAuthLink);
     font-size: 0.875rem;
     font-weight: 600;
     text-align: center;
@@ -98,7 +98,7 @@
 }
 
 .authLink:hover {
-    color: #084298;
+    color: var(--colorAuthLinkHover);
     text-decoration: underline;
 }
 
@@ -108,9 +108,9 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    background-color: #e6f4ff;
-    color: #084298;
-    border-left: 4px solid #0d6efd;
+    background-color: var(--colorNoticeBg);
+    color: var(--colorNoticeText);
+    border-left: 4px solid var(--colorNoticeBorder);
     border-radius: 6px;
     font-size: 0.8125rem;
     line-height: 1.5;
@@ -125,8 +125,8 @@
     margin-top: 16px;
     display: flex;
     justify-content: center;
-    background-color: #0d6efd;
-    color: #fff;
+    background-color: var(--colorGuideLinkBg);
+    color: var(--colorGuideLinkText);
     border-radius: 6px;
     font-size: 0.8125rem;
     font-weight: 600;
@@ -135,13 +135,9 @@
 }
 
 .userGuideLink:hover {
-    background-color: #084298;
+    background-color: var(--colorGuideLinkHover);
 }
 
-/* Delay autofill background colour from appearing. */
-.card input:-webkit-autofill {
-    transition: background-color 1000s;
-}
 
 @media (max-width: 480px) {
     .card {

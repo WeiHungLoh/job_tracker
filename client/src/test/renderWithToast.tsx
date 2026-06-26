@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { RenderOptions } from '@testing-library/react';
+import { ThemeProvider } from '../components/theme/ThemeContext';
 import { ToastProvider } from '../components/toast/ToastProvider';
 import { UserPreferencesProvider } from '../components/userPreferences/UserPreferencesProvider';
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../components/userPreferences/models';
@@ -29,11 +30,13 @@ const TestProviders = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <ToastProvider>
-            <UserPreferencesProvider preferences={preferences} updatePreferences={updatePreferences}>
-                {children}
-            </UserPreferencesProvider>
-        </ToastProvider>
+        <ThemeProvider>
+            <ToastProvider>
+                <UserPreferencesProvider preferences={preferences} updatePreferences={updatePreferences}>
+                    {children}
+                </UserPreferencesProvider>
+            </ToastProvider>
+        </ThemeProvider>
     );
 };
 

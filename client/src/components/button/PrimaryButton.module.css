@@ -7,11 +7,11 @@
     padding: 8px 10px;
     border-radius: 10px;
     background-color: var(--colorPrimary);
-    color: #fff;
+    color: var(--colorBtnPrimaryText);
 }
 
 .compact {
-    color: whitesmoke;
+    color: var(--colorBtnCompactText);
     font-size: 0.875rem;
 }
 
@@ -43,19 +43,19 @@
 }
 
 .secondary:hover {
-    background-color: rgb(241 53 109 / 8%);
+    background-color: var(--colorBtnSecondaryHoverBg);
 }
 
 .destructive {
     padding: 8px 10px;
     border-radius: 10px;
-    background-color: #dc3545;
-    color: #fff;
+    background-color: var(--colorBtnDestructiveBg);
+    color: var(--colorBtnPrimaryText);
     transition: background-color 0.2s ease;
 }
 
 .destructive:hover {
-    background-color: #c82333;
+    background-color: var(--colorBtnDestructiveHoverBg);
 }
 
 .icon {

@@ -6,7 +6,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background-color: #f4f3f8;
+    background-color: var(--colorOverlayBg);
     box-sizing: border-box;
     text-align: center;
 }
@@ -20,18 +20,19 @@
     gap: 16px;
     padding: 32px;
     border-radius: 16px;
-    background-color: #fff;
+    background-color: var(--colorCardBg);
     box-sizing: border-box;
 }
 
 .content h2 {
     margin: 0;
-    color: #4a148c;
+    color: var(--colorNavInactiveText);
     font-size: 1.5rem;
+    font-weight: 500;
 }
 
 .content p {
     margin: 0;
-    color: #666;
+    color: var(--colorTextSecondary);
     font-size: 1rem;
 }

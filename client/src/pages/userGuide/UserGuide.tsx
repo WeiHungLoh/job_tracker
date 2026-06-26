@@ -77,7 +77,9 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <p>
                     Select <code>Click here to view corresponding job application</code> to return to the related
-                    application. The application is scrolled into view and highlighted for four seconds.
+                    application. The application is scrolled into view and highlighted for four seconds. This only
+                    works if the corresponding application is visible in the current filter on the applications page
+                    (e.g. if the application has status <code>Interview</code>, the filter must include that status).
                 </p>
                 <p>
                     Both active and archived interviews are sorted with upcoming interviews first (closest date at the
@@ -171,15 +173,42 @@ const guideSections: readonly UserGuideSection[] = [
     },
     {
         id: 'highlighting',
-        title: 'Highlighting and navigation feedback',
+        title: 'Auto scroll and highlighting',
         icon: 'highlight',
         content: (
             <>
                 <p>
-                    After a status update, the application scrolls into view and receives a green highlight for four
-                    seconds. No highlight is shown when the status did not change.
+                    Use the <strong>Enable auto scroll</strong> toggle at the top of the application viewer to
+                    control scrolling behavior. When enabled (green), changing the job status via the edit dropdown
+                    will automatically scroll the application into view. When disabled (yellow), the page stays in
+                    place after a status change.
+                </p>
+                <p>
+                    After a status update, the application receives a green highlight for four seconds. No highlight
+                    is shown when the status did not change.
                 </p>
                 <p>The same feedback appears when navigating from an interview to its corresponding application.</p>
+            </>
+        ),
+    },
+    {
+        id: 'dark-mode',
+        title: 'Dark mode',
+        icon: 'darkMode',
+        content: (
+            <>
+                <p>
+                    Click the moon or sun icon in the navigation bar to switch between light and dark mode. The icon
+                    appears between the archive toggle and the Logout link.
+                </p>
+                <p>
+                    Your preference is saved to <strong>localStorage</strong> and persists across sessions. On your first
+                    visit, if no saved preference is found, the app checks your operating system setting (light or dark
+                    mode) and uses that.
+                </p>
+                <p>
+                    All colours — text, backgrounds, buttons, badges, charts and form inputs — adapt automatically.
+                </p>
             </>
         ),
     },

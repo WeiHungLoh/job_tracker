@@ -8,115 +8,127 @@ import {
     Title,
     Tooltip,
 } from 'chart.js';
-import { useEffect, useState } from 'react';
-import type { ChartOptions } from 'chart.js';
+import { useEffect, useMemo, useRef } from 'react';
 import formatDate from '../../helper/dateFormatter';
 import { Line } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
-import type { WeeklyApplicationCount } from './models';
 import styles from './ApplicationsLineChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
-import { useToast } from '../../components/toast/ToastProvider';
+import { useTheme } from '../../components/theme/ThemeContext';
+import { useChartData } from './useChartData';
+import { BASE_OPTIONS, LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
 
 ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
 
+const LINE_COLOR = { bg: '#17a2b8', border: '#17a2b8' };
+
+const THEME_TEXT = {
+    light: { title: '#343a40', tick: '#666', grid: 'rgba(0,0,0,0.1)', legend: '#343a40' },
+    dark: { title: '#dee2e6', tick: '#adb5bd', grid: 'rgba(255,255,255,0.12)', legend: '#dee2e6' },
+} as const;
+
 const ApplicationsLineChart = () => {
     const api = useJobTrackerAPI();
-    const [applications, setApplications] = useState<WeeklyApplicationCount[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const { showErrorToast } = useToast();
+    const { data: applications, isLoading } = useChartData(() => api.application.listWeeklyApplications());
+    const { theme } = useTheme();
+    const chartRef = useRef<ChartJS<'line'>>(null);
+
+    const byWeek = useMemo(() => {
+        const acc: Record<string, string> = {};
+        for (const row of applications) {
+            acc[row.start_of_week] = row.applications_count;
+        }
+        return acc;
+    }, [applications]);
+
+    const total = useMemo(() => {
+        return Object.values(byWeek).reduce((sum, v) => sum + parseInt(v), 0);
+    }, [byWeek]);
+
+    const data = useMemo(() => {
+        return {
+            labels: Object.keys(byWeek).map((d) => formatDate(d).formattedDay),
+            datasets: [{ label: 'Applications Applied', data: Object.values(byWeek), ...LINE_COLOR }],
+        };
+    }, [byWeek]);
 
     useEffect(() => {
-        let isActive = true;
+        const chart = chartRef.current;
+        if (!chart) {
+            return;
+        }
 
-        const fetchApplications = async () => {
-            try {
-                const data = await api.application.listWeeklyApplications();
-                if (isActive) setApplications(Array.isArray(data) ? data : []);
-            } catch (error) {
-                showErrorToast((error as Error).message);
-            } finally {
-                if (isActive) setIsLoading(false);
-            }
-        };
+        const c = THEME_TEXT[theme];
+        const opts = chart.options;
 
-        void fetchApplications();
-        return () => {
-            isActive = false;
-        };
-    }, []);
+        if (opts.scales?.x?.ticks) {
+            opts.scales.x.ticks.color = c.tick;
+        }
+        if (opts.scales?.x?.grid) {
+            opts.scales.x.grid.color = c.grid;
+        }
+        if (opts.scales?.y?.ticks) {
+            opts.scales.y.ticks.color = c.tick;
+        }
+        if (opts.scales?.y?.grid) {
+            opts.scales.y.grid.color = c.grid;
+        }
+        if (opts.plugins?.legend?.labels) {
+            opts.plugins.legend.labels.color = c.legend;
+        }
+        if (opts.plugins?.title) {
+            opts.plugins.title.color = c.title;
+        }
 
-    const applicationByWeekCountPair = applications.reduce<Record<string, string>>((acc, row) => {
-        acc[row.start_of_week] = row.applications_count;
-        return acc;
-    }, {} as Record<string, string>);
+        chart.data.datasets.forEach(function (ds) {
+            ds.backgroundColor = LINE_COLOR.bg;
+            ds.borderColor = LINE_COLOR.border;
+        });
 
-    const totalApplications = Object.values(applicationByWeekCountPair).reduce((sum, val) => sum + parseInt(val), 0);
+        chart.update();
+    }, [theme, data]);
 
-    const data = {
-        labels: Object.keys(applicationByWeekCountPair).map((date) => formatDate(date).formattedDay),
-        datasets: [
-            {
-                label: 'Applications Applied',
-                data: Object.values(applicationByWeekCountPair),
-                backgroundColor: '#17A2B8',
-                borderColor: '#0c8699ff',
-            },
-        ],
-    };
+    if (isLoading) {
+        return <LoadingSpinner size='sm' />;
+    }
 
-    const options: ChartOptions<'line'> = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                ticks: {},
-            },
-        },
-        plugins: {
-            title: {
-                display: true,
-                text: 'Application Trend Over the Past 8 Weeks',
-                font: {
-                    size: 16,
-                    weight: 'bold',
-                },
-                padding: {
-                    top: 20,
-                    bottom: 20,
-                },
-                color: 'black',
-            },
-            legend: {
-                position: 'bottom',
-                labels: {
-                    usePointStyle: true,
-                    pointStyle: 'circle',
-                    padding: 20,
-                    font: {
-                        size: 14,
-                    },
-                },
-            },
-        },
-    };
+    if (total === 0) {
+        return (
+            <div className={styles.noApplicationMessage}>
+                No job applications applied in the last eight weeks. Start adding some to see your progress
+                here!
+            </div>
+        );
+    }
 
     return (
         <div className={styles.applicationLineChart}>
-            {isLoading ? (
-                <LoadingSpinner size='sm' />
-            ) : totalApplications === 0 ? (
-                <div className={styles.noApplicationMessage}>
-                    No job applications applied in the last eight weeks. Start adding some to see your progress here!
-                </div>
-            ) : (
-                <>
-                    <Line data={data} options={options} />
-                    <div className={styles.application}>
-                        Total Applications Applied in the Past Eight Weeks: {totalApplications}
-                    </div>
-                </>
-            )}
+            <Line
+                ref={chartRef}
+                data={data}
+                options={{
+                    ...BASE_OPTIONS,
+                    scales: {
+                        x: { ticks: {}, grid: {} },
+                        y: { ticks: {}, grid: {} },
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Application Trend Over the Past 8 Weeks',
+                            font: TITLE_FONT,
+                            padding: TITLE_PADDING,
+                        },
+                        legend: {
+                            position: 'bottom' as const,
+                            labels: LEGEND_LABELS,
+                        },
+                    },
+                }}
+            />
+            <div className={styles.application}>
+                Total Applications Applied in the Past Eight Weeks: {total}
+            </div>
         </div>
     );
 };

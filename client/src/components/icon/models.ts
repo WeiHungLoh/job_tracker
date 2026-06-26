@@ -20,7 +20,9 @@ export type IconName =
     | 'sort'
     | 'success'
     | 'visibility'
-    | 'visibilityOff';
+    | 'visibilityOff'
+    | 'darkMode'
+    | 'lightMode';
 
 export type IconProps = HTMLAttributes<SVGElement> & {
     name: IconName;

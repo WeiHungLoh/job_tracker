@@ -24,7 +24,9 @@
     padding: 8px 10px;
     margin-top: 10px;
     margin-bottom: 10px;
-    border: 1px solid #f0d8e0;
+    background: var(--colorInputBg);
+    color: var(--colorInputText);
+    border: 1px solid var(--colorCardBorder);
     border-radius: 10px;
     outline: none;
     box-sizing: border-box;
@@ -37,7 +39,7 @@
 
 .addInterview input:focus {
     border-color: var(--colorPrimary);
-    box-shadow: 0 0 0 3px rgb(241 53 109 / 12%);
+    box-shadow: 0 0 0 3px var(--colorPrimaryFocusShadow);
 }
 
 .submitButton {
@@ -59,6 +61,10 @@
 
     .addInterview label {
         font-size: 0.8rem;
+    }
+
+    .addInterview input {
+        font-size: 0.875rem;
     }
 
     .addInterview button {

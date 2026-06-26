@@ -4,5 +4,5 @@
     display: flex;
     justify-content: center;
     box-sizing: border-box;
-    background-color: #f8f7fb;
+    background-color: var(--colorPageBg);
 }

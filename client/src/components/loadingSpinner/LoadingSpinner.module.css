@@ -7,12 +7,12 @@
 
 .primary {
     --spinnerColor: var(--colorPrimary);
-    --spinnerTrackColor: #e1e3e6;
+    --spinnerTrackColor: var(--colorSpinnerTrack);
 }
 
 .light {
-    --spinnerColor: #fff;
-    --spinnerTrackColor: rgb(255 255 255 / 35%);
+    --spinnerColor: var(--colorSpinnerLight);
+    --spinnerTrackColor: var(--colorSpinnerLightTrack);
 }
 
 .loadingSpinner::before {

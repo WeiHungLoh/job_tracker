@@ -3,7 +3,7 @@
     align-items: center;
     max-width: 1150px;
     margin: auto;
-    border-bottom: 1px solid #f0d8e0;
+    border-bottom: 1px solid var(--colorNavBorder);
     padding: 0 16px;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .active {
-    color: red;
+    color: var(--colorNavActiveText);
     font-weight: bold;
 }
 
@@ -52,25 +52,27 @@
     left: 0;
     height: 3px;
     border-radius: 3px 3px 0 0;
-    background-color: red;
+    background-color: var(--colorNavActiveText);
     content: '';
 }
 
 .inactive,
 .archiveStatus {
-    color: blue;
+    color: var(--colorNavInactiveText);
 }
 
 .navbar a:hover,
-.archiveStatus:hover {
-    background-color: rgb(241 53 109 / 8%);
+.archiveStatus:hover,
+.inactive:hover {
+    background-color: var(--colorNavHoverBg);
     color: var(--colorPrimary);
 }
 
 .navbar h1 {
     flex-shrink: 0;
-    color: #4a148c;
+    color: var(--colorNavInactiveText);
     font-size: 1.75rem;
+    font-weight: 600;
 }
 
 @media (max-width: 1150px) {

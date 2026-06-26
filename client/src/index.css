@@ -1,9 +1,257 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 :root {
+    --fontFamilyBase: 'Quicksand', sans-serif;
+}
+
+[data-theme='light'] {
+    /* Status badges */
+    --colorStatusApplied: #17a2b8;
+    --colorStatusInterview: #0d6efd;
+    --colorStatusOffer: #ffc107;
+    --colorStatusAccepted: #198754;
+    --colorStatusRejected: #dc3545;
+    --colorStatusGhosted: #6c757d;
+    --colorStatusDeclined: rebeccapurple;
+    --colorBadgeText: white;
+
+    /* Primary accent */
+    /* Primary accent */
     --colorPrimary: #f1356d;
     --colorPrimaryHover: #d12b5a;
-    --fontFamilyBase: 'Quicksand', sans-serif;
+    --colorPrimaryFocusShadow: rgb(241 53 109 / 12%);
+    --colorPrimaryFocusOutline: rgb(241 53 109 / 28%);
+
+    /* Backgrounds */
+    --colorPageBg: #fff;
+    --colorCardBg: #fff;
+    --colorCardBorder: #f0d8e0;
+    --colorOverlayBg: #f4f3f8;
+
+    /* Text */
+    --colorText: #343a40;
+    --colorTextSecondary: #666;
+
+    /* Links */
+    --colorLinkBg: #e0f0ff;
+    --colorLinkText: #0d6efd;
+    --colorLinkHoverBg: #d0e8ff;
+
+    /* Inputs */
+    --colorInputBg: #fff;
+    --colorInputText: black;
+    --colorInputBorder: #d9dde3;
+    --colorLabel: #343a40;
+    --colorInputIcon: #8a8f98;
+    --colorVisibilityIcon: #6c757d;
+
+    /* Auth page */
+    --colorAuthCardBg: #fff;
+    --colorAuthCardBorder: #f0e7eb;
+    --colorAuthCardShadow: rgb(64 32 48 / 10%);
+    --colorAuthLink: #0d6efd;
+    --colorAuthLinkHover: #084298;
+    --colorNoticeBg: #e6f4ff;
+    --colorNoticeText: #084298;
+    --colorNoticeBorder: #0d6efd;
+    --colorGuideLinkBg: #0d6efd;
+    --colorGuideLinkText: #fff;
+    --colorGuideLinkHover: #084298;
+
+    /* Nav */
+    --colorNavHoverBg: rgb(241 53 109 / 8%);
+    --colorNavBorder: #f0d8e0;
+    --colorNavActiveText: red;
+    --colorNavInactiveText: blue;
+
+    /* Buttons */
+    --colorBtnPrimaryText: #fff;
+    --colorBtnCompactText: #fff;
+    --colorBtnSecondaryHoverBg: rgb(241 53 109 / 8%);
+    --colorBtnDestructiveBg: #dc3545;
+    --colorBtnDestructiveHoverBg: #c82333;
+
+    /* Notes */
+    --colorNotesBg: #fff9c4;
+    --colorNotesBorder: #fbc02d;
+    --colorNotesText: #495057;
+    --colorNotesShadow: rgba(0, 0, 0, 0.1);
+
+    /* Misc accents */
+    --colorLocationText: #2a9d8f;
+    --colorInterviewType: #5e60ce;
+    --colorTimeLeft: red;
+    --colorUpcomingBadge: #f57c00;
+    --colorUpcomingBadgeText: #fff;
+    --colorHighlightAnim: #dfffd9;
+
+    /* Toast */
+    --colorToastErrorBg: #ffdddc;
+    --colorToastErrorText: #ee443f;
+    --colorToastSuccessBg: #d4edda;
+    --colorToastSuccessText: #155724;
+    --colorToastShadow: rgb(0 0 0 / 8%);
+
+    /* Spinner */
+    --colorSpinnerTrack: #e1e3e6;
+    --colorSpinnerLight: #fff;
+    --colorSpinnerLightTrack: rgb(255 255 255 / 35%);
+
+    /* Toggle switch */
+    --colorSwitchOff: #b7b9ba;
+    --colorSwitchOffBorder: #aaa;
+    --colorSwitchThumb: #ffff;
+    --colorSwitchOnGreen: #15b58e;
+    --colorSwitchOnYellow: #fbc02d;
+    --colorSwitchOnBlue: #2b83f6;
+    --colorSwitchHoverBorder: #6f6f6f;
+
+    /* Filter select */
+    --colorFilterSelectBg: #e0f0ff;
+    --colorFilterSelectText: #003366;
+
+    /* User guide */
+    --colorGuideText: #342d40;
+    --colorGuideMuted: #6b6474;
+    --colorGuideBorder: #f0d8e0;
+    --colorGuideAccentSoft: #fff0f5;
+    --colorGuideAccentDark: #c82457;
+    --colorGuideHover: #fff8fa;
+    --colorGuideChevron: #766c80;
+    --colorGuidePanelText: #55505c;
+    --colorGuideAccentBorder: #f2a8be;
+    --colorGuideHeaderBg: #fff;
+    --colorGuideHeaderShadow: rgb(91 42 59 / 8%);
+    --colorGuideTipBg: #fff;
+    --colorGuideTipShadow: rgb(91 42 59 / 6%);
+
+    /* Dashboard stats */
+    --colorStatIconBg: rgb(241 53 109 / 10%);
+
+}
+
+[data-theme='dark'] {
+    /* Primary accent */
+    --colorPrimary: #f4507e;
+    --colorPrimaryHover: #e87090;
+    --colorPrimaryFocusShadow: rgb(244 80 126 / 16%);
+    --colorPrimaryFocusOutline: rgb(244 80 126 / 32%);
+
+    /* Backgrounds — neutral grays, no purple */
+    --colorPageBg: #121212;
+    --colorCardBg: #1e1e26;
+    --colorCardBorder: #333344;
+    --colorOverlayBg: #16161c;
+
+    /* Text */
+    --colorText: #dee2e6;
+    --colorTextSecondary: #adb5bd;
+
+    /* Links */
+    --colorLinkBg: #1c3048;
+    --colorLinkText: #6ea8fe;
+    --colorLinkHoverBg: #223a58;
+
+    /* Inputs */
+    --colorInputBg: #2a2a36;
+    --colorInputText: #f0f0f0;
+    --colorInputBorder: #444455;
+    --colorLabel: #f0f0f0;
+    --colorInputIcon: #c0c0c8;
+    --colorVisibilityIcon: #c0c0c8;
+
+    /* Auth page */
+    --colorAuthCardBg: #1e1e26;
+    --colorAuthCardBorder: #333344;
+    --colorAuthCardShadow: rgb(0 0 0 / 30%);
+    --colorAuthLink: #6ea8fe;
+    --colorAuthLinkHover: #8bb9fe;
+    --colorNoticeBg: #1c3048;
+    --colorNoticeText: #8bb9fe;
+    --colorNoticeBorder: #6ea8fe;
+    --colorGuideLinkBg: #6ea8fe;
+    --colorGuideLinkText: #121212;
+    --colorGuideLinkHover: #8bb9fe;
+
+    /* Nav */
+    --colorNavHoverBg: rgb(244 80 126 / 12%);
+    --colorNavBorder: #333344;
+    --colorNavActiveText: #f4507e;
+    --colorNavInactiveText: #6ea8fe;
+
+    /* Buttons */
+    --colorBtnPrimaryText: #fff;
+    --colorBtnCompactText: #fff;
+    --colorBtnSecondaryHoverBg: rgb(244 80 126 / 12%);
+    --colorBtnDestructiveBg: #b02a37;
+    --colorBtnDestructiveHoverBg: #c0392b;
+
+    /* Notes */
+    --colorNotesBg: #3d3520;
+    --colorNotesBorder: #b8960c;
+    --colorNotesText: #f0f0f0;
+    --colorNotesShadow: rgba(0, 0, 0, 0.3);
+
+    /* Status badges — slightly darker for dark backgrounds */
+    --colorStatusApplied: #148f9e;
+    --colorStatusInterview: #0a58ca;
+    --colorStatusOffer: #d39e00;
+    --colorStatusAccepted: #146c43;
+    --colorStatusRejected: #b02a37;
+    --colorStatusGhosted: #5c636a;
+    --colorStatusDeclined: #663399;
+    --colorBadgeText: white;
+
+    /* Misc accents */
+    --colorLocationText: #40c9b8;
+    --colorInterviewType: #8b8dd4;
+    --colorTimeLeft: #e35d6e;
+    --colorUpcomingBadge: #f57c00;
+    --colorUpcomingBadgeText: #fff;
+    --colorHighlightAnim: #1a3d2a;
+
+    /* Toast */
+    --colorToastErrorBg: #3d1a1a;
+    --colorToastErrorText: #e35d6e;
+    --colorToastSuccessBg: #0d3320;
+    --colorToastSuccessText: #75b798;
+    --colorToastShadow: rgb(0 0 0 / 25%);
+
+    /* Spinner */
+    --colorSpinnerTrack: #3a3a44;
+    --colorSpinnerLight: #dee2e6;
+    --colorSpinnerLightTrack: rgb(255 255 255 / 20%);
+
+    /* Toggle switch */
+    --colorSwitchOff: #495057;
+    --colorSwitchOffBorder: #6c757d;
+    --colorSwitchThumb: #dee2e6;
+    --colorSwitchOnGreen: #11997a;
+    --colorSwitchOnYellow: #d39e00;
+    --colorSwitchOnBlue: #1a6ed8;
+    --colorSwitchHoverBorder: #adb5bd;
+
+    /* Filter select */
+    --colorFilterSelectBg: #1c3048;
+    --colorFilterSelectText: #6ea8fe;
+
+    /* User guide */
+    --colorGuideText: #dee2e6;
+    --colorGuideMuted: #adb5bd;
+    --colorGuideBorder: #333344;
+    --colorGuideAccentSoft: #2a1a25;
+    --colorGuideAccentDark: #e87090;
+    --colorGuideHover: #22222e;
+    --colorGuideChevron: #adb5bd;
+    --colorGuidePanelText: #dee2e6;
+    --colorGuideAccentBorder: #6d3050;
+    --colorGuideHeaderBg: #1e1e26;
+    --colorGuideHeaderShadow: rgb(0 0 0 / 20%);
+    --colorGuideTipBg: #1e1e26;
+    --colorGuideTipShadow: rgb(0 0 0 / 20%);
+
+    /* Dashboard stats */
+    --colorStatIconBg: rgb(244 80 126 / 16%);
 }
 
 * {
@@ -23,4 +271,29 @@ body {
 body {
     margin: 0;
     font-size: 1rem;
+    background-color: var(--colorPageBg);
+    color: var(--colorText);
+}
+
+input,
+textarea,
+select {
+    color: var(--colorInputText);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #000 !important;
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+    background-color: #fff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+[data-theme='dark'] input:-webkit-autofill,
+[data-theme='dark'] input:-webkit-autofill:hover,
+[data-theme='dark'] input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #f0f0f0 !important;
+    -webkit-box-shadow: 0 0 0px 1000px #2a2a36 inset !important;
+    background-color: #2a2a36 !important;
 }

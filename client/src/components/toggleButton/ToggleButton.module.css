@@ -4,8 +4,8 @@
 }
 
 .switch {
-    background-color: #b7b9ba;
-    border: 1px solid #aaa;
+    background-color: var(--colorSwitchOff);
+    border: 1px solid var(--colorSwitchOffBorder);
     border-radius: 99px;
     width: 50px;
     height: 28px;
@@ -19,7 +19,7 @@
 .thumb {
     height: 20px;
     width: 20px;
-    background-color: #ffff;
+    background-color: var(--colorSwitchThumb);
     border-radius: 99px;
     transition: left 0.15s ease;
     position: absolute;
@@ -29,19 +29,19 @@
 }
 
 .switch.green {
-    background-color: #15b58e;
+    background-color: var(--colorSwitchOnGreen);
 }
 
 .switch.yellow {
-    background-color: #fbc02d;
+    background-color: var(--colorSwitchOnYellow);
 }
 
 .switch.blue {
-    background-color: #2b83f6;
+    background-color: var(--colorSwitchOnBlue);
 }
 
 .switch:hover {
-    border-color: #6f6f6f;
+    border-color: var(--colorSwitchHoverBorder);
 }
 
 .switch.green .thumb,

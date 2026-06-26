@@ -2,7 +2,7 @@
     max-width: 600px;
     margin: 0 auto;
     text-align: center;
-    margin-bottom: 3V0px;
+    margin-bottom: 30px;
 }
 
 .addApplication label {
@@ -22,7 +22,9 @@
     padding: 8px 10px;
     margin-top: 10px;
     margin-bottom: 10px;
-    border: 1px solid #f0d8e0;
+    background: var(--colorInputBg);
+    color: var(--colorInputText);
+    border: 1px solid var(--colorCardBorder);
     border-radius: 10px;
     outline: none;
     box-sizing: border-box;
@@ -36,7 +38,7 @@
 .addApplication input:focus,
 .addApplication select:focus {
     border-color: var(--colorPrimary);
-    box-shadow: 0 0 0 3px rgb(241 53 109 / 12%);
+    box-shadow: 0 0 0 3px var(--colorPrimaryFocusShadow);
 }
 
 .submitButton {

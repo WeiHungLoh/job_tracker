@@ -5,6 +5,7 @@ import PrimaryButton from '../button/PrimaryButton';
 import { routes } from '../../routes';
 import styles from './Navbar.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
+import { useTheme } from '../theme/ThemeContext';
 import { useToast } from '../toast/ToastProvider';
 
 const archivedLocations: readonly string[] = [routes.archivedApplications, routes.archivedInterviews];
@@ -28,6 +29,7 @@ const Navbar = () => {
     const [archived, setArchived] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
+    const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
         setArchived(archivedLocations.includes(currLocation));
@@ -62,6 +64,15 @@ const Navbar = () => {
                 >
                     <Icon name={archived ? 'archive' : 'activeApplications'} />
                     <span>{archived ? 'Show Active' : 'Show Archived'}</span>
+                </PrimaryButton>
+
+                <PrimaryButton
+                    variant='navigation'
+                    type='button'
+                    className={styles.inactive}
+                    onClick={toggleTheme}
+                >
+                    <Icon name={theme === 'dark' ? 'lightMode' : 'darkMode'} />
                 </PrimaryButton>
 
                 <NavLink to={routes.signIn} className={styles.inactive} onClick={handleSignOut}>

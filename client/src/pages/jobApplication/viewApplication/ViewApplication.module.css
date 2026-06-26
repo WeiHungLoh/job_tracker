@@ -23,14 +23,16 @@
 }
 
 .filterOption select {
-    background: #e0f0ff;
-    color: #003366;
-    padding: 4px 10px;
+    background: var(--colorFilterSelectBg);
+    color: var(--colorFilterSelectText);
+    height: 28px;
+    padding: 0 10px;
     border-radius: 99px;
     font-size: 0.75rem;
     font-weight: bold;
     border: none;
     cursor: pointer;
+    box-sizing: border-box;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -42,8 +44,8 @@
 .application {
     width: 100%;
     padding: 16px;
-    background: #fff;
-    border: 1px solid #f0d8e0;
+    background: var(--colorCardBg);
+    border: 1px solid var(--colorCardBorder);
     border-radius: 15px;
     display: flex;
     gap: 0;
@@ -79,9 +81,9 @@
     padding: 14px;
     font-size: 0.9375rem;
     border-radius: 10px;
-    border: 2px solid #fbc02d;
-    background-color: #fff9c4;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--colorNotesBorder);
+    background-color: var(--colorNotesBg);
+    box-shadow: 2px 2px 10px var(--colorNotesShadow);
     resize: none;
     outline: none;
     box-sizing: border-box;
@@ -93,14 +95,14 @@
 }
 
 .applicationContent {
-    color: #666;
+    color: var(--colorTextSecondary);
     word-wrap: break-word;
     width: 500px;
     gap: 16px;
 }
 
 .location {
-    color: #2a9d8f;
+    color: var(--colorLocationText);
 }
 
 .badgeGroup {
@@ -110,30 +112,30 @@
 }
 
 .upcomingBadge {
-    color: #fff;
+    color: var(--colorUpcomingBadgeText);
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: 600;
     font-size: 0.8125rem;
     display: inline-flex;
     letter-spacing: 0.5px;
-    background-color: #f57c00;
+    background-color: var(--colorUpcomingBadge);
     width: fit-content;
 }
 
 .applicationContent h2 {
     font-size: 1.5rem;
-    color: black;
+    color: var(--colorText);
 }
 
 .date {
     font-weight: bold;
-    color: #343a40;
+    color: var(--colorText);
 }
 
 .applicationContent a {
-    background-color: #e0f0ff;
-    color: #0d6efd;
+    background-color: var(--colorLinkBg);
+    color: var(--colorLinkText);
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: bolder;
@@ -148,8 +150,8 @@
 }
 
 .url {
-    background-color: #e0f0ff;
-    color: #0d6efd;
+    background-color: var(--colorLinkBg);
+    color: var(--colorLinkText);
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: bolder;
@@ -164,8 +166,8 @@
 }
 
 .applicationContent select {
-    background: #e0f0ff;
-    color: #003366;
+    background: var(--colorFilterSelectBg);
+    color: var(--colorFilterSelectText);
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: bolder;
@@ -179,11 +181,11 @@
 }
 
 .applicationContent a:hover {
-    background-color: #d0e8ff;
+    background-color: var(--colorLinkHoverBg);
 }
 
 .url:hover {
-    background-color: #d0e8ff;
+    background-color: var(--colorLinkHoverBg);
 }
 
 .applied,
@@ -193,7 +195,7 @@
 .rejected,
 .ghosted,
 .declined {
-    color: white;
+    color: var(--colorBadgeText);
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: 600;
@@ -204,31 +206,31 @@
 }
 
 .applied {
-    background-color: #17a2b8;
+    background-color: var(--colorStatusApplied);
 }
 
 .interview {
-    background-color: #0d6efd;
+    background-color: var(--colorStatusInterview);
 }
 
 .offer {
-    background-color: #ffc107;
+    background-color: var(--colorStatusOffer);
 }
 
 .accepted {
-    background-color: #198754;
+    background-color: var(--colorStatusAccepted);
 }
 
 .rejected {
-    background-color: #dc3545;
+    background-color: var(--colorStatusRejected);
 }
 
 .ghosted {
-    background-color: #6c757d;
+    background-color: var(--colorStatusGhosted);
 }
 
 .declined {
-    background-color: rebeccapurple;
+    background-color: var(--colorStatusDeclined);
 }
 
 .applicationButton button {
@@ -237,7 +239,7 @@
 
 .applicationButton a {
     text-decoration: none;
-    color: #17a2b8;
+    color: var(--colorStatusApplied);
 }
 
 /* Highlight application div to make it more prominent for users to see */
@@ -247,7 +249,7 @@
 
 @keyframes highlightFade {
     0% {
-        background-color: #dfffd9;
+        background-color: var(--colorHighlightAnim);
     }
 
     100% {
@@ -296,6 +298,7 @@
         margin-left: 0;
         margin-top: 7px;
         display: block;
+        font-size: 0.75rem;
     }
 
     .buttonGroup {

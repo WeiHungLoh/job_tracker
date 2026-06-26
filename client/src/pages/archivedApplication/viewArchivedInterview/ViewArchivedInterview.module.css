@@ -10,8 +10,8 @@
 .interview {
     width: 100%;
     padding: 16px;
-    background: #fff;
-    border: 1px solid #f0d8e0;
+    background: var(--colorCardBg);
+    border: 1px solid var(--colorCardBorder);
     border-radius: 15px;
     display: flex;
     gap: 60px;
@@ -24,51 +24,51 @@
     margin-left: auto;
     cursor: pointer;
     align-items: center;
-    color: #fff;
+    color: var(--colorBadgeText);
     gap: 10px;
 }
 
 .interviewContent {
-    color: #666;
+    color: var(--colorTextSecondary);
     word-break: break-all;
     gap: 16px;
     width: 500px;
 }
 
 .location {
-    color: #2a9d8f;
+    color: var(--colorLocationText);
 }
 
 .type {
-    color: #5e60ce;
+    color: var(--colorInterviewType);
 }
 
 .notes {
-    background-color: #fff9c4;
-    border-left: 4px solid #fbc02d;
+    background-color: var(--colorNotesBg);
+    border-left: 4px solid var(--colorNotesBorder);
     padding-left: 10px;
     margin-top: 4px;
-    color: #495057;
+    color: var(--colorNotesText);
 }
 
 .interviewContent h2 {
     font-size: 1.5rem;
-    color: black;
+    color: var(--colorText);
 }
 
 .date {
     font-weight: bold;
-    color: #343a40;
+    color: var(--colorText);
 }
 
 .interviewContent p:last-of-type {
     font-weight: bold;
-    color: red;
+    color: var(--colorTimeLeft);
 }
 
 .interviewContent a {
-    background-color: #e0f0ff;
-    color: #0d6efd;
+    background-color: var(--colorLinkBg);
+    color: var(--colorLinkText);
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: bolder;
@@ -83,7 +83,7 @@
 }
 
 .interviewContent a:hover {
-    background-color: #d0e8ff;
+    background-color: var(--colorLinkHoverBg);
 }
 
 .interviewButton button {

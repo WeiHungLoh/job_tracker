@@ -17,8 +17,8 @@
     align-items: center;
     gap: 8px;
     padding: 20px 12px;
-    background: #fff;
-    border: 1px solid #f0d8e0;
+    background: var(--colorCardBg);
+    border: 1px solid var(--colorCardBorder);
     border-radius: 15px;
     text-align: center;
 }
@@ -30,19 +30,19 @@
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    background: rgb(241 53 109 / 10%);
+    background: var(--colorStatIconBg);
     color: var(--colorPrimary);
 }
 
 .value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #343a40;
+    color: var(--colorText);
 }
 
 .label {
     font-size: 0.75rem;
-    color: #666;
+    color: var(--colorTextSecondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: 500;
