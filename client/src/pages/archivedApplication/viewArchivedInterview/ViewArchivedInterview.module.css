@@ -104,6 +104,26 @@
         font-size: 1.2rem;
     }
 
+    .interviewContent {
+        font-size: 0.9rem;
+    }
+
+    .interviewContent h2 {
+        font-size: 1.2rem;
+    }
+
+    .interviewContent a {
+        font-size: 0.7rem;
+    }
+
+    .notes {
+        font-size: 0.875rem;
+    }
+
+    .buttonGroup button {
+        font-size: 0.8rem;
+    }
+
     .interviewButton {
         gap: 54px;
     }

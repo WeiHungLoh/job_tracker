@@ -237,11 +237,23 @@
         padding-right: 0;
     }
 
+    .applicationContent {
+        font-size: 0.9rem;
+    }
+
+    .applicationContent h2 {
+        font-size: 1.2rem;
+    }
+
     .buttonGroup {
         grid-template-columns: 1fr;
         width: auto;
         padding-right: 16px;
         padding-left: 24px;
+    }
+
+    .buttonGroup button {
+        font-size: 0.8rem;
     }
 
     .notes textarea {
@@ -252,6 +264,21 @@
         box-shadow: none;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
+        font-size: 0.875rem;
+    }
+
+    .applied,
+    .interview,
+    .offer,
+    .accepted,
+    .rejected,
+    .ghosted,
+    .declined {
+        font-size: 0.7rem;
+    }
+
+    .url {
+        font-size: 0.7rem;
     }
 
     .applicationButton {
