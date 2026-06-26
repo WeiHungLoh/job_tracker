@@ -64,7 +64,7 @@
 
     .addApplication input,
     .addApplication select {
-        font-size: 0.875rem;
+        font-size: 16px;
     }
 
     .addApplication button {
