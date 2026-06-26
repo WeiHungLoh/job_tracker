@@ -19,11 +19,13 @@
 .addApplication input,
 .addApplication select {
     width: 100%;
+    min-height: 40px;
     padding: 8px 10px;
     margin-top: 10px;
     margin-bottom: 10px;
     background: var(--colorInputBg);
     color: var(--colorInputText);
+    text-align: left;
     border: 1px solid var(--colorCardBorder);
     border-radius: 10px;
     outline: none;
