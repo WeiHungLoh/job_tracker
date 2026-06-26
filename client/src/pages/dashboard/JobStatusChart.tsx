@@ -1,5 +1,5 @@
 import { ArcElement, Chart as ChartJS, Legend, Title, Tooltip } from 'chart.js';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import styles from './JobStatusChart.module.css';
@@ -30,7 +30,6 @@ const JobStatusChart = () => {
     const api = useJobTrackerAPI();
     const { data: applications, isLoading } = useChartData(() => api.application.listJobStatusCounts());
     const { theme } = useTheme();
-    const chartRef = useRef<ChartJS<'pie'>>(null);
 
     const statuses = useMemo(() => {
         return applications.map((a) => a.job_status);
@@ -60,29 +59,9 @@ const JobStatusChart = () => {
         };
     }, [statuses, counts, theme]);
 
-    useEffect(() => {
-        const chart = chartRef.current;
-        if (!chart) {
-            return;
-        }
-
-        const c = TEXT_COLOR[theme];
-        const opts = chart.options;
-
-        if (opts.plugins?.legend?.labels) {
-            opts.plugins.legend.labels.color = c.legend;
-        }
-        if (opts.plugins?.title) {
-            opts.plugins.title.color = c.title;
-        }
-
-        chart.data.datasets.forEach(function (ds) {
-            ds.backgroundColor = statuses.map((s) => STATUS_COLOR[s][theme]);
-            ds.borderColor = statuses.map((s) => STATUS_COLOR[s][theme]);
-        });
-
-        chart.update();
-    }, [theme, data, statuses]);
+    const chartColors = useMemo(() => {
+        return TEXT_COLOR[theme];
+    }, [theme]);
 
     if (isLoading) {
         return <LoadingSpinner size='sm' />;
@@ -99,7 +78,7 @@ const JobStatusChart = () => {
     return (
         <div className={styles.jobStatusChart}>
             <Pie
-                ref={chartRef}
+                key={theme}
                 data={data}
                 options={{
                     responsive: true,
@@ -110,10 +89,11 @@ const JobStatusChart = () => {
                             text: 'Application Status Overview',
                             font: TITLE_FONT,
                             padding: TITLE_PADDING,
+                            color: chartColors.title,
                         },
                         legend: {
                             position: 'bottom' as const,
-                            labels: LEGEND_LABELS,
+                            labels: { ...LEGEND_LABELS, color: chartColors.legend },
                         },
                     },
                 }}
