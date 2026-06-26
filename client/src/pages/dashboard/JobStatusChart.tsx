@@ -6,7 +6,7 @@ import styles from './JobStatusChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useTheme } from '../../components/theme/ThemeContext';
 import { useChartData } from './useChartData';
-import { BASE_OPTIONS, LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
+import { LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
 import type { JobStatus } from '../jobApplication/models';
 
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
@@ -102,7 +102,8 @@ const JobStatusChart = () => {
                 ref={chartRef}
                 data={data}
                 options={{
-                    ...BASE_OPTIONS,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: {
                             display: true,

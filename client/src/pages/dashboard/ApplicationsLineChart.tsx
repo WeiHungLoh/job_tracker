@@ -16,7 +16,7 @@ import styles from './ApplicationsLineChart.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useTheme } from '../../components/theme/ThemeContext';
 import { useChartData } from './useChartData';
-import { BASE_OPTIONS, LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
+import { LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
 
 ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
 
@@ -107,7 +107,8 @@ const ApplicationsLineChart = () => {
                 ref={chartRef}
                 data={data}
                 options={{
-                    ...BASE_OPTIONS,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: { ticks: {}, grid: {} },
                         y: { ticks: {}, grid: {} },
