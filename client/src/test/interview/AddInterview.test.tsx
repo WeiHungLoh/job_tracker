@@ -73,6 +73,34 @@ describe('AddInterview page', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    test('does not submit an interview date equal to the job application date', async () => {
+        const mockApp = {
+            job_id: 1,
+            company_name: 'IRAS',
+            job_title: 'Data Engineer',
+            application_date: '2025-08-03T14:30:00',
+        };
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApp } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Input Interview Date'), {
+            target: { value: '2025-08-03T14:30' },
+        });
+        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() =>
+            expect(screen.getByText('Interview date must be after the job application date')).toBeInTheDocument()
+        );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     test('trims interview text inputs before submitting them', async () => {
         fetch.mockResolvedValueOnce({
             ok: true,

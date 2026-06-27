@@ -1,9 +1,18 @@
 /**
  * Parse a datetime-local input value (YYYY-MM-DDThh:mm) into a local Date.
  */
+export const MIN_DATETIME_LOCAL = '0001-01-01T00:00';
+
+export const hasValidDatetimeLocalYear = (value: string): boolean => {
+    return Number(value.slice(0, 4)) >= 1;
+};
+
 export const parseDatetimeLocal = (value: string): Date => {
     const [year, month, day, hour, minute] = value.split(/[-T:]/);
-    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+    const date = new Date(0);
+    date.setFullYear(Number(year), Number(month) - 1, Number(day));
+    date.setHours(Number(hour), Number(minute), 0, 0);
+    return date;
 };
 
 const formatDate = (dueDate: string | number) => {

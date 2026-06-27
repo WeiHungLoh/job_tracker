@@ -5,11 +5,11 @@ import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { parseDatetimeLocal } from '../../../helper/dateFormatter';
+import { hasValidDatetimeLocalYear, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 
 const AddInterview = () => {
@@ -17,6 +17,7 @@ const AddInterview = () => {
     const [interviewLocation, setInterviewLocation] = useState('');
     const [interviewType, setInterviewType] = useState('');
     const [notes, setNotes] = useState('');
+    const interviewDateInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const location = useLocation() as Location<{ app?: JobApplication }>;
     // Receives the state that has been passed when user clicks 'Click here to add an interview' button
@@ -44,12 +45,31 @@ const AddInterview = () => {
         const trimmedInterviewType = interviewType.trim();
         const trimmedNotes = notes.trim();
 
+        const dateValidity = interviewDateInputRef.current?.validity;
+        if (
+            dateValidity?.badInput ||
+            dateValidity?.rangeUnderflow ||
+            (interviewDate && !hasValidDatetimeLocalYear(interviewDate))
+        ) {
+            showErrorToast('Please enter a valid interview date');
+            return;
+        }
+
         if (!interviewDate || !trimmedInterviewLocation) {
             showErrorToast('Please enter date and location before adding an interview');
             return;
         }
 
         const localDate = parseDatetimeLocal(interviewDate);
+        if (Number.isNaN(localDate.getTime())) {
+            showErrorToast('Please enter a valid interview date');
+            return;
+        }
+
+        if (localDate <= new Date(app.application_date)) {
+            showErrorToast('Interview date must be after the job application date');
+            return;
+        }
 
         setIsLoading(true);
         try {
@@ -89,7 +109,9 @@ const AddInterview = () => {
 
             <label htmlFor='date'>Input Interview Date</label>
             <input
+                ref={interviewDateInputRef}
                 id='date'
+                min={MIN_DATETIME_LOCAL}
                 value={interviewDate}
                 onChange={(e) => setInterviewDate(e.target.value)}
                 type='datetime-local'

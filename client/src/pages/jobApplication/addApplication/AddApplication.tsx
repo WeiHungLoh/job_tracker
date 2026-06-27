@@ -2,12 +2,12 @@ import { JobTrackerAPIError } from '../../../api/models';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { parseDatetimeLocal } from '../../../helper/dateFormatter';
+import { hasValidDatetimeLocalYear, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddApplication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../models';
 
@@ -18,6 +18,7 @@ const AddApplication = () => {
     const [applicationDate, setApplicationDate] = useState('');
     const [jobLocation, setJobLocation] = useState('');
     const [jobURL, setJobURL] = useState('');
+    const applicationDateInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const currDate = new Date(Date.now());
     const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +47,22 @@ const AddApplication = () => {
             return;
         }
 
+        const dateValidity = applicationDateInputRef.current?.validity;
+        if (
+            dateValidity?.badInput ||
+            dateValidity?.rangeUnderflow ||
+            (applicationDate && !hasValidDatetimeLocalYear(applicationDate))
+        ) {
+            showErrorToast('Please enter a valid application date');
+            return;
+        }
+
         const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currDate;
+
+        if (Number.isNaN(appDate.getTime())) {
+            showErrorToast('Please enter a valid application date');
+            return;
+        }
 
         if (appDate > currDate) {
             showErrorToast('Application date cannot be later than current date');
@@ -116,7 +132,9 @@ const AddApplication = () => {
 
             <label htmlFor='app-date'>Input Application Date (uses current date if left blank)</label>
             <input
+                ref={applicationDateInputRef}
                 id='app-date'
+                min={MIN_DATETIME_LOCAL}
                 value={applicationDate}
                 onChange={(e) => setApplicationDate(e.target.value)}
                 type='datetime-local'

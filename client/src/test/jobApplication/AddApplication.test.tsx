@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import AddApplication from '../../pages/jobApplication/addApplication/AddApplication';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '../renderWithToast';
@@ -67,6 +67,55 @@ describe('User add application flow', () => {
             ).toBeInTheDocument()
         );
         expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('does not use the current date when the application date is partially entered', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+
+        const applicationDateInput = screen.getByLabelText(/input application date/i);
+        Object.defineProperty(applicationDateInput, 'validity', {
+            configurable: true,
+            value: { badInput: true },
+        });
+
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(screen.getByText('Please enter a valid application date')).toBeInTheDocument());
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('submits a valid application date before 1900 without changing its year', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added a job application!',
+        });
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        fireEvent.change(screen.getByLabelText(/input application date/i), {
+            target: { value: '1899-12-31T23:59' },
+        });
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+
+        const request = fetch.mock.calls[0][1] as RequestInit;
+        expect(JSON.parse(request.body as string).appDate).toContain('1899-12-31');
     });
 
     test('shows an error toast and does not submit an invalid job URL', async () => {
