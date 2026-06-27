@@ -2,7 +2,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AddInterview from '../../pages/interview/addInterview/AddInterview';
 import ViewApplication from '../../pages/jobApplication/viewApplication/ViewApplication';
 import { render } from '../renderWithToast';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();
@@ -13,6 +13,13 @@ describe('AddInterview page', () => {
     });
 
     test('renders correctly when state is passed', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added an interview!',
+        });
+
         const mockApp = {
             job_id: 1,
             company_name: 'IRAS',
@@ -32,11 +39,76 @@ describe('AddInterview page', () => {
         expect(screen.getByText(/iras/i)).toBeInTheDocument();
         expect(screen.getByText(/data engineer/i)).toBeInTheDocument();
 
-        userEvent.type(screen.getByLabelText('Input Interview Date'), '2025-08-03T14:30');
+        fireEvent.change(screen.getByLabelText('Input Interview Date'), { target: { value: '2025-08-03T14:30' } });
         userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
         userEvent.type(screen.getByLabelText('Input Interview Type (optional)'), 'HR');
         userEvent.type(screen.getByLabelText('Input Additional Notes (optional)'), '2nd round');
         userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+    });
+
+    test('rejects a whitespace-only interview location', async () => {
+        const mockApp = {
+            job_id: 1,
+            company_name: 'IRAS',
+            job_title: 'Data Engineer',
+        };
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApp } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Input Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Input Interview Location'), '   ');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() =>
+            expect(screen.getByText('Please enter date and location before adding an interview')).toBeInTheDocument()
+        );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('trims interview text inputs before submitting them', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added an interview!',
+        });
+
+        const mockApp = {
+            job_id: 1,
+            company_name: 'IRAS',
+            job_title: 'Data Engineer',
+        };
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApp } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Input Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Input Interview Location'), '  Zoom  ');
+        userEvent.type(screen.getByLabelText('Input Interview Type (optional)'), '  HR  ');
+        userEvent.type(screen.getByLabelText('Input Additional Notes (optional)'), '   ');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+
+        const request = fetch.mock.calls[0][1] as RequestInit;
+        expect(JSON.parse(request.body as string)).toMatchObject({
+            interviewLocation: 'Zoom',
+            interviewType: 'HR',
+            notes: '',
+        });
     });
 
     test('redirects to /viewapplication when no state is passed', async () => {

@@ -5,19 +5,17 @@ import { render } from '../renderWithToast';
 import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();
-globalThis.alert = vi.fn();
 
 describe('User add application flow', () => {
-    // Resets the state of fetch and alert
     beforeEach(() => {
         fetch.mockReset();
-        alert.mockReset();
     });
 
     test('successfully adds an application and a notification message is shown', async () => {
         fetch.mockResolvedValueOnce({
             ok: true,
             status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
             text: async () => 'Successfully added a job application!',
         });
 
@@ -35,7 +33,7 @@ describe('User add application flow', () => {
         await waitFor(() => expect(screen.getByTestId('toast')).toBeInTheDocument());
     });
 
-    test('shows alert message due to company name not filled in', async () => {
+    test('shows an error toast when company name is not filled in', async () => {
         render(
             <MemoryRouter>
                 <AddApplication />
@@ -50,6 +48,98 @@ describe('User add application flow', () => {
                 screen.getByText('Please enter company name and job title before adding a job application')
             ).toBeInTheDocument()
         );
+    });
+
+    test('does not accept whitespace-only required fields', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), '   ');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() =>
+            expect(
+                screen.getByText('Please enter company name and job title before adding a job application')
+            ).toBeInTheDocument()
+        );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('shows an error toast and does not submit an invalid job URL', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/input job posting url/i), 'not-a-valid-url');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('submits whitespace-only optional fields as empty strings', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added a job application!',
+        });
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/input job location/i), '   ');
+        userEvent.type(screen.getByLabelText(/input job posting url/i), '   ');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+
+        const request = fetch.mock.calls[0][1] as RequestInit;
+        expect(JSON.parse(request.body as string)).toMatchObject({ jobLocation: '', jobURL: '' });
+    });
+
+    test('trims text inputs before submitting them', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added a job application!',
+        });
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), '  Morgan Stanley  ');
+        userEvent.type(screen.getByLabelText(/input job title/i), '  Software Engineer  ');
+        userEvent.type(screen.getByLabelText(/input job location/i), '  Singapore  ');
+        userEvent.type(screen.getByLabelText(/input job posting url/i), '  https://example.com/jobs/1  ');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+
+        const request = fetch.mock.calls[0][1] as RequestInit;
+        expect(JSON.parse(request.body as string)).toMatchObject({
+            companyName: 'Morgan Stanley',
+            jobTitle: 'Software Engineer',
+            jobLocation: 'Singapore',
+            jobURL: 'https://example.com/jobs/1',
+        });
     });
 
     test('shows the backend error as a notification without changing the original form behavior', async () => {

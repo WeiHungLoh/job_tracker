@@ -36,7 +36,12 @@ const AddApplication = () => {
     const handleAdd = async (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
-        if (companyName === '' || jobTitle === '') {
+        const trimmedCompanyName = companyName.trim();
+        const trimmedJobTitle = jobTitle.trim();
+        const trimmedJobLocation = jobLocation.trim();
+        const trimmedJobURL = jobURL.trim();
+
+        if (!trimmedCompanyName || !trimmedJobTitle) {
             showErrorToast('Please enter company name and job title before adding a job application');
             return;
         }
@@ -48,15 +53,33 @@ const AddApplication = () => {
             return;
         }
 
+        if (trimmedJobURL) {
+            try {
+                const parsedURL = new URL(trimmedJobURL);
+                const hostname = parsedURL.hostname;
+
+                // Ensures URL follows the format of <domain>.<suffix>
+                const domainPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+$/i;
+
+                if (!domainPattern.test(hostname)) {
+                    showErrorToast('URL must be in a valid format.');
+                    return;
+                }
+            } catch {
+                showErrorToast('URL must be in a valid format.');
+                return;
+            }
+        }
+
         setIsLoading(true);
         try {
             const message = await api.application.createApplication({
-                companyName,
-                jobTitle,
+                companyName: trimmedCompanyName,
+                jobTitle: trimmedJobTitle,
                 appDate,
                 jobStatus,
-                jobLocation,
-                jobURL,
+                jobLocation: trimmedJobLocation,
+                jobURL: trimmedJobURL,
             });
             showSuccessToast(message);
             resetForm();
@@ -99,11 +122,11 @@ const AddApplication = () => {
                 type='datetime-local'
             />
 
-            <label>Input Job Location (optional)</label>
-            <input value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} />
+            <label htmlFor='job-location'>Input Job Location (optional)</label>
+            <input id='job-location' value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} />
 
-            <label>Input Job Posting URL (optional)</label>
-            <input value={jobURL} onChange={(e) => setJobURL(e.target.value)} />
+            <label htmlFor='job-url'>Input Job Posting URL (optional)</label>
+            <input id='job-url' value={jobURL} onChange={(e) => setJobURL(e.target.value)} />
 
             <div className={styles.submitButton}>
                 <PrimaryButton variant='compact' onClick={handleAdd} disabled={isLoading}>

@@ -40,7 +40,11 @@ const AddInterview = () => {
     const handleAdd = async (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
-        if (interviewDate === '' || interviewLocation === '') {
+        const trimmedInterviewLocation = interviewLocation.trim();
+        const trimmedInterviewType = interviewType.trim();
+        const trimmedNotes = notes.trim();
+
+        if (!interviewDate || !trimmedInterviewLocation) {
             showErrorToast('Please enter date and location before adding an interview');
             return;
         }
@@ -52,9 +56,9 @@ const AddInterview = () => {
             const message = await api.interview.createInterview({
                 jobId: app.job_id,
                 interviewDate: localDate,
-                interviewLocation,
-                interviewType,
-                notes,
+                interviewLocation: trimmedInterviewLocation,
+                interviewType: trimmedInterviewType,
+                notes: trimmedNotes,
             });
             showSuccessToast(message);
             resetForm();
