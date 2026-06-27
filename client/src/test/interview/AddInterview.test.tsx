@@ -7,6 +7,12 @@ import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();
 
+const mockApplication = {
+    job_id: 1,
+    company_name: 'IRAS',
+    job_title: 'Data Engineer',
+};
+
 describe('AddInterview page', () => {
     beforeEach(() => {
         fetch.mockReset();
@@ -20,14 +26,8 @@ describe('AddInterview page', () => {
             text: async () => 'Successfully added an interview!',
         });
 
-        const mockApp = {
-            job_id: 1,
-            company_name: 'IRAS',
-            job_title: 'Data Engineer',
-        };
-
         render(
-            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApp } }]}>
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
                 <Routes>
                     <Route path='/interview/add' element={<AddInterview />} />
                     <Route path='/application/view' element={<ViewApplication />} />
@@ -49,14 +49,8 @@ describe('AddInterview page', () => {
     });
 
     test('rejects a whitespace-only interview location', async () => {
-        const mockApp = {
-            job_id: 1,
-            company_name: 'IRAS',
-            job_title: 'Data Engineer',
-        };
-
         render(
-            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApp } }]}>
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
                 <Routes>
                     <Route path='/interview/add' element={<AddInterview />} />
                 </Routes>
@@ -75,9 +69,7 @@ describe('AddInterview page', () => {
 
     test('does not submit an interview date equal to the job application date', async () => {
         const mockApp = {
-            job_id: 1,
-            company_name: 'IRAS',
-            job_title: 'Data Engineer',
+            ...mockApplication,
             application_date: '2025-08-03T14:30:00',
         };
 
@@ -109,14 +101,8 @@ describe('AddInterview page', () => {
             text: async () => 'Successfully added an interview!',
         });
 
-        const mockApp = {
-            job_id: 1,
-            company_name: 'IRAS',
-            job_title: 'Data Engineer',
-        };
-
         render(
-            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApp } }]}>
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
                 <Routes>
                     <Route path='/interview/add' element={<AddInterview />} />
                 </Routes>
@@ -139,7 +125,7 @@ describe('AddInterview page', () => {
         });
     });
 
-    test('redirects to /viewapplication when no state is passed', async () => {
+    test('redirects to /application/view when no state is passed', async () => {
         fetch.mockResolvedValue({
             ok: true,
             status: 200,

@@ -1,8 +1,9 @@
 import type { ArchivedJobInterview } from '../models.js';
 import { pool } from '../connectDB.js';
+import { hasAffectedRows } from './shared.js';
 
-const getArchivedJobInterviews = async (userId: number): Promise<ArchivedJobInterview[]> => {
-    const res = await pool.query<ArchivedJobInterview>(
+export const getArchivedJobInterviews = async (userId: number): Promise<ArchivedJobInterview[]> => {
+    const result = await pool.query<ArchivedJobInterview>(
         `SELECT
             interviews.interview_id AS archived_interview_id,
             interviews.job_id AS archived_job_id,
@@ -25,19 +26,17 @@ const getArchivedJobInterviews = async (userId: number): Promise<ArchivedJobInte
             interviews.interview_date ASC`,
         [userId]
     );
-    return res.rows;
+    return result.rows;
 };
 
-const deleteAllArchivedJobInterviews = async (userId: number): Promise<void> => {
+export const deleteAllArchivedJobInterviews = async (userId: number): Promise<void> => {
     await pool.query(`DELETE FROM interviews WHERE user_id = $1 AND is_archived = true`, [userId]);
 };
 
-const deleteArchivedJobInterview = async (interviewId: string | number, userId: number): Promise<boolean> => {
+export const deleteArchivedJobInterview = async (interviewId: number, userId: number): Promise<boolean> => {
     const result = await pool.query(
         `DELETE FROM interviews WHERE interview_id = $1 AND user_id = $2 AND is_archived = true`,
         [interviewId, userId]
     );
-    return (result.rowCount ?? 0) > 0;
+    return hasAffectedRows(result);
 };
-
-export { deleteAllArchivedJobInterviews, getArchivedJobInterviews, deleteArchivedJobInterview };

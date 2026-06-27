@@ -19,8 +19,6 @@ export const appRoutes: RouteObject[] = [
     { path: routes.signUp, element: <SignUp /> },
     { path: routes.userGuide, element: <UserGuide /> },
     {
-        // ProtectedRoutes mounts only once when we go from ign in page to add application page
-        // Switching between other pages in ProtectedLayout will not remount
         element: <ProtectedRoutes />,
         children: [
             {
@@ -42,8 +40,8 @@ export const appRoutes: RouteObject[] = [
 
 const router = createBrowserRouter(appRoutes);
 
-function App() {
+const App = () => {
     return <RouterProvider router={router} />;
-}
+};
 
 export default App;

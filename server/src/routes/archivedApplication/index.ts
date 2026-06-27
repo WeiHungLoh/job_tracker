@@ -16,7 +16,7 @@ import {
 } from '../../db/queries/archivedJobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
-import { isPositiveInteger, toJobStatusQueryValue } from '../../http/validation.js';
+import { toJobStatusQueryValue, toPositiveInteger } from '../../http/validation.js';
 
 const router = express.Router();
 
@@ -26,13 +26,15 @@ router.post(
         req: Request<Record<string, never>, ArchiveApplicationResponse, ArchiveApplicationRequest>,
         res: Response<ArchiveApplicationResponse>
     ): Promise<void> => {
-        if (!isPositiveInteger(req.body.jobId)) {
+        const jobId = toPositiveInteger(req.body.jobId);
+        if (jobId === undefined) {
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
 
         try {
-            if (!(await archiveJobApplication(req.body.jobId, req.user.id))) {
+            const applicationArchived = await archiveJobApplication(jobId, req.user.id);
+            if (!applicationArchived) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
@@ -83,13 +85,15 @@ router.delete(
 router.delete(
     '/:archivedJobId',
     async (req: Request<ArchivedJobIdParams, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
-        if (!isPositiveInteger(req.params.archivedJobId)) {
+        const archivedJobId = toPositiveInteger(req.params.archivedJobId);
+        if (archivedJobId === undefined) {
             sendError(res, 422, 'Archived job application ID must be a positive integer.');
             return;
         }
 
         try {
-            if (!(await deleteArchivedJobApplication(req.params.archivedJobId, req.user.id))) {
+            const applicationDeleted = await deleteArchivedJobApplication(archivedJobId, req.user.id);
+            if (!applicationDeleted) {
                 sendError(res, 404, 'Archived job application not found.');
                 return;
             }
@@ -106,13 +110,15 @@ router.post(
         req: Request<ArchivedJobIdParams, ArchiveApplicationResponse>,
         res: Response<ArchiveApplicationResponse>
     ): Promise<void> => {
-        if (!isPositiveInteger(req.params.archivedJobId)) {
+        const archivedJobId = toPositiveInteger(req.params.archivedJobId);
+        if (archivedJobId === undefined) {
             sendError(res, 422, 'Archived job application ID must be a positive integer.');
             return;
         }
 
         try {
-            if (!(await unarchiveJobApplication(req.params.archivedJobId, req.user.id))) {
+            const applicationUnarchived = await unarchiveJobApplication(archivedJobId, req.user.id);
+            if (!applicationUnarchived) {
                 sendError(res, 404, 'Archived job application not found.');
                 return;
             }

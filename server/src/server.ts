@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
+import { REQUEST_LIMIT, REQUEST_WINDOW_MS } from './config/server.js';
 import applicationRoute from './routes/application/index.js';
 import archivedApplicationRoute from './routes/archivedApplication/index.js';
 import archivedInterviewRoute from './routes/archivedInterview/index.js';
@@ -13,6 +14,7 @@ import interviewRoute from './routes/interview/index.js';
 import { pathToFileURL } from 'node:url';
 import pingRoute from './routes/ping/index.js';
 import rateLimit from 'express-rate-limit';
+import { sendError } from './http/responses.js';
 import userPreferencesRoute from './routes/userPreferences/index.js';
 
 type MiddlewareError = Error & {
@@ -20,7 +22,7 @@ type MiddlewareError = Error & {
     type?: string;
 };
 
-const allowedOrigins = new Set([
+const ALLOWED_ORIGINS = new Set([
     'https://jobtracker-whloh.netlify.app',
     'https://jobtracker.weihungloh.com',
     'https://weihungloh.com',
@@ -30,14 +32,37 @@ const allowedOrigins = new Set([
     'http://192.168.1.74:3000',
 ]);
 
-const createApp = (): express.Express => {
+const notFoundHandler: RequestHandler = (_req, res) => {
+    sendError(res, 404, 'Route not found.');
+};
+
+const errorHandler: ErrorRequestHandler = (error: MiddlewareError, _req, res, _next) => {
+    if (error.status === 403) {
+        sendError(res, 403, 'Origin is not allowed.');
+        return;
+    }
+
+    if (error.type === 'entity.too.large' || error.type === 'entity.parse.failed') {
+        sendError(
+            res,
+            error.type === 'entity.too.large' ? 413 : 400,
+            error.type === 'entity.too.large' ? 'Request body is too large.' : 'Request body contains invalid JSON.'
+        );
+        return;
+    }
+
+    console.error('Unhandled request error.', error);
+    sendError(res, 500, 'An unexpected server error occurred.');
+};
+
+export const createApp = (): express.Express => {
     const app = express();
     app.set('trust proxy', 1);
 
     app.use(
         rateLimit({
-            windowMs: 15 * 60 * 1000,
-            limit: 400,
+            windowMs: REQUEST_WINDOW_MS,
+            limit: REQUEST_LIMIT,
             statusCode: 429,
             message: { message: 'Too many requests. Please try again later.' },
             standardHeaders: true,
@@ -48,7 +73,7 @@ const createApp = (): express.Express => {
     app.use(
         cors({
             origin: (origin, callback) => {
-                if (!origin || allowedOrigins.has(origin)) {
+                if (!origin || ALLOWED_ORIGINS.has(origin)) {
                     callback(null, true);
                     return;
                 }
@@ -70,30 +95,7 @@ const createApp = (): express.Express => {
     app.use('/archived-job-applications', cookieJWTAuth, archivedApplicationRoute);
     app.use('/archived-job-interviews', cookieJWTAuth, archivedInterviewRoute);
     app.use('/user-preferences', cookieJWTAuth, userPreferencesRoute);
-
-    const notFoundHandler: RequestHandler = (_req, res) => {
-        res.status(404).send({ message: 'Route not found.' });
-    };
     app.use(notFoundHandler);
-
-    const errorHandler: ErrorRequestHandler = (error: MiddlewareError, _req, res) => {
-        if (error.status === 403) {
-            res.status(403).send({ message: 'Origin is not allowed.' });
-            return;
-        }
-        if (error.type === 'entity.too.large' || error.type === 'entity.parse.failed') {
-            res.status(error.status ?? 400).send({
-                message:
-                    error.type === 'entity.too.large'
-                        ? 'Request body is too large.'
-                        : 'Request body contains invalid JSON.',
-            });
-            return;
-        }
-
-        console.error('Unhandled request error.', error);
-        res.status(500).send({ message: 'An unexpected server error occurred.' });
-    };
     app.use(errorHandler);
 
     return app;
@@ -112,7 +114,8 @@ const startServer = async (): Promise<void> => {
 
 const entrypoint = process.argv[1];
 if (entrypoint && import.meta.url === pathToFileURL(entrypoint).href) {
-    void startServer();
+    void startServer().catch((error: unknown) => {
+        console.error('Unable to start the server.', error);
+        process.exitCode = 1;
+    });
 }
-
-export { createApp };

@@ -8,13 +8,19 @@ export const scrollAndHighlight = (
     timeouts: Record<string, ReturnType<typeof setTimeout>>
 ): void => {
     setTimeout(() => {
-        if (typeof document === 'undefined') return;
+        if (typeof document === 'undefined') {
+            return;
+        }
 
         const element = document.getElementById(elementId);
-        if (!element) return;
+        if (!element) {
+            return;
+        }
 
         const existing = timeouts[elementId];
-        if (existing) clearTimeout(existing);
+        if (existing) {
+            clearTimeout(existing);
+        }
 
         element.classList.remove(highlightClass);
         if (typeof element.scrollIntoView === 'function') {

@@ -12,16 +12,13 @@ import type { ToastContextValue, ToastMessage, ToastType } from './models';
 import ToastContainer from './ToastContainer';
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
-const toastDurationMilliseconds = 5000;
+const TOAST_DURATION_MS = 5000;
 
-export const ToastProvider = (props: PropsWithChildren) => {
+export const ToastProvider = ({ children }: PropsWithChildren) => {
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
-    // To keep track of current toast ID
     const nextToastId = useRef(0);
-    // In the format of toastId: timeoutId to clear timeout when we click cross button
     const toastTimeouts = useRef(new Map<number, number>());
 
-    // This can be called either after 5 seconds or when we click cross button on the toast
     const dismissToast = useCallback((id: number) => {
         const timeout = toastTimeouts.current.get(id);
         if (timeout !== undefined) {
@@ -37,7 +34,7 @@ export const ToastProvider = (props: PropsWithChildren) => {
             const id = nextToastId.current;
 
             setToasts((currentToasts) => [...currentToasts, { id, message, type }]);
-            const timeout = window.setTimeout(() => dismissToast(id), toastDurationMilliseconds);
+            const timeout = window.setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
             toastTimeouts.current.set(id, timeout);
         },
         [dismissToast]
@@ -62,7 +59,7 @@ export const ToastProvider = (props: PropsWithChildren) => {
 
     return (
         <ToastContext.Provider value={contextValue}>
-            {props.children}
+            {children}
             <ToastContainer onDismiss={dismissToast} toasts={toasts} />
         </ToastContext.Provider>
     );

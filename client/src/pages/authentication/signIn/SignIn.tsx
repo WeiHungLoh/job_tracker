@@ -10,24 +10,28 @@ import { routes } from '../../../routes';
 import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
 const SignIn = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
-    const [visible, setVisiblity] = useState(false);
+    const [visible, setVisibility] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
 
-    // Dummy fetch request to wake backend hosted on free tier
+    // Wake the free-tier backend before the user submits the form.
     useEffect(() => {
         void api.ping.wake();
     }, [api.ping]);
 
     useEffect(() => {
-        if (location.state?.fromLogout) return; // just logged out, skip
+        if (location.state?.fromLogout) {
+            return;
+        }
+
         const verifyAuth = async () => {
             try {
                 await api.authentication.verify();
@@ -36,24 +40,24 @@ const SignIn = () => {
                 // no valid token, stay on sign in
             }
         };
-        verifyAuth();
+        void verifyAuth();
     }, [api.authentication, navigate]);
 
-    const handleSignIn = async (e: SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSignIn = async (event: SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
         setIsPending(true);
+
         try {
             await api.authentication.signIn({ email, password });
-            setIsPending(false);
-
             navigate(routes.addApplication);
         } catch (error) {
             if (error instanceof JobTrackerAPIError) {
                 showErrorToast(error.message);
-                setIsPending(false);
                 return;
             }
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
+        } finally {
+            setIsPending(false);
         }
     };
 
@@ -92,7 +96,7 @@ const SignIn = () => {
                             variant='icon'
                             className={styles.toggleVisibility}
                             aria-label={visible ? 'Hide password' : 'Show password'}
-                            onClick={() => setVisiblity(!visible)}
+                            onClick={() => setVisibility((isVisible) => !isVisible)}
                         >
                             <Icon name={visible ? 'visibility' : 'visibilityOff'} />
                         </PrimaryButton>

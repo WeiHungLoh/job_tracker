@@ -5,7 +5,7 @@ import reactPlugin from 'eslint-plugin-react';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-    globalIgnores(['dist/**', 'src/pages/userGuide/**']),
+    globalIgnores(['dist/**']),
     js.configs.recommended,
     ...tseslint.configs.recommended,
     {
@@ -34,7 +34,7 @@ export default defineConfig([
             'react/prop-types': 'off',
             'react/react-in-jsx-scope': 'off',
             'no-unused-vars': 'off',
-            '@typescript-eslint/no-unused-vars': 'warn',
+            '@typescript-eslint/no-unused-vars': 'error',
             'no-trailing-spaces': 'error',
             'space-before-function-paren': [
                 'error',

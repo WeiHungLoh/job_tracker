@@ -1,17 +1,13 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-
-type Theme = 'light' | 'dark';
-
-interface ThemeContextValue {
-    theme: Theme;
-    toggleTheme: () => void;
-}
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { Theme, ThemeContextValue } from './models';
+import { createMuiTheme } from './muiTheme';
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const STORAGE_KEY = 'theme';
 
-function getInitialTheme(): Theme {
+const getInitialTheme = (): Theme => {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored === 'dark' || stored === 'light') {
@@ -25,38 +21,39 @@ function getInitialTheme(): Theme {
         return 'dark';
     }
     return 'light';
-}
+};
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const [theme, setTheme] = useState<Theme>(getInitialTheme);
+    const muiTheme = useMemo(() => createMuiTheme(theme), [theme]);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
     const toggleTheme = () => {
-        setTheme((prev) => {
-            const next = prev === 'light' ? 'dark' : 'light';
+        setTheme((currentTheme) => {
+            const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
             try {
-                localStorage.setItem(STORAGE_KEY, next);
+                localStorage.setItem(STORAGE_KEY, nextTheme);
             } catch {
                 // localStorage unavailable
             }
-            return next;
+            return nextTheme;
         });
     };
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {children}
+            <MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
         </ThemeContext.Provider>
     );
 };
 
 export const useTheme = (): ThemeContextValue => {
-    const ctx = useContext(ThemeContext);
-    if (!ctx) {
+    const context = useContext(ThemeContext);
+    if (!context) {
         throw new Error('useTheme must be used within ThemeProvider');
     }
-    return ctx;
+    return context;
 };

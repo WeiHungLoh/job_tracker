@@ -81,6 +81,7 @@ describe('Job interview viewer flow', () => {
                 description:
                     'Are you sure you want to delete this job interview? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete',
+                cancellationText: 'Cancel',
                 confirmationButtonProps: { autoFocus: true },
             })
         );

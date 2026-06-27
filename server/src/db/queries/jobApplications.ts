@@ -1,8 +1,8 @@
 import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../models.js';
 import { pool } from '../connectDB.js';
-import { JOB_STATUS_SORT_ORDER } from './shared.js';
+import { hasAffectedRows, JOB_STATUS_SORT_ORDER } from './shared.js';
 
-const insertJobApplication = async (
+export const insertJobApplication = async (
     userId: number,
     companyName: string,
     jobTitle: string,
@@ -18,8 +18,11 @@ const insertJobApplication = async (
     );
 };
 
-const getJobApplications = async (userId: number, jobStatus: JobStatus | null = null): Promise<JobApplication[]> => {
-    const res = await pool.query<JobApplication>(
+export const getJobApplications = async (
+    userId: number,
+    jobStatus: JobStatus | null = null
+): Promise<JobApplication[]> => {
+    const result = await pool.query<JobApplication>(
         `SELECT * FROM job_applications WHERE user_id = $1 AND is_archived = false
           AND ($2::text IS NULL OR job_status = $2)
           ORDER BY ${JOB_STATUS_SORT_ORDER},
@@ -27,20 +30,20 @@ const getJobApplications = async (userId: number, jobStatus: JobStatus | null = 
         [userId, jobStatus]
     );
 
-    return res.rows;
+    return result.rows;
 };
 
-const getJobStatusCountPair = async (userId: number): Promise<JobStatusCount[]> => {
-    const res = await pool.query<JobStatusCount>(
+export const getJobStatusCounts = async (userId: number): Promise<JobStatusCount[]> => {
+    const result = await pool.query<JobStatusCount>(
         `SELECT job_status, COUNT(*) FROM job_applications WHERE user_id = $1 AND is_archived = false
         GROUP BY job_status ORDER BY job_status ASC`,
         [userId]
     );
-    return res.rows;
+    return result.rows;
 };
 
-const getApplicationsForLatestEightWeeks = async (userId: number): Promise<WeeklyApplicationCount[]> => {
-    const res = await pool.query<WeeklyApplicationCount>(
+export const getApplicationsForLatestEightWeeks = async (userId: number): Promise<WeeklyApplicationCount[]> => {
+    const result = await pool.query<WeeklyApplicationCount>(
         `WITH last_8_mondays AS (
             SELECT generate_series(
                 date_trunc('week', CURRENT_DATE) - interval '7 weeks',
@@ -57,66 +60,52 @@ const getApplicationsForLatestEightWeeks = async (userId: number): Promise<Weekl
             GROUP BY start_of_week
         )
         SELECT
-            m.start_of_week,
-            CASE 
-                WHEN a.applications_count IS NULL THEN 0
-                ELSE a.applications_count
-            END
-        FROM last_8_mondays m LEFT JOIN application_counts a 
-        ON m.start_of_week = a.start_of_week
-        ORDER BY m.start_of_week ASC`,
+            weeks.start_of_week,
+            COALESCE(counts.applications_count, 0) AS applications_count
+        FROM last_8_mondays AS weeks
+        LEFT JOIN application_counts AS counts
+            ON weeks.start_of_week = counts.start_of_week
+        ORDER BY weeks.start_of_week ASC`,
         [userId]
     );
-    return res.rows;
+    return result.rows;
 };
 
-const deleteJobApplication = async (jobId: string | number, userId: number): Promise<boolean> => {
+export const deleteJobApplication = async (jobId: number, userId: number): Promise<boolean> => {
     const result = await pool.query(
         `DELETE FROM job_applications WHERE job_id = $1 AND user_id = $2 AND is_archived = false`,
         [jobId, userId]
     );
-    return (result.rowCount ?? 0) > 0;
+    return hasAffectedRows(result);
 };
 
-const deleteAllJobApplications = async (userId: number): Promise<void> => {
+export const deleteAllJobApplications = async (userId: number): Promise<void> => {
     await pool.query(`DELETE FROM job_applications WHERE user_id = $1 AND is_archived = false`, [userId]);
 };
 
-const editNotes = async (jobId: string | number, userId: number, notes: string): Promise<boolean> => {
+export const editNotes = async (jobId: number, userId: number, notes: string): Promise<boolean> => {
     const result = await pool.query(
         `UPDATE job_applications SET notes = $1
          WHERE job_id = $2 AND user_id = $3 AND is_archived = false`,
         [notes, jobId, userId]
     );
-    return (result.rowCount ?? 0) > 0;
+    return hasAffectedRows(result);
 };
 
-const updateEditStatus = async (editStatus: boolean, jobId: string | number, userId: number): Promise<boolean> => {
+export const updateEditStatus = async (editStatus: boolean, jobId: number, userId: number): Promise<boolean> => {
     const result = await pool.query(
         `UPDATE job_applications SET edit_status = $1
          WHERE job_id = $2 AND user_id = $3 AND is_archived = false`,
         [editStatus, jobId, userId]
     );
-    return (result.rowCount ?? 0) > 0;
+    return hasAffectedRows(result);
 };
 
-const updateJobStatus = async (jobStatus: JobStatus, jobId: string | number, userId: number): Promise<boolean> => {
+export const updateJobStatus = async (jobStatus: JobStatus, jobId: number, userId: number): Promise<boolean> => {
     const result = await pool.query(
         `UPDATE job_applications SET job_status = $1
          WHERE job_id = $2 AND user_id = $3 AND is_archived = false`,
         [jobStatus, jobId, userId]
     );
-    return (result.rowCount ?? 0) > 0;
-};
-
-export {
-    insertJobApplication,
-    getJobApplications,
-    deleteJobApplication,
-    editNotes,
-    deleteAllJobApplications,
-    updateEditStatus,
-    updateJobStatus,
-    getJobStatusCountPair,
-    getApplicationsForLatestEightWeeks,
+    return hasAffectedRows(result);
 };

@@ -1,23 +1,17 @@
-import type { CookieOptions, NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+import { AUTH_COOKIE_NAME, CLEAR_AUTH_COOKIE_OPTIONS, getAccessTokenSecret } from '../config/auth.js';
 import type { ErrorResponse } from '../http/models.js';
 import jwt from 'jsonwebtoken';
 import { sendError } from '../http/responses.js';
 
-export const clearAuthCookieOptions: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-};
-
 const cookieJWTAuth = (req: Request, res: Response<ErrorResponse>, next: NextFunction): void => {
-    const token = req.cookies.token as unknown;
+    const token = req.cookies[AUTH_COOKIE_NAME] as unknown;
     if (typeof token !== 'string' || !token) {
         sendError(res, 401, 'No authentication token found. Please sign in.');
         return;
     }
 
-    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+    const accessTokenSecret = getAccessTokenSecret();
     if (!accessTokenSecret) {
         console.error('ACCESS_TOKEN_SECRET is not configured.');
         sendError(res, 503, 'Authentication is temporarily unavailable.');
@@ -33,8 +27,8 @@ const cookieJWTAuth = (req: Request, res: Response<ErrorResponse>, next: NextFun
         req.user = { id: user.id, email: user.email };
         next();
     } catch (error: unknown) {
-        console.warn('Invalid token. ', error);
-        res.clearCookie('token', clearAuthCookieOptions);
+        console.warn('Invalid token.', error);
+        res.clearCookie(AUTH_COOKIE_NAME, CLEAR_AUTH_COOKIE_OPTIONS);
         sendError(res, 401, 'Invalid or expired token. Please sign in.');
     }
 };

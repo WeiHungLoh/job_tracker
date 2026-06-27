@@ -3,6 +3,7 @@ import { after, before, test } from 'node:test';
 import { createApp } from '../dist/server.js';
 import { handleRouteError } from '../dist/http/responses.js';
 import jwt from 'jsonwebtoken';
+import { REQUEST_LIMIT } from '../dist/config/server.js';
 
 process.env.ACCESS_TOKEN_SECRET = 'test-only-secret';
 
@@ -140,7 +141,7 @@ test('returns 429 after the request limit is exceeded', async () => {
     const limitedBaseUrl = `http://127.0.0.1:${address.port}`;
 
     try {
-        for (let requestNumber = 0; requestNumber < 300; requestNumber += 1) {
+        for (let requestNumber = 0; requestNumber < REQUEST_LIMIT; requestNumber += 1) {
             const response = await fetch(`${limitedBaseUrl}/ping`);
             assert.equal(response.status, 200);
         }

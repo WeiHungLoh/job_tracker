@@ -4,18 +4,15 @@ import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
 import styles from './DashboardStats.module.css';
+import type { DashboardStatsData } from './models';
+import type { JobStatus } from '../jobApplication/models';
+import { getErrorMessage } from '../../helper/getErrorMessage';
 
-type Stats = {
-    total: number;
-    activeInterviews: number;
-    offers: number;
-    responseRate: string;
-    thisWeek: number;
-};
+const RESPONDED_STATUSES = new Set<JobStatus>(['Interview', 'Offer', 'Accepted', 'Rejected', 'Declined']);
 
 const DashboardStats = () => {
     const api = useJobTrackerAPI();
-    const [stats, setStats] = useState<Stats | null>(null);
+    const [stats, setStats] = useState<DashboardStatsData | null>(null);
     const { showErrorToast } = useToast();
 
     useEffect(() => {
@@ -29,7 +26,9 @@ const DashboardStats = () => {
                     api.application.listWeeklyApplications(),
                 ]);
 
-                if (!isActive) return;
+                if (!isActive) {
+                    return;
+                }
 
                 const counts = Array.isArray(statusCounts) ? statusCounts : [];
                 const interviewList = Array.isArray(interviews) ? interviews : [];
@@ -40,9 +39,8 @@ const DashboardStats = () => {
                 const offerCount = counts.find((row) => row.job_status === 'Offer');
                 const offers = offerCount ? Number(offerCount.count) : 0;
 
-                const respondedStatuses = ['Interview', 'Offer', 'Accepted', 'Rejected', 'Declined'];
                 const responded = counts
-                    .filter((row) => respondedStatuses.includes(row.job_status))
+                    .filter((row) => RESPONDED_STATUSES.has(row.job_status))
                     .reduce((sum, row) => sum + Number(row.count), 0);
                 const responseRate = total > 0 ? `${Math.round((responded / total) * 100)}%` : '—';
 
@@ -60,7 +58,7 @@ const DashboardStats = () => {
                     thisWeek,
                 });
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             }
         };
 

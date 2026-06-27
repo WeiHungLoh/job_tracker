@@ -40,7 +40,7 @@ export type CreateApplicationRequest = {
 export type CreateApplicationResponse = string;
 
 export type DeleteApplicationRequest = {
-    applicationId: number;
+    jobId: number;
 };
 export type DeleteApplicationResponse = null;
 

@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import type { UserPreferences, UserPreferencesContextValue } from './models';
+import type { UserPreferencesContextValue } from './models';
 import { createContext, useContext, useMemo } from 'react';
 
 const UserPreferencesContext = createContext<UserPreferencesContextValue | undefined>(undefined);
@@ -23,5 +23,3 @@ export const useUserPreferences = () => {
 
     return context;
 };
-
-export type { UserPreferences };

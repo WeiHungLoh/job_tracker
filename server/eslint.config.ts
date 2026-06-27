@@ -14,8 +14,7 @@ export default defineConfig([
         },
         rules: {
             'no-unused-vars': 'off',
-            '@typescript-eslint/no-unused-vars': 'warn',
-            quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
             'no-trailing-spaces': 'error',
             'space-before-function-paren': ['error', 'always'],
             'eol-last': ['error', 'always'],

@@ -2,17 +2,17 @@ import type { UpdateUserPreferencesRequest } from '../../routes/userPreferences/
 import type { UserPreferences } from '../models.js';
 import { pool } from '../connectDB.js';
 
-const getUserPreferences = async (userId: number): Promise<UserPreferences | undefined> => {
-    const res = await pool.query<UserPreferences>(`SELECT * FROM user_preferences WHERE user_id = $1`, [userId]);
+export const getUserPreferences = async (userId: number): Promise<UserPreferences | undefined> => {
+    const result = await pool.query<UserPreferences>(`SELECT * FROM user_preferences WHERE user_id = $1`, [userId]);
 
-    return res.rows[0];
+    return result.rows[0];
 };
 
-const updateUserPreferences = async (
+export const updateUserPreferences = async (
     userId: number,
     preferences: UpdateUserPreferencesRequest
 ): Promise<UserPreferences | undefined> => {
-    const res = await pool.query<UserPreferences>(
+    const result = await pool.query<UserPreferences>(
         `UPDATE user_preferences
          SET
             application_job_status = COALESCE($2, application_job_status),
@@ -34,7 +34,5 @@ const updateUserPreferences = async (
         ]
     );
 
-    return res.rows[0];
+    return result.rows[0];
 };
-
-export { getUserPreferences, updateUserPreferences };

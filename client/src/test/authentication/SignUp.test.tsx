@@ -27,7 +27,7 @@ describe('User sign up flow', () => {
                 ok: false,
                 status: 401,
             })
-            // Mocks a successful user registered fetch response with text since res.text is used in SignUp.js
+            // Mocks the text response returned by the sign-up endpoint.
             .mockResolvedValueOnce({
                 ok: true,
                 status: 201,
@@ -55,9 +55,8 @@ describe('User sign up flow', () => {
             })
         );
 
-        // Checks that sign up successful notification to appear followed by being directed to sign in page
         await waitFor(() =>
-            expect(screen.getByText('Sign up succesful! Redirecting you to login page')).toBeInTheDocument()
+            expect(screen.getByText('Sign up successful! Redirecting you to login page')).toBeInTheDocument()
         );
         await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'), { timeout: 2000 });
     });

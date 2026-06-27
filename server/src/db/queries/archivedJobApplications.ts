@@ -1,8 +1,8 @@
 import type { ArchivedJobApplication, JobStatus } from '../models.js';
 import { pool } from '../connectDB.js';
-import { JOB_STATUS_SORT_ORDER } from './shared.js';
+import { hasAffectedRows, JOB_STATUS_SORT_ORDER } from './shared.js';
 
-const archiveJobApplication = async (jobId: string | number, userId: number): Promise<boolean> => {
+export const archiveJobApplication = async (jobId: number, userId: number): Promise<boolean> => {
     const client = await pool.connect();
 
     try {
@@ -15,7 +15,7 @@ const archiveJobApplication = async (jobId: string | number, userId: number): Pr
             [jobId, userId]
         );
 
-        if (applicationResult.rowCount === 0) {
+        if (!hasAffectedRows(applicationResult)) {
             await client.query('ROLLBACK');
             return false;
         }
@@ -35,7 +35,7 @@ const archiveJobApplication = async (jobId: string | number, userId: number): Pr
     }
 };
 
-const unarchiveJobApplication = async (archivedJobId: string | number, userId: number): Promise<boolean> => {
+export const unarchiveJobApplication = async (archivedJobId: number, userId: number): Promise<boolean> => {
     const client = await pool.connect();
 
     try {
@@ -47,7 +47,7 @@ const unarchiveJobApplication = async (archivedJobId: string | number, userId: n
             [archivedJobId, userId]
         );
 
-        if (applicationResult.rowCount === 0) {
+        if (!hasAffectedRows(applicationResult)) {
             await client.query('ROLLBACK');
             return false;
         }
@@ -67,11 +67,11 @@ const unarchiveJobApplication = async (archivedJobId: string | number, userId: n
     }
 };
 
-const getArchivedJobApplications = async (
+export const getArchivedJobApplications = async (
     userId: number,
     jobStatus: JobStatus | null = null
 ): Promise<ArchivedJobApplication[]> => {
-    const res = await pool.query<ArchivedJobApplication>(
+    const result = await pool.query<ArchivedJobApplication>(
         `SELECT
             job_id AS archived_job_id,
             user_id,
@@ -91,25 +91,17 @@ const getArchivedJobApplications = async (
         [userId, jobStatus]
     );
 
-    return res.rows;
+    return result.rows;
 };
 
-const deleteArchivedJobApplication = async (jobId: string | number, userId: number): Promise<boolean> => {
+export const deleteArchivedJobApplication = async (jobId: number, userId: number): Promise<boolean> => {
     const result = await pool.query(
         `DELETE FROM job_applications WHERE job_id = $1 AND user_id = $2 AND is_archived = true`,
         [jobId, userId]
     );
-    return (result.rowCount ?? 0) > 0;
+    return hasAffectedRows(result);
 };
 
-const deleteAllArchivedJobApplications = async (userId: number): Promise<void> => {
+export const deleteAllArchivedJobApplications = async (userId: number): Promise<void> => {
     await pool.query(`DELETE FROM job_applications WHERE user_id = $1 AND is_archived = true`, [userId]);
-};
-
-export {
-    archiveJobApplication,
-    getArchivedJobApplications,
-    deleteArchivedJobApplication,
-    deleteAllArchivedJobApplications,
-    unarchiveJobApplication,
 };

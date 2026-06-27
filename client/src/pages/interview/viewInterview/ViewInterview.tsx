@@ -2,17 +2,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { type MouseEvent, useEffect, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
+import { createInterviewCsvData } from '../../../helper/csvData';
+import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-// Taken from: https://www.npmjs.com/package/react-csv
 import { routes } from '../../../routes';
 import styles from './ViewInterview.module.css';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
@@ -28,12 +30,16 @@ const ViewInterview = () => {
 
         const fetchInterviews = async () => {
             try {
-                const data = await api.interview.listInterviews();
-                if (isActive) setInterviews(Array.isArray(data) ? data : []);
+                const fetchedInterviews = await api.interview.listInterviews();
+                if (isActive) {
+                    setInterviews(Array.isArray(fetchedInterviews) ? fetchedInterviews : []);
+                }
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             } finally {
-                if (isActive) setIsLoading(false);
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         };
 
@@ -43,52 +49,35 @@ const ViewInterview = () => {
         };
     }, []);
 
-    const data = interviews.map((interview) => ({
-        ...interview,
-        interview_date: formatDate(interview.interview_date).formattedDate,
-        interview_type: interview.interview_type ? interview.interview_type : 'N/A',
-        notes: interview.interview_notes ? interview.interview_notes : 'N/A',
-    }));
+    const csvData = createInterviewCsvData(interviews);
 
     const handleDelete = async (interviewId: number) => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete this job interview? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete',
-                confirmationButtonProps: { autoFocus: true },
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('job interview'));
 
             if (confirmed) {
                 await api.interview.deleteInterview({ interviewId });
                 setInterviews((current) => current.filter((interview) => interview.interview_id !== interviewId));
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
     const handleDeleteAll = async () => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all job interviews? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('job interview', true));
 
             if (confirmed) {
                 await api.interview.deleteAllInterviews();
                 setInterviews([]);
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
-    const hasInterviews = interviews.length !== 0;
+    const hasInterviews = interviews.length > 0;
 
     const handleViewApplicationClick = async (event: MouseEvent<HTMLAnchorElement>, interview: JobInterview) => {
         event.preventDefault();
@@ -112,8 +101,7 @@ const ViewInterview = () => {
 
             navigate(`${routes.viewApplications}#${interview.job_id}`);
         } catch (error) {
-            showErrorToast((error as Error).message);
-            return;
+            showErrorToast(getErrorMessage(error));
         }
     };
 
@@ -180,7 +168,7 @@ const ViewInterview = () => {
                                 </PrimaryButton>
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
-                                        data={data}
+                                        data={csvData}
                                         headers={INTERVIEW_CSV_HEADERS}
                                         filename='job_interviews.csv'
                                         style={{ color: 'inherit', textDecoration: 'none' }}

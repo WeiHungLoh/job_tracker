@@ -69,243 +69,259 @@ import { useMemo } from 'react';
 
 export const useJobTrackerAPI = () => {
     const jobTrackerAPI = useMemo(() => {
-        const ping = {
-            async wake() {
-                return await makeJobTrackerAPIRequest<WakeRequest, WakeResponse>(null, endpointConfig.ping.wake);
-            },
+        const wake = async () => {
+            return await makeJobTrackerAPIRequest<WakeRequest, WakeResponse>(null, endpointConfig.ping.wake);
         };
 
-        const authentication = {
-            async signIn(req: SignInRequest) {
-                return await makeJobTrackerAPIRequest<SignInRequest, SignInResponse>(
-                    req,
-                    endpointConfig.authentication.signIn,
-                    'include'
-                );
-            },
-
-            async signUp(req: SignUpRequest) {
-                return await makeJobTrackerAPIRequest<SignUpRequest, SignUpResponse>(
-                    req,
-                    endpointConfig.authentication.signUp
-                );
-            },
-
-            async verify() {
-                return await makeJobTrackerAPIRequest<VerifyAuthenticationRequest, VerifyAuthenticationResponse>(
-                    null,
-                    endpointConfig.authentication.verify,
-                    'include'
-                );
-            },
-
-            async logout() {
-                return await makeJobTrackerAPIRequest<LogoutRequest, LogoutResponse>(
-                    null,
-                    endpointConfig.authentication.logout,
-                    'include'
-                );
-            },
+        const signIn = async (req: SignInRequest) => {
+            return await makeJobTrackerAPIRequest<SignInRequest, SignInResponse>(
+                req,
+                endpointConfig.authentication.signIn,
+                'include'
+            );
         };
 
-        const application = {
-            async listApplications(req: ListApplicationsRequest) {
-                return await makeJobTrackerAPIRequest<ListApplicationsRequest, ListApplicationsResponse>(
-                    req,
-                    endpointConfig.application.listApplications,
-                    'include'
-                );
-            },
-
-            async listWeeklyApplications() {
-                return await makeJobTrackerAPIRequest<ListWeeklyApplicationsRequest, ListWeeklyApplicationsResponse>(
-                    null,
-                    endpointConfig.application.listWeeklyApplications,
-                    'include'
-                );
-            },
-
-            async listJobStatusCounts() {
-                return await makeJobTrackerAPIRequest<ListJobStatusCountsRequest, ListJobStatusCountsResponse>(
-                    null,
-                    endpointConfig.application.listJobStatusCounts,
-                    'include'
-                );
-            },
-
-            async createApplication(req: CreateApplicationRequest) {
-                return await makeJobTrackerAPIRequest<CreateApplicationRequest, CreateApplicationResponse>(
-                    req,
-                    endpointConfig.application.createApplication,
-                    'include'
-                );
-            },
-
-            async deleteApplication(req: DeleteApplicationRequest) {
-                return await makeJobTrackerAPIRequest<DeleteApplicationRequest, DeleteApplicationResponse>(
-                    req,
-                    endpointConfig.application.deleteApplication,
-                    'include'
-                );
-            },
-
-            async deleteAllApplications() {
-                return await makeJobTrackerAPIRequest<DeleteAllApplicationsRequest, DeleteAllApplicationsResponse>(
-                    null,
-                    endpointConfig.application.deleteAllApplications,
-                    'include'
-                );
-            },
-
-            async updateNotes(req: UpdateNotesRequest) {
-                return await makeJobTrackerAPIRequest<UpdateNotesRequest, UpdateNotesResponse>(
-                    req,
-                    endpointConfig.application.updateNotes,
-                    'include'
-                );
-            },
-
-            async updateEditStatus(req: UpdateEditStatusRequest) {
-                return await makeJobTrackerAPIRequest<UpdateEditStatusRequest, UpdateEditStatusResponse>(
-                    req,
-                    endpointConfig.application.updateEditStatus,
-                    'include'
-                );
-            },
-
-            async updateJobStatus(req: UpdateJobStatusRequest) {
-                return await makeJobTrackerAPIRequest<UpdateJobStatusRequest, UpdateJobStatusResponse>(
-                    req,
-                    endpointConfig.application.updateJobStatus,
-                    'include'
-                );
-            },
+        const signUp = async (req: SignUpRequest) => {
+            return await makeJobTrackerAPIRequest<SignUpRequest, SignUpResponse>(
+                req,
+                endpointConfig.authentication.signUp
+            );
         };
 
-        const interview = {
-            async listInterviews() {
-                return await makeJobTrackerAPIRequest<ListInterviewsRequest, ListInterviewsResponse>(
-                    null,
-                    endpointConfig.interview.listInterviews,
-                    'include'
-                );
-            },
-
-            async createInterview(req: CreateInterviewRequest) {
-                return await makeJobTrackerAPIRequest<CreateInterviewRequest, CreateInterviewResponse>(
-                    req,
-                    endpointConfig.interview.createInterview,
-                    'include'
-                );
-            },
-
-            async deleteInterview(req: DeleteInterviewRequest) {
-                return await makeJobTrackerAPIRequest<DeleteInterviewRequest, DeleteInterviewResponse>(
-                    req,
-                    endpointConfig.interview.deleteInterview,
-                    'include'
-                );
-            },
-
-            async deleteAllInterviews() {
-                return await makeJobTrackerAPIRequest<DeleteAllInterviewsRequest, DeleteAllInterviewsResponse>(
-                    null,
-                    endpointConfig.interview.deleteAllInterviews,
-                    'include'
-                );
-            },
+        const verify = async () => {
+            return await makeJobTrackerAPIRequest<VerifyAuthenticationRequest, VerifyAuthenticationResponse>(
+                null,
+                endpointConfig.authentication.verify,
+                'include'
+            );
         };
 
-        const archivedApplication = {
-            async listApplications(req: ListArchivedApplicationsRequest) {
-                return await makeJobTrackerAPIRequest<
-                    ListArchivedApplicationsRequest,
-                    ListArchivedApplicationsResponse
-                >(req, endpointConfig.archivedApplication.listApplications, 'include');
-            },
-
-            async archiveApplication(req: ArchiveApplicationRequest) {
-                return await makeJobTrackerAPIRequest<ArchiveApplicationRequest, ArchiveApplicationResponse>(
-                    req,
-                    endpointConfig.archivedApplication.archiveApplication,
-                    'include'
-                );
-            },
-
-            async deleteApplication(req: DeleteArchivedApplicationRequest) {
-                return await makeJobTrackerAPIRequest<
-                    DeleteArchivedApplicationRequest,
-                    DeleteArchivedApplicationResponse
-                >(req, endpointConfig.archivedApplication.deleteApplication, 'include');
-            },
-
-            async deleteAllApplications() {
-                return await makeJobTrackerAPIRequest<
-                    DeleteAllArchivedApplicationsRequest,
-                    DeleteAllArchivedApplicationsResponse
-                >(null, endpointConfig.archivedApplication.deleteAllApplications, 'include');
-            },
-
-            async unarchiveApplication(req: UnarchiveApplicationRequest) {
-                return await makeJobTrackerAPIRequest<UnarchiveApplicationRequest, UnarchiveApplicationResponse>(
-                    req,
-                    endpointConfig.archivedApplication.unarchiveApplication,
-                    'include'
-                );
-            },
+        const logout = async () => {
+            return await makeJobTrackerAPIRequest<LogoutRequest, LogoutResponse>(
+                null,
+                endpointConfig.authentication.logout,
+                'include'
+            );
         };
 
-        const archivedInterview = {
-            async listInterviews() {
-                return await makeJobTrackerAPIRequest<ListArchivedInterviewsRequest, ListArchivedInterviewsResponse>(
-                    null,
-                    endpointConfig.archivedInterview.listInterviews,
-                    'include'
-                );
-            },
-
-            async deleteInterview(req: DeleteArchivedInterviewRequest) {
-                return await makeJobTrackerAPIRequest<DeleteArchivedInterviewRequest, DeleteArchivedInterviewResponse>(
-                    req,
-                    endpointConfig.archivedInterview.deleteInterview,
-                    'include'
-                );
-            },
-
-            async deleteAllInterviews() {
-                return await makeJobTrackerAPIRequest<
-                    DeleteAllArchivedInterviewsRequest,
-                    DeleteAllArchivedInterviewsResponse
-                >(null, endpointConfig.archivedInterview.deleteAllInterviews, 'include');
-            },
+        const listApplications = async (req: ListApplicationsRequest) => {
+            return await makeJobTrackerAPIRequest<ListApplicationsRequest, ListApplicationsResponse>(
+                req,
+                endpointConfig.application.listApplications,
+                'include'
+            );
         };
 
-        const userPreferences = {
-            async get() {
-                return await makeJobTrackerAPIRequest<GetUserPreferencesRequest, GetUserPreferencesResponse>(
-                    null,
-                    endpointConfig.userPreferences.get,
-                    'include'
-                );
-            },
+        const listWeeklyApplications = async () => {
+            return await makeJobTrackerAPIRequest<ListWeeklyApplicationsRequest, ListWeeklyApplicationsResponse>(
+                null,
+                endpointConfig.application.listWeeklyApplications,
+                'include'
+            );
+        };
 
-            async update(req: UpdateUserPreferencesRequest) {
-                return await makeJobTrackerAPIRequest<UpdateUserPreferencesRequest, UpdateUserPreferencesResponse>(
-                    req,
-                    endpointConfig.userPreferences.update,
-                    'include'
-                );
-            },
+        const listJobStatusCounts = async () => {
+            return await makeJobTrackerAPIRequest<ListJobStatusCountsRequest, ListJobStatusCountsResponse>(
+                null,
+                endpointConfig.application.listJobStatusCounts,
+                'include'
+            );
+        };
+
+        const createApplication = async (req: CreateApplicationRequest) => {
+            return await makeJobTrackerAPIRequest<CreateApplicationRequest, CreateApplicationResponse>(
+                req,
+                endpointConfig.application.createApplication,
+                'include'
+            );
+        };
+
+        const deleteApplication = async (req: DeleteApplicationRequest) => {
+            return await makeJobTrackerAPIRequest<DeleteApplicationRequest, DeleteApplicationResponse>(
+                req,
+                endpointConfig.application.deleteApplication,
+                'include'
+            );
+        };
+
+        const deleteAllApplications = async () => {
+            return await makeJobTrackerAPIRequest<DeleteAllApplicationsRequest, DeleteAllApplicationsResponse>(
+                null,
+                endpointConfig.application.deleteAllApplications,
+                'include'
+            );
+        };
+
+        const updateNotes = async (req: UpdateNotesRequest) => {
+            return await makeJobTrackerAPIRequest<UpdateNotesRequest, UpdateNotesResponse>(
+                req,
+                endpointConfig.application.updateNotes,
+                'include'
+            );
+        };
+
+        const updateEditStatus = async (req: UpdateEditStatusRequest) => {
+            return await makeJobTrackerAPIRequest<UpdateEditStatusRequest, UpdateEditStatusResponse>(
+                req,
+                endpointConfig.application.updateEditStatus,
+                'include'
+            );
+        };
+
+        const updateJobStatus = async (req: UpdateJobStatusRequest) => {
+            return await makeJobTrackerAPIRequest<UpdateJobStatusRequest, UpdateJobStatusResponse>(
+                req,
+                endpointConfig.application.updateJobStatus,
+                'include'
+            );
+        };
+
+        const listInterviews = async () => {
+            return await makeJobTrackerAPIRequest<ListInterviewsRequest, ListInterviewsResponse>(
+                null,
+                endpointConfig.interview.listInterviews,
+                'include'
+            );
+        };
+
+        const createInterview = async (req: CreateInterviewRequest) => {
+            return await makeJobTrackerAPIRequest<CreateInterviewRequest, CreateInterviewResponse>(
+                req,
+                endpointConfig.interview.createInterview,
+                'include'
+            );
+        };
+
+        const deleteInterview = async (req: DeleteInterviewRequest) => {
+            return await makeJobTrackerAPIRequest<DeleteInterviewRequest, DeleteInterviewResponse>(
+                req,
+                endpointConfig.interview.deleteInterview,
+                'include'
+            );
+        };
+
+        const deleteAllInterviews = async () => {
+            return await makeJobTrackerAPIRequest<DeleteAllInterviewsRequest, DeleteAllInterviewsResponse>(
+                null,
+                endpointConfig.interview.deleteAllInterviews,
+                'include'
+            );
+        };
+
+        const listArchivedApplications = async (req: ListArchivedApplicationsRequest) => {
+            return await makeJobTrackerAPIRequest<ListArchivedApplicationsRequest, ListArchivedApplicationsResponse>(
+                req,
+                endpointConfig.archivedApplication.listApplications,
+                'include'
+            );
+        };
+
+        const archiveApplication = async (req: ArchiveApplicationRequest) => {
+            return await makeJobTrackerAPIRequest<ArchiveApplicationRequest, ArchiveApplicationResponse>(
+                req,
+                endpointConfig.archivedApplication.archiveApplication,
+                'include'
+            );
+        };
+
+        const deleteArchivedApplication = async (req: DeleteArchivedApplicationRequest) => {
+            return await makeJobTrackerAPIRequest<DeleteArchivedApplicationRequest, DeleteArchivedApplicationResponse>(
+                req,
+                endpointConfig.archivedApplication.deleteApplication,
+                'include'
+            );
+        };
+
+        const deleteAllArchivedApplications = async () => {
+            return await makeJobTrackerAPIRequest<
+                DeleteAllArchivedApplicationsRequest,
+                DeleteAllArchivedApplicationsResponse
+            >(null, endpointConfig.archivedApplication.deleteAllApplications, 'include');
+        };
+
+        const unarchiveApplication = async (req: UnarchiveApplicationRequest) => {
+            return await makeJobTrackerAPIRequest<UnarchiveApplicationRequest, UnarchiveApplicationResponse>(
+                req,
+                endpointConfig.archivedApplication.unarchiveApplication,
+                'include'
+            );
+        };
+
+        const listArchivedInterviews = async () => {
+            return await makeJobTrackerAPIRequest<ListArchivedInterviewsRequest, ListArchivedInterviewsResponse>(
+                null,
+                endpointConfig.archivedInterview.listInterviews,
+                'include'
+            );
+        };
+
+        const deleteArchivedInterview = async (req: DeleteArchivedInterviewRequest) => {
+            return await makeJobTrackerAPIRequest<DeleteArchivedInterviewRequest, DeleteArchivedInterviewResponse>(
+                req,
+                endpointConfig.archivedInterview.deleteInterview,
+                'include'
+            );
+        };
+
+        const deleteAllArchivedInterviews = async () => {
+            return await makeJobTrackerAPIRequest<
+                DeleteAllArchivedInterviewsRequest,
+                DeleteAllArchivedInterviewsResponse
+            >(null, endpointConfig.archivedInterview.deleteAllInterviews, 'include');
+        };
+
+        const getUserPreferences = async () => {
+            return await makeJobTrackerAPIRequest<GetUserPreferencesRequest, GetUserPreferencesResponse>(
+                null,
+                endpointConfig.userPreferences.get,
+                'include'
+            );
+        };
+
+        const updateUserPreferences = async (req: UpdateUserPreferencesRequest) => {
+            return await makeJobTrackerAPIRequest<UpdateUserPreferencesRequest, UpdateUserPreferencesResponse>(
+                req,
+                endpointConfig.userPreferences.update,
+                'include'
+            );
         };
 
         return {
-            ping,
-            authentication,
-            application,
-            interview,
-            archivedApplication,
-            archivedInterview,
-            userPreferences,
+            ping: { wake },
+            authentication: { signIn, signUp, verify, logout },
+            application: {
+                listApplications,
+                listWeeklyApplications,
+                listJobStatusCounts,
+                createApplication,
+                deleteApplication,
+                deleteAllApplications,
+                updateNotes,
+                updateEditStatus,
+                updateJobStatus,
+            },
+            interview: {
+                listInterviews,
+                createInterview,
+                deleteInterview,
+                deleteAllInterviews,
+            },
+            archivedApplication: {
+                listApplications: listArchivedApplications,
+                archiveApplication,
+                deleteApplication: deleteArchivedApplication,
+                deleteAllApplications: deleteAllArchivedApplications,
+                unarchiveApplication,
+            },
+            archivedInterview: {
+                listInterviews: listArchivedInterviews,
+                deleteInterview: deleteArchivedInterview,
+                deleteAllInterviews: deleteAllArchivedInterviews,
+            },
+            userPreferences: {
+                get: getUserPreferences,
+                update: updateUserPreferences,
+            },
         };
     }, []);
 

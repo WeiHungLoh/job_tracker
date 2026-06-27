@@ -5,12 +5,13 @@ import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { hasValidDatetimeLocalYear, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
+import { isInvalidDatetimeLocalInput, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState('');
@@ -20,13 +21,11 @@ const AddInterview = () => {
     const interviewDateInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const location = useLocation() as Location<{ app?: JobApplication }>;
-    // Receives the state that has been passed when user clicks 'Click here to add an interview' button
     const app = location.state?.app;
     const [isLoading, setIsLoading] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
 
-    // Forbids users from adding interview without clicking 'Click here to add an interview' button
     if (!app) {
         return <Navigate to={routes.viewApplications} replace />;
     }
@@ -38,19 +37,14 @@ const AddInterview = () => {
         setNotes('');
     };
 
-    const handleAdd = async (e: MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
+    const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
 
         const trimmedInterviewLocation = interviewLocation.trim();
         const trimmedInterviewType = interviewType.trim();
         const trimmedNotes = notes.trim();
 
-        const dateValidity = interviewDateInputRef.current?.validity;
-        if (
-            dateValidity?.badInput ||
-            dateValidity?.rangeUnderflow ||
-            (interviewDate && !hasValidDatetimeLocalYear(interviewDate))
-        ) {
+        if (isInvalidDatetimeLocalInput(interviewDate, interviewDateInputRef.current?.validity)) {
             showErrorToast('Please enter a valid interview date');
             return;
         }
@@ -61,11 +55,6 @@ const AddInterview = () => {
         }
 
         const localDate = parseDatetimeLocal(interviewDate);
-        if (Number.isNaN(localDate.getTime())) {
-            showErrorToast('Please enter a valid interview date');
-            return;
-        }
-
         if (localDate <= new Date(app.application_date)) {
             showErrorToast('Interview date must be after the job application date');
             return;
@@ -86,10 +75,9 @@ const AddInterview = () => {
             if (error instanceof JobTrackerAPIError) {
                 showErrorToast(error.message);
                 resetForm();
-                setIsLoading(false);
                 return;
             }
-            showErrorToast('Failed to add an interview: ' + (error as Error).message);
+            showErrorToast('Failed to add an interview: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }

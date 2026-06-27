@@ -2,22 +2,15 @@ import { Pool } from 'pg';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const pool = new Pool({
+export const pool = new Pool({
     connectionString: process.env.PG_URI,
     max: Number(process.env.PG_POOL_MAX) || 10,
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 30000,
 });
 
-const connectDB = async (): Promise<void> => {
-    try {
-        const client = await pool.connect();
-        console.log('Connected to pool');
-        client.release();
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.log('Unable to connect to pool ' + message);
-    }
+export const connectDB = async (): Promise<void> => {
+    const client = await pool.connect();
+    console.log('Connected to pool');
+    client.release();
 };
-
-export { pool, connectDB };

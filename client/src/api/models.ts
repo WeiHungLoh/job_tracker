@@ -8,7 +8,7 @@ export type FieldType = (typeof FieldType)[keyof typeof FieldType];
 
 export type EndpointConfigEntry = {
     url: string;
-    verb: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
+    verb: 'DELETE' | 'GET' | 'PATCH' | 'POST';
     fieldMap?: Record<string, FieldType>;
 };
 

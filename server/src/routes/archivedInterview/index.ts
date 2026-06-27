@@ -7,7 +7,7 @@ import {
 } from '../../db/queries/archivedInterviews.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
-import { isPositiveInteger } from '../../http/validation.js';
+import { toPositiveInteger } from '../../http/validation.js';
 
 const router = express.Router();
 
@@ -40,13 +40,15 @@ router.delete(
 router.delete(
     '/:archivedInterviewId',
     async (req: Request<ArchivedInterviewIdParams, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
-        if (!isPositiveInteger(req.params.archivedInterviewId)) {
+        const archivedInterviewId = toPositiveInteger(req.params.archivedInterviewId);
+        if (archivedInterviewId === undefined) {
             sendError(res, 422, 'Archived interview ID must be a positive integer.');
             return;
         }
 
         try {
-            if (!(await deleteArchivedJobInterview(req.params.archivedInterviewId, req.user.id))) {
+            const interviewDeleted = await deleteArchivedJobInterview(archivedInterviewId, req.user.id);
+            if (!interviewDeleted) {
                 sendError(res, 404, 'Archived interview not found.');
                 return;
             }

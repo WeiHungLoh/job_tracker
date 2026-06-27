@@ -8,7 +8,7 @@ import {
     Title,
     Tooltip,
 } from 'chart.js';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import formatDate from '../../helper/dateFormatter';
 import { Line } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
@@ -36,27 +36,25 @@ const ApplicationsLineChart = () => {
     const { theme } = useTheme();
 
     const byWeek = useMemo(() => {
-        const acc: Record<string, string> = {};
-        for (const row of applications) {
-            acc[row.start_of_week] = row.applications_count;
+        const applicationsByWeek: Record<string, string> = {};
+        for (const application of applications) {
+            applicationsByWeek[application.start_of_week] = application.applications_count;
         }
-        return acc;
+        return applicationsByWeek;
     }, [applications]);
 
     const total = useMemo(() => {
-        return Object.values(byWeek).reduce((sum, v) => sum + parseInt(v), 0);
+        return Object.values(byWeek).reduce((sum, count) => sum + Number(count), 0);
     }, [byWeek]);
 
     const data = useMemo(() => {
         return {
-            labels: Object.keys(byWeek).map((d) => formatDate(d).formattedDay),
+            labels: Object.keys(byWeek).map((date) => formatDate(date).formattedDay),
             datasets: [{ label: 'Applications Applied', data: Object.values(byWeek), ...LINE_COLOR[theme] }],
         };
     }, [byWeek, theme]);
 
-    const chartColors = useMemo(() => {
-        return THEME_TEXT[theme];
-    }, [theme]);
+    const chartColors = THEME_TEXT[theme];
 
     if (isLoading) {
         return <LoadingSpinner size='sm' />;
@@ -65,8 +63,7 @@ const ApplicationsLineChart = () => {
     if (total === 0) {
         return (
             <div className={styles.noApplicationMessage}>
-                No job applications applied in the last eight weeks. Start adding some to see your progress
-                here!
+                No job applications applied in the last eight weeks. Start adding some to see your progress here!
             </div>
         );
     }
@@ -98,9 +95,7 @@ const ApplicationsLineChart = () => {
                     },
                 }}
             />
-            <div className={styles.application}>
-                Total Applications Applied in the Past Eight Weeks: {total}
-            </div>
+            <div className={styles.application}>Total Applications Applied in the Past Eight Weeks: {total}</div>
         </div>
     );
 };

@@ -7,8 +7,9 @@ import styles from './Navbar.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useTheme } from '../theme/ThemeContext';
 import { useToast } from '../toast/ToastProvider';
+import { getErrorMessage } from '../../helper/getErrorMessage';
 
-const archivedLocations: readonly string[] = [routes.archivedApplications, routes.archivedInterviews];
+const ARCHIVED_LOCATIONS: readonly string[] = [routes.archivedApplications, routes.archivedInterviews];
 
 const ACTIVE_NAV_LINKS = [
     { to: routes.dashboard, label: 'Dashboard' },
@@ -24,7 +25,7 @@ const ARCHIVED_NAV_LINKS = [
 
 const Navbar = () => {
     const location = useLocation();
-    const currLocation = location.pathname;
+    const currentLocation = location.pathname;
     const navigate = useNavigate();
     const [archived, setArchived] = useState(false);
     const api = useJobTrackerAPI();
@@ -32,16 +33,16 @@ const Navbar = () => {
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
-        setArchived(archivedLocations.includes(currLocation));
-    }, [currLocation]);
+        setArchived(ARCHIVED_LOCATIONS.includes(currentLocation));
+    }, [currentLocation]);
 
-    const handleSignOut = async (e: MouseEvent) => {
-        e.preventDefault();
+    const handleSignOut = async (event: MouseEvent) => {
+        event.preventDefault();
         try {
             await api.authentication.logout();
             navigate(routes.signIn, { state: { fromLogout: true } });
         } catch (error) {
-            showErrorToast(error instanceof Error ? error.message : 'Unable to sign out.');
+            showErrorToast(getErrorMessage(error, 'Unable to sign out.'));
         }
     };
 
@@ -52,7 +53,7 @@ const Navbar = () => {
             <h1>Job Tracker</h1>
             <div className={styles.links}>
                 {navLinks.map(({ to, label }) => (
-                    <NavLink key={to} to={to} className={currLocation === to ? styles.active : styles.inactive}>
+                    <NavLink key={to} to={to} className={currentLocation === to ? styles.active : styles.inactive}>
                         {label}
                     </NavLink>
                 ))}
@@ -60,18 +61,13 @@ const Navbar = () => {
                     variant='navigation'
                     type='button'
                     className={styles.archiveStatus}
-                    onClick={() => setArchived(!archived)}
+                    onClick={() => setArchived((isArchived) => !isArchived)}
                 >
                     <Icon name={archived ? 'archive' : 'activeApplications'} />
                     <span>{archived ? 'Show Active' : 'Show Archived'}</span>
                 </PrimaryButton>
 
-                <PrimaryButton
-                    variant='navigation'
-                    type='button'
-                    className={styles.inactive}
-                    onClick={toggleTheme}
-                >
+                <PrimaryButton variant='navigation' type='button' className={styles.inactive} onClick={toggleTheme}>
                     <Icon name={theme === 'dark' ? 'lightMode' : 'darkMode'} />
                 </PrimaryButton>
 

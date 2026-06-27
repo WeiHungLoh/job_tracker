@@ -13,7 +13,7 @@ import {
     insertInterview,
 } from '../../db/queries/interviews.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isNonEmptyString, isPositiveInteger, isString, isValidDate } from '../../http/validation.js';
+import { isNonEmptyString, isString, isValidDate, toPositiveInteger } from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -25,9 +25,10 @@ router.post(
         res: Response<CreateInterviewResponse>
     ): Promise<void> => {
         const { jobId, interviewDate, interviewLocation, interviewType, notes } = req.body;
+        const applicationId = toPositiveInteger(jobId);
 
         if (
-            !isPositiveInteger(jobId) ||
+            applicationId === undefined ||
             !isValidDate(interviewDate) ||
             !isNonEmptyString(interviewLocation) ||
             !isString(interviewType) ||
@@ -38,7 +39,15 @@ router.post(
         }
 
         try {
-            if (!(await insertInterview(jobId, req.user.id, interviewDate, interviewLocation, interviewType, notes))) {
+            const interviewCreated = await insertInterview(
+                applicationId,
+                req.user.id,
+                interviewDate,
+                interviewLocation,
+                interviewType,
+                notes
+            );
+            if (!interviewCreated) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
@@ -78,13 +87,15 @@ router.delete(
 router.delete(
     '/:interviewId',
     async (req: Request<InterviewIdParams, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
-        if (!isPositiveInteger(req.params.interviewId)) {
+        const interviewId = toPositiveInteger(req.params.interviewId);
+        if (interviewId === undefined) {
             sendError(res, 422, 'Interview ID must be a positive integer.');
             return;
         }
 
         try {
-            if (!(await deleteJobInterview(req.params.interviewId, req.user.id))) {
+            const interviewDeleted = await deleteJobInterview(interviewId, req.user.id);
+            if (!interviewDeleted) {
                 sendError(res, 404, 'Interview not found.');
                 return;
             }

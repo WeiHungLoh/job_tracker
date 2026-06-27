@@ -9,3 +9,11 @@ export type JobStatusCount = {
     job_status: JobStatus;
     count: string;
 };
+
+export type DashboardStatsData = {
+    total: number;
+    activeInterviews: number;
+    offers: number;
+    responseRate: string;
+    thisWeek: number;
+};

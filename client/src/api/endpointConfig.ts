@@ -20,9 +20,9 @@ export const endpointConfig = {
         listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET' },
         createApplication: { url: '/job-applications', verb: 'POST' },
         deleteApplication: {
-            url: '/job-applications/:applicationId',
+            url: '/job-applications/:jobId',
             verb: 'DELETE',
-            fieldMap: { applicationId: FieldType.path },
+            fieldMap: { jobId: FieldType.path },
         },
         deleteAllApplications: { url: '/job-applications', verb: 'DELETE' },
         updateNotes: { url: '/job-applications/:jobId/notes', verb: 'PATCH', fieldMap: { jobId: FieldType.path } },
@@ -51,9 +51,9 @@ export const endpointConfig = {
         },
         archiveApplication: { url: '/archived-job-applications', verb: 'POST' },
         deleteApplication: {
-            url: '/archived-job-applications/:archivedApplicationId',
+            url: '/archived-job-applications/:archivedJobId',
             verb: 'DELETE',
-            fieldMap: { archivedApplicationId: FieldType.path },
+            fieldMap: { archivedJobId: FieldType.path },
         },
         deleteAllApplications: { url: '/archived-job-applications', verb: 'DELETE' },
         unarchiveApplication: {
@@ -65,9 +65,9 @@ export const endpointConfig = {
     archivedInterview: {
         listInterviews: { url: '/archived-job-interviews', verb: 'GET' },
         deleteInterview: {
-            url: '/archived-job-interviews/:interviewId',
+            url: '/archived-job-interviews/:archivedInterviewId',
             verb: 'DELETE',
-            fieldMap: { interviewId: FieldType.path },
+            fieldMap: { archivedInterviewId: FieldType.path },
         },
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },

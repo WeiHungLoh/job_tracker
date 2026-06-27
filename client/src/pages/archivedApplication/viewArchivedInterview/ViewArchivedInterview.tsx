@@ -1,8 +1,9 @@
-// Taken from: https://www.npmjs.com/package/react-csv
 import { type MouseEvent, useEffect, useState } from 'react';
 import type { ArchivedJobInterview } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
+import { createInterviewCsvData } from '../../../helper/csvData';
+import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS } from '../../interview/models';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,6 +15,7 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
@@ -29,12 +31,16 @@ const ViewArchivedInterview = () => {
 
         const fetchInterviews = async () => {
             try {
-                const data = await api.archivedInterview.listInterviews();
-                if (isActive) setArchivedInterviews(Array.isArray(data) ? data : []);
+                const fetchedInterviews = await api.archivedInterview.listInterviews();
+                if (isActive) {
+                    setArchivedInterviews(Array.isArray(fetchedInterviews) ? fetchedInterviews : []);
+                }
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             } finally {
-                if (isActive) setIsLoading(false);
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         };
 
@@ -44,55 +50,37 @@ const ViewArchivedInterview = () => {
         };
     }, []);
 
-    const data = archivedInterviews.map((interview) => ({
-        ...interview,
-        interview_date: formatDate(interview.interview_date).formattedDate,
-        interview_type: interview.interview_type ? interview.interview_type : 'N/A',
-        notes: interview.interview_notes ? interview.interview_notes : 'N/A',
-    }));
+    const csvData = createInterviewCsvData(archivedInterviews);
 
-    const handleDelete = async (interviewId: number) => {
+    const handleDelete = async (archivedInterviewId: number) => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete this archived job interview? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete',
-                cancellationText: 'Cancel',
-                confirmationButtonProps: { autoFocus: true },
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('archived job interview'));
 
             if (confirmed) {
-                await api.archivedInterview.deleteInterview({ interviewId });
+                await api.archivedInterview.deleteInterview({ archivedInterviewId });
                 setArchivedInterviews((current) =>
-                    current.filter((interview) => interview.archived_interview_id !== interviewId)
+                    current.filter((interview) => interview.archived_interview_id !== archivedInterviewId)
                 );
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
     const handleDeleteAll = async () => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all archived job interviews? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('archived job interview', true));
 
             if (confirmed) {
                 await api.archivedInterview.deleteAllInterviews();
                 setArchivedInterviews([]);
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
-    const hasInterviews = archivedInterviews.length !== 0;
+    const hasInterviews = archivedInterviews.length > 0;
 
     const handleViewApplicationClick = async (
         event: MouseEvent<HTMLAnchorElement>,
@@ -125,8 +113,7 @@ const ViewArchivedInterview = () => {
 
             navigate(`${routes.archivedApplications}#${interview.archived_job_id}`);
         } catch (error) {
-            showErrorToast((error as Error).message);
-            return;
+            showErrorToast(getErrorMessage(error));
         }
     };
 
@@ -193,7 +180,7 @@ const ViewArchivedInterview = () => {
                                 </PrimaryButton>
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
-                                        data={data}
+                                        data={csvData}
                                         headers={INTERVIEW_CSV_HEADERS}
                                         filename='archived_job_interviews.csv'
                                         style={{ color: 'inherit', textDecoration: 'none' }}

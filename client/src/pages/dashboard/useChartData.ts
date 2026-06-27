@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '../../components/toast/ToastProvider';
+import { getErrorMessage } from '../../helper/getErrorMessage';
 
-export function useChartData<T>(fetcher: () => Promise<T[]>) {
+export const useChartData = <T>(fetcher: () => Promise<T[]>) => {
     const [data, setData] = useState<T[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { showErrorToast } = useToast();
@@ -11,22 +12,22 @@ export function useChartData<T>(fetcher: () => Promise<T[]>) {
     useEffect(() => {
         let isActive = true;
 
-        async function load() {
+        const load = async () => {
             try {
                 const result = await fetcherRef.current();
                 if (isActive) {
                     setData(Array.isArray(result) ? result : []);
                 }
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             } finally {
                 if (isActive) {
                     setIsLoading(false);
                 }
             }
-        }
+        };
 
-        load();
+        void load();
 
         return () => {
             isActive = false;
@@ -34,4 +35,4 @@ export function useChartData<T>(fetcher: () => Promise<T[]>) {
     }, []);
 
     return { data, isLoading };
-}
+};

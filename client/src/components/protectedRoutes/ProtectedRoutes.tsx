@@ -5,6 +5,7 @@ import { JobTrackerAPIError } from '../../api/models';
 import { routes } from '../../routes';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../toast/ToastProvider';
+import { getErrorMessage } from '../../helper/getErrorMessage';
 
 const ProtectedRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(undefined);
@@ -30,12 +31,12 @@ const ProtectedRoutes = () => {
             }
 
             setAuthenticationError(true);
-            showErrorToast(error instanceof Error ? error.message : 'Unable to verify authentication.');
+            showErrorToast(getErrorMessage(error, 'Unable to verify authentication.'));
         }
     };
 
     useEffect(() => {
-        checkIsAuth();
+        void checkIsAuth();
     }, [api.authentication]);
 
     if (authenticationError) {

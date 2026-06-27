@@ -3,10 +3,6 @@
  */
 export const MIN_DATETIME_LOCAL = '0001-01-01T00:00';
 
-export const hasValidDatetimeLocalYear = (value: string): boolean => {
-    return Number(value.slice(0, 4)) >= 1;
-};
-
 export const parseDatetimeLocal = (value: string): Date => {
     const [year, month, day, hour, minute] = value.split(/[-T:]/);
     const date = new Date(0);
@@ -15,7 +11,21 @@ export const parseDatetimeLocal = (value: string): Date => {
     return date;
 };
 
-const formatDate = (dueDate: string | number) => {
+export const isInvalidDatetimeLocalInput = (value: string, validity?: ValidityState): boolean => {
+    if (validity?.badInput || validity?.rangeUnderflow) {
+        return true;
+    }
+    if (!value) {
+        return false;
+    }
+    if (Number(value.slice(0, 4)) < 1) {
+        return true;
+    }
+
+    return Number.isNaN(parseDatetimeLocal(value).getTime());
+};
+
+const formatDate = (dueDate: string) => {
     const date = new Date(dueDate);
 
     const formattedDate = date.toLocaleString('en-GB', {

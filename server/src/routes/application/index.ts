@@ -18,7 +18,7 @@ import {
     editNotes,
     getApplicationsForLatestEightWeeks,
     getJobApplications,
-    getJobStatusCountPair,
+    getJobStatusCounts,
     insertJobApplication,
     updateEditStatus,
     updateJobStatus,
@@ -27,9 +27,9 @@ import { handleRouteError, sendError } from '../../http/responses.js';
 import {
     isJobStatus,
     isNonEmptyString,
-    isPositiveInteger,
     isString,
     isValidDate,
+    toPositiveInteger,
     toJobStatusQueryValue,
 } from '../../http/validation.js';
 import express from 'express';
@@ -92,7 +92,7 @@ router.get(
         res: Response<ListJobStatusCountsResponse>
     ): Promise<void> => {
         try {
-            res.status(200).json(await getJobStatusCountPair(req.user.id));
+            res.status(200).json(await getJobStatusCounts(req.user.id));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load job application status counts.');
         }
@@ -128,13 +128,15 @@ router.delete(
 router.delete(
     '/:jobId',
     async (req: Request<JobIdParams, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
-        if (!isPositiveInteger(req.params.jobId)) {
+        const jobId = toPositiveInteger(req.params.jobId);
+        if (jobId === undefined) {
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
 
         try {
-            if (!(await deleteJobApplication(req.params.jobId, req.user.id))) {
+            const applicationDeleted = await deleteJobApplication(jobId, req.user.id);
+            if (!applicationDeleted) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
@@ -151,7 +153,8 @@ router.patch(
         req: Request<JobIdParams, EmptyResponse, UpdateNotesRequest>,
         res: Response<EmptyResponse>
     ): Promise<void> => {
-        if (!isPositiveInteger(req.params.jobId)) {
+        const jobId = toPositiveInteger(req.params.jobId);
+        if (jobId === undefined) {
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
@@ -161,7 +164,8 @@ router.patch(
         }
 
         try {
-            if (!(await editNotes(req.params.jobId, req.user.id, req.body.notes))) {
+            const notesUpdated = await editNotes(jobId, req.user.id, req.body.notes);
+            if (!notesUpdated) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
@@ -178,7 +182,8 @@ router.patch(
         req: Request<JobIdParams, EmptyResponse, UpdateEditStatusRequest>,
         res: Response<EmptyResponse>
     ): Promise<void> => {
-        if (!isPositiveInteger(req.params.jobId)) {
+        const jobId = toPositiveInteger(req.params.jobId);
+        if (jobId === undefined) {
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
@@ -188,7 +193,8 @@ router.patch(
         }
 
         try {
-            if (!(await updateEditStatus(req.body.editStatus, req.params.jobId, req.user.id))) {
+            const editStatusUpdated = await updateEditStatus(req.body.editStatus, jobId, req.user.id);
+            if (!editStatusUpdated) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
@@ -205,7 +211,8 @@ router.patch(
         req: Request<JobIdParams, EmptyResponse, UpdateJobStatusRequest>,
         res: Response<EmptyResponse>
     ): Promise<void> => {
-        if (!isPositiveInteger(req.params.jobId)) {
+        const jobId = toPositiveInteger(req.params.jobId);
+        if (jobId === undefined) {
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
@@ -215,7 +222,8 @@ router.patch(
         }
 
         try {
-            if (!(await updateJobStatus(req.body.jobStatus, req.params.jobId, req.user.id))) {
+            const jobStatusUpdated = await updateJobStatus(req.body.jobStatus, jobId, req.user.id);
+            if (!jobStatusUpdated) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }

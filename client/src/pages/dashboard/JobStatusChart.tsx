@@ -1,5 +1,5 @@
 import { ArcElement, Chart as ChartJS, Legend, Title, Tooltip } from 'chart.js';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import styles from './JobStatusChart.module.css';
@@ -32,15 +32,15 @@ const JobStatusChart = () => {
     const { theme } = useTheme();
 
     const statuses = useMemo(() => {
-        return applications.map((a) => a.job_status);
+        return applications.map((application) => application.job_status);
     }, [applications]);
 
     const counts = useMemo(() => {
-        return applications.map((a) => a.count);
+        return applications.map((application) => application.count);
     }, [applications]);
 
     const total = useMemo(() => {
-        return counts.reduce((s, v) => s + parseInt(v), 0);
+        return counts.reduce((sum, count) => sum + Number(count), 0);
     }, [counts]);
 
     const data = useMemo(() => {
@@ -50,8 +50,8 @@ const JobStatusChart = () => {
                 {
                     label: '# of applications',
                     data: counts,
-                    backgroundColor: statuses.map((s) => STATUS_COLOR[s][theme]),
-                    borderColor: statuses.map((s) => STATUS_COLOR[s][theme]),
+                    backgroundColor: statuses.map((status) => STATUS_COLOR[status][theme]),
+                    borderColor: statuses.map((status) => STATUS_COLOR[status][theme]),
                     borderWidth: 0.7,
                     hoverOffset: 60,
                 },
@@ -59,9 +59,7 @@ const JobStatusChart = () => {
         };
     }, [statuses, counts, theme]);
 
-    const chartColors = useMemo(() => {
-        return TEXT_COLOR[theme];
-    }, [theme]);
+    const chartColors = TEXT_COLOR[theme];
 
     if (isLoading) {
         return <LoadingSpinner size='sm' />;

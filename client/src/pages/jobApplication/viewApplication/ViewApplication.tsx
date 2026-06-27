@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
+import { createApplicationCsvData } from '../../../helper/csvData';
+import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import type { JobInterview } from '../../interview/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -21,8 +23,9 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
-const jobStatusOrder: Record<JobStatus, number> = {
+const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,
     Offer: 2,
     Declined: 3,
@@ -32,9 +35,19 @@ const jobStatusOrder: Record<JobStatus, number> = {
     Rejected: 7,
 };
 
+const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
+    Accepted: styles.accepted,
+    Applied: styles.applied,
+    Declined: styles.declined,
+    Ghosted: styles.ghosted,
+    Interview: styles.interview,
+    Offer: styles.offer,
+    Rejected: styles.rejected,
+};
+
 const sortApplications = (applications: JobApplication[]) => {
     return [...applications].sort((firstApplication, secondApplication) => {
-        const byStatus = jobStatusOrder[firstApplication.job_status] - jobStatusOrder[secondApplication.job_status];
+        const byStatus = JOB_STATUS_ORDER[firstApplication.job_status] - JOB_STATUS_ORDER[secondApplication.job_status];
 
         return (
             byStatus || Date.parse(secondApplication.application_date) - Date.parse(firstApplication.application_date)
@@ -59,26 +72,20 @@ const ViewApplication = () => {
     const [isFilteringApplications, setIsFilteringApplications] = useState(false);
     const { showErrorToast } = useToast();
     const jobStatus = preferences.application_job_status;
-    const toggleArchived = preferences.application_show_archive;
-    const toggleNotes = preferences.application_show_notes;
-    const toggleScroll = preferences.application_enable_scroll;
+    const showArchive = preferences.application_show_archive;
+    const showNotes = preferences.application_show_notes;
+    const enableScroll = preferences.application_enable_scroll;
 
-    const data = applications.map((app) => ({
-        ...app,
-        application_date: formatDate(app.application_date).formattedDate,
-        job_location: app.job_location ? app.job_location : 'N/A',
-        job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
-        notes: app.notes ? app.notes : 'N/A',
-    }));
+    const csvData = createApplicationCsvData(applications);
 
     const interviewJobIdSet = useMemo(() => new Set(interviews.map((interview) => interview.job_id)), [interviews]);
 
     const upcomingInterviewCountByJob = useMemo(() => {
         const now = new Date();
         const counts: Record<number, number> = {};
-        interviews.forEach((iv) => {
-            if (new Date(iv.interview_date) > now) {
-                counts[iv.job_id] = (counts[iv.job_id] || 0) + 1;
+        interviews.forEach((interview) => {
+            if (new Date(interview.interview_date) > now) {
+                counts[interview.job_id] = (counts[interview.job_id] || 0) + 1;
             }
         });
         return counts;
@@ -94,7 +101,7 @@ const ViewApplication = () => {
             ]);
             setApplications(Array.isArray(jobApplications) ? jobApplications : []);
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         } finally {
             setIsFilteringApplications(false);
         }
@@ -115,9 +122,11 @@ const ViewApplication = () => {
                     setInterviews(Array.isArray(jobInterviews) ? jobInterviews : []);
                 }
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             } finally {
-                if (isActive) setIsLoading(false);
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         };
 
@@ -146,7 +155,7 @@ const ViewApplication = () => {
     }, [applications, isLoading, location.hash, location.pathname, navigate]);
 
     const handleEditNotes = (jobId: number, editedNotes: string) => {
-        setNotes({ ...notes, [jobId]: editedNotes });
+        setNotes((currentNotes) => ({ ...currentNotes, [jobId]: editedNotes }));
 
         const taskId = showNotesTimeout.current[jobId];
         if (taskId) {
@@ -162,42 +171,28 @@ const ViewApplication = () => {
                     )
                 );
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             }
         }, 500);
     };
 
-    const handleDelete = async (applicationId: number) => {
+    const handleDelete = async (jobId: number) => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete this job application? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete',
-                cancellationText: 'Cancel',
-                confirmationButtonProps: { autoFocus: true },
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('job application'));
 
             if (confirmed) {
-                await api.application.deleteApplication({ applicationId });
-                setApplications((current) => current.filter((application) => application.job_id !== applicationId));
-                setInterviews((current) => current.filter((interview) => interview.job_id !== applicationId));
+                await api.application.deleteApplication({ jobId });
+                setApplications((current) => current.filter((application) => application.job_id !== jobId));
+                setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
-            return;
+            showErrorToast(getErrorMessage(error));
         }
     };
 
     const handleDeleteAll = async () => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all job applications? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('job application', true));
 
             if (confirmed) {
                 await api.application.deleteAllApplications();
@@ -205,7 +200,7 @@ const ViewApplication = () => {
                 setInterviews([]);
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
@@ -238,7 +233,7 @@ const ViewApplication = () => {
                         return sortApplications(updatedApplications);
                     });
 
-                    if (toggleScroll) {
+                    if (enableScroll) {
                         setTimeout(() => {
                             scrollAndHighlight(
                                 String(application.job_id),
@@ -252,7 +247,7 @@ const ViewApplication = () => {
                 }
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
@@ -262,21 +257,11 @@ const ViewApplication = () => {
             setApplications((current) => current.filter((application) => application.job_id !== jobId));
             setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
         } catch (error) {
-            showErrorToast('Failed to archive an application ' + (error as Error).message);
+            showErrorToast('Failed to archive an application ' + getErrorMessage(error));
         }
     };
 
-    const jobStatusClassMap: Record<JobStatus, string> = {
-        Accepted: styles.accepted,
-        Applied: styles.applied,
-        Declined: styles.declined,
-        Ghosted: styles.ghosted,
-        Interview: styles.interview,
-        Offer: styles.offer,
-        Rejected: styles.rejected,
-    };
-
-    const hasApplications = applications.length !== 0;
+    const hasApplications = applications.length > 0;
 
     return (
         <div className={styles.applicationList}>
@@ -307,8 +292,8 @@ const ViewApplication = () => {
 
                         {hasApplications && (
                             <ToggleButton
-                                toggled={toggleScroll}
-                                onToggle={() => void updatePreferences({ application_enable_scroll: !toggleScroll })}
+                                toggled={enableScroll}
+                                onToggle={() => void updatePreferences({ application_enable_scroll: !enableScroll })}
                                 label='Enable Auto-Scroll'
                                 toggledLabel='Disable Auto-Scroll'
                                 color='blue'
@@ -318,8 +303,8 @@ const ViewApplication = () => {
                         {hasApplications && (
                             <ToggleButton
                                 data-testid='unhide-archive'
-                                toggled={toggleArchived}
-                                onToggle={() => void updatePreferences({ application_show_archive: !toggleArchived })}
+                                toggled={showArchive}
+                                onToggle={() => void updatePreferences({ application_show_archive: !showArchive })}
                                 label='Unhide Archive'
                                 toggledLabel='Hide Archive'
                             />
@@ -327,8 +312,8 @@ const ViewApplication = () => {
 
                         {hasApplications && (
                             <ToggleButton
-                                toggled={toggleNotes}
-                                onToggle={() => void updatePreferences({ application_show_notes: !toggleNotes })}
+                                toggled={showNotes}
+                                onToggle={() => void updatePreferences({ application_show_notes: !showNotes })}
                                 label='Unhide Notes'
                                 toggledLabel='Hide Notes'
                                 color='yellow'
@@ -349,122 +334,111 @@ const ViewApplication = () => {
                         </div>
                     )}
 
-                    {applications &&
-                        applications.map((application, index) => (
-                            <div
-                                className={styles.application}
-                                key={application.job_id}
-                                id={String(application.job_id)}
-                            >
-                                <div className={styles.applicationContent}>
-                                    <h2>
-                                        {index + 1}. {application.company_name}
-                                    </h2>
-                                    <p>Job Title: {application.job_title}</p>
-                                    {application.job_location !== '' && (
-                                        <p className={styles.location}>Location: {application.job_location}</p>
-                                    )}
-                                    <p className={styles.date}>
-                                        Application Date: {formatDate(application.application_date).formattedDate}
+                    {applications.map((application, index) => (
+                        <div className={styles.application} key={application.job_id} id={String(application.job_id)}>
+                            <div className={styles.applicationContent}>
+                                <h2>
+                                    {index + 1}. {application.company_name}
+                                </h2>
+                                <p>Job Title: {application.job_title}</p>
+                                {application.job_location !== '' && (
+                                    <p className={styles.location}>Location: {application.job_location}</p>
+                                )}
+                                <p className={styles.date}>
+                                    Application Date: {formatDate(application.application_date).formattedDate}
+                                </p>
+                                <p>
+                                    Time since application:{' '}
+                                    {formatDate(application.application_date).timeSinceApplication}
+                                </p>
+                                <div className={styles.badgeGroup}>
+                                    <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>
+                                        Job Status: {application.job_status}
                                     </p>
-                                    <p>
-                                        Time since application:{' '}
-                                        {formatDate(application.application_date).timeSinceApplication}
-                                    </p>
-                                    <div className={styles.badgeGroup}>
-                                        <p className={jobStatusClassMap[application.job_status]}>
-                                            Job Status: {application.job_status}
-                                        </p>
-                                        {upcomingInterviewCountByJob[application.job_id] > 0 && (
-                                            <span className={styles.upcomingBadge}>
-                                                {upcomingInterviewCountByJob[application.job_id]} Upcoming Interview
-                                                {upcomingInterviewCountByJob[application.job_id] > 1 ? 's' : ''}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {application.edit_status && (
-                                        <select
-                                            role='listbox'
-                                            value={jobStatuses[application.job_id] ?? application.job_status}
-                                            onChange={(e) =>
-                                                setJobStatuses((app) => ({
-                                                    ...app,
-                                                    [application.job_id]: e.target.value as JobStatus,
-                                                }))
-                                            }
-                                        >
-                                            {JOB_STATUSES.map((status) => (
-                                                <option
-                                                    key={status}
-                                                    value={status}
-                                                    disabled={
-                                                        status === 'Applied' &&
-                                                        interviewJobIdSet.has(application.job_id)
-                                                    }
-                                                >
-                                                    {status}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
-
-                                    {application.job_status === 'Interview' && (
-                                        <Link
-                                            to={routes.addInterview}
-                                            state={{
-                                                app: application,
-                                            }}
-                                        >
-                                            Click here to add an interview
-                                        </Link>
-                                    )}
-                                    {application.job_posting_url !== '' && (
-                                        <a
-                                            className={styles.url}
-                                            href={application.job_posting_url}
-                                            target='_blank'
-                                            rel='noreferrer noopenner'
-                                        >
-                                            Click here to head to job application URL
-                                        </a>
+                                    {upcomingInterviewCountByJob[application.job_id] > 0 && (
+                                        <span className={styles.upcomingBadge}>
+                                            {upcomingInterviewCountByJob[application.job_id]} Upcoming Interview
+                                            {upcomingInterviewCountByJob[application.job_id] > 1 ? 's' : ''}
+                                        </span>
                                     )}
                                 </div>
 
-                                <div className={styles.buttonGroup}>
-                                    <PrimaryButton variant='secondary' onClick={() => toggleEditStatus(application)}>
-                                        {application.edit_status ? 'Save Changes' : 'Edit Status'}
-                                    </PrimaryButton>
-
-                                    <PrimaryButton
-                                        variant='destructive'
-                                        onClick={() => handleDelete(application.job_id)}
+                                {application.edit_status && (
+                                    <select
+                                        role='listbox'
+                                        value={jobStatuses[application.job_id] ?? application.job_status}
+                                        onChange={(e) =>
+                                            setJobStatuses((app) => ({
+                                                ...app,
+                                                [application.job_id]: e.target.value as JobStatus,
+                                            }))
+                                        }
                                     >
-                                        Delete
-                                    </PrimaryButton>
+                                        {JOB_STATUSES.map((status) => (
+                                            <option
+                                                key={status}
+                                                value={status}
+                                                disabled={
+                                                    status === 'Applied' && interviewJobIdSet.has(application.job_id)
+                                                }
+                                            >
+                                                {status}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
 
-                                    <PrimaryButton
-                                        className={`${styles.archiveButton} ${
-                                            !toggleArchived ? styles.archiveHidden : ''
-                                        }`}
-                                        onClick={() => handleArchive(application.job_id)}
-                                        variant='secondary'
+                                {application.job_status === 'Interview' && (
+                                    <Link
+                                        to={routes.addInterview}
+                                        state={{
+                                            app: application,
+                                        }}
                                     >
-                                        Archive
-                                    </PrimaryButton>
-                                </div>
-
-                                {toggleNotes && (
-                                    <div className={styles.notes}>
-                                        <textarea
-                                            value={notes[application.job_id] ?? application.notes}
-                                            onChange={(e) => handleEditNotes(application.job_id, e.target.value)}
-                                            placeholder='Add your notes here'
-                                        />
-                                    </div>
+                                        Click here to add an interview
+                                    </Link>
+                                )}
+                                {application.job_posting_url !== '' && (
+                                    <a
+                                        className={styles.url}
+                                        href={application.job_posting_url}
+                                        target='_blank'
+                                        rel='noreferrer noopener'
+                                    >
+                                        Click here to head to job application URL
+                                    </a>
                                 )}
                             </div>
-                        ))}
+
+                            <div className={styles.buttonGroup}>
+                                <PrimaryButton variant='secondary' onClick={() => toggleEditStatus(application)}>
+                                    {application.edit_status ? 'Save Changes' : 'Edit Status'}
+                                </PrimaryButton>
+
+                                <PrimaryButton variant='destructive' onClick={() => handleDelete(application.job_id)}>
+                                    Delete
+                                </PrimaryButton>
+
+                                <PrimaryButton
+                                    className={`${styles.archiveButton} ${!showArchive ? styles.archiveHidden : ''}`}
+                                    onClick={() => handleArchive(application.job_id)}
+                                    variant='secondary'
+                                >
+                                    Archive
+                                </PrimaryButton>
+                            </div>
+
+                            {showNotes && (
+                                <div className={styles.notes}>
+                                    <textarea
+                                        value={notes[application.job_id] ?? application.notes}
+                                        onChange={(e) => handleEditNotes(application.job_id, e.target.value)}
+                                        placeholder='Add your notes here'
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ))}
 
                     <div className={styles.applicationButton}>
                         {hasApplications && (
@@ -474,7 +448,7 @@ const ViewApplication = () => {
                                 </PrimaryButton>
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
-                                        data={data}
+                                        data={csvData}
                                         headers={APPLICATION_CSV_HEADERS}
                                         filename={'job_applications.csv'}
                                         style={{ color: 'inherit', textDecoration: 'none' }}

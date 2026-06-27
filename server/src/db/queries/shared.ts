@@ -8,3 +8,7 @@ export const JOB_STATUS_SORT_ORDER = `
         WHEN job_status = 'Ghosted' THEN 6
         ELSE 7
     END`;
+
+export const hasAffectedRows = (result: { rowCount: number | null }): boolean => {
+    return (result.rowCount ?? 0) > 0;
+};

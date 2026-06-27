@@ -1,4 +1,4 @@
-import { ConfirmProvider } from 'material-ui-confirm';
+import { ConfirmProvider, type ConfirmOptions } from 'material-ui-confirm';
 import FallbackScreen from '../fallbackScreen/FallbackScreen';
 import Navbar from '../navbar/Navbar';
 import { Outlet } from 'react-router-dom';
@@ -7,6 +7,18 @@ import type { UpdateUserPreferencesRequest, UserPreferences } from '../userPrefe
 import { useCallback, useEffect, useState } from 'react';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../toast/ToastProvider';
+import { getErrorMessage } from '../../helper/getErrorMessage';
+
+const confirmOptions: ConfirmOptions = {
+    confirmationButtonProps: {
+        color: 'primary',
+        variant: 'contained',
+    },
+    cancellationButtonProps: {
+        color: 'primary',
+        variant: 'outlined',
+    },
+};
 
 const ProtectedLayout = () => {
     const api = useJobTrackerAPI();
@@ -21,7 +33,7 @@ const ProtectedLayout = () => {
             setPreferences(await api.userPreferences.get());
         } catch (error) {
             setPreferencesError(true);
-            showErrorToast(error instanceof Error ? error.message : 'Unable to load user preferences.');
+            showErrorToast(getErrorMessage(error, 'Unable to load user preferences.'));
         }
     }, [api.userPreferences, showErrorToast]);
 
@@ -49,7 +61,7 @@ const ProtectedLayout = () => {
     return (
         <UserPreferencesProvider preferences={preferences} updatePreferences={updatePreferences}>
             <Navbar />
-            <ConfirmProvider>
+            <ConfirmProvider defaultOptions={confirmOptions}>
                 <Outlet />
             </ConfirmProvider>
         </UserPreferencesProvider>

@@ -1,8 +1,9 @@
-// Taken from: https://www.npmjs.com/package/react-csv
 import { useEffect, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
 import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
+import { createApplicationCsvData } from '../../../helper/csvData';
+import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import {
     APPLICATION_CSV_HEADERS,
     JOB_STATUS_FILTER_OPTIONS,
@@ -19,6 +20,17 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
+
+const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
+    Accepted: styles.accepted,
+    Applied: styles.applied,
+    Declined: styles.declined,
+    Ghosted: styles.ghosted,
+    Interview: styles.interview,
+    Offer: styles.offer,
+    Rejected: styles.rejected,
+};
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
@@ -32,27 +44,21 @@ const ViewArchivedApplication = () => {
     const [isFilteringApplications, setIsFilteringApplications] = useState(false);
     const { showErrorToast } = useToast();
     const jobStatus = preferences.archived_application_job_status;
-    const toggleNotes = preferences.archived_application_show_notes;
+    const showNotes = preferences.archived_application_show_notes;
 
-    const data = archivedApplications.map((app) => ({
-        ...app,
-        application_date: formatDate(app.application_date).formattedDate,
-        job_location: app.job_location ? app.job_location : 'N/A',
-        job_posting_url: app.job_posting_url ? app.job_posting_url : 'N/A',
-        notes: app.notes ? app.notes : 'N/A',
-    }));
+    const csvData = createApplicationCsvData(archivedApplications);
 
     const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
         setIsFilteringApplications(true);
 
         try {
-            const [, data] = await Promise.all([
+            const [, archivedApplications] = await Promise.all([
                 updatePreferences({ archived_application_job_status: selectedStatus }),
                 api.archivedApplication.listApplications({ jobStatus: selectedStatus }),
             ]);
-            setArchivedApplications(Array.isArray(data) ? data : []);
+            setArchivedApplications(Array.isArray(archivedApplications) ? archivedApplications : []);
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         } finally {
             setIsFilteringApplications(false);
         }
@@ -63,12 +69,16 @@ const ViewArchivedApplication = () => {
 
         const fetchApplications = async () => {
             try {
-                const data = await api.archivedApplication.listApplications({ jobStatus });
-                if (isActive) setArchivedApplications(Array.isArray(data) ? data : []);
+                const fetchedApplications = await api.archivedApplication.listApplications({ jobStatus });
+                if (isActive) {
+                    setArchivedApplications(Array.isArray(fetchedApplications) ? fetchedApplications : []);
+                }
             } catch (error) {
-                showErrorToast((error as Error).message);
+                showErrorToast(getErrorMessage(error));
             } finally {
-                if (isActive) setIsLoading(false);
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         };
 
@@ -95,44 +105,31 @@ const ViewArchivedApplication = () => {
         navigate(location.pathname, { replace: true });
     }, [archivedApplications, isLoading, location.hash, location.pathname, navigate]);
 
-    const handleDelete = async (archivedApplicationId: number) => {
+    const handleDelete = async (archivedJobId: number) => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete this archived job application? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete',
-                cancellationText: 'Cancel',
-                confirmationButtonProps: { autoFocus: true },
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('archived job application'));
 
             if (confirmed) {
-                await api.archivedApplication.deleteApplication({ archivedApplicationId });
+                await api.archivedApplication.deleteApplication({ archivedJobId });
                 setArchivedApplications((current) =>
-                    current.filter((application) => application.archived_job_id !== archivedApplicationId)
+                    current.filter((application) => application.archived_job_id !== archivedJobId)
                 );
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
     const handleDeleteAll = async () => {
         try {
-            const { confirmed } = await confirm({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all archived job applications? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            });
+            const { confirmed } = await confirm(createDeleteConfirmation('archived job application', true));
 
             if (confirmed) {
                 await api.archivedApplication.deleteAllApplications();
                 setArchivedApplications([]);
             }
         } catch (error) {
-            showErrorToast((error as Error).message);
+            showErrorToast(getErrorMessage(error));
         }
     };
 
@@ -143,21 +140,11 @@ const ViewArchivedApplication = () => {
                 current.filter((application) => application.archived_job_id !== archivedJobId)
             );
         } catch (error) {
-            showErrorToast('Failed to archive an application ' + (error as Error).message);
+            showErrorToast('Failed to archive an application ' + getErrorMessage(error));
         }
     };
 
-    const jobStatusClassMap: Record<JobStatus, string> = {
-        Accepted: styles.accepted,
-        Applied: styles.applied,
-        Declined: styles.declined,
-        Ghosted: styles.ghosted,
-        Interview: styles.interview,
-        Offer: styles.offer,
-        Rejected: styles.rejected,
-    };
-
-    const hasApplications = archivedApplications.length !== 0;
+    const hasApplications = archivedApplications.length > 0;
 
     return (
         <div className={styles.archivedApplicationList}>
@@ -189,10 +176,8 @@ const ViewArchivedApplication = () => {
 
                         {hasApplications && (
                             <ToggleButton
-                                toggled={toggleNotes}
-                                onToggle={() =>
-                                    void updatePreferences({ archived_application_show_notes: !toggleNotes })
-                                }
+                                toggled={showNotes}
+                                onToggle={() => void updatePreferences({ archived_application_show_notes: !showNotes })}
                                 label='Unhide Notes'
                                 toggledLabel='Hide Notes'
                                 color='yellow'
@@ -213,73 +198,72 @@ const ViewArchivedApplication = () => {
                         </div>
                     )}
 
-                    {archivedApplications &&
-                        archivedApplications.map((application, index) => (
-                            <div
-                                className={styles.application}
-                                key={application.archived_job_id}
-                                id={String(application.archived_job_id)}
-                            >
-                                <div className={styles.applicationContent}>
-                                    <h2>
-                                        {index + 1}. {application.company_name}
-                                    </h2>
-                                    <p>Job Title: {application.job_title}</p>
-                                    {application.job_location !== '' && (
-                                        <p className={styles.location}>Location: {application.job_location}</p>
-                                    )}
-                                    <p className={styles.date}>
-                                        Application Date: {formatDate(application.application_date).formattedDate}
-                                    </p>
-                                    <p>
-                                        Time since application:{' '}
-                                        {formatDate(application.application_date).timeSinceApplication}
-                                    </p>
-                                    <p className={jobStatusClassMap[application.job_status]}>
-                                        Job Status: {application.job_status}
-                                    </p>
+                    {archivedApplications.map((application, index) => (
+                        <div
+                            className={styles.application}
+                            key={application.archived_job_id}
+                            id={String(application.archived_job_id)}
+                        >
+                            <div className={styles.applicationContent}>
+                                <h2>
+                                    {index + 1}. {application.company_name}
+                                </h2>
+                                <p>Job Title: {application.job_title}</p>
+                                {application.job_location !== '' && (
+                                    <p className={styles.location}>Location: {application.job_location}</p>
+                                )}
+                                <p className={styles.date}>
+                                    Application Date: {formatDate(application.application_date).formattedDate}
+                                </p>
+                                <p>
+                                    Time since application:{' '}
+                                    {formatDate(application.application_date).timeSinceApplication}
+                                </p>
+                                <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>
+                                    Job Status: {application.job_status}
+                                </p>
 
-                                    {application.job_posting_url !== '' && (
-                                        <a
-                                            className={styles.url}
-                                            href={application.job_posting_url}
-                                            target='_blank'
-                                            rel='noreferrer'
-                                        >
-                                            Click here to head to job application URL
-                                        </a>
-                                    )}
-                                </div>
-
-                                <div className={styles.buttonGroup}>
-                                    <PrimaryButton
-                                        variant='secondary'
-                                        onClick={() => handleUnarchive(application.archived_job_id)}
+                                {application.job_posting_url !== '' && (
+                                    <a
+                                        className={styles.url}
+                                        href={application.job_posting_url}
+                                        target='_blank'
+                                        rel='noreferrer'
                                     >
-                                        Unarchive
-                                    </PrimaryButton>
-
-                                    <PrimaryButton
-                                        variant='destructive'
-                                        onClick={() => handleDelete(application.archived_job_id)}
-                                    >
-                                        Delete
-                                    </PrimaryButton>
-                                </div>
-                                {toggleNotes && (
-                                    <div className={styles.notes}>
-                                        <textarea
-                                            value={
-                                                !application.notes || application.notes.trim() === ''
-                                                    ? 'You do not have any notes here'
-                                                    : application.notes
-                                            }
-                                            disabled
-                                        />
-                                    </div>
+                                        Click here to head to job application URL
+                                    </a>
                                 )}
                             </div>
-                        ))}
+
+                            <div className={styles.buttonGroup}>
+                                <PrimaryButton
+                                    variant='secondary'
+                                    onClick={() => handleUnarchive(application.archived_job_id)}
+                                >
+                                    Unarchive
+                                </PrimaryButton>
+
+                                <PrimaryButton
+                                    variant='destructive'
+                                    onClick={() => handleDelete(application.archived_job_id)}
+                                >
+                                    Delete
+                                </PrimaryButton>
+                            </div>
+                            {showNotes && (
+                                <div className={styles.notes}>
+                                    <textarea
+                                        value={
+                                            !application.notes || application.notes.trim() === ''
+                                                ? 'You do not have any notes here'
+                                                : application.notes
+                                        }
+                                        disabled
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ))}
 
                     <div className={styles.applicationButton}>
                         {hasApplications && (
@@ -289,7 +273,7 @@ const ViewArchivedApplication = () => {
                                 </PrimaryButton>
                                 <PrimaryButton variant='secondary'>
                                     <CSVLink
-                                        data={data}
+                                        data={csvData}
                                         headers={APPLICATION_CSV_HEADERS}
                                         filename={'archived_job_applications.csv'}
                                         style={{ color: 'inherit', textDecoration: 'none' }}

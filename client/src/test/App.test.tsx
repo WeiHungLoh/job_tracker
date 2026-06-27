@@ -46,6 +46,7 @@ const mockPreferences = {
     application_job_status: 'Show All',
     application_show_notes: false,
     application_show_archive: false,
+    application_enable_scroll: false,
     archived_application_job_status: 'Show All',
     archived_application_show_notes: false,
 };
@@ -136,8 +137,11 @@ describe('App routing and authentication behavior', () => {
         }
     );
 
-    test('hides navigation bar on public routes like "/sign-up"', () => {
+    test('hides navigation bar on public routes like "/sign-up"', async () => {
+        fetch.mockResolvedValueOnce(response(false, 401));
         renderRoute('/sign-up');
+
+        await waitFor(() => expect(screen.getByText(/sign up for job tracker/i)).toBeInTheDocument());
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     });
 

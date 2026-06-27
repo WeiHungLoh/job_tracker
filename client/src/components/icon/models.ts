@@ -17,7 +17,6 @@ export type IconName =
     | 'interview'
     | 'lock'
     | 'notes'
-    | 'sort'
     | 'success'
     | 'visibility'
     | 'visibilityOff'

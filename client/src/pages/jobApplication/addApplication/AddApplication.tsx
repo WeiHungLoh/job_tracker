@@ -2,7 +2,7 @@ import { JobTrackerAPIError } from '../../../api/models';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { hasValidDatetimeLocalYear, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
+import { isInvalidDatetimeLocalInput, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddApplication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../models';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState('');
@@ -20,7 +21,7 @@ const AddApplication = () => {
     const [jobURL, setJobURL] = useState('');
     const applicationDateInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
-    const currDate = new Date(Date.now());
+    const currentDate = new Date();
     const [isLoading, setIsLoading] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
@@ -34,8 +35,8 @@ const AddApplication = () => {
         setJobURL('');
     };
 
-    const handleAdd = async (e: MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
+    const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
 
         const trimmedCompanyName = companyName.trim();
         const trimmedJobTitle = jobTitle.trim();
@@ -47,24 +48,14 @@ const AddApplication = () => {
             return;
         }
 
-        const dateValidity = applicationDateInputRef.current?.validity;
-        if (
-            dateValidity?.badInput ||
-            dateValidity?.rangeUnderflow ||
-            (applicationDate && !hasValidDatetimeLocalYear(applicationDate))
-        ) {
+        if (isInvalidDatetimeLocalInput(applicationDate, applicationDateInputRef.current?.validity)) {
             showErrorToast('Please enter a valid application date');
             return;
         }
 
-        const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currDate;
+        const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currentDate;
 
-        if (Number.isNaN(appDate.getTime())) {
-            showErrorToast('Please enter a valid application date');
-            return;
-        }
-
-        if (appDate > currDate) {
+        if (appDate > currentDate) {
             showErrorToast('Application date cannot be later than current date');
             return;
         }
@@ -103,10 +94,9 @@ const AddApplication = () => {
             if (error instanceof JobTrackerAPIError) {
                 showErrorToast(error.message);
                 resetForm();
-                setIsLoading(false);
                 return;
             }
-            showErrorToast('Failed to add an application: ' + (error as Error).message);
+            showErrorToast('Failed to add an application: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }

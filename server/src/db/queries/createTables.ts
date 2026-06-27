@@ -1,4 +1,8 @@
 import { pool } from '../connectDB.js';
+import { JOB_STATUSES, JOB_STATUS_FILTER_OPTIONS } from '../models.js';
+
+const JOB_STATUS_SQL_VALUES = JOB_STATUSES.map((status) => `'${status}'`).join(', ');
+const JOB_STATUS_FILTER_SQL_VALUES = JOB_STATUS_FILTER_OPTIONS.map((status) => `'${status}'`).join(', ');
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -16,7 +20,7 @@ const createTables = async (): Promise<void> => {
             job_title TEXT NOT NULL,
             application_date TIMESTAMPTZ,
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            job_status TEXT CHECK (job_status IN ('Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')),
+            job_status TEXT CHECK (job_status IN (${JOB_STATUS_SQL_VALUES})),
             edit_status BOOLEAN DEFAULT false,
             job_location TEXT,
             job_posting_url TEXT,
@@ -39,13 +43,13 @@ const createTables = async (): Promise<void> => {
     const createUserPreferencesTable = `CREATE TABLE IF NOT EXISTS user_preferences (
             user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
             application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
-                application_job_status IN ('Show All', 'Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')
+                application_job_status IN (${JOB_STATUS_FILTER_SQL_VALUES})
             ),
             application_show_notes BOOLEAN NOT NULL DEFAULT false,
             application_show_archive BOOLEAN NOT NULL DEFAULT false,
             application_enable_scroll BOOLEAN NOT NULL DEFAULT false,
             archived_application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
-                archived_application_job_status IN ('Show All', 'Accepted', 'Applied', 'Declined', 'Ghosted', 'Interview', 'Offer', 'Rejected')
+                archived_application_job_status IN (${JOB_STATUS_FILTER_SQL_VALUES})
             ),
             archived_application_show_notes BOOLEAN NOT NULL DEFAULT false
         )`;
@@ -80,13 +84,8 @@ const createTables = async (): Promise<void> => {
         createInterviewJobIdIndex,
     ];
 
-    try {
-        for (const query of setupQueries) {
-            await pool.query(query);
-        }
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.log('Unable to create tables ' + message);
+    for (const query of setupQueries) {
+        await pool.query(query);
     }
 };
 

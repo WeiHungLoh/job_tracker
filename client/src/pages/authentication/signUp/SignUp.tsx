@@ -10,12 +10,13 @@ import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { getErrorMessage } from '../../../helper/getErrorMessage';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const [visible, setVisiblity] = useState(false);
+    const [visible, setVisibility] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
@@ -29,27 +30,28 @@ const SignUp = () => {
                 // no valid token, stay on sign up
             }
         };
-        verifyAuth();
+        void verifyAuth();
     }, [api.authentication, navigate]);
 
-    const handleSignUp = async (e: SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSignUp = async (event: SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
         setIsPending(true);
+
         try {
             await api.authentication.signUp({ email, password });
 
-            showSuccessToast('Sign up succesful! Redirecting you to login page');
+            showSuccessToast('Sign up successful! Redirecting you to login page');
             setTimeout(() => {
                 navigate(routes.signIn);
             }, 1500);
-            setIsPending(false);
         } catch (error) {
             if (error instanceof JobTrackerAPIError) {
                 showErrorToast('Failed to sign up: ' + error.message);
-                setIsPending(false);
                 return;
             }
-            showErrorToast('Failed to signed up. ' + (error as Error).message);
+            showErrorToast('Failed to sign up. ' + getErrorMessage(error));
+        } finally {
+            setIsPending(false);
         }
     };
 
@@ -88,7 +90,7 @@ const SignUp = () => {
                             variant='icon'
                             className={styles.toggleVisibility}
                             aria-label={visible ? 'Hide password' : 'Show password'}
-                            onClick={() => setVisiblity(!visible)}
+                            onClick={() => setVisibility((isVisible) => !isVisible)}
                         >
                             <Icon name={visible ? 'visibility' : 'visibilityOff'} />
                         </PrimaryButton>

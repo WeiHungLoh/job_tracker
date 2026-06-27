@@ -1,26 +1,20 @@
 import type { AuthenticationResponse, CredentialsRequest, EmptyResponse, SignUpResponse } from './models.js';
-import type { CookieOptions, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import {
+    AUTH_COOKIE_NAME,
+    AUTH_COOKIE_OPTIONS,
+    CLEAR_AUTH_COOKIE_OPTIONS,
+    getAccessTokenSecret,
+} from '../../config/auth.js';
 import { findUser, findUserInfo, insertUser } from '../../db/queries/users.js';
-import { clearAuthCookieOptions } from '../../middleware/cookieJWTAuth.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import { isNonEmptyString, isValidEmail } from '../../http/validation.js';
 import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 
-dotenv.config();
 const router = express.Router();
 
-const authCookieOptions: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 6 * 60 * 60 * 1000,
-};
-
-// signup
 router.post(
     '/users',
     async (
@@ -48,7 +42,6 @@ router.post(
     }
 );
 
-// sign in
 router.post(
     '/sessions',
     async (
@@ -62,7 +55,7 @@ router.post(
             return;
         }
 
-        const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+        const accessTokenSecret = getAccessTokenSecret();
         if (!accessTokenSecret) {
             console.error('ACCESS_TOKEN_SECRET is not configured.');
             sendError(res, 503, 'Authentication is temporarily unavailable.');
@@ -76,7 +69,8 @@ router.post(
                 return;
             }
 
-            if (!(await bcrypt.compare(password, userInfo.hashed_password))) {
+            const passwordMatches = await bcrypt.compare(password, userInfo.hashed_password);
+            if (!passwordMatches) {
                 sendError(res, 401, 'Incorrect password.');
                 return;
             }
@@ -85,7 +79,7 @@ router.post(
                 expiresIn: '6h',
             });
 
-            res.cookie('token', accessToken, authCookieOptions);
+            res.cookie(AUTH_COOKIE_NAME, accessToken, AUTH_COOKIE_OPTIONS);
             res.status(200).send({ message: 'Successfully signed in.' });
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to sign in.');
@@ -93,17 +87,16 @@ router.post(
     }
 );
 
-// verify token
 router.get(
     '/sessions/current',
     (req: Request<Record<string, never>, AuthenticationResponse>, res: Response<AuthenticationResponse>): void => {
-        const token = req.cookies.token as unknown;
+        const token = req.cookies[AUTH_COOKIE_NAME] as unknown;
         if (typeof token !== 'string' || !token) {
             sendError(res, 401, 'No authentication token found. Please sign in.');
             return;
         }
 
-        const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+        const accessTokenSecret = getAccessTokenSecret();
         if (!accessTokenSecret) {
             console.error('ACCESS_TOKEN_SECRET is not configured.');
             sendError(res, 503, 'Authentication is temporarily unavailable.');
@@ -115,17 +108,16 @@ router.get(
             res.status(200).send({ message: 'Authenticated user.' });
         } catch (error: unknown) {
             console.warn('Token verification failed.', error);
-            res.clearCookie('token', clearAuthCookieOptions);
+            res.clearCookie(AUTH_COOKIE_NAME, CLEAR_AUTH_COOKIE_OPTIONS);
             sendError(res, 401, 'Invalid or expired token. Please sign in.');
         }
     }
 );
 
-// logout
 router.delete(
     '/sessions/current',
     (_req: Request<Record<string, never>, EmptyResponse>, res: Response<EmptyResponse>): void => {
-        res.clearCookie('token', clearAuthCookieOptions);
+        res.clearCookie(AUTH_COOKIE_NAME, CLEAR_AUTH_COOKIE_OPTIONS);
         res.sendStatus(204);
     }
 );

@@ -138,7 +138,6 @@
     background-color: var(--colorGuideLinkHover);
 }
 
-
 @media (max-width: 480px) {
     .card {
         padding: 24px 20px;

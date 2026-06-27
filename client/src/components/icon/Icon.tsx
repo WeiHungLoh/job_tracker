@@ -17,7 +17,6 @@ import {
     MdLock,
     MdMenuBook,
     MdOutlineStickyNote2,
-    MdSort,
 } from 'react-icons/md';
 import { FaBriefcase } from 'react-icons/fa';
 import { GoAlertFill } from 'react-icons/go';
@@ -40,7 +39,6 @@ const icons: Record<IconName, IconType> = {
     interview: MdEventNote,
     lock: MdLock,
     notes: MdOutlineStickyNote2,
-    sort: MdSort,
     darkMode: MdDarkMode,
     lightMode: MdLightMode,
     success: MdCheckCircle,
