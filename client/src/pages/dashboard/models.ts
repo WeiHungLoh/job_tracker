@@ -1,4 +1,5 @@
 import type { JobStatus } from '../jobApplication/models';
+import type { JobInterview } from '../interview/models';
 
 export type WeeklyApplicationCount = {
     start_of_week: string;
@@ -10,10 +11,19 @@ export type JobStatusCount = {
     count: string;
 };
 
-export type DashboardStatsData = {
-    total: number;
-    activeInterviews: number;
-    offers: number;
-    responseRate: string;
-    thisWeek: number;
+export type DashboardStatsProps = {
+    statusCounts: JobStatusCount[];
+    interviews: JobInterview[];
+    weeklyApplications: WeeklyApplicationCount[];
+    isLoading: boolean;
+};
+
+export type ApplicationsLineChartProps = {
+    weeklyApplications: WeeklyApplicationCount[];
+    isLoading: boolean;
+};
+
+export type JobStatusChartProps = {
+    statusCounts: JobStatusCount[];
+    isLoading: boolean;
 };

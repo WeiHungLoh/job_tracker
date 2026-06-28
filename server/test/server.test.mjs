@@ -48,7 +48,7 @@ test('returns 204 with no body when logging out', async () => {
 
     assert.equal(response.status, 204);
     assert.equal(await response.text(), '');
-    assert.match(setCookieHeader, /token=;/);
+    assert.match(setCookieHeader, /access_token=;/);
     assert.match(setCookieHeader, /refresh_token=;/);
     assert.match(setCookieHeader, /SameSite=Strict/);
 });
@@ -78,7 +78,7 @@ test('refreshes an access token without requiring an access token', async () => 
 
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { message: 'Access token refreshed.' });
-    assert.match(setCookieHeader, /token=/);
+    assert.match(setCookieHeader, /access_token=/);
     assert.match(setCookieHeader, /Max-Age=900/);
     assert.match(setCookieHeader, /HttpOnly/);
     assert.match(setCookieHeader, /SameSite=Strict/);
@@ -90,7 +90,7 @@ test('clears both cookies when the refresh token is missing', async () => {
 
     assert.equal(response.status, 401);
     assert.deepEqual(await response.json(), { message: 'No refresh token found. Please sign in.' });
-    assert.match(setCookieHeader, /token=;/);
+    assert.match(setCookieHeader, /access_token=;/);
     assert.match(setCookieHeader, /refresh_token=;/);
 });
 
@@ -118,7 +118,7 @@ test('the current session endpoint only accepts an access token', async () => {
 test('returns 422 for an unsupported active application status filter', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/job-applications?jobStatus=Unknown`, {
-        headers: { Cookie: `token=${token}` },
+        headers: { Cookie: `access_token=${token}` },
     });
 
     assert.equal(response.status, 422);
@@ -128,7 +128,7 @@ test('returns 422 for an unsupported active application status filter', async ()
 test('returns 422 for an unsupported archived application status filter', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/archived-job-applications?jobStatus=Unknown`, {
-        headers: { Cookie: `token=${token}` },
+        headers: { Cookie: `access_token=${token}` },
     });
 
     assert.equal(response.status, 422);
@@ -145,12 +145,12 @@ test('returns 401 when a protected route has no token', async () => {
 test('returns 401 and clears an expired access token', async () => {
     const token = jwt.sign({ ...TEST_USER, tokenType: 'access' }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: -1 });
     const response = await fetch(`${baseUrl}/job-applications`, {
-        headers: { Cookie: `token=${token}` },
+        headers: { Cookie: `access_token=${token}` },
     });
 
     assert.equal(response.status, 401);
     assert.deepEqual(await response.json(), { message: 'Invalid or expired token. Please sign in.' });
-    assert.match(getSetCookieHeader(response), /token=;/);
+    assert.match(getSetCookieHeader(response), /access_token=;/);
 });
 
 test('returns 401 and clears both cookies for an expired refresh token', async () => {
@@ -163,7 +163,7 @@ test('returns 401 and clears both cookies for an expired refresh token', async (
 
     assert.equal(response.status, 401);
     assert.deepEqual(await response.json(), { message: 'Invalid or expired refresh token. Please sign in.' });
-    assert.match(setCookieHeader, /token=;/);
+    assert.match(setCookieHeader, /access_token=;/);
     assert.match(setCookieHeader, /refresh_token=;/);
 });
 
@@ -178,7 +178,7 @@ test('returns 422 for an invalid protected route parameter', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/job-applications/not-a-number`, {
         method: 'DELETE',
-        headers: { Cookie: `token=${token}` },
+        headers: { Cookie: `access_token=${token}` },
     });
 
     assert.equal(response.status, 422);

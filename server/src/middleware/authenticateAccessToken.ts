@@ -6,8 +6,8 @@ import { sendError } from '../http/responses.js';
 import { verifyAccessToken } from '../auth/tokens.js';
 
 const authenticateAccessToken = (req: Request, res: Response<ErrorResponse>, next: NextFunction): void => {
-    const token = req.cookies[ACCESS_TOKEN_COOKIE_NAME] as unknown;
-    if (typeof token !== 'string' || !token) {
+    const accessToken = req.cookies[ACCESS_TOKEN_COOKIE_NAME] as unknown;
+    if (typeof accessToken !== 'string' || !accessToken) {
         clearAccessTokenCookie(res);
         sendError(res, 401, 'No authentication token found. Please sign in.');
         return;
@@ -21,7 +21,7 @@ const authenticateAccessToken = (req: Request, res: Response<ErrorResponse>, nex
     }
 
     try {
-        req.user = verifyAccessToken(token, accessTokenSecret);
+        req.user = verifyAccessToken(accessToken, accessTokenSecret);
         next();
     } catch (error: unknown) {
         console.warn('Access token verification failed.', error);

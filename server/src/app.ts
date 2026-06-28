@@ -1,4 +1,4 @@
-import { REQUEST_LIMIT, REQUEST_WINDOW_MS } from './config/server.js';
+import { ALLOWED_ORIGINS, REQUEST_LIMIT, REQUEST_WINDOW_MS } from './config/server.js';
 import applicationRoute from './routes/application/index.js';
 import archivedApplicationRoute from './routes/archivedApplication/index.js';
 import archivedInterviewRoute from './routes/archivedInterview/index.js';
@@ -12,16 +12,6 @@ import interviewRoute from './routes/interview/index.js';
 import pingRoute from './routes/ping/index.js';
 import rateLimit from 'express-rate-limit';
 import userPreferencesRoute from './routes/userPreferences/index.js';
-
-const ALLOWED_ORIGINS = new Set([
-    'https://jobtracker-whloh.netlify.app',
-    'https://jobtracker.weihungloh.com',
-    'https://weihungloh.com',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://192.168.1.74:3000',
-]);
 
 export const createApp = (): express.Express => {
     const app = express();

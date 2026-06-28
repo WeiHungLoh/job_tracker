@@ -168,6 +168,13 @@ describe('App routing and authentication behavior', () => {
     test('displays active navigation bar when on dashboard page', async () => {
         renderRoute('/dashboard');
         await waitFor(() => expect(screen.getByRole('navigation')).toBeInTheDocument());
+
+        await waitFor(() => {
+            const requestedUrls = fetch.mock.calls.map(([url]) => String(url));
+            expect(requestedUrls.filter((url) => url.endsWith('/job-applications/status-counts'))).toHaveLength(1);
+            expect(requestedUrls.filter((url) => url.endsWith('/job-interviews'))).toHaveLength(1);
+            expect(requestedUrls.filter((url) => url.endsWith('/job-applications/weekly-counts'))).toHaveLength(1);
+        });
     });
 
     test('displays sign in page after clicking logout', async () => {

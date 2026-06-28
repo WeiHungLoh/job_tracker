@@ -7,7 +7,7 @@ dotenv.config();
 export const ACCESS_TOKEN_DURATION_SECONDS = 15 * 60;
 export const REFRESH_TOKEN_DURATION_SECONDS = 3 * 24 * 60 * 60;
 
-export const ACCESS_TOKEN_COOKIE_NAME = 'token';
+export const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
 export const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
 
 export const ACCESS_TOKEN_COOKIE_OPTIONS: CookieOptions = {
@@ -44,7 +44,7 @@ export const getAccessTokenSecret = (): string | undefined => {
     return process.env.ACCESS_TOKEN_SECRET;
 };
 
-export const getRefreshTokenSecret = (): string | undefined => {
+const getRefreshTokenSecret = (): string | undefined => {
     return process.env.REFRESH_TOKEN_SECRET;
 };
 

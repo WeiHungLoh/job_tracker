@@ -2,10 +2,9 @@ import { ArcElement, Chart as ChartJS, Legend, Title, Tooltip } from 'chart.js';
 import { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
+import type { JobStatusChartProps } from './models';
 import styles from './JobStatusChart.module.css';
-import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useTheme } from '../../components/theme/ThemeContext';
-import { useChartData } from './useChartData';
 import { LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
 import type { JobStatus } from '../jobApplication/models';
 
@@ -26,18 +25,16 @@ const TEXT_COLOR = {
     dark: { title: '#dee2e6', legend: '#dee2e6' },
 } as const;
 
-const JobStatusChart = () => {
-    const api = useJobTrackerAPI();
-    const { data: applications, isLoading } = useChartData(() => api.application.listJobStatusCounts());
+const JobStatusChart = ({ statusCounts, isLoading }: JobStatusChartProps) => {
     const { theme } = useTheme();
 
     const statuses = useMemo(() => {
-        return applications.map((application) => application.job_status);
-    }, [applications]);
+        return statusCounts.map((statusCount) => statusCount.job_status);
+    }, [statusCounts]);
 
     const counts = useMemo(() => {
-        return applications.map((application) => application.count);
-    }, [applications]);
+        return statusCounts.map((statusCount) => statusCount.count);
+    }, [statusCounts]);
 
     const total = useMemo(() => {
         return counts.reduce((sum, count) => sum + Number(count), 0);

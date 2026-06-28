@@ -12,10 +12,9 @@ import { useMemo } from 'react';
 import formatDate from '../../helper/dateFormatter';
 import { Line } from 'react-chartjs-2';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
+import type { ApplicationsLineChartProps } from './models';
 import styles from './ApplicationsLineChart.module.css';
-import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useTheme } from '../../components/theme/ThemeContext';
-import { useChartData } from './useChartData';
 import { LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
 
 ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
@@ -30,18 +29,16 @@ const THEME_TEXT = {
     dark: { title: '#dee2e6', tick: '#adb5bd', grid: 'rgba(255,255,255,0.12)', legend: '#dee2e6' },
 } as const;
 
-const ApplicationsLineChart = () => {
-    const api = useJobTrackerAPI();
-    const { data: applications, isLoading } = useChartData(() => api.application.listWeeklyApplications());
+const ApplicationsLineChart = ({ weeklyApplications, isLoading }: ApplicationsLineChartProps) => {
     const { theme } = useTheme();
 
     const byWeek = useMemo(() => {
         const applicationsByWeek: Record<string, string> = {};
-        for (const application of applications) {
-            applicationsByWeek[application.start_of_week] = application.applications_count;
+        for (const weeklyApplication of weeklyApplications) {
+            applicationsByWeek[weeklyApplication.start_of_week] = weeklyApplication.applications_count;
         }
         return applicationsByWeek;
-    }, [applications]);
+    }, [weeklyApplications]);
 
     const total = useMemo(() => {
         return Object.values(byWeek).reduce((sum, count) => sum + Number(count), 0);
