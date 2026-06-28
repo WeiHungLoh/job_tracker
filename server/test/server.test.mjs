@@ -1,11 +1,20 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { createApp } from '../dist/server.js';
+import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from '../dist/config/auth.js';
+import { createAccessToken, createRefreshToken } from '../dist/auth/tokens.js';
+import { createApp } from '../dist/app.js';
 import { handleRouteError } from '../dist/http/responses.js';
 import jwt from 'jsonwebtoken';
 import { REQUEST_LIMIT } from '../dist/config/server.js';
 
 process.env.ACCESS_TOKEN_SECRET = 'test-only-secret';
+process.env.REFRESH_TOKEN_SECRET = 'different-test-only-refresh-secret';
+
+const TEST_USER = { id: 1, email: 'test@example.com' };
+
+const getSetCookieHeader = (response) => {
+    return response.headers.get('set-cookie') ?? '';
+};
 
 let baseUrl;
 let server;
@@ -35,13 +44,79 @@ test('returns 200 for the health endpoint', async () => {
 
 test('returns 204 with no body when logging out', async () => {
     const response = await fetch(`${baseUrl}/authentication/sessions/current`, { method: 'DELETE' });
+    const setCookieHeader = getSetCookieHeader(response);
 
     assert.equal(response.status, 204);
     assert.equal(await response.text(), '');
+    assert.match(setCookieHeader, /token=;/);
+    assert.match(setCookieHeader, /refresh_token=;/);
+    assert.match(setCookieHeader, /SameSite=Strict/);
+});
+
+test('creates access and refresh tokens with the configured expiration times', () => {
+    const accessToken = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = createRefreshToken(TEST_USER, process.env.REFRESH_TOKEN_SECRET);
+    const accessPayload = jwt.decode(accessToken);
+    const refreshPayload = jwt.decode(refreshToken);
+
+    assert.equal(accessPayload.exp - accessPayload.iat, 15 * 60);
+    assert.equal(refreshPayload.exp - refreshPayload.iat, 3 * 24 * 60 * 60);
+    assert.equal(ACCESS_TOKEN_COOKIE_OPTIONS.maxAge, 15 * 60 * 1000);
+    assert.equal(REFRESH_TOKEN_COOKIE_OPTIONS.maxAge, 3 * 24 * 60 * 60 * 1000);
+    assert.equal(ACCESS_TOKEN_COOKIE_OPTIONS.sameSite, 'strict');
+    assert.equal(REFRESH_TOKEN_COOKIE_OPTIONS.sameSite, 'strict');
+    assert.equal(REFRESH_TOKEN_COOKIE_OPTIONS.path, '/api/authentication');
+});
+
+test('refreshes an access token without requiring an access token', async () => {
+    const refreshToken = createRefreshToken(TEST_USER, process.env.REFRESH_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/authentication/sessions/refresh`, {
+        method: 'POST',
+        headers: { Cookie: `refresh_token=${refreshToken}` },
+    });
+    const setCookieHeader = getSetCookieHeader(response);
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { message: 'Access token refreshed.' });
+    assert.match(setCookieHeader, /token=/);
+    assert.match(setCookieHeader, /Max-Age=900/);
+    assert.match(setCookieHeader, /HttpOnly/);
+    assert.match(setCookieHeader, /SameSite=Strict/);
+});
+
+test('clears both cookies when the refresh token is missing', async () => {
+    const response = await fetch(`${baseUrl}/authentication/sessions/refresh`, { method: 'POST' });
+    const setCookieHeader = getSetCookieHeader(response);
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { message: 'No refresh token found. Please sign in.' });
+    assert.match(setCookieHeader, /token=;/);
+    assert.match(setCookieHeader, /refresh_token=;/);
+});
+
+test('rejects an access token supplied as a refresh token', async () => {
+    const accessToken = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/authentication/sessions/refresh`, {
+        method: 'POST',
+        headers: { Cookie: `refresh_token=${accessToken}` },
+    });
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { message: 'Invalid or expired refresh token. Please sign in.' });
+});
+
+test('the current session endpoint only accepts an access token', async () => {
+    const refreshToken = createRefreshToken(TEST_USER, process.env.REFRESH_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/authentication/sessions/current`, {
+        headers: { Cookie: `refresh_token=${refreshToken}` },
+    });
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { message: 'No authentication token found. Please sign in.' });
 });
 
 test('returns 422 for an unsupported active application status filter', async () => {
-    const token = jwt.sign({ id: 1, email: 'test@example.com' }, process.env.ACCESS_TOKEN_SECRET);
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/job-applications?jobStatus=Unknown`, {
         headers: { Cookie: `token=${token}` },
     });
@@ -51,7 +126,7 @@ test('returns 422 for an unsupported active application status filter', async ()
 });
 
 test('returns 422 for an unsupported archived application status filter', async () => {
-    const token = jwt.sign({ id: 1, email: 'test@example.com' }, process.env.ACCESS_TOKEN_SECRET);
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/archived-job-applications?jobStatus=Unknown`, {
         headers: { Cookie: `token=${token}` },
     });
@@ -67,6 +142,31 @@ test('returns 401 when a protected route has no token', async () => {
     assert.deepEqual(await response.json(), { message: 'No authentication token found. Please sign in.' });
 });
 
+test('returns 401 and clears an expired access token', async () => {
+    const token = jwt.sign({ ...TEST_USER, tokenType: 'access' }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: -1 });
+    const response = await fetch(`${baseUrl}/job-applications`, {
+        headers: { Cookie: `token=${token}` },
+    });
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { message: 'Invalid or expired token. Please sign in.' });
+    assert.match(getSetCookieHeader(response), /token=;/);
+});
+
+test('returns 401 and clears both cookies for an expired refresh token', async () => {
+    const token = jwt.sign({ ...TEST_USER, tokenType: 'refresh' }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: -1 });
+    const response = await fetch(`${baseUrl}/authentication/sessions/refresh`, {
+        method: 'POST',
+        headers: { Cookie: `refresh_token=${token}` },
+    });
+    const setCookieHeader = getSetCookieHeader(response);
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { message: 'Invalid or expired refresh token. Please sign in.' });
+    assert.match(setCookieHeader, /token=;/);
+    assert.match(setCookieHeader, /refresh_token=;/);
+});
+
 test('returns 404 for an unknown route', async () => {
     const response = await fetch(`${baseUrl}/unknown`);
 
@@ -75,7 +175,7 @@ test('returns 404 for an unknown route', async () => {
 });
 
 test('returns 422 for an invalid protected route parameter', async () => {
-    const token = jwt.sign({ id: 1, email: 'test@example.com' }, process.env.ACCESS_TOKEN_SECRET);
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/job-applications/not-a-number`, {
         method: 'DELETE',
         headers: { Cookie: `token=${token}` },

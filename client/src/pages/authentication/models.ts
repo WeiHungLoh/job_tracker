@@ -19,5 +19,10 @@ export type VerifyAuthenticationResponse = {
     message: string;
 };
 
+export type RefreshAuthenticationRequest = null;
+export type RefreshAuthenticationResponse = {
+    message: string;
+};
+
 export type LogoutRequest = null;
 export type LogoutResponse = null;

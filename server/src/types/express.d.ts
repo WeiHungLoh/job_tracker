@@ -1,12 +1,9 @@
-import type { JwtPayload } from 'jsonwebtoken';
+import type { AuthenticatedUser } from '../auth/models.js';
 
 declare global {
     namespace Express {
         interface Request {
-            user: JwtPayload & {
-                id: number;
-                email: string;
-            };
+            user: AuthenticatedUser;
         }
     }
 }

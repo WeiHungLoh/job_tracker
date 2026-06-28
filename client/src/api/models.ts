@@ -1,10 +1,4 @@
-export const FieldType = {
-    formData: 'formData',
-    path: 'path',
-    query: 'query',
-} as const;
-
-export type FieldType = (typeof FieldType)[keyof typeof FieldType];
+export type FieldType = 'formData' | 'path' | 'query';
 
 export type EndpointConfigEntry = {
     url: string;

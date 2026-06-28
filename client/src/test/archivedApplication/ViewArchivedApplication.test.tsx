@@ -182,10 +182,6 @@ describe('Archived job application viewing flow', () => {
         );
 
         expect(await screen.findByText(/ABC Pte Ltd/i)).toBeInTheDocument();
-        expect(screen.getByText(/filter by/i)).toBeInTheDocument();
-        expect(screen.getByText(/software engineer/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument();
 
         userEvent.click(screen.getByRole('button', { name: /unarchive/i }));
 

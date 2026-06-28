@@ -13,10 +13,27 @@ vi.mock('react-router-dom', async () => ({
 
 globalThis.fetch = vi.fn();
 
-globalThis.alert = vi.fn();
+const mockUnauthenticatedSession = (signInResponse: object) => {
+    globalThis.fetch.mockImplementation(async (url: string) => {
+        if (url.endsWith('/ping')) {
+            return {
+                ok: true,
+                status: 200,
+            };
+        }
+
+        if (url.endsWith('/authentication/sessions/current') || url.endsWith('/authentication/sessions/refresh')) {
+            return {
+                ok: false,
+                status: 401,
+            };
+        }
+
+        return signInResponse;
+    });
+};
 
 describe('User sign in flow', () => {
-    // Resets the state of fetch and mockNavigate
     beforeEach(() => {
         fetch.mockReset();
         fetch.mockResolvedValue({
@@ -29,11 +46,10 @@ describe('User sign in flow', () => {
             text: async () => '',
         });
         mockNavigate.mockReset();
-        alert.mockReset();
     });
 
     test('signs in successfully and redirects to /application/add page', async () => {
-        globalThis.fetch.mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' }).mockResolvedValueOnce({
+        mockUnauthenticatedSession({
             ok: true,
             status: 200,
             headers: new Headers({ 'content-type': 'application/json' }),
@@ -62,16 +78,13 @@ describe('User sign in flow', () => {
         await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/application/add'));
     });
 
-    test('shows alert on failed sign in due to non-existent email', async () => {
-        globalThis.fetch
-            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' })
-            .mockResolvedValueOnce({ ok: false, status: 401 })
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 404,
-                headers: new Headers({ 'content-type': 'application/json' }),
-                json: async () => ({ message: 'User does not exist. Please create an account' }),
-            });
+    test('shows an error toast when the account does not exist', async () => {
+        mockUnauthenticatedSession({
+            ok: false,
+            status: 404,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ message: 'User does not exist. Please create an account' }),
+        });
 
         render(
             <MemoryRouter>
@@ -97,16 +110,13 @@ describe('User sign in flow', () => {
         );
     });
 
-    test('shows alert on failed sign in due to incorrect password', async () => {
-        globalThis.fetch
-            .mockResolvedValueOnce({ ok: true, status: 200, text: async () => '' })
-            .mockResolvedValueOnce({ ok: false, status: 401 })
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 401,
-                headers: new Headers({ 'content-type': 'application/json' }),
-                json: async () => ({ message: 'Incorrect password' }),
-            });
+    test('shows an error toast for an incorrect password', async () => {
+        mockUnauthenticatedSession({
+            ok: false,
+            status: 401,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ message: 'Incorrect password' }),
+        });
 
         render(
             <MemoryRouter>

@@ -1,8 +1,12 @@
 import type { APIRequest, EndpointConfigEntry } from './models';
-import { FieldType } from './models';
+import type { RefreshAuthenticationRequest, RefreshAuthenticationResponse } from '../pages/authentication/models';
 import { JobTrackerAPIError } from './models';
+import { endpointConfig } from './endpointConfig';
+import { routes } from '../routes';
 
 const apiUrl = import.meta.env.VITE_API_URL;
+const PUBLIC_ROUTES = new Set<string>([routes.signIn, routes.signUp, routes.userGuide]);
+let activeRefreshRequest: Promise<RefreshAuthenticationResponse> | undefined;
 
 const parseResponse = async <T>(response: Response): Promise<T> => {
     if (response.status === 204) {
@@ -33,11 +37,11 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
     Object.entries(request ?? {}).forEach(([field, value]) => {
         const fieldType = config.fieldMap?.[field];
 
-        if (fieldType === FieldType.path) {
+        if (fieldType === 'path') {
             url = url.replace(`:${field}`, encodeURIComponent(String(value)));
-        } else if (fieldType === FieldType.query) {
+        } else if (fieldType === 'query') {
             query.append(field, String(value));
-        } else if (fieldType === FieldType.formData) {
+        } else if (fieldType === 'formData') {
             formData.append(field, value instanceof Blob ? value : String(value));
             hasFormData = true;
         } else {
@@ -96,4 +100,64 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
     }
 
     return data;
+};
+
+const refreshAuthentication = async (): Promise<void> => {
+    if (activeRefreshRequest) {
+        await activeRefreshRequest;
+        return;
+    }
+
+    activeRefreshRequest = makeJobTrackerAPIRequest<RefreshAuthenticationRequest, RefreshAuthenticationResponse>(
+        null,
+        endpointConfig.authentication.refresh,
+        'include'
+    );
+
+    try {
+        await activeRefreshRequest;
+    } finally {
+        activeRefreshRequest = undefined;
+    }
+};
+
+const redirectToSignIn = (): void => {
+    if (!PUBLIC_ROUTES.has(window.location.pathname)) {
+        window.location.replace(routes.signIn);
+    }
+};
+
+const isUnauthorizedError = (error: unknown): error is JobTrackerAPIError => {
+    return error instanceof JobTrackerAPIError && error.status === 401;
+};
+
+export const makeAuthenticatedJobTrackerAPIRequest = async <TRequest extends APIRequest, TResponse>(
+    request: TRequest,
+    config: EndpointConfigEntry
+): Promise<TResponse> => {
+    try {
+        return await makeJobTrackerAPIRequest<TRequest, TResponse>(request, config, 'include');
+    } catch (error) {
+        if (!isUnauthorizedError(error)) {
+            throw error;
+        }
+    }
+
+    try {
+        await refreshAuthentication();
+    } catch (error) {
+        if (isUnauthorizedError(error)) {
+            redirectToSignIn();
+        }
+        throw error;
+    }
+
+    try {
+        return await makeJobTrackerAPIRequest<TRequest, TResponse>(request, config, 'include');
+    } catch (error) {
+        if (isUnauthorizedError(error)) {
+            redirectToSignIn();
+        }
+        throw error;
+    }
 };

@@ -1,0 +1,71 @@
+import { REQUEST_LIMIT, REQUEST_WINDOW_MS } from './config/server.js';
+import applicationRoute from './routes/application/index.js';
+import archivedApplicationRoute from './routes/archivedApplication/index.js';
+import archivedInterviewRoute from './routes/archivedInterview/index.js';
+import authRoute from './routes/authentication/index.js';
+import authenticateAccessToken from './middleware/authenticateAccessToken.js';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express from 'express';
+import { errorHandler, type MiddlewareError, notFoundHandler } from './middleware/errorHandlers.js';
+import interviewRoute from './routes/interview/index.js';
+import pingRoute from './routes/ping/index.js';
+import rateLimit from 'express-rate-limit';
+import userPreferencesRoute from './routes/userPreferences/index.js';
+
+const ALLOWED_ORIGINS = new Set([
+    'https://jobtracker-whloh.netlify.app',
+    'https://jobtracker.weihungloh.com',
+    'https://weihungloh.com',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://192.168.1.74:3000',
+]);
+
+export const createApp = (): express.Express => {
+    const app = express();
+    app.set('trust proxy', 1);
+
+    app.use(
+        rateLimit({
+            windowMs: REQUEST_WINDOW_MS,
+            limit: REQUEST_LIMIT,
+            statusCode: 429,
+            message: { message: 'Too many requests. Please try again later.' },
+            standardHeaders: true,
+            legacyHeaders: false,
+        })
+    );
+
+    app.use(
+        cors({
+            origin: (origin, callback) => {
+                if (!origin || ALLOWED_ORIGINS.has(origin)) {
+                    callback(null, true);
+                    return;
+                }
+
+                const error = new Error('Origin is not allowed.') as MiddlewareError;
+                error.status = 403;
+                callback(error);
+            },
+            credentials: true,
+        })
+    );
+    app.use(express.json());
+    app.use(cookieParser());
+
+    app.use('/ping', pingRoute);
+    app.use('/authentication', authRoute);
+    app.use('/job-applications', authenticateAccessToken, applicationRoute);
+    app.use('/job-interviews', authenticateAccessToken, interviewRoute);
+    app.use('/archived-job-applications', authenticateAccessToken, archivedApplicationRoute);
+    app.use('/archived-job-interviews', authenticateAccessToken, archivedInterviewRoute);
+    app.use('/user-preferences', authenticateAccessToken, userPreferencesRoute);
+
+    app.use(notFoundHandler);
+    app.use(errorHandler);
+
+    return app;
+};

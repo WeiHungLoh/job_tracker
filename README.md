@@ -20,8 +20,8 @@ Job Tracker is a full-stack web application built with the PERN stack (PostgreSQ
 
 ## User Guide
 
-For detailed usage instructions, see the User Guide <a href="https://jobtracker-whloh.netlify.app/userguide" target="_blank">here</a>
+For detailed usage instructions, see the User Guide <a href="https://jobtracker.weihungloh.com/userguide" target="_blank">here</a>
 
 ## Live Demo
 
-Check out the live app <a href="https://jobtracker-whloh.netlify.app/" target="_blank">here</a>
+Check out the live app <a href="https://jobtracker.weihungloh.com/" target="_blank">here</a>

@@ -54,7 +54,6 @@ const mockPreferences = {
 const renderRoute = (path: string) => {
     const router = createMemoryRouter(appRoutes, { initialEntries: [path] });
     render(<RouterProvider router={router} />);
-    return router;
 };
 
 describe('App routing and authentication behavior', () => {
@@ -70,12 +69,14 @@ describe('App routing and authentication behavior', () => {
 
     test('renders SignIn at the root path', async () => {
         fetch.mockResolvedValueOnce(response(true, 200)); // ping
-        fetch.mockResolvedValueOnce(response(false, 401)); // verify fails → stay on sign in
+        fetch.mockResolvedValueOnce(response(false, 401)); // access token is unavailable
+        fetch.mockResolvedValueOnce(response(false, 401)); // refresh token is unavailable
         renderRoute('/');
         expect(await screen.findByText(/sign in to job tracker/i)).toBeInTheDocument();
     });
 
     test('redirects to SignIn when accessing protected route while unauthenticated', async () => {
+        fetch.mockResolvedValueOnce(response(false, 401));
         fetch.mockResolvedValueOnce(response(false, 401));
         renderRoute('/application/add');
 
@@ -83,6 +84,19 @@ describe('App routing and authentication behavior', () => {
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/current`, {
             credentials: 'include',
             method: 'GET',
+        });
+    });
+
+    test('refreshes an expired access token before rendering a protected route', async () => {
+        fetch.mockResolvedValueOnce(response(false, 401));
+        fetch.mockResolvedValueOnce(jsonResponse({ message: 'Access token refreshed.' }));
+        fetch.mockResolvedValueOnce(jsonResponse({ message: 'Authenticated user.' }));
+        renderRoute('/application/add');
+
+        await waitFor(() => expect(screen.getByText(/input company name/i)).toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/refresh`, {
+            credentials: 'include',
+            method: 'POST',
         });
     });
 

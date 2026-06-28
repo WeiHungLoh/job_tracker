@@ -13,27 +13,34 @@ vi.mock('react-router-dom', async () => ({
 
 globalThis.fetch = vi.fn();
 
+const mockUnauthenticatedSession = (signUpResponse: object) => {
+    globalThis.fetch.mockImplementation(async (url: string) => {
+        if (url.endsWith('/authentication/sessions/current') || url.endsWith('/authentication/sessions/refresh')) {
+            return {
+                ok: false,
+                status: 401,
+            };
+        }
+
+        return signUpResponse;
+    });
+};
+
 describe('User sign up flow', () => {
-    // Resets the state of fetch and mockNavigate
     beforeEach(() => {
         fetch.mockReset();
         mockNavigate.mockReset();
     });
 
     test('signs up successfully and redirects to SignIn page', async () => {
-        globalThis.fetch
-            // For verify GET request — must fail so the page stays on sign up
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 401,
-            })
-            // Mocks the text response returned by the sign-up endpoint.
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 201,
-                headers: new Headers({ 'content-type': 'text/plain' }),
-                text: async () => 'User successfully registered',
-            });
+        const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
+
+        mockUnauthenticatedSession({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'User successfully registered',
+        });
 
         render(
             <MemoryRouter>
@@ -45,8 +52,6 @@ describe('User sign up flow', () => {
         userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
-        // Checks that a fetch request that matches the format below has been
-        // called after filling in email and password
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/users`, {
                 method: 'POST',
@@ -58,24 +63,27 @@ describe('User sign up flow', () => {
         await waitFor(() =>
             expect(screen.getByText('Sign up successful! Redirecting you to login page')).toBeInTheDocument()
         );
-        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'), { timeout: 2000 });
+
+        const redirectTimer = setTimeoutSpy.mock.calls.find(([, delay]) => delay === 1500);
+        expect(redirectTimer).toBeDefined();
+
+        const redirectToSignIn = redirectTimer?.[0];
+        expect(redirectToSignIn).toBeTypeOf('function');
+        if (typeof redirectToSignIn === 'function') {
+            redirectToSignIn();
+        }
+
+        expect(mockNavigate).toHaveBeenCalledWith('/');
+        setTimeoutSpy.mockRestore();
     });
 
-    test('shows alert on failed sign-up due to existing user', async () => {
-        globalThis.alert = vi.fn();
-
-        globalThis.fetch
-            // For verify GET request — must fail so the page stays on sign up
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 401,
-            })
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 409,
-                headers: new Headers({ 'content-type': 'text/plain' }),
-                text: async () => 'User already exists',
-            });
+    test('shows an error toast when the account already exists', async () => {
+        mockUnauthenticatedSession({
+            ok: false,
+            status: 409,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'User already exists',
+        });
 
         render(
             <MemoryRouter>
@@ -87,8 +95,6 @@ describe('User sign up flow', () => {
         userEvent.type(screen.getByLabelText(/^password$/i), '123456');
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
-        // Checks that a fetch request that matches the format below has been
-        // called after filling in email and password
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/users`, {
                 method: 'POST',

@@ -1,25 +1,60 @@
 import type { CookieOptions } from 'express';
+import type { AuthenticationSecrets } from '../auth/models.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const AUTH_COOKIE_NAME = 'token';
+export const ACCESS_TOKEN_DURATION_SECONDS = 15 * 60;
+export const REFRESH_TOKEN_DURATION_SECONDS = 3 * 24 * 60 * 60;
 
-export const AUTH_COOKIE_OPTIONS: CookieOptions = {
+export const ACCESS_TOKEN_COOKIE_NAME = 'token';
+export const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
+
+export const ACCESS_TOKEN_COOKIE_OPTIONS: CookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
     path: '/',
-    maxAge: 6 * 60 * 60 * 1000,
+    maxAge: ACCESS_TOKEN_DURATION_SECONDS * 1000,
 };
 
-export const CLEAR_AUTH_COOKIE_OPTIONS: CookieOptions = {
-    httpOnly: AUTH_COOKIE_OPTIONS.httpOnly,
-    secure: AUTH_COOKIE_OPTIONS.secure,
-    sameSite: AUTH_COOKIE_OPTIONS.sameSite,
-    path: AUTH_COOKIE_OPTIONS.path,
+export const REFRESH_TOKEN_COOKIE_OPTIONS: CookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/api/authentication',
+    maxAge: REFRESH_TOKEN_DURATION_SECONDS * 1000,
+};
+
+export const CLEAR_ACCESS_TOKEN_COOKIE_OPTIONS: CookieOptions = {
+    httpOnly: ACCESS_TOKEN_COOKIE_OPTIONS.httpOnly,
+    secure: ACCESS_TOKEN_COOKIE_OPTIONS.secure,
+    sameSite: ACCESS_TOKEN_COOKIE_OPTIONS.sameSite,
+    path: ACCESS_TOKEN_COOKIE_OPTIONS.path,
+};
+
+export const CLEAR_REFRESH_TOKEN_COOKIE_OPTIONS: CookieOptions = {
+    httpOnly: REFRESH_TOKEN_COOKIE_OPTIONS.httpOnly,
+    secure: REFRESH_TOKEN_COOKIE_OPTIONS.secure,
+    sameSite: REFRESH_TOKEN_COOKIE_OPTIONS.sameSite,
+    path: REFRESH_TOKEN_COOKIE_OPTIONS.path,
 };
 
 export const getAccessTokenSecret = (): string | undefined => {
     return process.env.ACCESS_TOKEN_SECRET;
+};
+
+export const getRefreshTokenSecret = (): string | undefined => {
+    return process.env.REFRESH_TOKEN_SECRET;
+};
+
+export const getAuthenticationSecrets = (): AuthenticationSecrets | undefined => {
+    const accessTokenSecret = getAccessTokenSecret();
+    const refreshTokenSecret = getRefreshTokenSecret();
+
+    if (!accessTokenSecret || !refreshTokenSecret || accessTokenSecret === refreshTokenSecret) {
+        return undefined;
+    }
+
+    return { accessTokenSecret, refreshTokenSecret };
 };

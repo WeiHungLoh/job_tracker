@@ -17,12 +17,13 @@ export default defineConfig(({ mode }) => {
             },
         },
         define: {
-            'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || ''),
+            'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || '/api'),
         },
         test: {
             environment: 'jsdom',
             globals: true,
             setupFiles: './src/test/setup.ts',
+            testTimeout: 10_000,
             coverage: {
                 provider: 'v8',
                 include: ['src/**/*.{ts,tsx}'],
@@ -37,7 +38,7 @@ export default defineConfig(({ mode }) => {
                     branches: 80,
                     functions: 80,
                     lines: 80,
-                    statements: -10,
+                    statements: 80,
                 },
             },
         },

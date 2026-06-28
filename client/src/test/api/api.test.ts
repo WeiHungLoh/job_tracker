@@ -1,5 +1,5 @@
-import { FieldType, JobTrackerAPIError } from '../../api/models';
-import { makeJobTrackerAPIRequest } from '../../api/api';
+import { JobTrackerAPIError } from '../../api/models';
+import { makeAuthenticatedJobTrackerAPIRequest, makeJobTrackerAPIRequest } from '../../api/api';
 
 globalThis.fetch = vi.fn();
 
@@ -32,10 +32,10 @@ describe('makeJobTrackerAPIRequest', () => {
             },
             {
                 url: '/applications/:applicationId',
-                verb: 'PUT',
+                verb: 'PATCH',
                 fieldMap: {
-                    applicationId: FieldType.path,
-                    includeArchived: FieldType.query,
+                    applicationId: 'path',
+                    includeArchived: 'query',
                 },
             }
         );
@@ -43,7 +43,7 @@ describe('makeJobTrackerAPIRequest', () => {
         expect(fetch).toHaveBeenCalledWith(
             `${import.meta.env.VITE_API_URL}/applications/id%20with%20spaces?includeArchived=true`,
             {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes: 'Updated' }),
             }
@@ -56,7 +56,7 @@ describe('makeJobTrackerAPIRequest', () => {
             {
                 url: '/uploads',
                 verb: 'POST',
-                fieldMap: { fileName: FieldType.formData },
+                fieldMap: { fileName: 'formData' },
             }
         );
 
@@ -94,20 +94,80 @@ describe('makeJobTrackerAPIRequest', () => {
         );
     });
 
-    test('preserves a backend service-unavailable status', async () => {
-        fetch.mockResolvedValueOnce(response({ message: 'Authentication is temporarily unavailable.' }, false, 503));
+    test('refreshes authentication and retries an authenticated request after a 401 response', async () => {
+        fetch
+            .mockResolvedValueOnce(response({ message: 'Access token expired.' }, false, 401))
+            .mockResolvedValueOnce(response({ message: 'Access token refreshed.' }))
+            .mockResolvedValueOnce(response({ applications: 2 }));
+
+        const result = await makeAuthenticatedJobTrackerAPIRequest<null, { applications: number }>(null, {
+            url: '/job-applications',
+            verb: 'GET',
+        });
+
+        expect(result).toEqual({ applications: 2 });
+        expect(fetch.mock.calls).toEqual([
+            [`${import.meta.env.VITE_API_URL}/job-applications`, { credentials: 'include', method: 'GET' }],
+            [
+                `${import.meta.env.VITE_API_URL}/authentication/sessions/refresh`,
+                { credentials: 'include', method: 'POST' },
+            ],
+            [`${import.meta.env.VITE_API_URL}/job-applications`, { credentials: 'include', method: 'GET' }],
+        ]);
+    });
+
+    test('does not retry when the refresh endpoint returns 401', async () => {
+        fetch
+            .mockResolvedValueOnce(response({ message: 'Access token expired.' }, false, 401))
+            .mockResolvedValueOnce(response({ message: 'Refresh token expired.' }, false, 401));
 
         await expect(
-            makeJobTrackerAPIRequest<null, never>(null, {
-                url: '/authentication/sessions',
-                verb: 'POST',
+            makeAuthenticatedJobTrackerAPIRequest<null, never>(null, {
+                url: '/job-applications',
+                verb: 'GET',
             })
         ).rejects.toEqual(
             expect.objectContaining<JobTrackerAPIError>({
-                message: 'Authentication is temporarily unavailable.',
-                status: 503,
+                message: 'Refresh token expired.',
+                status: 401,
             })
         );
+        expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    test('shares one refresh request between concurrent authenticated requests', async () => {
+        let protectedRequestCount = 0;
+        let refreshRequestCount = 0;
+
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/authentication/sessions/refresh')) {
+                refreshRequestCount += 1;
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                return response({ message: 'Access token refreshed.' });
+            }
+
+            protectedRequestCount += 1;
+            if (protectedRequestCount <= 2) {
+                return response({ message: 'Access token expired.' }, false, 401);
+            }
+
+            return response({ applications: 2 });
+        });
+
+        const requests = [
+            makeAuthenticatedJobTrackerAPIRequest<null, { applications: number }>(null, {
+                url: '/job-applications',
+                verb: 'GET',
+            }),
+            makeAuthenticatedJobTrackerAPIRequest<null, { applications: number }>(null, {
+                url: '/job-applications',
+                verb: 'GET',
+            }),
+        ];
+
+        await expect(Promise.all(requests)).resolves.toEqual([{ applications: 2 }, { applications: 2 }]);
+        expect(refreshRequestCount).toBe(1);
+        expect(protectedRequestCount).toBe(4);
     });
 
     test('returns null for a successful no-content response', async () => {

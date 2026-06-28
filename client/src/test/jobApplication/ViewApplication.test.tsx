@@ -237,7 +237,7 @@ describe('Job application viewing flow', () => {
         expect(await screen.findByText(/no job application with that job status found/i)).toBeInTheDocument();
     });
 
-    test('deletes all application after user confirms', async () => {
+    test('deletes all applications after user confirms', async () => {
         render(
             <MemoryRouter>
                 <ViewApplication />

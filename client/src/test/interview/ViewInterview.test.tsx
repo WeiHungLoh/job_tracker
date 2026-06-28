@@ -53,7 +53,7 @@ describe('Job interview viewer flow', () => {
         expect(await screen.findByText(/abc pte ltd/i)).toBeInTheDocument();
         expect(screen.queryByText(/no job interview found/)).not.toBeInTheDocument();
         expect(screen.getByText(/software engineer/i)).toBeInTheDocument();
-        expect(screen.getByText(/changi business park/i));
+        expect(screen.getByText(/changi business park/i)).toBeInTheDocument();
         expect(screen.getByText(/hr/i)).toBeInTheDocument();
         expect(screen.getByText(/bring resume/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('Job interview viewer flow', () => {
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
     });
 
-    test('deletes interview after use confirms', async () => {
+    test('deletes interview after user confirms', async () => {
         render(
             <MemoryRouter>
                 <ViewInterview />
@@ -96,7 +96,7 @@ describe('Job interview viewer flow', () => {
         await waitFor(() => expect(screen.queryByText(/abc pte ltd/i)).not.toBeInTheDocument());
     });
 
-    test('deletes all interviews after use confirms', async () => {
+    test('deletes all interviews after user confirms', async () => {
         render(
             <MemoryRouter>
                 <ViewInterview />
