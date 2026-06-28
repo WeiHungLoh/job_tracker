@@ -125,6 +125,20 @@ describe('AddInterview page', () => {
         });
     });
 
+    test('applies maximum lengths to interview text inputs', () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        expect(screen.getByLabelText('Input Interview Location')).toHaveAttribute('maxlength', '200');
+        expect(screen.getByLabelText('Input Interview Type (optional)')).toHaveAttribute('maxlength', '100');
+        expect(screen.getByLabelText('Input Additional Notes (optional)')).toHaveAttribute('maxlength', '3000');
+    });
+
     test('redirects to /application/view when no state is passed', async () => {
         fetch.mockResolvedValue({
             ok: true,

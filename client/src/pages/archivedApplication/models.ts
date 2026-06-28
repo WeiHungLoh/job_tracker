@@ -31,7 +31,7 @@ export type ListArchivedApplicationsResponse = ArchivedJobApplication[];
 export type ArchiveApplicationRequest = {
     jobId: number;
 };
-export type ArchiveApplicationResponse = string;
+export type ArchiveApplicationResponse = null;
 
 export type DeleteArchivedApplicationRequest = {
     archivedJobId: number;
@@ -44,7 +44,7 @@ export type DeleteAllArchivedApplicationsResponse = null;
 export type UnarchiveApplicationRequest = {
     archivedJobId: number;
 };
-export type UnarchiveApplicationResponse = string;
+export type UnarchiveApplicationResponse = null;
 
 export type ListArchivedInterviewsRequest = null;
 export type ListArchivedInterviewsResponse = ArchivedJobInterview[];

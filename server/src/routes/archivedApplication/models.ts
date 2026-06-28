@@ -14,5 +14,4 @@ export type ListArchivedApplicationsQuery = {
     jobStatuses?: string | string[];
 };
 
-export type ArchiveApplicationResponse = string | ErrorResponse;
 export type ListArchivedApplicationsResponse = ArchivedJobApplication[] | ErrorResponse;

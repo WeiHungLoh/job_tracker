@@ -21,7 +21,7 @@ const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
     const { preferences } = useUserPreferences();
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();

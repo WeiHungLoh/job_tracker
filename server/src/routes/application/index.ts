@@ -12,6 +12,7 @@ import type {
     UpdateNotesRequest,
 } from './models.js';
 import type { Request, Response } from 'express';
+import { FIELD_MAX_LENGTHS } from '../../config/validation.js';
 import {
     deleteAllJobApplications,
     deleteJobApplication,
@@ -25,12 +26,13 @@ import {
 } from '../../db/queries/jobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import {
+    isFutureDate,
     isJobStatus,
-    isNonEmptyString,
-    isString,
+    isValidHttpURL,
     isValidDate,
     toPositiveInteger,
     toJobStatusQueryValues,
+    toTrimmedString,
 } from '../../http/validation.js';
 import express from 'express';
 
@@ -42,22 +44,42 @@ router.post(
         req: Request<Record<string, never>, CreateApplicationResponse, CreateApplicationRequest>,
         res: Response<CreateApplicationResponse>
     ): Promise<void> => {
-        const { companyName, jobTitle, appDate, jobStatus, jobLocation, jobURL } = req.body;
+        const companyName = toTrimmedString(req.body.companyName, FIELD_MAX_LENGTHS.companyName);
+        const jobTitle = toTrimmedString(req.body.jobTitle, FIELD_MAX_LENGTHS.jobTitle);
+        const jobLocation = toTrimmedString(req.body.jobLocation, FIELD_MAX_LENGTHS.location, true);
+        const jobURL = toTrimmedString(req.body.jobURL, FIELD_MAX_LENGTHS.jobURL, true);
+        const { appDate, jobStatus } = req.body;
 
         if (
-            !isNonEmptyString(companyName) ||
-            !isNonEmptyString(jobTitle) ||
+            companyName === undefined ||
+            jobTitle === undefined ||
             !isValidDate(appDate) ||
             !isJobStatus(jobStatus) ||
-            !isString(jobLocation) ||
-            !isString(jobURL)
+            jobLocation === undefined ||
+            jobURL === undefined
         ) {
-            sendError(res, 422, 'Company name, job title, application date, and a supported job status are required.');
+            sendError(res, 422, 'Job application fields are missing, invalid, or too long.');
+            return;
+        }
+        if (isFutureDate(appDate)) {
+            sendError(res, 422, 'Application date cannot be later than the current date.');
+            return;
+        }
+        if (jobURL && !isValidHttpURL(jobURL)) {
+            sendError(res, 422, 'URL must be in a valid format.');
             return;
         }
 
         try {
-            await insertJobApplication(req.user.id, companyName, jobTitle, appDate, jobStatus, jobLocation, jobURL);
+            await insertJobApplication(
+                req.user.id,
+                companyName,
+                jobTitle,
+                new Date(appDate).toISOString(),
+                jobStatus,
+                jobLocation,
+                jobURL
+            );
             res.status(201).send('Successfully added a job application!');
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to create the job application.');
@@ -158,8 +180,8 @@ router.patch(
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
-        if (!isString(req.body.notes)) {
-            sendError(res, 422, 'Notes must be a string.');
+        if (typeof req.body.notes !== 'string' || req.body.notes.length > FIELD_MAX_LENGTHS.notes) {
+            sendError(res, 422, `Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
             return;
         }
 

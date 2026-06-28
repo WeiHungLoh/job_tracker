@@ -48,7 +48,7 @@ export const endpointConfig = {
             verb: 'GET',
             fieldMap: { jobStatuses: 'query' },
         },
-        archiveApplication: { url: '/archived-job-applications', verb: 'POST' },
+        archiveApplication: { url: '/archived-job-applications', verb: 'PATCH' },
         deleteApplication: {
             url: '/archived-job-applications/:archivedJobId',
             verb: 'DELETE',
@@ -57,7 +57,7 @@ export const endpointConfig = {
         deleteAllApplications: { url: '/archived-job-applications', verb: 'DELETE' },
         unarchiveApplication: {
             url: '/archived-job-applications/:archivedJobId/restore',
-            verb: 'POST',
+            verb: 'PATCH',
             fieldMap: { archivedJobId: 'path' },
         },
     },

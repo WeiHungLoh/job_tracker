@@ -9,7 +9,7 @@ import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 
 const ProtectedRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(undefined);
-    const [authenticationError, setAuthenticationError] = useState(false);
+    const [authenticationError, setAuthenticationError] = useState<boolean>(false);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
 

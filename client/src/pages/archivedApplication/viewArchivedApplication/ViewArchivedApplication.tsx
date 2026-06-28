@@ -37,8 +37,8 @@ const ViewArchivedApplication = () => {
     const navigate = useNavigate();
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const confirm = useConfirm();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isFilteringApplications, setIsFilteringApplications] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
     const { showErrorToast } = useToast();
     const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;

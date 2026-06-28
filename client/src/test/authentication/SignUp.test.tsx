@@ -77,12 +77,12 @@ describe('User sign up flow', () => {
         setTimeoutSpy.mockRestore();
     });
 
-    test('shows an error toast when the account already exists', async () => {
+    test('shows an error when the account already exists', async () => {
         mockUnauthenticatedSession({
             ok: false,
             status: 409,
-            headers: new Headers({ 'content-type': 'text/plain' }),
-            text: async () => 'User already exists',
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ message: 'An account with this email already exists.' }),
         });
 
         render(
@@ -103,7 +103,8 @@ describe('User sign up flow', () => {
             })
         );
 
-        await waitFor(() => expect(screen.getByText('User already exists')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('An account with this email already exists.')).toBeInTheDocument());
+        expect(mockNavigate).not.toHaveBeenCalledWith('/');
     });
 
     test('links user to sign in page', () => {

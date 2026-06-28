@@ -10,18 +10,18 @@ import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../models';
 import { getErrorToastMessage, isJobTrackerAPIError } from '../../../helper/getErrorToastMessage';
+import { FIELD_MAX_LENGTHS, isValidHttpURL } from '../../../helper/formValidation';
 
 const AddApplication = () => {
-    const [companyName, setCompanyName] = useState('');
-    const [jobTitle, setJobTitle] = useState('');
+    const [companyName, setCompanyName] = useState<string>('');
+    const [jobTitle, setJobTitle] = useState<string>('');
     const [jobStatus, setJobStatus] = useState<JobStatus>('Applied');
-    const [applicationDate, setApplicationDate] = useState('');
-    const [jobLocation, setJobLocation] = useState('');
-    const [jobURL, setJobURL] = useState('');
+    const [applicationDate, setApplicationDate] = useState<string>('');
+    const [jobLocation, setJobLocation] = useState<string>('');
+    const [jobURL, setJobURL] = useState<string>('');
     const applicationDateInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
-    const currentDate = new Date();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
 
@@ -47,11 +47,32 @@ const AddApplication = () => {
             return;
         }
 
+        if (trimmedCompanyName.length > FIELD_MAX_LENGTHS.companyName) {
+            showErrorToast(`Company name must be ${FIELD_MAX_LENGTHS.companyName} characters or fewer.`);
+            return;
+        }
+
+        if (trimmedJobTitle.length > FIELD_MAX_LENGTHS.jobTitle) {
+            showErrorToast(`Job title must be ${FIELD_MAX_LENGTHS.jobTitle} characters or fewer.`);
+            return;
+        }
+
+        if (trimmedJobLocation.length > FIELD_MAX_LENGTHS.location) {
+            showErrorToast(`Job location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`);
+            return;
+        }
+
+        if (trimmedJobURL.length > FIELD_MAX_LENGTHS.jobURL) {
+            showErrorToast(`Job URL must be ${FIELD_MAX_LENGTHS.jobURL} characters or fewer.`);
+            return;
+        }
+
         if (isInvalidDatetimeLocalInput(applicationDate, applicationDateInputRef.current?.validity)) {
             showErrorToast('Please enter a valid application date.');
             return;
         }
 
+        const currentDate = new Date();
         const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currentDate;
 
         if (appDate > currentDate) {
@@ -59,22 +80,9 @@ const AddApplication = () => {
             return;
         }
 
-        if (trimmedJobURL) {
-            try {
-                const parsedURL = new URL(trimmedJobURL);
-                const hostname = parsedURL.hostname;
-
-                // Ensures URL follows the format of <domain>.<suffix>
-                const domainPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+$/i;
-
-                if (!domainPattern.test(hostname)) {
-                    showErrorToast('URL must be in a valid format.');
-                    return;
-                }
-            } catch {
-                showErrorToast('URL must be in a valid format.');
-                return;
-            }
+        if (trimmedJobURL && !isValidHttpURL(trimmedJobURL)) {
+            showErrorToast('URL must be in a valid format.');
+            return;
         }
 
         setIsLoading(true);
@@ -103,10 +111,22 @@ const AddApplication = () => {
         <div className={styles.addApplication}>
             <br />
             <label htmlFor='company-name'>Input Company Name</label>
-            <input id='company-name' value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
+            <input
+                id='company-name'
+                maxLength={FIELD_MAX_LENGTHS.companyName}
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                required
+            />
 
             <label htmlFor='job-title'>Input Job Title</label>
-            <input id='job-title' value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} required />
+            <input
+                id='job-title'
+                maxLength={FIELD_MAX_LENGTHS.jobTitle}
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                required
+            />
 
             <label>Input Job Status</label>
             <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value as JobStatus)}>
@@ -128,10 +148,20 @@ const AddApplication = () => {
             />
 
             <label htmlFor='job-location'>Input Job Location (optional)</label>
-            <input id='job-location' value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} />
+            <input
+                id='job-location'
+                maxLength={FIELD_MAX_LENGTHS.location}
+                value={jobLocation}
+                onChange={(e) => setJobLocation(e.target.value)}
+            />
 
             <label htmlFor='job-url'>Input Job Posting URL (optional)</label>
-            <input id='job-url' value={jobURL} onChange={(e) => setJobURL(e.target.value)} />
+            <input
+                id='job-url'
+                maxLength={FIELD_MAX_LENGTHS.jobURL}
+                value={jobURL}
+                onChange={(e) => setJobURL(e.target.value)}
+            />
 
             <div className={styles.submitButton}>
                 <PrimaryButton variant='compact' onClick={handleAdd} disabled={isLoading}>

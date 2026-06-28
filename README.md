@@ -20,7 +20,7 @@ Job Tracker is a full-stack web application built with the PERN stack (PostgreSQ
 
 ## User Guide
 
-For detailed usage instructions, see the User Guide <a href="https://jobtracker.weihungloh.com/userguide" target="_blank">here</a>
+For detailed usage instructions, see the User Guide <a href="https://jobtracker.weihungloh.com/user-guide" target="_blank">here</a>
 
 ## Live Demo
 

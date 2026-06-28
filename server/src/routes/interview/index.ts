@@ -6,6 +6,7 @@ import type {
     ListInterviewsResponse,
 } from './models.js';
 import type { Request, Response } from 'express';
+import { FIELD_MAX_LENGTHS } from '../../config/validation.js';
 import {
     deleteAllJobInterviews,
     deleteJobInterview,
@@ -13,7 +14,7 @@ import {
     insertInterview,
 } from '../../db/queries/interviews.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isNonEmptyString, isString, isValidDate, toPositiveInteger } from '../../http/validation.js';
+import { isValidDate, toPositiveInteger, toTrimmedString } from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -24,31 +25,38 @@ router.post(
         req: Request<Record<string, never>, CreateInterviewResponse, CreateInterviewRequest>,
         res: Response<CreateInterviewResponse>
     ): Promise<void> => {
-        const { jobId, interviewDate, interviewLocation, interviewType, notes } = req.body;
-        const applicationId = toPositiveInteger(jobId);
+        const applicationId = toPositiveInteger(req.body.jobId);
+        const interviewLocation = toTrimmedString(req.body.interviewLocation, FIELD_MAX_LENGTHS.location);
+        const interviewType = toTrimmedString(req.body.interviewType, FIELD_MAX_LENGTHS.interviewType, true);
+        const notes = toTrimmedString(req.body.notes, FIELD_MAX_LENGTHS.notes, true);
+        const { interviewDate } = req.body;
 
         if (
             applicationId === undefined ||
             !isValidDate(interviewDate) ||
-            !isNonEmptyString(interviewLocation) ||
-            !isString(interviewType) ||
-            !isString(notes)
+            interviewLocation === undefined ||
+            interviewType === undefined ||
+            notes === undefined
         ) {
-            sendError(res, 422, 'A valid job application, interview date, and interview location are required.');
+            sendError(res, 422, 'Interview fields are missing, invalid, or too long.');
             return;
         }
 
         try {
-            const interviewCreated = await insertInterview(
+            const insertResult = await insertInterview(
                 applicationId,
                 req.user.id,
-                interviewDate,
+                new Date(interviewDate).toISOString(),
                 interviewLocation,
                 interviewType,
                 notes
             );
-            if (!interviewCreated) {
+            if (insertResult === 'not-found') {
                 sendError(res, 404, 'Job application not found.');
+                return;
+            }
+            if (insertResult === 'invalid-date') {
+                sendError(res, 422, 'Interview date must be after the job application date.');
                 return;
             }
             res.status(201).send('Successfully added an interview!');

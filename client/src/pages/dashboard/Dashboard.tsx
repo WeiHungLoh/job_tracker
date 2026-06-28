@@ -13,7 +13,7 @@ const Dashboard = () => {
     const [statusCounts, setStatusCounts] = useState<JobStatusCount[]>([]);
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [weeklyApplications, setWeeklyApplications] = useState<WeeklyApplicationCount[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
 

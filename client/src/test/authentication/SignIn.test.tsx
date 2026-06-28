@@ -78,44 +78,12 @@ describe('User sign in flow', () => {
         await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/application/add'));
     });
 
-    test('shows an error toast when the account does not exist', async () => {
-        mockUnauthenticatedSession({
-            ok: false,
-            status: 404,
-            headers: new Headers({ 'content-type': 'application/json' }),
-            json: async () => ({ message: 'User does not exist. Please create an account' }),
-        });
-
-        render(
-            <MemoryRouter>
-                <SignIn />
-            </MemoryRouter>
-        );
-
-        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
-        userEvent.click(screen.getByRole('button', { name: /sign in/i }));
-
-        await waitFor(() =>
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
-            })
-        );
-
-        await waitFor(() =>
-            expect(screen.getByText('User does not exist. Please create an account')).toBeInTheDocument()
-        );
-    });
-
-    test('shows an error toast for an incorrect password', async () => {
+    test('shows the generic authentication error when the account does not exist', async () => {
         mockUnauthenticatedSession({
             ok: false,
             status: 401,
             headers: new Headers({ 'content-type': 'application/json' }),
-            json: async () => ({ message: 'Incorrect password' }),
+            json: async () => ({ message: 'Invalid email or password.' }),
         });
 
         render(
@@ -137,7 +105,37 @@ describe('User sign in flow', () => {
             })
         );
 
-        await waitFor(() => expect(screen.getByText('Incorrect password')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('Invalid email or password.')).toBeInTheDocument());
+    });
+
+    test('shows the same generic authentication error for an incorrect password', async () => {
+        mockUnauthenticatedSession({
+            ok: false,
+            status: 401,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ message: 'Invalid email or password.' }),
+        });
+
+        render(
+            <MemoryRouter>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
+        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
+        userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
+            })
+        );
+
+        await waitFor(() => expect(screen.getByText('Invalid email or password.')).toBeInTheDocument());
     });
 
     test('links user to sign up page', () => {

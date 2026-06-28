@@ -16,21 +16,29 @@ import {
 import { clearAuthenticationCookies } from '../../auth/cookies.js';
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../../auth/tokens.js';
 import authenticateAccessToken from '../../middleware/authenticateAccessToken.js';
-import { findUser, findUserInfo, insertUser } from '../../db/queries/users.js';
+import {
+    authenticationEmailIpRateLimiter,
+    authenticationIpRateLimiter,
+} from '../../middleware/authenticationRateLimiters.js';
+import { findUserInfo, insertUser } from '../../db/queries/users.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import { isNonEmptyString, isValidEmail } from '../../http/validation.js';
 import bcrypt from 'bcryptjs';
 import express from 'express';
 
 const router = express.Router();
+const INVALID_PASSWORD_HASH = '$2b$10$vutiTM.IUgXcP281p9BfTeuBzw67GRJ1R55mZ.EBs23idcvgX6Dt.';
 
 router.post(
     '/users',
+    authenticationIpRateLimiter,
+    authenticationEmailIpRateLimiter,
     async (
         req: Request<Record<string, never>, SignUpResponse, CredentialsRequest>,
         res: Response<SignUpResponse>
     ): Promise<void> => {
-        const { email, password } = req.body;
+        const email = typeof req.body.email === 'string' ? req.body.email.trim() : req.body.email;
+        const { password } = req.body;
 
         if (!isValidEmail(email) || !isNonEmptyString(password)) {
             sendError(res, 422, 'A valid email and password are required.');
@@ -38,13 +46,12 @@ router.post(
         }
 
         try {
-            if (await findUser(email)) {
+            const userCreated = await insertUser(email, await bcrypt.hash(password, 10));
+            if (!userCreated) {
                 sendError(res, 409, 'An account with this email already exists.');
                 return;
             }
-
-            await insertUser(email, await bcrypt.hash(password, 10));
-            res.status(201).send('User successfully registered');
+            res.status(201).send('User successfully registered.');
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to register the user.');
         }
@@ -53,14 +60,17 @@ router.post(
 
 router.post(
     '/sessions',
+    authenticationIpRateLimiter,
+    authenticationEmailIpRateLimiter,
     async (
         req: Request<Record<string, never>, AuthenticationResponse, CredentialsRequest>,
         res: Response<AuthenticationResponse>
     ): Promise<void> => {
-        const { email, password } = req.body;
+        const email = typeof req.body.email === 'string' ? req.body.email.trim() : req.body.email;
+        const { password } = req.body;
 
         if (!isValidEmail(email) || !isNonEmptyString(password)) {
-            sendError(res, 422, 'A valid email and password are required.');
+            sendError(res, 401, 'Invalid email or password.');
             return;
         }
 
@@ -73,14 +83,9 @@ router.post(
 
         try {
             const userInfo = await findUserInfo(email);
-            if (!userInfo) {
-                sendError(res, 404, 'User does not exist. Please create an account.');
-                return;
-            }
-
-            const passwordMatches = await bcrypt.compare(password, userInfo.hashed_password);
-            if (!passwordMatches) {
-                sendError(res, 401, 'Incorrect password.');
+            const passwordMatches = await bcrypt.compare(password, userInfo?.hashed_password ?? INVALID_PASSWORD_HASH);
+            if (!userInfo || !passwordMatches) {
+                sendError(res, 401, 'Invalid email or password.');
                 return;
             }
 

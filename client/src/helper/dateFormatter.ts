@@ -3,6 +3,20 @@
  */
 export const MIN_DATETIME_LOCAL = '0001-01-01T00:00';
 
+const DATETIME_LOCAL_PATTERN = /^(\d{4,})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/;
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+
+const isLeapYear = (year: number): boolean => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+
+const isValidCalendarDate = (year: number, month: number, day: number): boolean => {
+    if (year < 1 || month < 1 || month > 12) {
+        return false;
+    }
+
+    const daysInMonth = month === 2 && isLeapYear(year) ? 29 : DAYS_IN_MONTH[month - 1];
+    return day >= 1 && day <= daysInMonth;
+};
+
 export const parseDatetimeLocal = (value: string): Date => {
     const [year, month, day, hour, minute] = value.split(/[-T:]/);
     const date = new Date(0);
@@ -18,11 +32,20 @@ export const isInvalidDatetimeLocalInput = (value: string, validity?: ValiditySt
     if (!value) {
         return false;
     }
-    if (Number(value.slice(0, 4)) < 1) {
+
+    const match = DATETIME_LOCAL_PATTERN.exec(value);
+    if (!match) {
         return true;
     }
 
-    return Number.isNaN(parseDatetimeLocal(value).getTime());
+    const [, year, month, day, hour, minute, second = '0'] = match;
+    return (
+        !isValidCalendarDate(Number(year), Number(month), Number(day)) ||
+        Number(hour) > 23 ||
+        Number(minute) > 59 ||
+        Number(second) > 59 ||
+        Number.isNaN(parseDatetimeLocal(value).getTime())
+    );
 };
 
 const formatDate = (dueDate: string) => {

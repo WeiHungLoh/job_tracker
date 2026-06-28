@@ -17,6 +17,7 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
+import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
 
@@ -63,8 +64,8 @@ const ViewApplication = () => {
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [notes, setNotes] = useState<Record<number, string>>({});
-    const [isLoading, setIsLoading] = useState(true);
-    const [isFilteringApplications, setIsFilteringApplications] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
     const { showErrorToast } = useToast();
     const selectedJobStatuses = preferences.application_job_statuses;
     const showArchive = preferences.application_show_archive;
@@ -153,6 +154,11 @@ const ViewApplication = () => {
     }, [applications, isLoading, location.hash, location.pathname, navigate]);
 
     const handleEditNotes = (jobId: number, editedNotes: string) => {
+        if (editedNotes.length > FIELD_MAX_LENGTHS.notes) {
+            showErrorToast(`Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
+            return;
+        }
+
         setNotes((currentNotes) => ({ ...currentNotes, [jobId]: editedNotes }));
 
         const taskId = showNotesTimeout.current[jobId];
@@ -428,6 +434,7 @@ const ViewApplication = () => {
                             {showNotes && (
                                 <div className={styles.notes}>
                                     <textarea
+                                        maxLength={FIELD_MAX_LENGTHS.notes}
                                         value={notes[application.job_id] ?? application.notes}
                                         onChange={(e) => handleEditNotes(application.job_id, e.target.value)}
                                         placeholder='Add your notes here'

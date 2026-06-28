@@ -12,12 +12,12 @@ import { useToast } from '../../../components/toast/ToastProvider';
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 
 const SignIn = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
     const location = useLocation();
     const navigate = useNavigate();
-    const [visible, setVisibility] = useState(false);
-    const [isPending, setIsPending] = useState(false);
+    const [visible, setVisibility] = useState<boolean>(false);
+    const [isPending, setIsPending] = useState<boolean>(false);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
 

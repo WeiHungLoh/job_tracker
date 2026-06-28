@@ -2,6 +2,8 @@ import type { JobInterview } from '../models.js';
 import { pool } from '../connectDB.js';
 import { hasAffectedRows } from './shared.js';
 
+export type InsertInterviewResult = 'created' | 'invalid-date' | 'not-found';
+
 export const insertInterview = async (
     jobId: number,
     userId: number,
@@ -9,17 +11,37 @@ export const insertInterview = async (
     location: string,
     interviewType: string,
     notes: string
-): Promise<boolean> => {
-    const result = await pool.query(
-        `INSERT INTO interviews (job_id, user_id, interview_date, interview_location, interview_type, interview_notes)
-        SELECT $1, $2, $3, $4, $5, $6
-        WHERE EXISTS (
-            SELECT 1 FROM job_applications
+): Promise<InsertInterviewResult> => {
+    const result = await pool.query<{ application_exists: boolean; interview_created: boolean }>(
+        `WITH application AS (
+            SELECT application_date
+            FROM job_applications
             WHERE job_id = $1 AND user_id = $2 AND is_archived = false
-        )`,
+        ),
+        inserted_interview AS (
+            INSERT INTO interviews (
+                job_id,
+                user_id,
+                interview_date,
+                interview_location,
+                interview_type,
+                interview_notes
+            )
+            SELECT $1, $2, $3, $4, $5, $6
+            FROM application
+            WHERE application_date IS NOT NULL AND $3::timestamptz > application_date
+            RETURNING interview_id
+        )
+        SELECT
+            EXISTS(SELECT 1 FROM application) AS application_exists,
+            EXISTS(SELECT 1 FROM inserted_interview) AS interview_created`,
         [jobId, userId, interviewDate, location, interviewType, notes]
     );
-    return hasAffectedRows(result);
+
+    if (result.rows[0]?.interview_created) {
+        return 'created';
+    }
+    return result.rows[0]?.application_exists ? 'invalid-date' : 'not-found';
 };
 
 export const getInterviews = async (userId: number): Promise<JobInterview[]> => {

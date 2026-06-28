@@ -27,7 +27,7 @@ const Navbar = () => {
     const location = useLocation();
     const currentLocation = location.pathname;
     const navigate = useNavigate();
-    const [archived, setArchived] = useState(false);
+    const [archived, setArchived] = useState<boolean>(false);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
     const { theme, toggleTheme } = useTheme();

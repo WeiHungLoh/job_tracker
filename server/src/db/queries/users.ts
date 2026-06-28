@@ -1,29 +1,30 @@
 import type { User } from '../models.js';
 import { pool } from '../connectDB.js';
-import { hasAffectedRows } from './shared.js';
 
-export const insertUser = async (email: string, hashedPassword: string): Promise<void> => {
+export const insertUser = async (email: string, hashedPassword: string): Promise<boolean> => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
         const result = await client.query<{ user_id: number }>(
-            `INSERT INTO users (email, hashed_password) VALUES ($1, $2) RETURNING user_id`,
+            `INSERT INTO users (email, hashed_password)
+             VALUES ($1, $2)
+             ON CONFLICT (email) DO NOTHING
+             RETURNING user_id`,
             [email, hashedPassword]
         );
-        await client.query(`INSERT INTO user_preferences (user_id) VALUES ($1)`, [result.rows[0].user_id]);
+        const createdUser = result.rows[0];
+        if (createdUser) {
+            await client.query(`INSERT INTO user_preferences (user_id) VALUES ($1)`, [createdUser.user_id]);
+        }
         await client.query('COMMIT');
+        return Boolean(createdUser);
     } catch (error: unknown) {
         await client.query('ROLLBACK');
         throw error;
     } finally {
         client.release();
     }
-};
-
-export const findUser = async (email: string): Promise<boolean> => {
-    const result = await pool.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
-    return hasAffectedRows(result);
 };
 
 export const findUserInfo = async (email: string): Promise<User | undefined> => {

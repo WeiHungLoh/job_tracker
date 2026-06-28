@@ -5,8 +5,9 @@ import { createAccessToken, createRefreshToken } from '../dist/auth/tokens.js';
 import { createApp } from '../dist/app.js';
 import { handleRouteError } from '../dist/http/responses.js';
 import jwt from 'jsonwebtoken';
-import { REQUEST_LIMIT } from '../dist/config/server.js';
-import { toJobStatusQueryValues } from '../dist/http/validation.js';
+import { AUTH_EMAIL_IP_LIMIT, REQUEST_LIMIT } from '../dist/config/server.js';
+import { FIELD_MAX_LENGTHS } from '../dist/config/validation.js';
+import { isValidDate, isValidHttpURL, toJobStatusQueryValues, toTrimmedString } from '../dist/http/validation.js';
 
 process.env.ACCESS_TOKEN_SECRET = 'test-only-secret';
 process.env.REFRESH_TOKEN_SECRET = 'different-test-only-refresh-secret';
@@ -200,6 +201,250 @@ test('returns 422 for an invalid protected route parameter', async () => {
     assert.deepEqual(await response.json(), { message: 'Job application ID must be a positive integer.' });
 });
 
+test('rejects future application dates before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            companyName: 'Example',
+            jobTitle: 'Engineer',
+            appDate: '2999-12-31T23:59:00.000Z',
+            jobStatus: 'Applied',
+            jobLocation: '',
+            jobURL: '',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Application date cannot be later than the current date.',
+    });
+});
+
+test('rejects impossible application dates before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            companyName: 'Example',
+            jobTitle: 'Engineer',
+            appDate: '2025-02-30T10:00:00.000Z',
+            jobStatus: 'Applied',
+            jobLocation: '',
+            jobURL: '',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Job application fields are missing, invalid, or too long.',
+    });
+});
+
+test('rejects application dates with an invalid hour before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            companyName: 'Example',
+            jobTitle: 'Engineer',
+            appDate: '2025-01-01T24:00:00.000Z',
+            jobStatus: 'Applied',
+            jobLocation: '',
+            jobURL: '',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Job application fields are missing, invalid, or too long.',
+    });
+});
+
+test('rejects impossible interview dates before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-interviews`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            jobId: 1,
+            interviewDate: '2025-04-31T10:00:00.000Z',
+            interviewLocation: 'Remote',
+            interviewType: '',
+            notes: '',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Interview fields are missing, invalid, or too long.',
+    });
+});
+
+test('rejects interview dates with an invalid hour before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-interviews`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            jobId: 1,
+            interviewDate: '2025-01-01T24:00:00.000Z',
+            interviewLocation: 'Remote',
+            interviewType: '',
+            notes: '',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Interview fields are missing, invalid, or too long.',
+    });
+});
+
+test('rejects non-http application URLs before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            companyName: 'Example',
+            jobTitle: 'Engineer',
+            appDate: '2025-01-01T00:00:00.000Z',
+            jobStatus: 'Applied',
+            jobLocation: '',
+            jobURL: 'javascript:alert(1)',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Job URL must use http or https and include a valid domain such as example.com.',
+    });
+});
+
+test('rejects application fields over their maximum length before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            companyName: 'x'.repeat(FIELD_MAX_LENGTHS.companyName + 1),
+            jobTitle: 'Engineer',
+            appDate: '2025-01-01T00:00:00.000Z',
+            jobStatus: 'Applied',
+            jobLocation: '',
+            jobURL: '',
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Job application fields are missing, invalid, or too long.',
+    });
+});
+
+test('rejects interview fields over their maximum length before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-interviews`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            jobId: 1,
+            interviewDate: '2025-01-02T00:00:00.000Z',
+            interviewLocation: 'Remote',
+            interviewType: '',
+            notes: 'x'.repeat(FIELD_MAX_LENGTHS.notes + 1),
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Interview fields are missing, invalid, or too long.',
+    });
+});
+
+test('rejects application notes over their maximum length before accessing the database', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications/1/notes`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({
+            notes: 'x'.repeat(FIELD_MAX_LENGTHS.notes + 1),
+        }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: `Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`,
+    });
+});
+
+test('validates and trims shared text and URL inputs', () => {
+    assert.equal(toTrimmedString('  Example  ', 20), 'Example');
+    assert.equal(toTrimmedString('   ', 20), undefined);
+    assert.equal(toTrimmedString('   ', 20, true), '');
+    assert.equal(toTrimmedString('too long', 3), undefined);
+    assert.equal(isValidHttpURL('https://example.com/jobs/1'), true);
+    assert.equal(isValidHttpURL('https://careers.example.co.uk/jobs/1'), true);
+    assert.equal(isValidHttpURL('http://localhost:3000/jobs/1'), false);
+    assert.equal(isValidHttpURL('https://example/jobs/1'), false);
+    assert.equal(isValidHttpURL('ftp://example.com/file'), false);
+    assert.equal(isValidHttpURL('javascript:alert(1)'), false);
+});
+
+test('validates calendar dates strictly', () => {
+    assert.equal(isValidDate('2024-02-29T10:00:00.000Z'), true);
+    assert.equal(isValidDate('2025-02-29T10:00:00.000Z'), false);
+    assert.equal(isValidDate('2025-02-30T10:00:00.000Z'), false);
+    assert.equal(isValidDate('2025-04-31T10:00:00.000Z'), false);
+    assert.equal(isValidDate('2025-04-30T10:00:00.000Z'), true);
+    assert.equal(isValidDate('2025-01-01T23:59:59.999Z'), true);
+    assert.equal(isValidDate('2025-01-01T24:00:00.000Z'), false);
+    assert.equal(isValidDate('2025-01-01T23:60:00.000Z'), false);
+    assert.equal(isValidDate('2025-01-01T23:59:60.000Z'), false);
+});
+
+test('returns the generic authentication error for invalid credentials', async () => {
+    const response = await fetch(`${baseUrl}/authentication/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'not-an-email', password: 'password' }),
+    });
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), { message: 'Invalid email or password.' });
+});
+
 test('returns 503 when authentication configuration is unavailable', async () => {
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
     delete process.env.ACCESS_TOKEN_SECRET;
@@ -216,6 +461,29 @@ test('returns 503 when authentication configuration is unavailable', async () =>
     } finally {
         process.env.ACCESS_TOKEN_SECRET = accessTokenSecret;
     }
+});
+
+test('rate limits repeated authentication attempts by IP and email', async () => {
+    const limitedEmail = 'limited@example.invalid';
+
+    for (let requestNumber = 0; requestNumber < AUTH_EMAIL_IP_LIMIT; requestNumber += 1) {
+        const response = await fetch(`${baseUrl}/authentication/sessions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: limitedEmail, password: 'password' }),
+        });
+        assert.equal(response.status, 401);
+    }
+
+    const response = await fetch(`${baseUrl}/authentication/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: limitedEmail, password: 'password' }),
+    });
+    assert.equal(response.status, 429);
+    assert.deepEqual(await response.json(), {
+        message: 'Too many authentication attempts. Please try again later.',
+    });
 });
 
 test('logs error details and returns a generic 500 response', () => {

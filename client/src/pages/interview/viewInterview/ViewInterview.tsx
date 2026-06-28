@@ -20,7 +20,7 @@ const ViewInterview = () => {
     const api = useJobTrackerAPI();
     const { preferences } = useUserPreferences();
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();

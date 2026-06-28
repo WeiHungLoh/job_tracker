@@ -134,6 +134,71 @@ describe('User add application flow', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    test('does not submit a non-http job URL', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/input job posting url/i), 'javascript:alert(1)');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('does not submit a job URL without a domain suffix', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/input job posting url/i), 'https://localhost/jobs/1');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('does not submit an application date in the future', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        fireEvent.change(screen.getByLabelText(/input application date/i), {
+            target: { value: '2999-12-31T23:59' },
+        });
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() =>
+            expect(screen.getByText('Application date cannot be later than the current date.')).toBeInTheDocument()
+        );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('applies maximum lengths to application text inputs', () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByLabelText(/input company name/i)).toHaveAttribute('maxlength', '150');
+        expect(screen.getByLabelText(/input job title/i)).toHaveAttribute('maxlength', '150');
+        expect(screen.getByLabelText(/input job location/i)).toHaveAttribute('maxlength', '200');
+        expect(screen.getByLabelText(/input job posting url/i)).toHaveAttribute('maxlength', '2048');
+    });
+
     test('submits whitespace-only optional fields as empty strings', async () => {
         fetch.mockResolvedValueOnce({
             ok: true,

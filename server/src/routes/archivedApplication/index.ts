@@ -1,6 +1,5 @@
 import type {
     ArchiveApplicationRequest,
-    ArchiveApplicationResponse,
     ArchivedJobIdParams,
     EmptyResponse,
     ListArchivedApplicationsQuery,
@@ -20,11 +19,11 @@ import { toJobStatusQueryValues, toPositiveInteger } from '../../http/validation
 
 const router = express.Router();
 
-router.post(
+router.patch(
     '/',
     async (
-        req: Request<Record<string, never>, ArchiveApplicationResponse, ArchiveApplicationRequest>,
-        res: Response<ArchiveApplicationResponse>
+        req: Request<Record<string, never>, EmptyResponse, ArchiveApplicationRequest>,
+        res: Response<EmptyResponse>
     ): Promise<void> => {
         const jobId = toPositiveInteger(req.body.jobId);
         if (jobId === undefined) {
@@ -38,7 +37,7 @@ router.post(
                 sendError(res, 404, 'Job application not found.');
                 return;
             }
-            res.status(201).send('Successfully archived!');
+            res.sendStatus(204);
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to archive the job application.');
         }
@@ -104,12 +103,9 @@ router.delete(
     }
 );
 
-router.post(
+router.patch(
     '/:archivedJobId/restore',
-    async (
-        req: Request<ArchivedJobIdParams, ArchiveApplicationResponse>,
-        res: Response<ArchiveApplicationResponse>
-    ): Promise<void> => {
+    async (req: Request<ArchivedJobIdParams, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
         const archivedJobId = toPositiveInteger(req.params.archivedJobId);
         if (archivedJobId === undefined) {
             sendError(res, 422, 'Archived job application ID must be a positive integer.');
@@ -122,7 +118,7 @@ router.post(
                 sendError(res, 404, 'Archived job application not found.');
                 return;
             }
-            res.status(201).send('Successfully unarchived!');
+            res.sendStatus(204);
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to unarchive the job application.');
         }

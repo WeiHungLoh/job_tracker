@@ -22,7 +22,7 @@ const CheckboxFilter = <Option extends string>({
     onSelectionChange,
 }: CheckboxFilterProps<Option>) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selectedOptions, setSelectedOptions] = useState<Option[]>([...savedOptions]);
 
     useEffect(() => {

@@ -11,17 +11,18 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { getErrorToastMessage, isJobTrackerAPIError } from '../../../helper/getErrorToastMessage';
+import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 
 const AddInterview = () => {
-    const [interviewDate, setInterviewDate] = useState('');
-    const [interviewLocation, setInterviewLocation] = useState('');
-    const [interviewType, setInterviewType] = useState('');
-    const [notes, setNotes] = useState('');
+    const [interviewDate, setInterviewDate] = useState<string>('');
+    const [interviewLocation, setInterviewLocation] = useState<string>('');
+    const [interviewType, setInterviewType] = useState<string>('');
+    const [notes, setNotes] = useState<string>('');
     const interviewDateInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const location = useLocation() as Location<{ app?: JobApplication }>;
     const app = location.state?.app;
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
 
@@ -50,6 +51,21 @@ const AddInterview = () => {
 
         if (!interviewDate || !trimmedInterviewLocation) {
             showErrorToast('Please enter a date and location before adding an interview.');
+            return;
+        }
+
+        if (trimmedInterviewLocation.length > FIELD_MAX_LENGTHS.location) {
+            showErrorToast(`Interview location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`);
+            return;
+        }
+
+        if (trimmedInterviewType.length > FIELD_MAX_LENGTHS.interviewType) {
+            showErrorToast(`Interview type must be ${FIELD_MAX_LENGTHS.interviewType} characters or fewer.`);
+            return;
+        }
+
+        if (trimmedNotes.length > FIELD_MAX_LENGTHS.notes) {
+            showErrorToast(`Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
             return;
         }
 
@@ -106,6 +122,7 @@ const AddInterview = () => {
             <label htmlFor='location'>Input Interview Location</label>
             <input
                 id='location'
+                maxLength={FIELD_MAX_LENGTHS.location}
                 value={interviewLocation}
                 onChange={(e) => setInterviewLocation(e.target.value)}
                 required
@@ -113,10 +130,20 @@ const AddInterview = () => {
             />
 
             <label htmlFor='type'>Input Interview Type (optional)</label>
-            <input id='type' value={interviewType} onChange={(e) => setInterviewType(e.target.value)} />
+            <input
+                id='type'
+                maxLength={FIELD_MAX_LENGTHS.interviewType}
+                value={interviewType}
+                onChange={(e) => setInterviewType(e.target.value)}
+            />
 
             <label htmlFor='notes'>Input Additional Notes (optional)</label>
-            <input id='notes' value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <input
+                id='notes'
+                maxLength={FIELD_MAX_LENGTHS.notes}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+            />
 
             <div className={styles.submitButton}>
                 <PrimaryButton variant='compact' data-testid='add-interview' onClick={handleAdd} disabled={isLoading}>

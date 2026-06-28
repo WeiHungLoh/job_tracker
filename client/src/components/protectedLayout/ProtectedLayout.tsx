@@ -24,7 +24,7 @@ const ProtectedLayout = () => {
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
-    const [preferencesError, setPreferencesError] = useState(false);
+    const [preferencesError, setPreferencesError] = useState<boolean>(false);
 
     const loadPreferences = useCallback(async () => {
         setPreferencesError(false);

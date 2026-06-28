@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewApplication from '../../pages/jobApplication/viewApplication/ViewApplication';
 import { render } from '../renderWithToast';
@@ -345,6 +345,43 @@ describe('Job application viewing flow', () => {
         );
 
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+    });
+
+    test('archives an application with PATCH', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(within(screen.getByTestId('unhide-archive')).getByRole('button'));
+        await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications`, {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobId: 1 }),
+            })
+        );
+        await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+    });
+
+    test('limits application notes to 3000 characters', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        const notesToggle = screen.getByText('Unhide Notes').parentElement;
+        expect(notesToggle).not.toBeNull();
+        await userEvent.click(within(notesToggle as HTMLElement).getByRole('button'));
+
+        expect(screen.getByPlaceholderText('Add your notes here')).toHaveAttribute('maxlength', '3000');
     });
 
     test('renders message for empty application list on successful fetch with no data', async () => {

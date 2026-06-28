@@ -19,7 +19,7 @@ const testPreferences: UserPreferences = {
 };
 
 const TestProviders = ({ children }: { children: ReactNode }) => {
-    const [preferences, setPreferences] = useState(testPreferences);
+    const [preferences, setPreferences] = useState<UserPreferences>(testPreferences);
 
     const updatePreferences = async (updatedPreferences: UpdateUserPreferencesRequest) => {
         let savedPreferences = testPreferences;

@@ -194,7 +194,7 @@ describe('Archived job application viewing flow', () => {
 
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/1/restore`, {
-                method: 'POST',
+                method: 'PATCH',
                 credentials: 'include',
             })
         );

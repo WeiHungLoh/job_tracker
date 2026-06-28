@@ -10,3 +10,7 @@ export const ALLOWED_ORIGINS = new Set([
 
 export const REQUEST_LIMIT = 400;
 export const REQUEST_WINDOW_MS = 15 * 60 * 1000;
+
+export const AUTH_EMAIL_IP_LIMIT = 10;
+export const AUTH_IP_LIMIT = 50;
+export const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
