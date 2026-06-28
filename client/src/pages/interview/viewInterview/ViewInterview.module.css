@@ -36,7 +36,7 @@
 
 .interviewContent {
     color: var(--colorTextSecondary);
-    word-wrap: break-word;
+    overflow-wrap: anywhere;
     gap: 16px;
     width: 500px;
 }
