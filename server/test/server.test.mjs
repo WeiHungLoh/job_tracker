@@ -6,6 +6,7 @@ import { createApp } from '../dist/app.js';
 import { handleRouteError } from '../dist/http/responses.js';
 import jwt from 'jsonwebtoken';
 import { REQUEST_LIMIT } from '../dist/config/server.js';
+import { toJobStatusQueryValues } from '../dist/http/validation.js';
 
 process.env.ACCESS_TOKEN_SECRET = 'test-only-secret';
 process.env.REFRESH_TOKEN_SECRET = 'different-test-only-refresh-secret';
@@ -117,22 +118,36 @@ test('the current session endpoint only accepts an access token', async () => {
 
 test('returns 422 for an unsupported active application status filter', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
-    const response = await fetch(`${baseUrl}/job-applications?jobStatus=Unknown`, {
+    const response = await fetch(`${baseUrl}/job-applications?jobStatuses=Unknown`, {
         headers: { Cookie: `access_token=${token}` },
     });
 
     assert.equal(response.status, 422);
-    assert.deepEqual(await response.json(), { message: 'A supported job status or Show All is required.' });
+    assert.deepEqual(await response.json(), { message: 'Each job status filter must be supported.' });
 });
 
 test('returns 422 for an unsupported archived application status filter', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
-    const response = await fetch(`${baseUrl}/archived-job-applications?jobStatus=Unknown`, {
+    const response = await fetch(`${baseUrl}/archived-job-applications?jobStatuses=Unknown`, {
         headers: { Cookie: `access_token=${token}` },
     });
 
     assert.equal(response.status, 422);
-    assert.deepEqual(await response.json(), { message: 'A supported job status or Show All is required.' });
+    assert.deepEqual(await response.json(), { message: 'Each job status filter must be supported.' });
+});
+
+test('parses repeated job status query parameters', () => {
+    assert.deepEqual(toJobStatusQueryValues(['Accepted', 'Offer']), ['Accepted', 'Offer']);
+    assert.deepEqual(toJobStatusQueryValues(''), [
+        'Accepted',
+        'Applied',
+        'Declined',
+        'Ghosted',
+        'Interview',
+        'Offer',
+        'Rejected',
+    ]);
+    assert.equal(toJobStatusQueryValues(['Accepted', 'Unknown']), undefined);
 });
 
 test('returns 401 when a protected route has no token', async () => {

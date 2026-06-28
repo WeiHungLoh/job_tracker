@@ -1,0 +1,118 @@
+.checkboxFilter {
+    position: relative;
+    z-index: 10;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--colorPrimary);
+    border-radius: 99px;
+    background: var(--colorBtnSecondaryHoverBg);
+    color: var(--colorPrimary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.toggle:hover,
+.toggle[aria-expanded='true'] {
+    background: var(--colorPrimary);
+    color: var(--colorBtnPrimaryText);
+}
+
+.toggleText {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.chevron {
+    display: block;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    z-index: 100;
+    min-width: 120px;
+    max-height: 250px;
+    padding: 12px;
+    overflow-y: auto;
+    transform: translateX(-50%);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 10px;
+    background: var(--colorCardBg);
+    box-shadow: 0 6px 18px var(--colorAuthCardShadow);
+    box-sizing: border-box;
+}
+
+.option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    color: var(--colorText);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.checkbox {
+    position: relative;
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--colorInputBorder);
+    border-radius: 4px;
+    background: var(--colorInputBg);
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.option input:checked + .checkbox {
+    border-color: var(--colorPrimary);
+    background: var(--colorPrimary);
+}
+
+.option input:checked + .checkbox::after {
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--colorBtnPrimaryText);
+    border-width: 0 2px 2px 0;
+    content: '';
+    transform: rotate(45deg);
+}
+
+.option input:focus-visible + .checkbox {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}

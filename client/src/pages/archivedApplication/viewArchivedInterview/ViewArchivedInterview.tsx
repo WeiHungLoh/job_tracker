@@ -90,7 +90,7 @@ const ViewArchivedInterview = () => {
 
         try {
             const applications = await api.archivedApplication.listApplications({
-                jobStatus: preferences.archived_application_job_status,
+                jobStatuses: preferences.archived_application_job_statuses,
             });
             const applicationExists = applications.some(
                 (application) => application.archived_job_id === interview.archived_job_id
@@ -99,7 +99,7 @@ const ViewArchivedInterview = () => {
             if (!applicationExists) {
                 showErrorToast(
                     getApplicationUnavailableMessage(
-                        preferences.archived_application_job_status,
+                        preferences.archived_application_job_statuses,
                         interview.job_status,
                         {
                             applicationLabel: 'This archived job application',

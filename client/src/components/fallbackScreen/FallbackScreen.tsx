@@ -1,34 +1,45 @@
-import type { FallbackScreenProps } from './models';
+import type { FallbackScreenProps, FallbackScreenVariant } from './models';
 import LoadingSpinner from '../loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../button/PrimaryButton';
 import styles from './FallbackScreen.module.css';
 
+type FallbackContent = {
+    actionLabel?: string;
+    message: string;
+    title: string;
+};
+
+const FALLBACK_CONTENT: Record<FallbackScreenVariant, FallbackContent> = {
+    authenticationError: {
+        actionLabel: 'Try again',
+        message: 'We could not verify your session. Please try again.',
+        title: 'Unable to verify authentication',
+    },
+    loading: {
+        message: 'Please wait while we verify your session.',
+        title: 'Checking authentication',
+    },
+    notFound: {
+        actionLabel: 'View job applications',
+        message: 'The page you are looking for does not exist or may have moved.',
+        title: 'Page not found',
+    },
+};
+
 const FallbackScreen = ({ variant = 'loading', onAction }: FallbackScreenProps) => {
     const isLoading = variant === 'loading';
+    const content = FALLBACK_CONTENT[variant];
 
     return (
         <main className={styles.fallback} aria-live='polite' aria-busy={isLoading}>
             <div className={styles.content}>
-                {isLoading ? (
-                    <>
-                        <LoadingSpinner />
-                        <h2>Checking authentication status</h2>
-                    </>
-                ) : variant === 'notFound' ? (
-                    <>
-                        <h2>Page not found</h2>
-                        <p>The page you requested does not exist.</p>
-                        <PrimaryButton onClick={onAction} type='button'>
-                            Go to job applications
-                        </PrimaryButton>
-                    </>
-                ) : (
-                    <>
-                        <h2>Unable to verify authentication. Please try again.</h2>
-                        <PrimaryButton onClick={onAction} type='button'>
-                            Try again
-                        </PrimaryButton>
-                    </>
+                {isLoading && <LoadingSpinner />}
+                <h2>{content.title}</h2>
+                <p>{content.message}</p>
+                {content.actionLabel && onAction && (
+                    <PrimaryButton onClick={onAction} type='button'>
+                        {content.actionLabel}
+                    </PrimaryButton>
                 )}
             </div>
         </main>

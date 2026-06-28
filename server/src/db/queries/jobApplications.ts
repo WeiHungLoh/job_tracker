@@ -18,16 +18,13 @@ export const insertJobApplication = async (
     );
 };
 
-export const getJobApplications = async (
-    userId: number,
-    jobStatus: JobStatus | null = null
-): Promise<JobApplication[]> => {
+export const getJobApplications = async (userId: number, jobStatuses: JobStatus[]): Promise<JobApplication[]> => {
     const result = await pool.query<JobApplication>(
         `SELECT * FROM job_applications WHERE user_id = $1 AND is_archived = false
-          AND ($2::text IS NULL OR job_status = $2)
+          AND job_status = ANY($2::text[])
           ORDER BY ${JOB_STATUS_SORT_ORDER},
          application_date DESC`,
-        [userId, jobStatus]
+        [userId, jobStatuses]
     );
 
     return result.rows;

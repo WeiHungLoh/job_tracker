@@ -5,15 +5,13 @@ type UnavailableMessageLabels = {
 };
 
 export const getApplicationUnavailableMessage = (
-    selectedStatus: string,
+    selectedStatuses: readonly string[],
     applicationStatus: string | undefined,
     labels: UnavailableMessageLabels
 ): string => {
-    if (selectedStatus === 'Show All') {
+    if (!applicationStatus || selectedStatuses.includes(applicationStatus)) {
         return `${labels.applicationLabel} is not available in ${labels.applicationsPageLabel}.`;
     }
 
-    return `${labels.applicationLabel} is not inside the current ${selectedStatus} filter. Change the ${
-        labels.statusFilterLabel
-    } to Show All${applicationStatus ? ` or ${applicationStatus}` : ''}.`;
+    return `${labels.applicationLabel} is not included in the current ${labels.statusFilterLabel}. Select Show All or ${applicationStatus}.`;
 };

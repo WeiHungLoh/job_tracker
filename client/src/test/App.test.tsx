@@ -3,6 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { appRoutes } from '../App';
 import { render } from './renderWithToast';
 import userEvent from '@testing-library/user-event';
+import { JOB_STATUSES } from '../pages/jobApplication/models';
 
 globalThis.fetch = vi.fn();
 
@@ -43,11 +44,11 @@ const jsonResponse = (data: unknown, status = 200) => ({
 
 const mockPreferences = {
     user_id: 1,
-    application_job_status: 'Show All',
+    application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
-    archived_application_job_status: 'Show All',
+    archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
 };
 
@@ -117,8 +118,9 @@ describe('App routing and authentication behavior', () => {
         renderRoute('/application/view');
 
         await waitFor(() =>
-            expect(screen.getByText(/Unable to verify authentication. Please try again./i)).toBeInTheDocument()
+            expect(screen.getByRole('heading', { name: /Unable to verify authentication/i })).toBeInTheDocument()
         );
+        expect(screen.getByText(/We could not verify your session. Please try again./i)).toBeInTheDocument();
         expect(screen.queryByText(/sign in to job tracker/i)).not.toBeInTheDocument();
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
         expect(screen.getByText('Authentication is temporarily unavailable.')).toBeInTheDocument();
@@ -128,7 +130,8 @@ describe('App routing and authentication behavior', () => {
         fetch.mockReturnValueOnce(new Promise(() => undefined));
         renderRoute('/application/view');
 
-        expect(screen.getByText(/checking authentication status/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /checking authentication/i })).toBeInTheDocument();
+        expect(screen.getByText(/Please wait while we verify your session./i)).toBeInTheDocument();
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
         expect(screen.queryByText(/job application viewer/i)).not.toBeInTheDocument();
     });
@@ -159,10 +162,42 @@ describe('App routing and authentication behavior', () => {
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     });
 
-    test('displays page 404 not found on unknown routes after authentication', async () => {
+    test('renders the user guide without checking authentication', () => {
+        renderRoute('/user-guide');
+
+        expect(screen.getByRole('heading', { name: /job tracker user guide/i })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: /checking authentication/i })).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('displays page 404 not found on unknown routes without checking authentication', () => {
         renderRoute('/addassignment');
-        await waitFor(() => expect(screen.getByText(/^Page not found$/i)).toBeInTheDocument());
+
+        expect(screen.getByText(/^Page not found$/i)).toBeInTheDocument();
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('displays the authentication fallback when a route throws an error', async () => {
+        const router = createMemoryRouter(
+            [
+                {
+                    element: <div>Broken route</div>,
+                    errorElement: appRoutes[0].errorElement,
+                    path: '/route-error',
+                    loader: () => {
+                        throw new Error('Route failed');
+                    },
+                },
+            ],
+            { initialEntries: ['/route-error'] }
+        );
+
+        render(<RouterProvider router={router} />);
+
+        expect(await screen.findByRole('heading', { name: /unable to verify authentication/i })).toBeInTheDocument();
+        expect(screen.getByText(/We could not verify your session. Please try again./i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
     });
 
     test('displays active navigation bar when on dashboard page', async () => {

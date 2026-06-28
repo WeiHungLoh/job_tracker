@@ -1,4 +1,4 @@
-import { JOB_STATUSES, JOB_STATUS_FILTER_OPTIONS, type JobStatus, type JobStatusFilter } from '../db/models.js';
+import { JOB_STATUSES, type JobStatus } from '../db/models.js';
 
 export const isNonEmptyString = (value: unknown): value is string =>
     typeof value === 'string' && value.trim().length > 0;
@@ -26,17 +26,31 @@ export const isValidEmail = (value: unknown): value is string =>
 export const isJobStatus = (value: unknown): value is JobStatus =>
     typeof value === 'string' && JOB_STATUSES.includes(value as JobStatus);
 
-export const isJobStatusFilter = (value: unknown): value is JobStatusFilter =>
-    typeof value === 'string' && JOB_STATUS_FILTER_OPTIONS.includes(value as JobStatusFilter);
+export const isJobStatusArray = (value: unknown): value is JobStatus[] => {
+    return Array.isArray(value) && value.every(isJobStatus);
+};
 
-export const toJobStatusQueryValue = (value: unknown): JobStatus | null | undefined => {
-    const requestedStatus = value ?? 'Show All';
-
-    if (!isJobStatusFilter(requestedStatus)) {
-        return undefined;
+export const toJobStatusQueryValues = (value: unknown): JobStatus[] | undefined => {
+    if (value === undefined) {
+        return [...JOB_STATUSES];
     }
 
-    return requestedStatus === 'Show All' ? null : requestedStatus;
+    const requestedStatuses = Array.isArray(value) ? value : [value];
+    if (requestedStatuses.length === 1 && requestedStatuses[0] === '') {
+        return [...JOB_STATUSES];
+    }
+
+    const jobStatuses: JobStatus[] = [];
+    for (const requestedStatus of requestedStatuses) {
+        if (!isJobStatus(requestedStatus)) {
+            return undefined;
+        }
+        if (!jobStatuses.includes(requestedStatus)) {
+            jobStatuses.push(requestedStatus);
+        }
+    }
+
+    return jobStatuses;
 };
 
 export const isOptionalBoolean = (value: unknown): value is boolean | undefined =>

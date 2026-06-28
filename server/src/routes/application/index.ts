@@ -30,7 +30,7 @@ import {
     isString,
     isValidDate,
     toPositiveInteger,
-    toJobStatusQueryValue,
+    toJobStatusQueryValues,
 } from '../../http/validation.js';
 import express from 'express';
 
@@ -71,14 +71,14 @@ router.get(
         req: Request<Record<string, never>, ListApplicationsResponse, Record<string, never>, ListApplicationsQuery>,
         res: Response<ListApplicationsResponse>
     ): Promise<void> => {
-        const jobStatus = toJobStatusQueryValue(req.query.jobStatus);
-        if (jobStatus === undefined) {
-            sendError(res, 422, 'A supported job status or Show All is required.');
+        const jobStatuses = toJobStatusQueryValues(req.query.jobStatuses);
+        if (jobStatuses === undefined) {
+            sendError(res, 422, 'Each job status filter must be supported.');
             return;
         }
 
         try {
-            res.status(200).json(await getJobApplications(req.user.id, jobStatus));
+            res.status(200).json(await getJobApplications(req.user.id, jobStatuses));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load job applications.');
         }

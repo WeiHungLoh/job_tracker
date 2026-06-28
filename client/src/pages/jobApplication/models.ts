@@ -1,7 +1,6 @@
 import type { JobStatusCount, WeeklyApplicationCount } from '../dashboard/models';
 
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
-export type JobStatusFilter = 'Show All' | JobStatus;
 
 export const JOB_STATUSES: readonly JobStatus[] = [
     'Accepted',
@@ -12,7 +11,6 @@ export const JOB_STATUSES: readonly JobStatus[] = [
     'Offer',
     'Rejected',
 ];
-export const JOB_STATUS_FILTER_OPTIONS: readonly JobStatusFilter[] = ['Show All', ...JOB_STATUSES];
 
 export type JobApplication = {
     job_id: number;
@@ -27,7 +25,7 @@ export type JobApplication = {
 };
 
 export type ListApplicationsRequest = {
-    jobStatus: JobStatusFilter;
+    jobStatuses: JobStatus[];
 };
 export type ListApplicationsResponse = JobApplication[];
 

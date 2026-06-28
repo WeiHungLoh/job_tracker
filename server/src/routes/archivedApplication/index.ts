@@ -16,7 +16,7 @@ import {
 } from '../../db/queries/archivedJobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
-import { toJobStatusQueryValue, toPositiveInteger } from '../../http/validation.js';
+import { toJobStatusQueryValues, toPositiveInteger } from '../../http/validation.js';
 
 const router = express.Router();
 
@@ -56,14 +56,14 @@ router.get(
         >,
         res: Response<ListArchivedApplicationsResponse>
     ): Promise<void> => {
-        const jobStatus = toJobStatusQueryValue(req.query.jobStatus);
-        if (jobStatus === undefined) {
-            sendError(res, 422, 'A supported job status or Show All is required.');
+        const jobStatuses = toJobStatusQueryValues(req.query.jobStatuses);
+        if (jobStatuses === undefined) {
+            sendError(res, 422, 'Each job status filter must be supported.');
             return;
         }
 
         try {
-            res.status(200).json(await getArchivedJobApplications(req.user.id, jobStatus));
+            res.status(200).json(await getArchivedJobApplications(req.user.id, jobStatuses));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived job applications.');
         }

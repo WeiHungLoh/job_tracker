@@ -8,6 +8,20 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const PUBLIC_ROUTES = new Set<string>([routes.signIn, routes.signUp, routes.userGuide]);
 let activeRefreshRequest: Promise<RefreshAuthenticationResponse> | undefined;
 
+const appendQueryValue = (query: URLSearchParams, field: string, value: unknown): void => {
+    if (!Array.isArray(value)) {
+        query.append(field, String(value));
+        return;
+    }
+
+    if (value.length === 0) {
+        query.append(field, '');
+        return;
+    }
+
+    value.forEach((item) => query.append(field, String(item)));
+};
+
 const parseResponse = async <T>(response: Response): Promise<T> => {
     if (response.status === 204) {
         return null as T;
@@ -40,7 +54,7 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
         if (fieldType === 'path') {
             url = url.replace(`:${field}`, encodeURIComponent(String(value)));
         } else if (fieldType === 'query') {
-            query.append(field, String(value));
+            appendQueryValue(query, field, value);
         } else if (fieldType === 'formData') {
             formData.append(field, value instanceof Blob ? value : String(value));
             hasFormData = true;

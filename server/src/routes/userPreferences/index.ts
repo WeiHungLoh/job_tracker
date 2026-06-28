@@ -6,7 +6,7 @@ import type {
 import type { Request, Response } from 'express';
 import { getUserPreferences, updateUserPreferences } from '../../db/queries/userPreferences.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isJobStatusFilter, isOptionalBoolean } from '../../http/validation.js';
+import { isJobStatusArray, isOptionalBoolean } from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -38,23 +38,23 @@ router.patch(
         res: Response<UpdateUserPreferencesResponse>
     ): Promise<void> => {
         const {
-            application_job_status,
+            application_job_statuses,
             application_show_notes,
             application_show_archive,
             application_enable_scroll,
-            archived_application_job_status,
+            archived_application_job_statuses,
             archived_application_show_notes,
         } = req.body;
 
-        if (application_job_status !== undefined && !isJobStatusFilter(application_job_status)) {
-            sendError(res, 422, 'Application job status preference must be Show All or a supported job status.');
+        if (application_job_statuses !== undefined && !isJobStatusArray(application_job_statuses)) {
+            sendError(res, 422, 'Application job status preferences must contain only supported job statuses.');
             return;
         }
-        if (archived_application_job_status !== undefined && !isJobStatusFilter(archived_application_job_status)) {
+        if (archived_application_job_statuses !== undefined && !isJobStatusArray(archived_application_job_statuses)) {
             sendError(
                 res,
                 422,
-                'Archived application job status preference must be Show All or a supported job status.'
+                'Archived application job status preferences must contain only supported job statuses.'
             );
             return;
         }

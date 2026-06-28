@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedApplication from '../../pages/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
 import { render } from '../renderWithToast';
 import userEvent from '@testing-library/user-event';
+import { JOB_STATUSES } from '../../pages/jobApplication/models';
 
 globalThis.fetch = vi.fn();
 
@@ -19,11 +20,11 @@ const mockApplication = {
 
 const mockPreferences = {
     user_id: 1,
-    application_job_status: 'Show All',
+    application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
-    archived_application_job_status: 'Show All',
+    archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
 };
 
@@ -65,7 +66,9 @@ describe('Archived job application viewing flow', () => {
         );
 
         expect(await screen.findByText(/ABC Pte Ltd/i)).toBeInTheDocument();
-        expect(screen.queryByText(/no archived job application with that job status found/i)).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/no archived job applications match the selected job statuses/i)
+        ).not.toBeInTheDocument();
         expect(screen.getByText(/software engineer/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument();
@@ -74,7 +77,9 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByText(/filter by/i)).toBeInTheDocument();
         expect(screen.getByText(/unhide notes/i)).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
-            `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatus=Show+All`,
+            `${
+                import.meta.env.VITE_API_URL
+            }/archived-job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`,
             {
                 method: 'GET',
                 credentials: 'include',
@@ -90,11 +95,13 @@ describe('Archived job application viewing flow', () => {
         );
 
         await screen.findByText(/ABC Pte Ltd/i);
-        userEvent.selectOptions(screen.getByRole('listbox'), 'Offer');
+        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
 
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(
-                `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatus=Offer`,
+                `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatuses=Offer`,
                 {
                     method: 'GET',
                     credentials: 'include',
@@ -152,7 +159,7 @@ describe('Archived job application viewing flow', () => {
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
 
         // Simulates user clicking delete button and clicking confirm delete
-        userEvent.click(screen.getByRole('button', { name: 'Delete all archived applications' }));
+        userEvent.click(screen.getByRole('button', { name: /delete all archived applications/i }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({
@@ -203,6 +210,11 @@ describe('Archived job application viewing flow', () => {
             </MemoryRouter>
         );
 
-        expect(await screen.findByText(/no archived job application with that job status found/i)).toBeInTheDocument();
+        expect(
+            await screen.findByText(/no archived job applications match the selected job statuses/i)
+        ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeVisible();
+        expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeVisible();
     });
 });

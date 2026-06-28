@@ -56,8 +56,8 @@ const guideSections: readonly UserGuideSection[] = [
                     <code>Applied</code>.
                 </p>
                 <p>
-                    Use <strong>Filter by</strong> to show one status or select <code>Show All</code>. The archive
-                    toggle reveals or hides the archive action for each application.
+                    Use <strong>Filter by</strong> to show one or more statuses, or select <code>Show All</code>. The
+                    archive toggle reveals or hides the archive action for each application.
                 </p>
                 <p>
                     An orange <strong>Upcoming Interviews</strong> badge appears below the status when an application
@@ -155,8 +155,8 @@ const guideSections: readonly UserGuideSection[] = [
             <>
                 <h3>Export as CSV</h3>
                 <p>
-                    Application, interview and archived-record viewers provide an <code>Export as CSV</code> action when
-                    at least one record is available.
+                    Application exports contain the records visible under the selected status filters. Interview and
+                    archived-record viewers also provide CSV export actions when at least one record is available.
                 </p>
                 <h3>Sorting order</h3>
                 <p>

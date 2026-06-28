@@ -2,6 +2,7 @@ import { type RouteObject, RouterProvider, createBrowserRouter } from 'react-rou
 import AddApplication from './pages/jobApplication/addApplication/AddApplication';
 import AddInterview from './pages/interview/addInterview/AddInterview';
 import Dashboard from './pages/dashboard/Dashboard';
+import FallbackScreen from './components/fallbackScreen/FallbackScreen';
 import InvalidPage from './pages/invalidPage/InvalidPage';
 import ProtectedLayout from './components/protectedLayout/ProtectedLayout';
 import ProtectedRoutes from './components/protectedRoutes/ProtectedRoutes';
@@ -14,23 +15,30 @@ import ViewArchivedInterview from './pages/archivedApplication/viewArchivedInter
 import ViewInterview from './pages/interview/viewInterview/ViewInterview';
 import { routes } from './routes';
 
+const reloadPage = () => window.location.reload();
+
 export const appRoutes: RouteObject[] = [
-    { path: routes.signIn, element: <SignIn /> },
-    { path: routes.signUp, element: <SignUp /> },
-    { path: routes.userGuide, element: <UserGuide /> },
     {
-        element: <ProtectedRoutes />,
+        errorElement: <FallbackScreen variant='authenticationError' onAction={reloadPage} />,
         children: [
+            { path: routes.signIn, element: <SignIn /> },
+            { path: routes.signUp, element: <SignUp /> },
+            { path: routes.userGuide, element: <UserGuide /> },
             {
-                element: <ProtectedLayout />,
+                element: <ProtectedRoutes />,
                 children: [
-                    { path: routes.dashboard, element: <Dashboard /> },
-                    { path: routes.addApplication, element: <AddApplication /> },
-                    { path: routes.viewApplications, element: <ViewApplication /> },
-                    { path: routes.addInterview, element: <AddInterview /> },
-                    { path: routes.viewInterviews, element: <ViewInterview /> },
-                    { path: routes.archivedApplications, element: <ViewArchivedApplication /> },
-                    { path: routes.archivedInterviews, element: <ViewArchivedInterview /> },
+                    {
+                        element: <ProtectedLayout />,
+                        children: [
+                            { path: routes.dashboard, element: <Dashboard /> },
+                            { path: routes.addApplication, element: <AddApplication /> },
+                            { path: routes.viewApplications, element: <ViewApplication /> },
+                            { path: routes.addInterview, element: <AddInterview /> },
+                            { path: routes.viewInterviews, element: <ViewInterview /> },
+                            { path: routes.archivedApplications, element: <ViewArchivedApplication /> },
+                            { path: routes.archivedInterviews, element: <ViewArchivedInterview /> },
+                        ],
+                    },
                 ],
             },
             { path: '*', element: <InvalidPage /> },

@@ -1,8 +1,8 @@
 import { pool } from '../connectDB.js';
-import { JOB_STATUSES, JOB_STATUS_FILTER_OPTIONS } from '../models.js';
+import { JOB_STATUSES } from '../models.js';
 
 const JOB_STATUS_SQL_VALUES = JOB_STATUSES.map((status) => `'${status}'`).join(', ');
-const JOB_STATUS_FILTER_SQL_VALUES = JOB_STATUS_FILTER_OPTIONS.map((status) => `'${status}'`).join(', ');
+const JOB_STATUS_SQL_ARRAY = `ARRAY[${JOB_STATUS_SQL_VALUES}]::TEXT[]`;
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -42,16 +42,18 @@ const createTables = async (): Promise<void> => {
 
     const createUserPreferencesTable = `CREATE TABLE IF NOT EXISTS user_preferences (
             user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
-            application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
-                application_job_status IN (${JOB_STATUS_FILTER_SQL_VALUES})
-            ),
+            application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY},
             application_show_notes BOOLEAN NOT NULL DEFAULT false,
             application_show_archive BOOLEAN NOT NULL DEFAULT false,
             application_enable_scroll BOOLEAN NOT NULL DEFAULT false,
-            archived_application_job_status TEXT NOT NULL DEFAULT 'Show All' CHECK (
-                archived_application_job_status IN (${JOB_STATUS_FILTER_SQL_VALUES})
+            archived_application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY},
+            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false,
+            CONSTRAINT user_preferences_application_job_statuses_check CHECK (
+                application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}
             ),
-            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false
+            CONSTRAINT user_preferences_archived_application_job_statuses_check CHECK (
+                archived_application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}
+            )
         )`;
 
     const createJobApplicationArchiveIndex = `CREATE INDEX IF NOT EXISTS job_applications_user_archived_idx

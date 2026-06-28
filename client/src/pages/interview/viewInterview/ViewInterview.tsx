@@ -84,13 +84,13 @@ const ViewInterview = () => {
 
         try {
             const applications = await api.application.listApplications({
-                jobStatus: preferences.application_job_status,
+                jobStatuses: preferences.application_job_statuses,
             });
             const applicationExists = applications.some((application) => application.job_id === interview.job_id);
 
             if (!applicationExists) {
                 showErrorToast(
-                    getApplicationUnavailableMessage(preferences.application_job_status, interview.job_status, {
+                    getApplicationUnavailableMessage(preferences.application_job_statuses, interview.job_status, {
                         applicationLabel: 'This job application',
                         applicationsPageLabel: 'active applications',
                         statusFilterLabel: 'job status filter',

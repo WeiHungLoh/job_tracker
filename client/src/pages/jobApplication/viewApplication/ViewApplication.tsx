@@ -7,14 +7,7 @@ import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import type { JobInterview } from '../../interview/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import {
-    APPLICATION_CSV_HEADERS,
-    JOB_STATUSES,
-    JOB_STATUS_FILTER_OPTIONS,
-    type JobApplication,
-    type JobStatus,
-    type JobStatusFilter,
-} from '../models';
+import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobApplication, type JobStatus } from '../models';
 import { routes } from '../../../routes';
 import { scrollAndHighlight } from '../../../helper/highlightElement';
 import styles from './ViewApplication.module.css';
@@ -24,6 +17,7 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorMessage } from '../../../helper/getErrorMessage';
+import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 
 const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,
@@ -61,7 +55,7 @@ const ViewApplication = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [applications, setApplications] = useState<JobApplication[]>([]);
-    const [jobStatuses, setJobStatuses] = useState<Record<number, JobStatus>>({});
+    const [editedJobStatuses, setEditedJobStatuses] = useState<Record<number, JobStatus>>({});
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const confirm = useConfirm();
     const showNotesTimeout = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
@@ -71,7 +65,7 @@ const ViewApplication = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState(false);
     const { showErrorToast } = useToast();
-    const jobStatus = preferences.application_job_status;
+    const selectedJobStatuses = preferences.application_job_statuses;
     const showArchive = preferences.application_show_archive;
     const showNotes = preferences.application_show_notes;
     const enableScroll = preferences.application_enable_scroll;
@@ -91,17 +85,18 @@ const ViewApplication = () => {
         return counts;
     }, [interviews]);
 
-    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+    const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
         setIsFilteringApplications(true);
 
         try {
             const [, jobApplications] = await Promise.all([
-                updatePreferences({ application_job_status: selectedStatus }),
-                api.application.listApplications({ jobStatus: selectedStatus }),
+                updatePreferences({ application_job_statuses: jobStatuses }),
+                api.application.listApplications({ jobStatuses }),
             ]);
             setApplications(Array.isArray(jobApplications) ? jobApplications : []);
         } catch (error) {
             showErrorToast(getErrorMessage(error));
+            throw error;
         } finally {
             setIsFilteringApplications(false);
         }
@@ -113,7 +108,7 @@ const ViewApplication = () => {
         const fetchData = async () => {
             try {
                 const [jobApplications, jobInterviews] = await Promise.all([
-                    api.application.listApplications({ jobStatus }),
+                    api.application.listApplications({ jobStatuses: selectedJobStatuses }),
                     api.interview.listInterviews(),
                 ]);
 
@@ -206,7 +201,7 @@ const ViewApplication = () => {
 
     const toggleEditStatus = async (application: JobApplication) => {
         const editStatus = application.edit_status;
-        const newStatus = jobStatuses[application.job_id] ?? application.job_status;
+        const newStatus = editedJobStatuses[application.job_id] ?? application.job_status;
         const oldStatus = application.job_status;
         try {
             await api.application.updateEditStatus({
@@ -222,10 +217,10 @@ const ViewApplication = () => {
             if (editStatus && newStatus !== oldStatus) {
                 await api.application.updateJobStatus({
                     jobId: application.job_id,
-                    jobStatus: jobStatuses[application.job_id] ?? application.job_status,
+                    jobStatus: newStatus,
                 });
 
-                if (jobStatus === 'Show All') {
+                if (selectedJobStatuses.includes(newStatus)) {
                     setApplications((current) => {
                         const updatedApplications = current.map((item) =>
                             item.job_id === application.job_id ? { ...item, job_status: newStatus } : item
@@ -275,20 +270,14 @@ const ViewApplication = () => {
             {!isLoading && (
                 <>
                     <div className={styles.listControls}>
-                        <div className={styles.filterOption}>
-                            <div>Filter by</div>
-                            <select
-                                disabled={isFilteringApplications}
-                                value={jobStatus}
-                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
-                            >
-                                {JOB_STATUS_FILTER_OPTIONS.map((status) => (
-                                    <option key={status} value={status}>
-                                        {status}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <CheckboxFilter
+                            buttonLabel='Job status'
+                            id='application-job-status-filter'
+                            label='Filter by'
+                            onSelectionChange={handleJobStatusChange}
+                            options={JOB_STATUSES}
+                            selectedOptions={selectedJobStatuses}
+                        />
 
                         {hasApplications && (
                             <ToggleButton
@@ -330,7 +319,7 @@ const ViewApplication = () => {
                     {!hasApplications && (
                         <div>
                             <br />
-                            No job application with that job status found. Start adding one now!{' '}
+                            No job applications match the selected job statuses. Start adding one now!{' '}
                         </div>
                     )}
 
@@ -366,10 +355,10 @@ const ViewApplication = () => {
                                 {application.edit_status && (
                                     <select
                                         role='listbox'
-                                        value={jobStatuses[application.job_id] ?? application.job_status}
+                                        value={editedJobStatuses[application.job_id] ?? application.job_status}
                                         onChange={(e) =>
-                                            setJobStatuses((app) => ({
-                                                ...app,
+                                            setEditedJobStatuses((currentStatuses) => ({
+                                                ...currentStatuses,
                                                 [application.job_id]: e.target.value as JobStatus,
                                             }))
                                         }

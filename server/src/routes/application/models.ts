@@ -1,10 +1,4 @@
-import type {
-    JobApplication,
-    JobStatus,
-    JobStatusCount,
-    JobStatusFilter,
-    WeeklyApplicationCount,
-} from '../../db/models.js';
+import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../../db/models.js';
 import type { ErrorResponse } from '../../http/models.js';
 export type { EmptyResponse } from '../../http/models.js';
 
@@ -13,7 +7,7 @@ export type JobIdParams = {
 };
 
 export type ListApplicationsQuery = {
-    jobStatus?: JobStatusFilter;
+    jobStatuses?: string | string[];
 };
 
 export type CreateApplicationRequest = {

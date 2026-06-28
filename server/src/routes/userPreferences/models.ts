@@ -1,12 +1,12 @@
-import type { JobStatusFilter, UserPreferences } from '../../db/models.js';
+import type { JobStatus, UserPreferences } from '../../db/models.js';
 import type { ErrorResponse } from '../../http/models.js';
 
 export type UpdateUserPreferencesRequest = {
-    application_job_status?: JobStatusFilter;
+    application_job_statuses?: JobStatus[];
     application_show_notes?: boolean;
     application_show_archive?: boolean;
     application_enable_scroll?: boolean;
-    archived_application_job_status?: JobStatusFilter;
+    archived_application_job_statuses?: JobStatus[];
     archived_application_show_notes?: boolean;
 };
 

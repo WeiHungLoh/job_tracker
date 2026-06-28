@@ -50,6 +50,37 @@ describe('makeJobTrackerAPIRequest', () => {
         );
     });
 
+    test('adds each array item as a repeated query parameter', async () => {
+        await makeJobTrackerAPIRequest(
+            { jobStatuses: ['Accepted', 'Offer'] },
+            {
+                url: '/job-applications',
+                verb: 'GET',
+                fieldMap: { jobStatuses: 'query' },
+            }
+        );
+
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Accepted&jobStatuses=Offer`,
+            { method: 'GET' }
+        );
+    });
+
+    test('preserves an empty query selection', async () => {
+        await makeJobTrackerAPIRequest(
+            { jobStatuses: [] },
+            {
+                url: '/job-applications',
+                verb: 'GET',
+                fieldMap: { jobStatuses: 'query' },
+            }
+        );
+
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=`, {
+            method: 'GET',
+        });
+    });
+
     test('creates FormData without adding a JSON content-type header', async () => {
         await makeJobTrackerAPIRequest(
             { fileName: 'resume.pdf' },

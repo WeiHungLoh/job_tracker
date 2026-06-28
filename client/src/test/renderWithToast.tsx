@@ -6,14 +6,15 @@ import { UserPreferencesProvider } from '../components/userPreferences/UserPrefe
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../components/userPreferences/models';
 import { render as renderWithTestingLibrary } from '@testing-library/react';
 import { useState } from 'react';
+import { JOB_STATUSES } from '../pages/jobApplication/models';
 
 const testPreferences: UserPreferences = {
     user_id: 1,
-    application_job_status: 'Show All',
+    application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
-    archived_application_job_status: 'Show All',
+    archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
 };
 

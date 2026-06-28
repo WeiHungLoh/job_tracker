@@ -13,7 +13,7 @@ export const endpointConfig = {
         listApplications: {
             url: '/job-applications',
             verb: 'GET',
-            fieldMap: { jobStatus: 'query' },
+            fieldMap: { jobStatuses: 'query' },
         },
         listWeeklyApplications: { url: '/job-applications/weekly-counts', verb: 'GET' },
         listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET' },
@@ -46,7 +46,7 @@ export const endpointConfig = {
         listApplications: {
             url: '/archived-job-applications',
             verb: 'GET',
-            fieldMap: { jobStatus: 'query' },
+            fieldMap: { jobStatuses: 'query' },
         },
         archiveApplication: { url: '/archived-job-applications', verb: 'POST' },
         deleteApplication: {

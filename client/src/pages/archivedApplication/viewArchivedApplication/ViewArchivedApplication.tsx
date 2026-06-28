@@ -4,12 +4,7 @@ import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { createApplicationCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
-import {
-    APPLICATION_CSV_HEADERS,
-    JOB_STATUS_FILTER_OPTIONS,
-    type JobStatus,
-    type JobStatusFilter,
-} from '../../jobApplication/models';
+import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../jobApplication/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { scrollAndHighlight } from '../../../helper/highlightElement';
@@ -21,6 +16,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorMessage } from '../../../helper/getErrorMessage';
+import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 
 const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.accepted,
@@ -43,22 +39,23 @@ const ViewArchivedApplication = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState(false);
     const { showErrorToast } = useToast();
-    const jobStatus = preferences.archived_application_job_status;
+    const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;
 
     const csvData = createApplicationCsvData(archivedApplications);
 
-    const handleJobStatusChange = async (selectedStatus: JobStatusFilter) => {
+    const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
         setIsFilteringApplications(true);
 
         try {
             const [, archivedApplications] = await Promise.all([
-                updatePreferences({ archived_application_job_status: selectedStatus }),
-                api.archivedApplication.listApplications({ jobStatus: selectedStatus }),
+                updatePreferences({ archived_application_job_statuses: jobStatuses }),
+                api.archivedApplication.listApplications({ jobStatuses }),
             ]);
             setArchivedApplications(Array.isArray(archivedApplications) ? archivedApplications : []);
         } catch (error) {
             showErrorToast(getErrorMessage(error));
+            throw error;
         } finally {
             setIsFilteringApplications(false);
         }
@@ -69,7 +66,9 @@ const ViewArchivedApplication = () => {
 
         const fetchApplications = async () => {
             try {
-                const fetchedApplications = await api.archivedApplication.listApplications({ jobStatus });
+                const fetchedApplications = await api.archivedApplication.listApplications({
+                    jobStatuses: selectedJobStatuses,
+                });
                 if (isActive) {
                     setArchivedApplications(Array.isArray(fetchedApplications) ? fetchedApplications : []);
                 }
@@ -140,7 +139,7 @@ const ViewArchivedApplication = () => {
                 current.filter((application) => application.archived_job_id !== archivedJobId)
             );
         } catch (error) {
-            showErrorToast('Failed to archive an application ' + getErrorMessage(error));
+            showErrorToast('Failed to unarchive an application ' + getErrorMessage(error));
         }
     };
 
@@ -158,21 +157,14 @@ const ViewArchivedApplication = () => {
             {!isLoading && (
                 <>
                     <div className={styles.listControls}>
-                        <div className={styles.filterOption}>
-                            <div>Filter by</div>
-                            <select
-                                disabled={isFilteringApplications}
-                                role='listbox'
-                                value={jobStatus}
-                                onChange={(event) => void handleJobStatusChange(event.target.value as JobStatusFilter)}
-                            >
-                                {JOB_STATUS_FILTER_OPTIONS.map((status) => (
-                                    <option key={status} value={status}>
-                                        {status}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <CheckboxFilter
+                            buttonLabel='Job status'
+                            id='archived-application-job-status-filter'
+                            label='Filter by'
+                            onSelectionChange={handleJobStatusChange}
+                            options={JOB_STATUSES}
+                            selectedOptions={selectedJobStatuses}
+                        />
 
                         {hasApplications && (
                             <ToggleButton
@@ -194,7 +186,7 @@ const ViewArchivedApplication = () => {
                     {!hasApplications && (
                         <div>
                             <br />
-                            No archived job application with that job status found. Start archiving now!{' '}
+                            No archived job applications match the selected job statuses. Start archiving now!{' '}
                         </div>
                     )}
 
