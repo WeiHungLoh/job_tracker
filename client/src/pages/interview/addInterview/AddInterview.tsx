@@ -4,7 +4,12 @@ import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { isInvalidDatetimeLocalInput, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
+import {
+    isInvalidDatetimeLocalInput,
+    MAX_DATETIME_LOCAL,
+    MIN_DATETIME_LOCAL,
+    parseDatetimeLocal,
+} from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -112,6 +117,7 @@ const AddInterview = () => {
             <input
                 ref={interviewDateInputRef}
                 id='date'
+                max={MAX_DATETIME_LOCAL}
                 min={MIN_DATETIME_LOCAL}
                 value={interviewDate}
                 onChange={(e) => setInterviewDate(e.target.value)}

@@ -2,14 +2,16 @@
  * Parse a datetime-local input value (YYYY-MM-DDThh:mm) into a local Date.
  */
 export const MIN_DATETIME_LOCAL = '0001-01-01T00:00';
+export const MAX_DATETIME_LOCAL = '9999-12-31T23:59';
 
 const DATETIME_LOCAL_PATTERN = /^(\d{4,})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/;
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+const MAX_DATE_YEAR = 9999;
 
 const isLeapYear = (year: number): boolean => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 
 const isValidCalendarDate = (year: number, month: number, day: number): boolean => {
-    if (year < 1 || month < 1 || month > 12) {
+    if (year < 1 || year > MAX_DATE_YEAR || month < 1 || month > 12) {
         return false;
     }
 
@@ -26,7 +28,7 @@ export const parseDatetimeLocal = (value: string): Date => {
 };
 
 export const isInvalidDatetimeLocalInput = (value: string, validity?: ValidityState): boolean => {
-    if (validity?.badInput || validity?.rangeUnderflow) {
+    if (validity?.badInput || validity?.rangeUnderflow || validity?.rangeOverflow) {
         return true;
     }
     if (!value) {

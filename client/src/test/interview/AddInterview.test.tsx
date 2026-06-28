@@ -93,6 +93,25 @@ describe('AddInterview page', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    test('does not submit an interview date with a year above 9999', async () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Input Interview Date'), {
+            target: { value: '20300-03-30T00:00' },
+        });
+        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() => expect(screen.getByText('Please enter a valid interview date.')).toBeInTheDocument());
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     test('trims interview text inputs before submitting them', async () => {
         fetch.mockResolvedValueOnce({
             ok: true,
@@ -137,6 +156,7 @@ describe('AddInterview page', () => {
         expect(screen.getByLabelText('Input Interview Location')).toHaveAttribute('maxlength', '200');
         expect(screen.getByLabelText('Input Interview Type (optional)')).toHaveAttribute('maxlength', '100');
         expect(screen.getByLabelText('Input Additional Notes (optional)')).toHaveAttribute('maxlength', '3000');
+        expect(screen.getByLabelText('Input Interview Date')).toHaveAttribute('max', '9999-12-31T23:59');
     });
 
     test('redirects to /application/view when no state is passed', async () => {

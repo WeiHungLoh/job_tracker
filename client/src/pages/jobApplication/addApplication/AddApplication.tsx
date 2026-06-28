@@ -1,7 +1,12 @@
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
-import { isInvalidDatetimeLocalInput, MIN_DATETIME_LOCAL, parseDatetimeLocal } from '../../../helper/dateFormatter';
+import {
+    isInvalidDatetimeLocalInput,
+    MAX_DATETIME_LOCAL,
+    MIN_DATETIME_LOCAL,
+    parseDatetimeLocal,
+} from '../../../helper/dateFormatter';
 import { routes } from '../../../routes';
 import styles from './AddApplication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
@@ -141,6 +146,7 @@ const AddApplication = () => {
             <input
                 ref={applicationDateInputRef}
                 id='app-date'
+                max={MAX_DATETIME_LOCAL}
                 min={MIN_DATETIME_LOCAL}
                 value={applicationDate}
                 onChange={(e) => setApplicationDate(e.target.value)}

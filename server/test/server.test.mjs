@@ -339,7 +339,7 @@ test('rejects non-http application URLs before accessing the database', async ()
 
     assert.equal(response.status, 422);
     assert.deepEqual(await response.json(), {
-        message: 'Job URL must use http or https and include a valid domain such as example.com.',
+        message: 'URL must be in a valid format.',
     });
 });
 
@@ -432,6 +432,9 @@ test('validates calendar dates strictly', () => {
     assert.equal(isValidDate('2025-01-01T24:00:00.000Z'), false);
     assert.equal(isValidDate('2025-01-01T23:60:00.000Z'), false);
     assert.equal(isValidDate('2025-01-01T23:59:60.000Z'), false);
+    assert.equal(isValidDate('20300-03-30T00:00:00.000Z'), false);
+    assert.equal(isValidDate('+020300-03-30T00:00:00.000Z'), false);
+    assert.equal(isValidDate('9999-12-31T23:59:59.999Z'), true);
 });
 
 test('returns the generic authentication error for invalid credentials', async () => {
@@ -464,7 +467,7 @@ test('returns 503 when authentication configuration is unavailable', async () =>
 });
 
 test('rate limits repeated authentication attempts by IP and email', async () => {
-    const limitedEmail = 'limited@example.invalid';
+    const limitedEmail = 'rate-limit-test';
 
     for (let requestNumber = 0; requestNumber < AUTH_EMAIL_IP_LIMIT; requestNumber += 1) {
         const response = await fetch(`${baseUrl}/authentication/sessions`, {

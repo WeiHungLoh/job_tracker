@@ -4,6 +4,7 @@ const HOSTNAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*
 const ISO_DATE_PATTERN =
     /^(\d{4,})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?$/;
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+const MAX_DATE_YEAR = 9999;
 
 const isLeapYear = (year: number): boolean => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 
@@ -20,7 +21,7 @@ const hasValidCalendarDate = (value: string): boolean => {
     const hour = Number(hourValue);
     const minute = Number(minuteValue);
     const second = Number(secondValue);
-    if (year < 1 || month < 1 || month > 12 || hour > 23 || minute > 59 || second > 59) {
+    if (year < 1 || year > MAX_DATE_YEAR || month < 1 || month > 12 || hour > 23 || minute > 59 || second > 59) {
         return false;
     }
 

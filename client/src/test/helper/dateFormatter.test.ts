@@ -16,4 +16,10 @@ describe('datetime-local validation', () => {
         expect(isInvalidDatetimeLocalInput('2025-04-30T24:00')).toBe(true);
         expect(isInvalidDatetimeLocalInput('2025-04-30T23:60')).toBe(true);
     });
+
+    test('rejects years outside the supported range', () => {
+        expect(isInvalidDatetimeLocalInput('0000-04-30T23:59')).toBe(true);
+        expect(isInvalidDatetimeLocalInput('20300-03-30T00:00')).toBe(true);
+        expect(isInvalidDatetimeLocalInput('9999-12-31T23:59')).toBe(false);
+    });
 });
