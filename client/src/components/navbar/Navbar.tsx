@@ -7,7 +7,7 @@ import styles from './Navbar.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useTheme } from '../theme/ThemeContext';
 import { useToast } from '../toast/ToastProvider';
-import { getErrorMessage } from '../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 
 const ARCHIVED_LOCATIONS: readonly string[] = [routes.archivedApplications, routes.archivedInterviews];
 
@@ -42,7 +42,7 @@ const Navbar = () => {
             await api.authentication.logout();
             navigate(routes.signIn, { state: { fromLogout: true } });
         } catch (error) {
-            showErrorToast(getErrorMessage(error, 'Unable to sign out.'));
+            showErrorToast(getErrorToastMessage(error, 'Unable to sign out. Please try again.'));
         }
     };
 

@@ -8,16 +8,6 @@
     min-height: 70vh;
 }
 
-.listControls {
-    width: 100%;
-    margin: 20px 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
 .filterLoading {
     margin-bottom: 20px;
 }

@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AuthLayout from '../../../components/authLayout/AuthLayout';
 import Icon from '../../../components/icon/Icon';
-import { JobTrackerAPIError } from '../../../api/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import type { SubmitEvent } from 'react';
@@ -10,7 +9,7 @@ import { routes } from '../../../routes';
 import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 
 const SignIn = () => {
     const [email, setEmail] = useState('');
@@ -51,11 +50,7 @@ const SignIn = () => {
             await api.authentication.signIn({ email, password });
             navigate(routes.addApplication);
         } catch (error) {
-            if (error instanceof JobTrackerAPIError) {
-                showErrorToast(error.message);
-                return;
-            }
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to sign in. Please try again.'));
         } finally {
             setIsPending(false);
         }

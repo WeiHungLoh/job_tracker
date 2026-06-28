@@ -1,6 +1,5 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../jobApplication/models';
-import { JobTrackerAPIError } from '../../../api/models';
 import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
@@ -11,7 +10,7 @@ import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage, isJobTrackerAPIError } from '../../../helper/getErrorToastMessage';
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState('');
@@ -45,18 +44,18 @@ const AddInterview = () => {
         const trimmedNotes = notes.trim();
 
         if (isInvalidDatetimeLocalInput(interviewDate, interviewDateInputRef.current?.validity)) {
-            showErrorToast('Please enter a valid interview date');
+            showErrorToast('Please enter a valid interview date.');
             return;
         }
 
         if (!interviewDate || !trimmedInterviewLocation) {
-            showErrorToast('Please enter date and location before adding an interview');
+            showErrorToast('Please enter a date and location before adding an interview.');
             return;
         }
 
         const localDate = parseDatetimeLocal(interviewDate);
         if (localDate <= new Date(app.application_date)) {
-            showErrorToast('Interview date must be after the job application date');
+            showErrorToast('Interview date must be after the job application date.');
             return;
         }
 
@@ -72,12 +71,10 @@ const AddInterview = () => {
             showSuccessToast(message);
             resetForm();
         } catch (error) {
-            if (error instanceof JobTrackerAPIError) {
-                showErrorToast(error.message);
+            showErrorToast(getErrorToastMessage(error, 'Unable to add the interview. Please try again.'));
+            if (isJobTrackerAPIError(error)) {
                 resetForm();
-                return;
             }
-            showErrorToast('Failed to add an interview: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }

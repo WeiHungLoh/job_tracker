@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../../components/authLayout/AuthLayout';
 import Icon from '../../../components/icon/Icon';
-import { JobTrackerAPIError } from '../../../api/models';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import type { SubmitEvent } from 'react';
@@ -10,7 +9,7 @@ import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -45,11 +44,7 @@ const SignUp = () => {
                 navigate(routes.signIn);
             }, 1500);
         } catch (error) {
-            if (error instanceof JobTrackerAPIError) {
-                showErrorToast('Failed to sign up: ' + error.message);
-                return;
-            }
-            showErrorToast('Failed to sign up. ' + getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to create your account. Please try again.'));
         } finally {
             setIsPending(false);
         }

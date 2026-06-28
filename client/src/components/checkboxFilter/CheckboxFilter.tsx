@@ -58,7 +58,6 @@ const CheckboxFilter = <Option extends string>({
     const allSelected = options.length > 0 && options.every((option) => selectedOptions.includes(option));
 
     const applySelection = async (nextOptions: Option[]) => {
-        const previousOptions = selectedOptions;
         setSelectedOptions(nextOptions);
 
         if (haveSameOptions(nextOptions, savedOptions)) {
@@ -66,9 +65,12 @@ const CheckboxFilter = <Option extends string>({
         }
 
         try {
-            await onSelectionChange(nextOptions);
+            const selectionSaved = await onSelectionChange(nextOptions);
+            if (!selectionSaved) {
+                setSelectedOptions([...savedOptions]);
+            }
         } catch {
-            setSelectedOptions(previousOptions);
+            setSelectedOptions([...savedOptions]);
         }
     };
 

@@ -7,7 +7,7 @@ import type { UpdateUserPreferencesRequest, UserPreferences } from '../userPrefe
 import { useCallback, useEffect, useState } from 'react';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../toast/ToastProvider';
-import { getErrorMessage } from '../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 
 const confirmOptions: ConfirmOptions = {
     confirmationButtonProps: {
@@ -33,7 +33,7 @@ const ProtectedLayout = () => {
             setPreferences(await api.userPreferences.get());
         } catch (error) {
             setPreferencesError(true);
-            showErrorToast(getErrorMessage(error, 'Unable to load user preferences.'));
+            showErrorToast(getErrorToastMessage(error, 'Unable to load user preferences. Please try again.'));
         }
     }, [api.userPreferences, showErrorToast]);
 

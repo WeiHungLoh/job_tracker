@@ -62,7 +62,7 @@ describe('AddInterview page', () => {
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() =>
-            expect(screen.getByText('Please enter date and location before adding an interview')).toBeInTheDocument()
+            expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument()
         );
         expect(fetch).not.toHaveBeenCalled();
     });
@@ -88,7 +88,7 @@ describe('AddInterview page', () => {
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() =>
-            expect(screen.getByText('Interview date must be after the job application date')).toBeInTheDocument()
+            expect(screen.getByText('Interview date must be after the job application date.')).toBeInTheDocument()
         );
         expect(fetch).not.toHaveBeenCalled();
     });

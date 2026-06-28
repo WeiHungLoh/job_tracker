@@ -103,7 +103,7 @@ describe('User sign up flow', () => {
             })
         );
 
-        await waitFor(() => expect(screen.getByText('Failed to sign up: User already exists')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('User already exists')).toBeInTheDocument());
     });
 
     test('links user to sign in page', () => {

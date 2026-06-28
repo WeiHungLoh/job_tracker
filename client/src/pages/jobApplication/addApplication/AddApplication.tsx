@@ -1,4 +1,3 @@
-import { JobTrackerAPIError } from '../../../api/models';
 import type { MouseEvent } from 'react';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -10,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../models';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage, isJobTrackerAPIError } from '../../../helper/getErrorToastMessage';
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState('');
@@ -44,19 +43,19 @@ const AddApplication = () => {
         const trimmedJobURL = jobURL.trim();
 
         if (!trimmedCompanyName || !trimmedJobTitle) {
-            showErrorToast('Please enter company name and job title before adding a job application');
+            showErrorToast('Please enter company name and job title before adding a job application.');
             return;
         }
 
         if (isInvalidDatetimeLocalInput(applicationDate, applicationDateInputRef.current?.validity)) {
-            showErrorToast('Please enter a valid application date');
+            showErrorToast('Please enter a valid application date.');
             return;
         }
 
         const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currentDate;
 
         if (appDate > currentDate) {
-            showErrorToast('Application date cannot be later than current date');
+            showErrorToast('Application date cannot be later than the current date.');
             return;
         }
 
@@ -91,12 +90,10 @@ const AddApplication = () => {
             showSuccessToast(message);
             resetForm();
         } catch (error) {
-            if (error instanceof JobTrackerAPIError) {
-                showErrorToast(error.message);
+            showErrorToast(getErrorToastMessage(error, 'Unable to add the job application. Please try again.'));
+            if (isJobTrackerAPIError(error)) {
                 resetForm();
-                return;
             }
-            showErrorToast('Failed to add an application: ' + getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }

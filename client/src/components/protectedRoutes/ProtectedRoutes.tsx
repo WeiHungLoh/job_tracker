@@ -5,7 +5,7 @@ import { JobTrackerAPIError } from '../../api/models';
 import { routes } from '../../routes';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../toast/ToastProvider';
-import { getErrorMessage } from '../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 
 const ProtectedRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(undefined);
@@ -31,7 +31,7 @@ const ProtectedRoutes = () => {
             }
 
             setAuthenticationError(true);
-            showErrorToast(getErrorMessage(error, 'Unable to verify authentication.'));
+            showErrorToast(getErrorToastMessage(error, 'Unable to verify authentication. Please try again.'));
         }
     };
 

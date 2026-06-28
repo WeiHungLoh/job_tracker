@@ -4,7 +4,7 @@ import DashboardStats from './DashboardStats';
 import JobStatusChart from './JobStatusChart';
 import type { JobInterview } from '../interview/models';
 import type { JobStatusCount, WeeklyApplicationCount } from './models';
-import { getErrorMessage } from '../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import styles from './Dashboard.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
@@ -36,7 +36,7 @@ const Dashboard = () => {
                 setInterviews(Array.isArray(jobInterviews) ? jobInterviews : []);
                 setWeeklyApplications(Array.isArray(weeklyApplicationCounts) ? weeklyApplicationCounts : []);
             } catch (error) {
-                showErrorToast(getErrorMessage(error));
+                showErrorToast(getErrorToastMessage(error, 'Unable to load dashboard data. Please try again.'));
             } finally {
                 if (isActive) {
                     setIsLoading(false);

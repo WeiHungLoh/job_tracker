@@ -16,8 +16,9 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
+import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
 
 const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,
@@ -93,10 +94,12 @@ const ViewApplication = () => {
                 updatePreferences({ application_job_statuses: jobStatuses }),
                 api.application.listApplications({ jobStatuses }),
             ]);
+
             setApplications(Array.isArray(jobApplications) ? jobApplications : []);
+            return true;
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
-            throw error;
+            showErrorToast(getErrorToastMessage(error, 'Unable to filter job applications. Please try again.'));
+            return false;
         } finally {
             setIsFilteringApplications(false);
         }
@@ -117,7 +120,7 @@ const ViewApplication = () => {
                     setInterviews(Array.isArray(jobInterviews) ? jobInterviews : []);
                 }
             } catch (error) {
-                showErrorToast(getErrorMessage(error));
+                showErrorToast(getErrorToastMessage(error, 'Unable to load job application data. Please try again.'));
             } finally {
                 if (isActive) {
                     setIsLoading(false);
@@ -166,7 +169,7 @@ const ViewApplication = () => {
                     )
                 );
             } catch (error) {
-                showErrorToast(getErrorMessage(error));
+                showErrorToast(getErrorToastMessage(error, 'Unable to save job application notes. Please try again.'));
             }
         }, 500);
     };
@@ -181,7 +184,7 @@ const ViewApplication = () => {
                 setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to delete the job application. Please try again.'));
         }
     };
 
@@ -195,7 +198,7 @@ const ViewApplication = () => {
                 setInterviews([]);
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to delete job applications. Please try again.'));
         }
     };
 
@@ -242,7 +245,9 @@ const ViewApplication = () => {
                 }
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to update the job application status. Please try again.')
+            );
         }
     };
 
@@ -252,7 +257,7 @@ const ViewApplication = () => {
             setApplications((current) => current.filter((application) => application.job_id !== jobId));
             setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
         } catch (error) {
-            showErrorToast('Failed to archive an application ' + getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to archive the job application. Please try again.'));
         }
     };
 
@@ -269,46 +274,49 @@ const ViewApplication = () => {
 
             {!isLoading && (
                 <>
-                    <div className={styles.listControls}>
-                        <CheckboxFilter
-                            buttonLabel='Job status'
-                            id='application-job-status-filter'
-                            label='Filter by'
-                            onSelectionChange={handleJobStatusChange}
-                            options={JOB_STATUSES}
-                            selectedOptions={selectedJobStatuses}
-                        />
-
-                        {hasApplications && (
-                            <ToggleButton
-                                toggled={enableScroll}
-                                onToggle={() => void updatePreferences({ application_enable_scroll: !enableScroll })}
-                                label='Enable Auto-Scroll'
-                                toggledLabel='Disable Auto-Scroll'
-                                color='blue'
+                    <ApplicationControls
+                        filter={
+                            <CheckboxFilter
+                                buttonLabel='Job status'
+                                id='application-job-status-filter'
+                                label='Filter by'
+                                onSelectionChange={handleJobStatusChange}
+                                options={JOB_STATUSES}
+                                selectedOptions={selectedJobStatuses}
                             />
-                        )}
-
-                        {hasApplications && (
-                            <ToggleButton
-                                data-testid='unhide-archive'
-                                toggled={showArchive}
-                                onToggle={() => void updatePreferences({ application_show_archive: !showArchive })}
-                                label='Unhide Archive'
-                                toggledLabel='Hide Archive'
-                            />
-                        )}
-
-                        {hasApplications && (
-                            <ToggleButton
-                                toggled={showNotes}
-                                onToggle={() => void updatePreferences({ application_show_notes: !showNotes })}
-                                label='Unhide Notes'
-                                toggledLabel='Hide Notes'
-                                color='yellow'
-                            />
-                        )}
-                    </div>
+                        }
+                        viewOptions={
+                            hasApplications ? (
+                                <>
+                                    <ToggleButton
+                                        toggled={enableScroll}
+                                        onToggle={() =>
+                                            void updatePreferences({ application_enable_scroll: !enableScroll })
+                                        }
+                                        label='Enable Auto-Scroll'
+                                        toggledLabel='Disable Auto-Scroll'
+                                        color='blue'
+                                    />
+                                    <ToggleButton
+                                        data-testid='unhide-archive'
+                                        toggled={showArchive}
+                                        onToggle={() =>
+                                            void updatePreferences({ application_show_archive: !showArchive })
+                                        }
+                                        label='Unhide Archive'
+                                        toggledLabel='Hide Archive'
+                                    />
+                                    <ToggleButton
+                                        toggled={showNotes}
+                                        onToggle={() => void updatePreferences({ application_show_notes: !showNotes })}
+                                        label='Unhide Notes'
+                                        toggledLabel='Hide Notes'
+                                        color='yellow'
+                                    />
+                                </>
+                            ) : undefined
+                        }
+                    />
 
                     {isFilteringApplications && (
                         <div className={styles.filterLoading}>

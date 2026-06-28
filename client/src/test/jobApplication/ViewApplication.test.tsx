@@ -196,6 +196,39 @@ describe('Job application viewing flow', () => {
         await waitFor(() => expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument());
     });
 
+    test('restores the saved filter and shows the backend message when filtering fails', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications?jobStatuses=Offer')) {
+                return response({ message: 'Job application filtering is temporarily unavailable.' }, 503);
+            }
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+
+        expect(await screen.findByText('Job application filtering is temporarily unavailable.')).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked();
+    });
+
     test('button should switch to Save Changes button after toggle', async () => {
         render(
             <MemoryRouter>

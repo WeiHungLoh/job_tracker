@@ -15,8 +15,9 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
+import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
 
 const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.accepted,
@@ -52,10 +53,14 @@ const ViewArchivedApplication = () => {
                 updatePreferences({ archived_application_job_statuses: jobStatuses }),
                 api.archivedApplication.listApplications({ jobStatuses }),
             ]);
+
             setArchivedApplications(Array.isArray(archivedApplications) ? archivedApplications : []);
+            return true;
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
-            throw error;
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to filter archived job applications. Please try again.')
+            );
+            return false;
         } finally {
             setIsFilteringApplications(false);
         }
@@ -73,7 +78,9 @@ const ViewArchivedApplication = () => {
                     setArchivedApplications(Array.isArray(fetchedApplications) ? fetchedApplications : []);
                 }
             } catch (error) {
-                showErrorToast(getErrorMessage(error));
+                showErrorToast(
+                    getErrorToastMessage(error, 'Unable to load archived job applications. Please try again.')
+                );
             } finally {
                 if (isActive) {
                     setIsLoading(false);
@@ -115,7 +122,9 @@ const ViewArchivedApplication = () => {
                 );
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to delete the archived job application. Please try again.')
+            );
         }
     };
 
@@ -128,7 +137,9 @@ const ViewArchivedApplication = () => {
                 setArchivedApplications([]);
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to delete archived job applications. Please try again.')
+            );
         }
     };
 
@@ -139,7 +150,7 @@ const ViewArchivedApplication = () => {
                 current.filter((application) => application.archived_job_id !== archivedJobId)
             );
         } catch (error) {
-            showErrorToast('Failed to unarchive an application ' + getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to unarchive the job application. Please try again.'));
         }
     };
 
@@ -156,26 +167,31 @@ const ViewArchivedApplication = () => {
 
             {!isLoading && (
                 <>
-                    <div className={styles.listControls}>
-                        <CheckboxFilter
-                            buttonLabel='Job status'
-                            id='archived-application-job-status-filter'
-                            label='Filter by'
-                            onSelectionChange={handleJobStatusChange}
-                            options={JOB_STATUSES}
-                            selectedOptions={selectedJobStatuses}
-                        />
-
-                        {hasApplications && (
-                            <ToggleButton
-                                toggled={showNotes}
-                                onToggle={() => void updatePreferences({ archived_application_show_notes: !showNotes })}
-                                label='Unhide Notes'
-                                toggledLabel='Hide Notes'
-                                color='yellow'
+                    <ApplicationControls
+                        filter={
+                            <CheckboxFilter
+                                buttonLabel='Job status'
+                                id='archived-application-job-status-filter'
+                                label='Filter by'
+                                onSelectionChange={handleJobStatusChange}
+                                options={JOB_STATUSES}
+                                selectedOptions={selectedJobStatuses}
                             />
-                        )}
-                    </div>
+                        }
+                        viewOptions={
+                            hasApplications ? (
+                                <ToggleButton
+                                    toggled={showNotes}
+                                    onToggle={() =>
+                                        void updatePreferences({ archived_application_show_notes: !showNotes })
+                                    }
+                                    label='Unhide Notes'
+                                    toggledLabel='Hide Notes'
+                                    color='yellow'
+                                />
+                            ) : undefined
+                        }
+                    />
 
                     {isFilteringApplications && (
                         <div className={styles.filterLoading}>

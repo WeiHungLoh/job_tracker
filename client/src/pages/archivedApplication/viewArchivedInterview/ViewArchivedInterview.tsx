@@ -15,7 +15,7 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
@@ -36,7 +36,7 @@ const ViewArchivedInterview = () => {
                     setArchivedInterviews(Array.isArray(fetchedInterviews) ? fetchedInterviews : []);
                 }
             } catch (error) {
-                showErrorToast(getErrorMessage(error));
+                showErrorToast(getErrorToastMessage(error, 'Unable to load archived interviews. Please try again.'));
             } finally {
                 if (isActive) {
                     setIsLoading(false);
@@ -63,7 +63,7 @@ const ViewArchivedInterview = () => {
                 );
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to delete the archived interview. Please try again.'));
         }
     };
 
@@ -76,7 +76,7 @@ const ViewArchivedInterview = () => {
                 setArchivedInterviews([]);
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to delete archived interviews. Please try again.'));
         }
     };
 
@@ -113,7 +113,12 @@ const ViewArchivedInterview = () => {
 
             navigate(`${routes.archivedApplications}#${interview.archived_job_id}`);
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(
+                getErrorToastMessage(
+                    error,
+                    'Unable to check the corresponding archived job application. Please try again.'
+                )
+            );
         }
     };
 

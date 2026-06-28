@@ -45,7 +45,7 @@ describe('User add application flow', () => {
 
         await waitFor(() =>
             expect(
-                screen.getByText('Please enter company name and job title before adding a job application')
+                screen.getByText('Please enter company name and job title before adding a job application.')
             ).toBeInTheDocument()
         );
     });
@@ -63,7 +63,7 @@ describe('User add application flow', () => {
 
         await waitFor(() =>
             expect(
-                screen.getByText('Please enter company name and job title before adding a job application')
+                screen.getByText('Please enter company name and job title before adding a job application.')
             ).toBeInTheDocument()
         );
         expect(fetch).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('User add application flow', () => {
 
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
-        await waitFor(() => expect(screen.getByText('Please enter a valid application date')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('Please enter a valid application date.')).toBeInTheDocument());
         expect(fetch).not.toHaveBeenCalled();
     });
 

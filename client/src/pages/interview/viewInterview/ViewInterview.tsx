@@ -14,7 +14,7 @@ import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
-import { getErrorMessage } from '../../../helper/getErrorMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
@@ -35,7 +35,7 @@ const ViewInterview = () => {
                     setInterviews(Array.isArray(fetchedInterviews) ? fetchedInterviews : []);
                 }
             } catch (error) {
-                showErrorToast(getErrorMessage(error));
+                showErrorToast(getErrorToastMessage(error, 'Unable to load interviews. Please try again.'));
             } finally {
                 if (isActive) {
                     setIsLoading(false);
@@ -60,7 +60,7 @@ const ViewInterview = () => {
                 setInterviews((current) => current.filter((interview) => interview.interview_id !== interviewId));
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to delete the interview. Please try again.'));
         }
     };
 
@@ -73,7 +73,7 @@ const ViewInterview = () => {
                 setInterviews([]);
             }
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(getErrorToastMessage(error, 'Unable to delete interviews. Please try again.'));
         }
     };
 
@@ -101,7 +101,9 @@ const ViewInterview = () => {
 
             navigate(`${routes.viewApplications}#${interview.job_id}`);
         } catch (error) {
-            showErrorToast(getErrorMessage(error));
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to check the corresponding job application. Please try again.')
+            );
         }
     };
 
