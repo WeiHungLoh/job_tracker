@@ -12,6 +12,7 @@ vi.mock('react-router-dom', async () => ({
 }));
 
 globalThis.fetch = vi.fn();
+const VALID_PASSWORD = 'correct horse battery staple';
 
 const mockUnauthenticatedSession = (signUpResponse: object) => {
     globalThis.fetch.mockImplementation(async (url: string) => {
@@ -48,15 +49,15 @@ describe('User sign up flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
+        userEvent.type(screen.getByLabelText(/email/i), 'StarBoy98@Hotmail.COM');
+        userEvent.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
+                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: VALID_PASSWORD }),
             })
         );
 
@@ -64,10 +65,15 @@ describe('User sign up flow', () => {
             expect(screen.getByText('Sign up successful! Redirecting you to login page')).toBeInTheDocument()
         );
 
-        const redirectTimer = setTimeoutSpy.mock.calls.find(([, delay]) => delay === 1500);
+        const redirectTimerIndex = setTimeoutSpy.mock.calls.findIndex(([, delay]) => delay === 1500);
+        const redirectTimer = setTimeoutSpy.mock.calls[redirectTimerIndex];
         expect(redirectTimer).toBeDefined();
 
         const redirectToSignIn = redirectTimer?.[0];
+        const redirectTimerId = setTimeoutSpy.mock.results[redirectTimerIndex]?.value;
+        if (redirectTimerId !== undefined) {
+            clearTimeout(redirectTimerId);
+        }
         expect(redirectToSignIn).toBeTypeOf('function');
         if (typeof redirectToSignIn === 'function') {
             redirectToSignIn();
@@ -92,14 +98,14 @@ describe('User sign up flow', () => {
         );
 
         userEvent.type(screen.getByLabelText(/email/i), 'starboy98@hotmail.com');
-        userEvent.type(screen.getByLabelText(/^password$/i), '123456');
+        userEvent.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
+                body: JSON.stringify({ email: 'starboy98@hotmail.com', password: VALID_PASSWORD }),
             })
         );
 
@@ -115,5 +121,50 @@ describe('User sign up flow', () => {
         );
 
         expect(screen.getByRole('link', { name: /already have an account/i })).toHaveAttribute('href', '/');
+    });
+
+    test('rejects a short password before calling the sign-up endpoint', async () => {
+        mockUnauthenticatedSession({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'User successfully registered',
+        });
+
+        render(
+            <MemoryRouter>
+                <SignUp />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/email/i), 'new-user@example.com');
+        userEvent.type(screen.getByLabelText(/^password$/i), 'too short');
+        userEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+        await waitFor(() => expect(screen.getByText('Password must be at least 15 characters.')).toBeInTheDocument());
+        expect(fetch.mock.calls.some(([url]) => String(url).endsWith('/authentication/users'))).toBe(false);
+    });
+
+    test('shows a password-strength meter while entering a password', async () => {
+        mockUnauthenticatedSession({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'User successfully registered',
+        });
+
+        render(
+            <MemoryRouter>
+                <SignUp />
+            </MemoryRouter>
+        );
+
+        const passwordInput = screen.getByLabelText(/^password$/i);
+        const unicodePassword = `${'x'.repeat(63)}😀`;
+        expect(passwordInput).toHaveAttribute('maxlength', '72');
+        userEvent.type(passwordInput, unicodePassword);
+
+        expect(passwordInput).toHaveValue(unicodePassword);
+        expect(await screen.findByText(/password strength:/i)).toBeInTheDocument();
     });
 });

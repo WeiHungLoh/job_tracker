@@ -8,9 +8,6 @@ export type EndpointConfigEntry = {
 
 export type APIRequest = Record<string, unknown> | null;
 
-export type WakeRequest = null;
-export type WakeResponse = string;
-
 export class JobTrackerAPIError extends Error {
     status: number;
 

@@ -15,13 +15,6 @@ globalThis.fetch = vi.fn();
 
 const mockUnauthenticatedSession = (signInResponse: object) => {
     globalThis.fetch.mockImplementation(async (url: string) => {
-        if (url.endsWith('/ping')) {
-            return {
-                ok: true,
-                status: 200,
-            };
-        }
-
         if (url.endsWith('/authentication/sessions/current') || url.endsWith('/authentication/sessions/refresh')) {
             return {
                 ok: false,

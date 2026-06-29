@@ -17,6 +17,7 @@ import {
     MdLock,
     MdMenuBook,
     MdOutlineStickyNote2,
+    MdWifiOff,
 } from 'react-icons/md';
 import { FaBriefcase } from 'react-icons/fa';
 import { GoAlertFill } from 'react-icons/go';
@@ -44,6 +45,7 @@ const icons: Record<IconName, IconType> = {
     success: MdCheckCircle,
     visibility: IoEye,
     visibilityOff: IoMdEyeOff,
+    wifiOff: MdWifiOff,
 };
 
 const Icon = ({ name, size, title, ...props }: IconProps) => {

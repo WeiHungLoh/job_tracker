@@ -87,6 +87,13 @@
     color: var(--colorPrimary);
 }
 
+.passwordRequirements {
+    margin: -10px 0 14px;
+    color: var(--colorTextSecondary);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
 .authLink {
     display: block;
     margin-top: 20px;

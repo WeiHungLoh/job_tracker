@@ -10,6 +10,14 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
+import {
+    getPasswordValidationError,
+    normalizeEmail,
+    PASSWORD_MAX_BYTES,
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+} from '../../../helper/formValidation';
+import PasswordStrengthMeter from '../../../components/passwordStrengthMeter/PasswordStrengthMeter';
 
 const SignUp = () => {
     const [email, setEmail] = useState<string>('');
@@ -34,10 +42,16 @@ const SignUp = () => {
 
     const handleSignUp = async (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const passwordValidationError = getPasswordValidationError(password);
+        if (passwordValidationError) {
+            showErrorToast(passwordValidationError);
+            return;
+        }
+
         setIsPending(true);
 
         try {
-            await api.authentication.signUp({ email, password });
+            await api.authentication.signUp({ email: normalizeEmail(email), password });
 
             showSuccessToast('Sign up successful! Redirecting you to login page');
             setTimeout(() => {
@@ -73,9 +87,11 @@ const SignUp = () => {
                     <div className={styles.passwordWrapper}>
                         <Icon name='lock' className={styles.leftIcon} />
                         <input
+                            aria-describedby='password-requirements password-strength'
                             id='password'
                             type={visible ? 'text' : 'password'}
                             autoComplete='new-password'
+                            maxLength={PASSWORD_MAX_BYTES}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -90,6 +106,10 @@ const SignUp = () => {
                             <Icon name={visible ? 'visibility' : 'visibilityOff'} />
                         </PrimaryButton>
                     </div>
+                    <p className={styles.passwordRequirements} id='password-requirements'>
+                        Use {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH} characters. Spaces and Unicode are allowed.
+                    </p>
+                    <PasswordStrengthMeter email={email} password={password} />
 
                     {isPending ? (
                         <PrimaryButton variant='form' type='submit' disabled>

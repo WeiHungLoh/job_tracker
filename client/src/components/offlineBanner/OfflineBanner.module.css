@@ -1,0 +1,75 @@
+.banner {
+    display: grid;
+    align-items: center;
+    width: min(360px, 100%);
+    padding: 14px 16px 14px 14px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    border: 1px solid var(--colorOfflineBannerBorder);
+    border-left: 3px solid var(--colorOfflineBannerAccent);
+    border-radius: 16px 5px 16px 16px;
+    background-color: var(--colorOfflineBannerBg);
+    box-shadow: 0 18px 42px var(--colorOfflineBannerShadow);
+    box-sizing: border-box;
+    color: var(--colorOfflineBannerText);
+}
+
+.signal {
+    position: relative;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 13px;
+    background-color: var(--colorOfflineBannerIconBg);
+    color: var(--colorOfflineBannerAccent);
+    font-size: 1.25rem;
+}
+
+.signal::after {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 9px;
+    height: 9px;
+    border: 3px solid var(--colorOfflineBannerBg);
+    border-radius: 50%;
+    background-color: var(--colorOfflineBannerAccent);
+    content: '';
+    animation: signalPulse 3s ease-in-out infinite;
+}
+
+.copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.title {
+    color: var(--colorOfflineBannerText);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.message {
+    color: var(--colorOfflineBannerMuted);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+@keyframes signalPulse {
+    50% {
+        opacity: 0.45;
+        transform: scale(0.8);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .signal::after {
+        animation: none;
+    }
+}

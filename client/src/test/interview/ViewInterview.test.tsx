@@ -9,7 +9,6 @@ globalThis.fetch = vi.fn();
 const mockInterview = {
     job_id: 1,
     interview_id: 1,
-    user_id: 1,
     company_name: 'ABC Pte Ltd',
     job_title: 'Software Engineer',
     job_status: 'Applied',

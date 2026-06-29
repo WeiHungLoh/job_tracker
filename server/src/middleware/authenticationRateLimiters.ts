@@ -1,15 +1,12 @@
 import type { Request } from 'express';
 import { AUTH_EMAIL_IP_LIMIT, AUTH_IP_LIMIT, AUTH_RATE_LIMIT_WINDOW_MS } from '../config/server.js';
 import rateLimit from 'express-rate-limit';
+import { normalizeEmail } from '../http/validation.js';
 
 const RATE_LIMIT_MESSAGE = { message: 'Too many authentication attempts. Please try again later.' };
 
 const getEmailIpKey = (req: Request): string => {
-    const email =
-        typeof req.body?.email === 'string' && req.body.email.trim()
-            ? req.body.email.trim().toLowerCase()
-            : 'invalid-email';
-
+    const email = normalizeEmail(req.body?.email) || 'invalid-email';
     return `${req.ip}:${email}`;
 };
 

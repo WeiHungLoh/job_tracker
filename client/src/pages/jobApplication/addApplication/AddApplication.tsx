@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../models';
-import { getErrorToastMessage, isJobTrackerAPIError } from '../../../helper/getErrorToastMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import { FIELD_MAX_LENGTHS, isValidHttpURL } from '../../../helper/formValidation';
 
 const AddApplication = () => {
@@ -104,9 +104,6 @@ const AddApplication = () => {
             resetForm();
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to add the job application. Please try again.'));
-            if (isJobTrackerAPIError(error)) {
-                resetForm();
-            }
         } finally {
             setIsLoading(false);
         }

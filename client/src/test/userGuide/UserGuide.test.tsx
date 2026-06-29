@@ -19,6 +19,10 @@ describe('renders user guide properly', () => {
             expect(button).toHaveAttribute('aria-expanded', 'false');
         });
 
+        await userEvent.click(screen.getByRole('button', { name: /account security/i }));
+
+        expect(screen.getByText(/passwords must contain 15–64 characters/i)).toBeVisible();
+
         await userEvent.click(screen.getByRole('button', { name: /dashboard/i }));
 
         expect(screen.getByText(/quick visual overview/i)).toBeVisible();
@@ -26,6 +30,12 @@ describe('renders user guide properly', () => {
         await userEvent.click(screen.getByRole('button', { name: /adding and managing applications/i }));
 
         expect(screen.getByText(/enter the company name/i)).toBeVisible();
+        expect(screen.getByText(/job URLs are limited to 2048 characters/i)).toBeVisible();
         expect(screen.getByText(/quick visual overview/i)).not.toBeVisible();
+
+        await userEvent.click(screen.getByRole('button', { name: /^interviews$/i }));
+
+        expect(screen.getByText(/interview location is separate from job location/i)).toBeVisible();
+        expect(screen.getByText(/interview notes are optional and limited to 3000 characters/i)).toBeVisible();
     });
 });

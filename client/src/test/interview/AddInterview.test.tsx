@@ -159,6 +159,36 @@ describe('AddInterview page', () => {
         expect(screen.getByLabelText('Input Interview Date')).toHaveAttribute('max', '9999-12-31T23:59');
     });
 
+    test('preserves form contents after a backend error', async () => {
+        fetch.mockResolvedValueOnce({
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ message: 'Interview fields are invalid.' }),
+            ok: false,
+            status: 422,
+            statusText: 'Unprocessable Entity',
+        });
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Input Interview Date'), {
+            target: { value: '2025-08-03T14:30' },
+        });
+        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
+        userEvent.type(screen.getByLabelText('Input Interview Type (optional)'), 'Technical');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() => expect(screen.getByText('Interview fields are invalid.')).toBeInTheDocument());
+        expect(screen.getByLabelText('Input Interview Date')).toHaveValue('2025-08-03T14:30');
+        expect(screen.getByLabelText('Input Interview Location')).toHaveValue('Zoom');
+        expect(screen.getByLabelText('Input Interview Type (optional)')).toHaveValue('Technical');
+    });
+
     test('redirects to /application/view when no state is passed', async () => {
         fetch.mockResolvedValue({
             ok: true,

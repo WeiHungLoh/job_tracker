@@ -62,17 +62,12 @@ import type {
     VerifyAuthenticationRequest,
     VerifyAuthenticationResponse,
 } from '../pages/authentication/models';
-import type { WakeRequest, WakeResponse } from './models';
 import { endpointConfig } from './endpointConfig';
 import { makeAuthenticatedJobTrackerAPIRequest, makeJobTrackerAPIRequest } from './api';
 import { useMemo } from 'react';
 
 export const useJobTrackerAPI = () => {
     const jobTrackerAPI = useMemo(() => {
-        const wake = async () => {
-            return await makeJobTrackerAPIRequest<WakeRequest, WakeResponse>(null, endpointConfig.ping.wake);
-        };
-
         const signIn = async (req: SignInRequest) => {
             return await makeJobTrackerAPIRequest<SignInRequest, SignInResponse>(
                 req,
@@ -265,7 +260,6 @@ export const useJobTrackerAPI = () => {
         };
 
         return {
-            ping: { wake },
             authentication: { signIn, signUp, verify, logout },
             application: {
                 listApplications,

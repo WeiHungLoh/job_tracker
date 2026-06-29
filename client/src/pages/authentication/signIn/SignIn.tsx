@@ -10,6 +10,7 @@ import styles from '../Authentication.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
+import { normalizeEmail } from '../../../helper/formValidation';
 
 const SignIn = () => {
     const [email, setEmail] = useState<string>('');
@@ -20,11 +21,6 @@ const SignIn = () => {
     const [isPending, setIsPending] = useState<boolean>(false);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
-
-    // Wake the free-tier backend before the user submits the form.
-    useEffect(() => {
-        void api.ping.wake();
-    }, [api.ping]);
 
     useEffect(() => {
         if (location.state?.fromLogout) {
@@ -47,7 +43,7 @@ const SignIn = () => {
         setIsPending(true);
 
         try {
-            await api.authentication.signIn({ email, password });
+            await api.authentication.signIn({ email: normalizeEmail(email), password });
             navigate(routes.addApplication);
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to sign in. Please try again.'));

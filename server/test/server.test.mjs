@@ -6,8 +6,20 @@ import { createApp } from '../dist/app.js';
 import { handleRouteError } from '../dist/http/responses.js';
 import jwt from 'jsonwebtoken';
 import { AUTH_EMAIL_IP_LIMIT, REQUEST_LIMIT } from '../dist/config/server.js';
-import { FIELD_MAX_LENGTHS } from '../dist/config/validation.js';
-import { isValidDate, isValidHttpURL, toJobStatusQueryValues, toTrimmedString } from '../dist/http/validation.js';
+import {
+    FIELD_MAX_LENGTHS,
+    PASSWORD_MAX_BYTES,
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+} from '../dist/config/validation.js';
+import {
+    getPasswordValidationError,
+    isValidDate,
+    isValidHttpURL,
+    normalizeEmail,
+    toJobStatusQueryValues,
+    toTrimmedString,
+} from '../dist/http/validation.js';
 
 process.env.ACCESS_TOKEN_SECRET = 'test-only-secret';
 process.env.REFRESH_TOKEN_SECRET = 'different-test-only-refresh-secret';
@@ -37,11 +49,14 @@ after(async () => {
     });
 });
 
-test('returns 200 for the health endpoint', async () => {
-    const response = await fetch(`${baseUrl}/ping`);
+test('returns security headers without identifying Express', async () => {
+    const response = await fetch(`${baseUrl}/unknown-route`);
 
-    assert.equal(response.status, 200);
-    assert.equal(await response.text(), 'testing');
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get('x-powered-by'), null);
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
+    assert.match(response.headers.get('content-security-policy'), /default-src 'self'/);
 });
 
 test('returns 204 with no body when logging out', async () => {
@@ -422,6 +437,35 @@ test('validates and trims shared text and URL inputs', () => {
     assert.equal(isValidHttpURL('javascript:alert(1)'), false);
 });
 
+test('normalizes email and validates the password policy', () => {
+    assert.equal(normalizeEmail('  User@Example.COM  '), 'user@example.com');
+    assert.equal(normalizeEmail(null), undefined);
+    assert.equal(
+        getPasswordValidationError('x'.repeat(PASSWORD_MIN_LENGTH - 1)),
+        'Password must be at least 15 characters.'
+    );
+    assert.equal(getPasswordValidationError('x'.repeat(PASSWORD_MIN_LENGTH)), undefined);
+    assert.equal(
+        getPasswordValidationError('x'.repeat(PASSWORD_MAX_LENGTH + 1)),
+        'Password must be 64 characters or fewer.'
+    );
+    assert.equal(
+        getPasswordValidationError('😀'.repeat(Math.floor(PASSWORD_MAX_BYTES / 4) + 1)),
+        'Password is too long when encoded. Use fewer Unicode characters.'
+    );
+});
+
+test('rejects a short sign-up password before accessing the database', async () => {
+    const response = await fetch(`${baseUrl}/authentication/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'new-user@example.com', password: 'short' }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), { message: 'Password must be at least 15 characters.' });
+});
+
 test('validates calendar dates strictly', () => {
     assert.equal(isValidDate('2024-02-29T10:00:00.000Z'), true);
     assert.equal(isValidDate('2025-02-29T10:00:00.000Z'), false);
@@ -528,10 +572,10 @@ test('returns 429 after the request limit is exceeded', async () => {
 
     try {
         for (let requestNumber = 0; requestNumber < REQUEST_LIMIT; requestNumber += 1) {
-            const response = await fetch(`${limitedBaseUrl}/ping`);
-            assert.equal(response.status, 200);
+            const response = await fetch(`${limitedBaseUrl}/unknown-route`);
+            assert.equal(response.status, 404);
         }
-        const response = await fetch(`${limitedBaseUrl}/ping`);
+        const response = await fetch(`${limitedBaseUrl}/unknown-route`);
         assert.equal(response.status, 429);
         assert.deepEqual(await response.json(), { message: 'Too many requests. Please try again later.' });
     } finally {

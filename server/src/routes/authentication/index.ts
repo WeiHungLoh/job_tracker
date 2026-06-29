@@ -22,7 +22,7 @@ import {
 } from '../../middleware/authenticationRateLimiters.js';
 import { findUserInfo, insertUser } from '../../db/queries/users.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isNonEmptyString, isValidEmail } from '../../http/validation.js';
+import { getPasswordValidationError, isNonEmptyString, isValidEmail, normalizeEmail } from '../../http/validation.js';
 import bcrypt from 'bcryptjs';
 import express from 'express';
 
@@ -37,11 +37,17 @@ router.post(
         req: Request<Record<string, never>, SignUpResponse, CredentialsRequest>,
         res: Response<SignUpResponse>
     ): Promise<void> => {
-        const email = typeof req.body.email === 'string' ? req.body.email.trim() : req.body.email;
+        const email = normalizeEmail(req.body.email);
         const { password } = req.body;
 
-        if (!isValidEmail(email) || !isNonEmptyString(password)) {
-            sendError(res, 422, 'A valid email and password are required.');
+        if (!isValidEmail(email)) {
+            sendError(res, 422, 'A valid email is required.');
+            return;
+        }
+
+        const passwordValidationError = getPasswordValidationError(password);
+        if (passwordValidationError) {
+            sendError(res, 422, passwordValidationError);
             return;
         }
 
@@ -66,7 +72,7 @@ router.post(
         req: Request<Record<string, never>, AuthenticationResponse, CredentialsRequest>,
         res: Response<AuthenticationResponse>
     ): Promise<void> => {
-        const email = typeof req.body.email === 'string' ? req.body.email.trim() : req.body.email;
+        const email = normalizeEmail(req.body.email);
         const { password } = req.body;
 
         if (!isValidEmail(email) || !isNonEmptyString(password)) {

@@ -1,0 +1,24 @@
+.notificationStack {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    z-index: 10002;
+    display: flex;
+    width: min(420px, calc(100vw - 40px));
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.notificationStack > * {
+    pointer-events: auto;
+}
+
+.notificationStack > [data-testid='toast-container'] {
+    margin-top: 64px;
+}
+
+.notificationStack > [data-notification='offline'] + [data-testid='toast-container'] {
+    margin-top: 12px;
+}

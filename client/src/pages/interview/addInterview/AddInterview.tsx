@@ -15,7 +15,7 @@ import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../components/toast/ToastProvider';
-import { getErrorToastMessage, isJobTrackerAPIError } from '../../../helper/getErrorToastMessage';
+import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 
 const AddInterview = () => {
@@ -93,9 +93,6 @@ const AddInterview = () => {
             resetForm();
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to add the interview. Please try again.'));
-            if (isJobTrackerAPIError(error)) {
-                resetForm();
-            }
         } finally {
             setIsLoading(false);
         }

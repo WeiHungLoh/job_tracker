@@ -10,9 +10,11 @@ import {
 } from 'react';
 import type { ToastContextValue, ToastMessage, ToastType } from './models';
 import ToastContainer from './ToastContainer';
+import OfflineBanner from '../offlineBanner/OfflineBanner';
+import styles from './ToastProvider.module.css';
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
-const TOAST_DURATION_MS = 5000;
+const TOAST_DURATION_MS = 8000;
 
 export const ToastProvider = ({ children }: PropsWithChildren) => {
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -60,7 +62,10 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
     return (
         <ToastContext.Provider value={contextValue}>
             {children}
-            <ToastContainer onDismiss={dismissToast} toasts={toasts} />
+            <div className={styles.notificationStack}>
+                <OfflineBanner />
+                <ToastContainer onDismiss={dismissToast} toasts={toasts} />
+            </div>
         </ToastContext.Provider>
     );
 };

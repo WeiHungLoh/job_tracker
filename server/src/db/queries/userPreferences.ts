@@ -3,7 +3,18 @@ import type { UserPreferences } from '../models.js';
 import { pool } from '../connectDB.js';
 
 export const getUserPreferences = async (userId: number): Promise<UserPreferences | undefined> => {
-    const result = await pool.query<UserPreferences>(`SELECT * FROM user_preferences WHERE user_id = $1`, [userId]);
+    const result = await pool.query<UserPreferences>(
+        `SELECT
+            application_job_statuses,
+            application_show_notes,
+            application_show_archive,
+            application_enable_scroll,
+            archived_application_job_statuses,
+            archived_application_show_notes
+         FROM user_preferences
+         WHERE user_id = $1`,
+        [userId]
+    );
 
     return result.rows[0];
 };
@@ -22,7 +33,13 @@ export const updateUserPreferences = async (
             archived_application_job_statuses = COALESCE($6, archived_application_job_statuses),
             archived_application_show_notes = COALESCE($7, archived_application_show_notes)
          WHERE user_id = $1
-         RETURNING *`,
+         RETURNING
+            application_job_statuses,
+            application_show_notes,
+            application_show_archive,
+            application_enable_scroll,
+            archived_application_job_statuses,
+            archived_application_show_notes`,
         [
             userId,
             preferences.application_job_statuses,

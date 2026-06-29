@@ -10,8 +10,7 @@ export const archiveJobApplication = async (jobId: number, userId: number): Prom
         const applicationResult = await client.query(
             `UPDATE job_applications
              SET is_archived = true, edit_status = false
-             WHERE job_id = $1 AND user_id = $2 AND is_archived = false
-             RETURNING job_id`,
+             WHERE job_id = $1 AND user_id = $2 AND is_archived = false`,
             [jobId, userId]
         );
 
@@ -42,8 +41,7 @@ export const unarchiveJobApplication = async (archivedJobId: number, userId: num
         await client.query('BEGIN');
         const applicationResult = await client.query(
             `UPDATE job_applications SET is_archived = false
-             WHERE job_id = $1 AND user_id = $2 AND is_archived = true
-             RETURNING job_id`,
+             WHERE job_id = $1 AND user_id = $2 AND is_archived = true`,
             [archivedJobId, userId]
         );
 
@@ -74,11 +72,9 @@ export const getArchivedJobApplications = async (
     const result = await pool.query<ArchivedJobApplication>(
         `SELECT
             job_id AS archived_job_id,
-            user_id,
             company_name,
             job_title,
             application_date,
-            created_at,
             job_status,
             job_location,
             job_posting_url,

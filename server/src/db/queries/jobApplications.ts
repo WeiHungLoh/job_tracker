@@ -20,10 +20,21 @@ export const insertJobApplication = async (
 
 export const getJobApplications = async (userId: number, jobStatuses: JobStatus[]): Promise<JobApplication[]> => {
     const result = await pool.query<JobApplication>(
-        `SELECT * FROM job_applications WHERE user_id = $1 AND is_archived = false
-          AND job_status = ANY($2::text[])
-          ORDER BY ${JOB_STATUS_SORT_ORDER},
-         application_date DESC`,
+        `SELECT
+            job_id,
+            company_name,
+            job_title,
+            application_date,
+            job_status,
+            edit_status,
+            job_location,
+            job_posting_url,
+            notes
+         FROM job_applications
+         WHERE user_id = $1 AND is_archived = false
+            AND job_status = ANY($2::text[])
+         ORDER BY ${JOB_STATUS_SORT_ORDER},
+            application_date DESC`,
         [userId, jobStatuses]
     );
 
@@ -53,7 +64,10 @@ export const getApplicationsForLatestEightWeeks = async (userId: number): Promis
                 DATE_TRUNC('week', application_date)::date AS start_of_week,
                 COUNT(*) AS applications_count
             FROM job_applications
-            WHERE user_id = $1 AND is_archived = false
+            WHERE user_id = $1
+                AND is_archived = false
+                AND application_date >= date_trunc('week', CURRENT_DATE) - interval '7 weeks'
+                AND application_date < date_trunc('week', CURRENT_DATE) + interval '1 week'
             GROUP BY start_of_week
         )
         SELECT

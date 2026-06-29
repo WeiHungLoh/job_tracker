@@ -256,7 +256,7 @@ describe('User add application flow', () => {
         });
     });
 
-    test('shows the backend error as a notification without changing the original form behavior', async () => {
+    test('preserves form contents after a backend error', async () => {
         fetch.mockResolvedValueOnce({
             headers: new Headers({ 'content-type': 'text/plain' }),
             ok: false,
@@ -276,7 +276,7 @@ describe('User add application flow', () => {
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('Failed to add a job application')).toBeInTheDocument());
-        expect(screen.getByLabelText(/input company name/i)).toHaveValue('');
-        expect(screen.getByLabelText(/input job title/i)).toHaveValue('');
+        expect(screen.getByLabelText(/input company name/i)).toHaveValue('ABC Pte Ltd');
+        expect(screen.getByLabelText(/input job title/i)).toHaveValue('Cleaner');
     });
 });

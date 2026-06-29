@@ -7,15 +7,17 @@ import authenticateAccessToken from './middleware/authenticateAccessToken.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
 import { errorHandler, type MiddlewareError, notFoundHandler } from './middleware/errorHandlers.js';
 import interviewRoute from './routes/interview/index.js';
-import pingRoute from './routes/ping/index.js';
 import rateLimit from 'express-rate-limit';
 import userPreferencesRoute from './routes/userPreferences/index.js';
 
 export const createApp = (): express.Express => {
     const app = express();
     app.set('trust proxy', 1);
+    app.disable('x-powered-by');
+    app.use(helmet());
 
     app.use(
         rateLimit({
@@ -46,7 +48,6 @@ export const createApp = (): express.Express => {
     app.use(express.json());
     app.use(cookieParser());
 
-    app.use('/ping', pingRoute);
     app.use('/authentication', authRoute);
     app.use('/job-applications', authenticateAccessToken, applicationRoute);
     app.use('/job-interviews', authenticateAccessToken, interviewRoute);

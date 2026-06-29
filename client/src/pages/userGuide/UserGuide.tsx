@@ -5,8 +5,37 @@ import PrimaryButton from '../../components/button/PrimaryButton';
 import { routes } from '../../routes';
 import styles from './UserGuide.module.css';
 import { useState } from 'react';
+import { FIELD_MAX_LENGTHS, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../../helper/formValidation';
 
 const guideSections: readonly UserGuideSection[] = [
+    {
+        id: 'account-security',
+        title: 'Account security',
+        icon: 'lock',
+        content: (
+            <>
+                <h3>Creating an account</h3>
+                <p>
+                    Email addresses are trimmed and treated as lowercase, so capitalization does not create a separate
+                    account.
+                </p>
+                <p>
+                    Passwords must contain {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH} characters. Spaces and Unicode
+                    characters are allowed, with no required uppercase letters, numbers or symbols. Some Unicode
+                    characters use multiple bytes, so the secure encoding limit may be reached before the character
+                    limit.
+                </p>
+                <p>
+                    The password-strength meter estimates how difficult the password is to guess. Its score is guidance;
+                    the length and encoding limits determine whether the password can be submitted.
+                </p>
+                <p>
+                    Repeated sign-in or sign-up attempts may be temporarily limited. Wait before trying again if the
+                    rate-limit message appears.
+                </p>
+            </>
+        ),
+    },
     {
         id: 'dashboard',
         title: 'Dashboard',
@@ -45,6 +74,26 @@ const guideSections: readonly UserGuideSection[] = [
                     Enter the company name, job title and status. Application date, location and job URL are optional.
                     If the application date is blank, the current date is used.
                 </p>
+                <ul>
+                    <li>
+                        Company name is required, trimmed before saving, and limited to {FIELD_MAX_LENGTHS.companyName}{' '}
+                        characters.
+                    </li>
+                    <li>
+                        Job title is required, trimmed before saving, and limited to {FIELD_MAX_LENGTHS.jobTitle}{' '}
+                        characters.
+                    </li>
+                    <li>The application date cannot be in the future.</li>
+                    <li>
+                        Job location is a separate application field and is limited to {FIELD_MAX_LENGTHS.location}{' '}
+                        characters.
+                    </li>
+                    <li>
+                        Job URLs are limited to {FIELD_MAX_LENGTHS.jobURL} characters and must use <code>http://</code>{' '}
+                        or <code>https://</code> with a valid domain and suffix.
+                    </li>
+                </ul>
+                <p>If the server rejects the submission, the entered application details remain in the form.</p>
                 <h3>View job applications</h3>
                 <p>
                     The application viewer lets you delete applications, edit their status and open their original job
@@ -72,6 +121,21 @@ const guideSections: readonly UserGuideSection[] = [
         icon: 'interview',
         content: (
             <>
+                <h3>Add an interview</h3>
+                <p>
+                    Interview date and interview location are required. The interview date must be after the related
+                    application date.
+                </p>
+                <ul>
+                    <li>
+                        Interview location is separate from job location, but both use the same{' '}
+                        {FIELD_MAX_LENGTHS.location}-character limit.
+                    </li>
+                    <li>Interview type is optional and limited to {FIELD_MAX_LENGTHS.interviewType} characters.</li>
+                    <li>Interview notes are optional and limited to {FIELD_MAX_LENGTHS.notes} characters.</li>
+                </ul>
+                <p>If the server rejects the submission, the entered interview details remain in the form.</p>
+                <h3>View interviews</h3>
                 <p>
                     Interview records are linked to their job applications and can be deleted from the interview viewer.
                 </p>
@@ -99,7 +163,14 @@ const guideSections: readonly UserGuideSection[] = [
                     application.
                 </p>
                 <h3>Active applications</h3>
-                <p>Notes are editable and automatically saved after you stop typing for half a second.</p>
+                <p>
+                    Application notes are editable, limited to {FIELD_MAX_LENGTHS.notes} characters, and automatically
+                    saved after you stop typing for half a second.
+                </p>
+                <p>
+                    Application notes and interview notes are separate fields, but both use the same{' '}
+                    {FIELD_MAX_LENGTHS.notes}-character limit.
+                </p>
                 <h3>Archived applications</h3>
                 <p>Archived notes are read-only. Unarchive the application before making further changes.</p>
             </>

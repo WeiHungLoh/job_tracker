@@ -7,12 +7,10 @@ export const getArchivedJobInterviews = async (userId: number): Promise<Archived
         `SELECT
             interviews.interview_id AS archived_interview_id,
             interviews.job_id AS archived_job_id,
-            interviews.user_id,
             interviews.interview_date,
             interviews.interview_location,
             interviews.interview_type,
             interviews.interview_notes,
-            interviews.created_at,
             job_applications.company_name,
             job_applications.job_title,
             job_applications.job_status

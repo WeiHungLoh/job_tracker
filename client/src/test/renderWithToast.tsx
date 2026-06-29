@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { JOB_STATUSES } from '../pages/jobApplication/models';
 
 const testPreferences: UserPreferences = {
-    user_id: 1,
     application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,

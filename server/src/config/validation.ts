@@ -6,3 +6,7 @@ export const FIELD_MAX_LENGTHS = {
     jobURL: 2048,
     notes: 3000,
 } as const;
+
+export const PASSWORD_MIN_LENGTH = 15;
+export const PASSWORD_MAX_LENGTH = 64;
+export const PASSWORD_MAX_BYTES = 72;

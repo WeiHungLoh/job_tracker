@@ -17,7 +17,9 @@ const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
                     key={toast.id}
                     role={toast.type === 'error' ? 'alert' : 'status'}
                 >
-                    <Icon className={styles.statusIcon} name={toast.type} />
+                    <span className={styles.iconTile}>
+                        <Icon className={styles.statusIcon} name={toast.type} />
+                    </span>
                     <span className={styles.message}>{toast.message}</span>
                     <PrimaryButton
                         aria-label='Dismiss notification'

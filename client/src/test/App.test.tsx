@@ -43,7 +43,6 @@ const jsonResponse = (data: unknown, status = 200) => ({
 });
 
 const mockPreferences = {
-    user_id: 1,
     application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
@@ -69,7 +68,6 @@ describe('App routing and authentication behavior', () => {
     });
 
     test('renders SignIn at the root path', async () => {
-        fetch.mockResolvedValueOnce(response(true, 200)); // ping
         fetch.mockResolvedValueOnce(response(false, 401)); // access token is unavailable
         fetch.mockResolvedValueOnce(response(false, 401)); // refresh token is unavailable
         renderRoute('/');

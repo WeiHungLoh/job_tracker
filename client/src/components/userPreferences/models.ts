@@ -1,7 +1,6 @@
 import type { JobStatus } from '../../pages/jobApplication/models';
 
 export type UserPreferences = {
-    user_id: number;
     application_job_statuses: JobStatus[];
     application_show_notes: boolean;
     application_show_archive: boolean;

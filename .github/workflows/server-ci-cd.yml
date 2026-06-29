@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [20.x, 22.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -42,6 +42,6 @@ jobs:
 
     steps:
       - name: Deploy to Render via webhook
-        run: curl "$RENDER_DEPLOY_WEBHOOK_URL"
+        run: curl --fail-with-body "$RENDER_DEPLOY_WEBHOOK_URL"
         env:
           RENDER_DEPLOY_WEBHOOK_URL: ${{ secrets.RENDER_DEPLOY_WEBHOOK_URL }}

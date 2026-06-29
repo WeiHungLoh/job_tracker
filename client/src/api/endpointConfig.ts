@@ -1,7 +1,4 @@
 export const endpointConfig = {
-    ping: {
-        wake: { url: '/ping', verb: 'GET' },
-    },
     authentication: {
         signIn: { url: '/authentication/sessions', verb: 'POST' },
         signUp: { url: '/authentication/users', verb: 'POST' },
