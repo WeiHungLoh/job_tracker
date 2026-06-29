@@ -1,6 +1,5 @@
 import { type MouseEvent, useEffect, useState } from 'react';
 import type { ArchivedJobInterview } from '../models';
-import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { createInterviewCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
@@ -16,12 +15,20 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
+import CsvExportButton from '../../../components/csvExportButton/CsvExportButton';
+import usePendingIds from '../../../hooks/usePendingIds';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
     const { preferences } = useUserPreferences();
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const {
+        pendingIds: deletingInterviewIds,
+        startPending: startDeletingInterview,
+        stopPending: stopDeletingInterview,
+    } = usePendingIds();
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
@@ -56,11 +63,18 @@ const ViewArchivedInterview = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('archived job interview'));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            startDeletingInterview(archivedInterviewId);
+            try {
                 await api.archivedInterview.deleteInterview({ archivedInterviewId });
                 setArchivedInterviews((current) =>
                     current.filter((interview) => interview.archived_interview_id !== archivedInterviewId)
                 );
+            } finally {
+                stopDeletingInterview(archivedInterviewId);
             }
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to delete the archived interview. Please try again.'));
@@ -71,9 +85,16 @@ const ViewArchivedInterview = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('archived job interview', true));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            setIsDeletingAll(true);
+            try {
                 await api.archivedInterview.deleteAllInterviews();
                 setArchivedInterviews([]);
+            } finally {
+                setIsDeletingAll(false);
             }
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to delete archived interviews. Please try again.'));
@@ -168,6 +189,7 @@ const ViewArchivedInterview = () => {
 
                             <div className={styles.buttonGroup}>
                                 <PrimaryButton
+                                    isLoading={deletingInterviewIds.has(interview.archived_interview_id)}
                                     variant='destructive'
                                     onClick={() => handleDelete(interview.archived_interview_id)}
                                 >
@@ -180,19 +202,18 @@ const ViewArchivedInterview = () => {
                     <div className={styles.interviewButton}>
                         {hasInterviews && (
                             <>
-                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
+                                <PrimaryButton
+                                    isLoading={isDeletingAll}
+                                    variant='destructive'
+                                    onClick={() => handleDeleteAll()}
+                                >
                                     Delete all archived interviews
                                 </PrimaryButton>
-                                <PrimaryButton variant='secondary'>
-                                    <CSVLink
-                                        data={csvData}
-                                        headers={INTERVIEW_CSV_HEADERS}
-                                        filename='archived_job_interviews.csv'
-                                        style={{ color: 'inherit', textDecoration: 'none' }}
-                                    >
-                                        Export as CSV
-                                    </CSVLink>
-                                </PrimaryButton>
+                                <CsvExportButton
+                                    data={csvData}
+                                    headers={INTERVIEW_CSV_HEADERS}
+                                    filename='archived_job_interviews.csv'
+                                />
                             </>
                         )}
                     </div>

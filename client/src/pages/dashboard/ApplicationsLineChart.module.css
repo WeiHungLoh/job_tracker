@@ -7,6 +7,14 @@
     align-items: center;
 }
 
+.loadingChart {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    height: 400px;
+    place-items: center;
+}
+
 .application {
     text-align: center;
     font-size: 0.8rem;
@@ -18,7 +26,8 @@
 }
 
 @media (max-width: 768px) {
-    .applicationLineChart {
+    .applicationLineChart,
+    .loadingChart {
         height: 320px;
     }
 }

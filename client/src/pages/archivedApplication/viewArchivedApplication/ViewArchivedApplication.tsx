@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../models';
-import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { createApplicationCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
@@ -19,6 +18,8 @@ import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
 import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
+import CsvExportButton from '../../../components/csvExportButton/CsvExportButton';
+import usePendingIds from '../../../hooks/usePendingIds';
 
 const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.accepted,
@@ -40,6 +41,17 @@ const ViewArchivedApplication = () => {
     const confirm = useConfirm();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const {
+        pendingIds: deletingApplicationIds,
+        startPending: startDeletingApplication,
+        stopPending: stopDeletingApplication,
+    } = usePendingIds();
+    const {
+        pendingIds: unarchivingApplicationIds,
+        startPending: startUnarchivingApplication,
+        stopPending: stopUnarchivingApplication,
+    } = usePendingIds();
     const { showErrorToast } = useToast();
     const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;
@@ -122,11 +134,18 @@ const ViewArchivedApplication = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('archived job application'));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            startDeletingApplication(archivedJobId);
+            try {
                 await api.archivedApplication.deleteApplication({ archivedJobId });
                 setArchivedApplications((current) =>
                     current.filter((application) => application.archived_job_id !== archivedJobId)
                 );
+            } finally {
+                stopDeletingApplication(archivedJobId);
             }
         } catch (error) {
             showErrorToast(
@@ -139,9 +158,16 @@ const ViewArchivedApplication = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('archived job application', true));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            setIsDeletingAll(true);
+            try {
                 await api.archivedApplication.deleteAllApplications();
                 setArchivedApplications([]);
+            } finally {
+                setIsDeletingAll(false);
             }
         } catch (error) {
             showErrorToast(
@@ -151,6 +177,7 @@ const ViewArchivedApplication = () => {
     };
 
     const handleUnarchive = async (archivedJobId: number) => {
+        startUnarchivingApplication(archivedJobId);
         try {
             await api.archivedApplication.unarchiveApplication({ archivedJobId });
             setArchivedApplications((current) =>
@@ -158,6 +185,8 @@ const ViewArchivedApplication = () => {
             );
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to unarchive the job application. Please try again.'));
+        } finally {
+            stopUnarchivingApplication(archivedJobId);
         }
     };
 
@@ -254,6 +283,7 @@ const ViewArchivedApplication = () => {
 
                             <div className={styles.buttonGroup}>
                                 <PrimaryButton
+                                    isLoading={unarchivingApplicationIds.has(application.archived_job_id)}
                                     variant='secondary'
                                     onClick={() => handleUnarchive(application.archived_job_id)}
                                 >
@@ -261,6 +291,7 @@ const ViewArchivedApplication = () => {
                                 </PrimaryButton>
 
                                 <PrimaryButton
+                                    isLoading={deletingApplicationIds.has(application.archived_job_id)}
                                     variant='destructive'
                                     onClick={() => handleDelete(application.archived_job_id)}
                                 >
@@ -285,19 +316,18 @@ const ViewArchivedApplication = () => {
                     <div className={styles.applicationButton}>
                         {hasApplications && (
                             <>
-                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
+                                <PrimaryButton
+                                    isLoading={isDeletingAll}
+                                    variant='destructive'
+                                    onClick={() => handleDeleteAll()}
+                                >
                                     Delete all archived applications
                                 </PrimaryButton>
-                                <PrimaryButton variant='secondary'>
-                                    <CSVLink
-                                        data={csvData}
-                                        headers={APPLICATION_CSV_HEADERS}
-                                        filename={'archived_job_applications.csv'}
-                                        style={{ color: 'inherit', textDecoration: 'none' }}
-                                    >
-                                        Export as CSV
-                                    </CSVLink>
-                                </PrimaryButton>
+                                <CsvExportButton
+                                    data={csvData}
+                                    headers={APPLICATION_CSV_HEADERS}
+                                    filename='archived_job_applications.csv'
+                                />
                             </>
                         )}
                     </div>

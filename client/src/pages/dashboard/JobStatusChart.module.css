@@ -8,6 +8,14 @@
     align-items: center;
 }
 
+.loadingChart {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    height: 400px;
+    place-items: center;
+}
+
 .application {
     font-size: 0.8rem;
     font-weight: bold;
@@ -18,7 +26,8 @@
 }
 
 @media (max-width: 768px) {
-    .jobStatusChart {
+    .jobStatusChart,
+    .loadingChart {
         height: 480px;
     }
 }

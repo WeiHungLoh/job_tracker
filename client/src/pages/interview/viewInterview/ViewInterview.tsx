@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { type MouseEvent, useEffect, useState } from 'react';
-import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { createInterviewCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
@@ -15,12 +14,20 @@ import { useJobTrackerAPI } from '../../../api/useJobTrackerAPI';
 import { useToast } from '../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
+import CsvExportButton from '../../../components/csvExportButton/CsvExportButton';
+import usePendingIds from '../../../hooks/usePendingIds';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
     const { preferences } = useUserPreferences();
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const {
+        pendingIds: deletingInterviewIds,
+        startPending: startDeletingInterview,
+        stopPending: stopDeletingInterview,
+    } = usePendingIds();
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
@@ -55,9 +62,16 @@ const ViewInterview = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('job interview'));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            startDeletingInterview(interviewId);
+            try {
                 await api.interview.deleteInterview({ interviewId });
                 setInterviews((current) => current.filter((interview) => interview.interview_id !== interviewId));
+            } finally {
+                stopDeletingInterview(interviewId);
             }
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to delete the interview. Please try again.'));
@@ -68,9 +82,16 @@ const ViewInterview = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('job interview', true));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            setIsDeletingAll(true);
+            try {
                 await api.interview.deleteAllInterviews();
                 setInterviews([]);
+            } finally {
+                setIsDeletingAll(false);
             }
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to delete interviews. Please try again.'));
@@ -153,6 +174,7 @@ const ViewInterview = () => {
 
                             <div className={styles.buttonGroup}>
                                 <PrimaryButton
+                                    isLoading={deletingInterviewIds.has(interview.interview_id)}
                                     variant='destructive'
                                     onClick={() => handleDelete(interview.interview_id)}
                                 >
@@ -165,19 +187,18 @@ const ViewInterview = () => {
                     <div className={styles.interviewButton}>
                         {hasInterviews && (
                             <>
-                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
+                                <PrimaryButton
+                                    isLoading={isDeletingAll}
+                                    variant='destructive'
+                                    onClick={() => handleDeleteAll()}
+                                >
                                     Delete all interviews
                                 </PrimaryButton>
-                                <PrimaryButton variant='secondary'>
-                                    <CSVLink
-                                        data={csvData}
-                                        headers={INTERVIEW_CSV_HEADERS}
-                                        filename='job_interviews.csv'
-                                        style={{ color: 'inherit', textDecoration: 'none' }}
-                                    >
-                                        Export as CSV
-                                    </CSVLink>
-                                </PrimaryButton>
+                                <CsvExportButton
+                                    data={csvData}
+                                    headers={INTERVIEW_CSV_HEADERS}
+                                    filename='job_interviews.csv'
+                                />
                             </>
                         )}
                     </div>

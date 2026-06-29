@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CSVLink } from 'react-csv';
 import formatDate from '../../../helper/dateFormatter';
 import { createApplicationCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
@@ -21,6 +20,8 @@ import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
 import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
+import CsvExportButton from '../../../components/csvExportButton/CsvExportButton';
+import usePendingIds from '../../../hooks/usePendingIds';
 
 const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,
@@ -67,6 +68,17 @@ const ViewApplication = () => {
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const {
+        pendingIds: deletingApplicationIds,
+        startPending: startDeletingApplication,
+        stopPending: stopDeletingApplication,
+    } = usePendingIds();
+    const {
+        pendingIds: archivingApplicationIds,
+        startPending: startArchivingApplication,
+        stopPending: stopArchivingApplication,
+    } = usePendingIds();
     const { showErrorToast } = useToast();
     const selectedJobStatuses = preferences.application_job_statuses;
     const showArchive = preferences.application_show_archive;
@@ -191,10 +203,17 @@ const ViewApplication = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('job application'));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            startDeletingApplication(jobId);
+            try {
                 await api.application.deleteApplication({ jobId });
                 setApplications((current) => current.filter((application) => application.job_id !== jobId));
                 setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
+            } finally {
+                stopDeletingApplication(jobId);
             }
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to delete the job application. Please try again.'));
@@ -205,10 +224,17 @@ const ViewApplication = () => {
         try {
             const { confirmed } = await confirm(createDeleteConfirmation('job application', true));
 
-            if (confirmed) {
+            if (!confirmed) {
+                return;
+            }
+
+            setIsDeletingAll(true);
+            try {
                 await api.application.deleteAllApplications();
                 setApplications([]);
                 setInterviews([]);
+            } finally {
+                setIsDeletingAll(false);
             }
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to delete job applications. Please try again.'));
@@ -264,12 +290,15 @@ const ViewApplication = () => {
     };
 
     const handleArchive = async (jobId: number) => {
+        startArchivingApplication(jobId);
         try {
             await api.archivedApplication.archiveApplication({ jobId });
             setApplications((current) => current.filter((application) => application.job_id !== jobId));
             setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to archive the job application. Please try again.'));
+        } finally {
+            stopArchivingApplication(jobId);
         }
     };
 
@@ -432,12 +461,17 @@ const ViewApplication = () => {
                                     {application.edit_status ? 'Save Changes' : 'Edit Status'}
                                 </PrimaryButton>
 
-                                <PrimaryButton variant='destructive' onClick={() => handleDelete(application.job_id)}>
+                                <PrimaryButton
+                                    isLoading={deletingApplicationIds.has(application.job_id)}
+                                    variant='destructive'
+                                    onClick={() => handleDelete(application.job_id)}
+                                >
                                     Delete
                                 </PrimaryButton>
 
                                 <PrimaryButton
                                     className={`${styles.archiveButton} ${!showArchive ? styles.archiveHidden : ''}`}
+                                    isLoading={archivingApplicationIds.has(application.job_id)}
                                     onClick={() => handleArchive(application.job_id)}
                                     variant='secondary'
                                 >
@@ -461,19 +495,18 @@ const ViewApplication = () => {
                     <div className={styles.applicationButton}>
                         {hasApplications && (
                             <>
-                                <PrimaryButton variant='destructive' onClick={() => handleDeleteAll()}>
+                                <PrimaryButton
+                                    isLoading={isDeletingAll}
+                                    variant='destructive'
+                                    onClick={() => handleDeleteAll()}
+                                >
                                     Delete all applications
                                 </PrimaryButton>
-                                <PrimaryButton variant='secondary'>
-                                    <CSVLink
-                                        data={csvData}
-                                        headers={APPLICATION_CSV_HEADERS}
-                                        filename={'job_applications.csv'}
-                                        style={{ color: 'inherit', textDecoration: 'none' }}
-                                    >
-                                        Export as CSV
-                                    </CSVLink>
-                                </PrimaryButton>
+                                <CsvExportButton
+                                    data={csvData}
+                                    headers={APPLICATION_CSV_HEADERS}
+                                    filename='job_applications.csv'
+                                />
                             </>
                         )}
                     </div>

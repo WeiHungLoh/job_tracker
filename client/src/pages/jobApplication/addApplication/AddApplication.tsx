@@ -1,5 +1,4 @@
 import type { MouseEvent } from 'react';
-import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import {
     isInvalidDatetimeLocalInput,
@@ -167,8 +166,8 @@ const AddApplication = () => {
             />
 
             <div className={styles.submitButton}>
-                <PrimaryButton variant='compact' onClick={handleAdd} disabled={isLoading}>
-                    {isLoading ? <LoadingSpinner size='sm' variant='light' /> : 'Add Job Application'}
+                <PrimaryButton isLoading={isLoading} variant='compact' onClick={handleAdd}>
+                    Add Job Application
                 </PrimaryButton>
                 <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewApplications)}>
                     View Job Applications

@@ -59,7 +59,11 @@ const JobStatusChart = ({ statusCounts, isLoading }: JobStatusChartProps) => {
     const chartColors = TEXT_COLOR[theme];
 
     if (isLoading) {
-        return <LoadingSpinner size='sm' />;
+        return (
+            <div className={styles.loadingChart}>
+                <LoadingSpinner size='sm' />
+            </div>
+        );
     }
 
     if (total === 0) {

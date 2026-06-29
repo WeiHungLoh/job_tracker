@@ -54,7 +54,11 @@ const ApplicationsLineChart = ({ weeklyApplications, isLoading }: ApplicationsLi
     const chartColors = THEME_TEXT[theme];
 
     if (isLoading) {
-        return <LoadingSpinner size='sm' />;
+        return (
+            <div className={styles.loadingChart}>
+                <LoadingSpinner size='sm' />
+            </div>
+        );
     }
 
     if (total === 0) {

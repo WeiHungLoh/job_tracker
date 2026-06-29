@@ -2,7 +2,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../jobApplication/models';
 import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
-import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import {
     isInvalidDatetimeLocalInput,
@@ -149,8 +148,8 @@ const AddInterview = () => {
             />
 
             <div className={styles.submitButton}>
-                <PrimaryButton variant='compact' data-testid='add-interview' onClick={handleAdd} disabled={isLoading}>
-                    {isLoading ? <LoadingSpinner size='sm' variant='light' /> : 'Add Interview'}
+                <PrimaryButton isLoading={isLoading} variant='compact' data-testid='add-interview' onClick={handleAdd}>
+                    Add Interview
                 </PrimaryButton>
                 <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewInterviews)}>
                     View Interviews

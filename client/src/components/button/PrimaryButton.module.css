@@ -3,6 +3,33 @@
     cursor: pointer;
 }
 
+.button:disabled {
+    cursor: not-allowed;
+}
+
+.content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: inherit;
+}
+
+.loading {
+    position: relative;
+}
+
+.loading .content {
+    visibility: hidden;
+}
+
+.spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    transform: translate(-50%, -50%);
+}
+
 .primary {
     padding: 8px 10px;
     border-radius: 10px;
