@@ -59,17 +59,12 @@ export type UpdateNotesRequest = {
 };
 export type UpdateNotesResponse = null;
 
-export type UpdateEditStatusRequest = {
+export type UpdateApplicationStatusRequest = {
     jobId: number;
     editStatus: boolean;
-};
-export type UpdateEditStatusResponse = null;
-
-export type UpdateJobStatusRequest = {
-    jobId: number;
     jobStatus: JobStatus;
 };
-export type UpdateJobStatusResponse = null;
+export type UpdateApplicationStatusResponse = null;
 
 export type ApplicationCsvHeader = {
     label: string;

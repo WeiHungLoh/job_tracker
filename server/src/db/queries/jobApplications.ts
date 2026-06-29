@@ -103,20 +103,17 @@ export const editNotes = async (jobId: number, userId: number, notes: string): P
     return hasAffectedRows(result);
 };
 
-export const updateEditStatus = async (editStatus: boolean, jobId: number, userId: number): Promise<boolean> => {
+export const updateApplicationStatus = async (
+    editStatus: boolean,
+    jobStatus: JobStatus,
+    jobId: number,
+    userId: number
+): Promise<boolean> => {
     const result = await pool.query(
-        `UPDATE job_applications SET edit_status = $1
-         WHERE job_id = $2 AND user_id = $3 AND is_archived = false`,
-        [editStatus, jobId, userId]
-    );
-    return hasAffectedRows(result);
-};
-
-export const updateJobStatus = async (jobStatus: JobStatus, jobId: number, userId: number): Promise<boolean> => {
-    const result = await pool.query(
-        `UPDATE job_applications SET job_status = $1
-         WHERE job_id = $2 AND user_id = $3 AND is_archived = false`,
-        [jobStatus, jobId, userId]
+        `UPDATE job_applications
+         SET edit_status = $1, job_status = $2
+         WHERE job_id = $3 AND user_id = $4 AND is_archived = false`,
+        [editStatus, jobStatus, jobId, userId]
     );
     return hasAffectedRows(result);
 };

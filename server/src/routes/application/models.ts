@@ -23,11 +23,8 @@ export type UpdateNotesRequest = {
     notes: string;
 };
 
-export type UpdateEditStatusRequest = {
+export type UpdateApplicationStatusRequest = {
     editStatus: boolean;
-};
-
-export type UpdateJobStatusRequest = {
     jobStatus: JobStatus;
 };
 

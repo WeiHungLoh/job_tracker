@@ -29,10 +29,8 @@ import type {
     ListJobStatusCountsResponse,
     ListWeeklyApplicationsRequest,
     ListWeeklyApplicationsResponse,
-    UpdateEditStatusRequest,
-    UpdateEditStatusResponse,
-    UpdateJobStatusRequest,
-    UpdateJobStatusResponse,
+    UpdateApplicationStatusRequest,
+    UpdateApplicationStatusResponse,
     UpdateNotesRequest,
     UpdateNotesResponse,
 } from '../pages/jobApplication/models';
@@ -147,18 +145,11 @@ export const useJobTrackerAPI = () => {
             );
         };
 
-        const updateEditStatus = async (req: UpdateEditStatusRequest) => {
-            return await makeAuthenticatedJobTrackerAPIRequest<UpdateEditStatusRequest, UpdateEditStatusResponse>(
-                req,
-                endpointConfig.application.updateEditStatus
-            );
-        };
-
-        const updateJobStatus = async (req: UpdateJobStatusRequest) => {
-            return await makeAuthenticatedJobTrackerAPIRequest<UpdateJobStatusRequest, UpdateJobStatusResponse>(
-                req,
-                endpointConfig.application.updateJobStatus
-            );
+        const updateApplicationStatus = async (req: UpdateApplicationStatusRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                UpdateApplicationStatusRequest,
+                UpdateApplicationStatusResponse
+            >(req, endpointConfig.application.updateStatus);
         };
 
         const listInterviews = async () => {
@@ -269,8 +260,7 @@ export const useJobTrackerAPI = () => {
                 deleteApplication,
                 deleteAllApplications,
                 updateNotes,
-                updateEditStatus,
-                updateJobStatus,
+                updateStatus: updateApplicationStatus,
             },
             interview: {
                 listInterviews,

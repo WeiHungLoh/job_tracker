@@ -219,43 +219,42 @@ const ViewApplication = () => {
         const editStatus = application.edit_status;
         const newStatus = editedJobStatuses[application.job_id] ?? application.job_status;
         const oldStatus = application.job_status;
+        const isSaving = editStatus;
+        const statusChanged = newStatus !== oldStatus;
+
         try {
-            await api.application.updateEditStatus({
+            await api.application.updateStatus({
                 jobId: application.job_id,
                 editStatus: !editStatus,
+                jobStatus: isSaving ? newStatus : oldStatus,
             });
-            setApplications((current) =>
-                current.map((item) =>
-                    item.job_id === application.job_id ? { ...item, edit_status: !item.edit_status } : item
-                )
-            );
 
-            if (editStatus && newStatus !== oldStatus) {
-                await api.application.updateJobStatus({
-                    jobId: application.job_id,
-                    jobStatus: newStatus,
+            if (isSaving) {
+                setEditedJobStatuses((currentStatuses) => {
+                    const updatedStatuses = { ...currentStatuses };
+                    delete updatedStatuses[application.job_id];
+                    return updatedStatuses;
                 });
 
-                if (selectedJobStatuses.includes(newStatus)) {
-                    setApplications((current) => {
-                        const updatedApplications = current.map((item) =>
-                            item.job_id === application.job_id ? { ...item, job_status: newStatus } : item
-                        );
-                        return sortApplications(updatedApplications);
-                    });
-
-                    if (enableScroll) {
-                        setTimeout(() => {
-                            scrollAndHighlight(
-                                String(application.job_id),
-                                styles.highlighted,
-                                showEditStatusTimeout.current
-                            );
-                        }, 100);
-                    }
-                } else {
+                if (!selectedJobStatuses.includes(newStatus)) {
                     setApplications((current) => current.filter((item) => item.job_id !== application.job_id));
+                    return;
                 }
+            }
+
+            setApplications((current) => {
+                const updatedApplications = current.map((item) =>
+                    item.job_id === application.job_id
+                        ? { ...item, edit_status: !editStatus, job_status: isSaving ? newStatus : oldStatus }
+                        : item
+                );
+                return isSaving && statusChanged ? sortApplications(updatedApplications) : updatedApplications;
+            });
+
+            if (isSaving && statusChanged && enableScroll) {
+                setTimeout(() => {
+                    scrollAndHighlight(String(application.job_id), styles.highlighted, showEditStatusTimeout.current);
+                }, 100);
             }
         } catch (error) {
             showErrorToast(

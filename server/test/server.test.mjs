@@ -216,6 +216,23 @@ test('returns 422 for an invalid protected route parameter', async () => {
     assert.deepEqual(await response.json(), { message: 'Job application ID must be a positive integer.' });
 });
 
+test('requires edit mode and job status in the atomic status update', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/job-applications/1/status`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({ editStatus: false }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Edit status and a supported job status are required.',
+    });
+});
+
 test('rejects future application dates before accessing the database', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/job-applications`, {

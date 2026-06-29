@@ -240,11 +240,11 @@ describe('Job application viewing flow', () => {
         userEvent.click(screen.getByRole('button', { name: /edit status/i }));
 
         await waitFor(() => {
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/edit-status`, {
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
                 method: 'PATCH',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ editStatus: true }),
+                body: JSON.stringify({ editStatus: true, jobStatus: 'Applied' }),
             });
         });
 
@@ -307,6 +307,15 @@ describe('Job application viewing flow', () => {
             expect(companyHeadings[0]).toHaveTextContent('1. XYZ Pte Ltd');
             expect(companyHeadings[1]).toHaveTextContent('2. Offer Pte Ltd');
             expect(companyHeadings[2]).toHaveTextContent('3. ABC Pte Ltd');
+        });
+
+        const statusUpdateCalls = fetch.mock.calls.filter(
+            ([url, init]: [string, RequestInit?]) =>
+                url.endsWith('/job-applications/2/status') && init?.method === 'PATCH'
+        );
+        expect(statusUpdateCalls).toHaveLength(2);
+        expect(statusUpdateCalls[1][1]).toMatchObject({
+            body: JSON.stringify({ editStatus: false, jobStatus: 'Offer' }),
         });
     });
 

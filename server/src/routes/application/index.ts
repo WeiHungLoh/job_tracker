@@ -7,8 +7,7 @@ import type {
     ListApplicationsResponse,
     ListJobStatusCountsResponse,
     ListWeeklyApplicationsResponse,
-    UpdateEditStatusRequest,
-    UpdateJobStatusRequest,
+    UpdateApplicationStatusRequest,
     UpdateNotesRequest,
 } from './models.js';
 import type { Request, Response } from 'express';
@@ -21,8 +20,7 @@ import {
     getJobApplications,
     getJobStatusCounts,
     insertJobApplication,
-    updateEditStatus,
-    updateJobStatus,
+    updateApplicationStatus,
 } from '../../db/queries/jobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import {
@@ -199,38 +197,9 @@ router.patch(
 );
 
 router.patch(
-    '/:jobId/edit-status',
-    async (
-        req: Request<JobIdParams, EmptyResponse, UpdateEditStatusRequest>,
-        res: Response<EmptyResponse>
-    ): Promise<void> => {
-        const jobId = toPositiveInteger(req.params.jobId);
-        if (jobId === undefined) {
-            sendError(res, 422, 'Job application ID must be a positive integer.');
-            return;
-        }
-        if (typeof req.body.editStatus !== 'boolean') {
-            sendError(res, 422, 'Edit status must be a boolean.');
-            return;
-        }
-
-        try {
-            const editStatusUpdated = await updateEditStatus(req.body.editStatus, jobId, req.user.id);
-            if (!editStatusUpdated) {
-                sendError(res, 404, 'Job application not found.');
-                return;
-            }
-            res.sendStatus(204);
-        } catch (error: unknown) {
-            handleRouteError(res, error, 'Unable to change the job application edit status.');
-        }
-    }
-);
-
-router.patch(
     '/:jobId/status',
     async (
-        req: Request<JobIdParams, EmptyResponse, UpdateJobStatusRequest>,
+        req: Request<JobIdParams, EmptyResponse, UpdateApplicationStatusRequest>,
         res: Response<EmptyResponse>
     ): Promise<void> => {
         const jobId = toPositiveInteger(req.params.jobId);
@@ -238,14 +207,19 @@ router.patch(
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
-        if (!isJobStatus(req.body.jobStatus)) {
-            sendError(res, 422, 'A supported job status is required.');
+        if (typeof req.body.editStatus !== 'boolean' || !isJobStatus(req.body.jobStatus)) {
+            sendError(res, 422, 'Edit status and a supported job status are required.');
             return;
         }
 
         try {
-            const jobStatusUpdated = await updateJobStatus(req.body.jobStatus, jobId, req.user.id);
-            if (!jobStatusUpdated) {
+            const statusUpdated = await updateApplicationStatus(
+                req.body.editStatus,
+                req.body.jobStatus,
+                jobId,
+                req.user.id
+            );
+            if (!statusUpdated) {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }

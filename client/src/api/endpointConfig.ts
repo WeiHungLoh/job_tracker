@@ -22,12 +22,7 @@ export const endpointConfig = {
         },
         deleteAllApplications: { url: '/job-applications', verb: 'DELETE' },
         updateNotes: { url: '/job-applications/:jobId/notes', verb: 'PATCH', fieldMap: { jobId: 'path' } },
-        updateEditStatus: {
-            url: '/job-applications/:jobId/edit-status',
-            verb: 'PATCH',
-            fieldMap: { jobId: 'path' },
-        },
-        updateJobStatus: { url: '/job-applications/:jobId/status', verb: 'PATCH', fieldMap: { jobId: 'path' } },
+        updateStatus: { url: '/job-applications/:jobId/status', verb: 'PATCH', fieldMap: { jobId: 'path' } },
     },
     interview: {
         listInterviews: { url: '/job-interviews', verb: 'GET' },
