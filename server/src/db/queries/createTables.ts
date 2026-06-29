@@ -15,12 +15,12 @@ const createTables = async (): Promise<void> => {
 
     const createJobAppTable = `CREATE TABLE IF NOT EXISTS job_applications (
             job_id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+            user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
             company_name TEXT NOT NULL,
             job_title TEXT NOT NULL,
             application_date TIMESTAMPTZ,
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            job_status TEXT CHECK (job_status IN (${JOB_STATUS_SQL_VALUES})),
+            job_status TEXT NOT NULL CHECK (job_status IN (${JOB_STATUS_SQL_VALUES})),
             edit_status BOOLEAN DEFAULT false,
             job_location TEXT,
             job_posting_url TEXT,
@@ -30,8 +30,8 @@ const createTables = async (): Promise<void> => {
 
     const createInterviewTable = `CREATE TABLE IF NOT EXISTS interviews (
             interview_id SERIAL PRIMARY KEY,
-            job_id INTEGER REFERENCES job_applications(job_id) ON DELETE CASCADE,
-            user_id INTEGER REFERENCES users(user_id),
+            job_id INTEGER NOT NULL REFERENCES job_applications(job_id) ON DELETE CASCADE,
+            user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
             interview_date TIMESTAMPTZ NOT NULL,
             interview_location TEXT NOT NULL,
             interview_type TEXT,
@@ -42,18 +42,14 @@ const createTables = async (): Promise<void> => {
 
     const createUserPreferencesTable = `CREATE TABLE IF NOT EXISTS user_preferences (
             user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
-            application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY},
+            application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY}
+                CHECK (application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}),
             application_show_notes BOOLEAN NOT NULL DEFAULT false,
             application_show_archive BOOLEAN NOT NULL DEFAULT false,
             application_enable_scroll BOOLEAN NOT NULL DEFAULT false,
-            archived_application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY},
-            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false,
-            CONSTRAINT user_preferences_application_job_statuses_check CHECK (
-                application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}
-            ),
-            CONSTRAINT user_preferences_archived_application_job_statuses_check CHECK (
-                archived_application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}
-            )
+            archived_application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY}
+                CHECK (archived_application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}),
+            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false
         )`;
 
     const createJobApplicationArchiveIndex = `CREATE INDEX IF NOT EXISTS job_applications_user_archived_idx

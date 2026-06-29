@@ -1,27 +1,25 @@
 # Job Tracker
 [![Netlify Status](https://api.netlify.com/api/v1/badges/5d3f2438-5d82-42a3-af14-d62a4ee8cd52/deploy-status)](https://app.netlify.com/projects/jobtracker-whloh/deploys)
 
-![Ui](client/images/applicationviewer.png)
+![Job Tracker UI](client/images/applicationviewer.png)
 
 ## Overview
+Job Tracker is a full-stack PERN application for managing job applications and interviews. It supports status tracking, interview management, archiving, CSV export, user preferences, and secure authentication.
 
-Job Tracker is a full-stack web application built with the PERN stack (PostgreSQL, Express, React, Node.js) designed to help users efficiently manage their job applications and interviews. It provides intuitive status tracking, archiving, and linked data handling to keep your job search organized.
+- Site: https://jobtracker.weihungloh.com/
+- User Guide: https://jobtracker.weihungloh.com/user-guide/
 
-## Features
+## Tech Stack
+- Frontend: React, TypeScript, Vite, Material UI
+- Backend: Node.js, Express, TypeScript
+- Database: PostgreSQL
+- Deployment: Netlify, Render, GitHub Actions, Docker
 
-- Add, update, and delete job applications with relevant details (company, position, status, dates, etc.)  
-- Track interviews linked to specific job applications  
-- Archive and unarchive job applications and related interviews for better data management  
-- Status updates with dropdowns and automatic UI feedback  
-- Data integrity ensured through cascading deletes and linked data management  
-- Responsive, user-friendly interface built with React  
-- Secure authentication with JWT and password hashing  
-- CI/CD workflows automate testing, linting, and deployment
-
-## User Guide
-
-For detailed usage instructions, see the User Guide <a href="https://jobtracker.weihungloh.com/user-guide" target="_blank">here</a>
-
-## Live Demo
-
-Check out the live app <a href="https://jobtracker.weihungloh.com/" target="_blank">here</a>
+## Key Features
+- Manage job applications with status, dates, locations, posting URLs, and notes
+- Track interviews linked to job applications
+- Archive and restore applications and interviews
+- Export interview data to CSV
+- Save user display preferences
+- JWT authentication with access and refresh tokens stored in Secure, HttpOnly, SameSite cookies
+- bcrypt password hashing, rate limiting, Helmet, CORS, and user-scoped database queries

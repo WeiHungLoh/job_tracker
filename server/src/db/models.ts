@@ -15,7 +15,7 @@ export type JobApplication = {
     company_name: string;
     job_title: string;
     application_date: Date | null;
-    job_status: JobStatus | null;
+    job_status: JobStatus;
     edit_status: boolean;
     job_location: string | null;
     job_posting_url: string | null;
@@ -27,7 +27,7 @@ export type ArchivedJobApplication = {
     company_name: string;
     job_title: string;
     application_date: Date | null;
-    job_status: JobStatus | null;
+    job_status: JobStatus;
     job_location: string | null;
     job_posting_url: string | null;
     notes: string | null;
@@ -42,7 +42,7 @@ export type JobInterview = {
     interview_notes: string | null;
     company_name: string;
     job_title: string;
-    job_status: JobStatus | null;
+    job_status: JobStatus;
 };
 
 export type ArchivedJobInterview = {
@@ -54,11 +54,11 @@ export type ArchivedJobInterview = {
     interview_notes: string | null;
     company_name: string;
     job_title: string;
-    job_status: JobStatus | null;
+    job_status: JobStatus;
 };
 
 export type JobStatusCount = {
-    job_status: JobStatus | null;
+    job_status: JobStatus;
     count: string;
 };
 

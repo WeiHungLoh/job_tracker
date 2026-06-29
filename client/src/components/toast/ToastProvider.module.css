@@ -1,4 +1,6 @@
 .notificationStack {
+    --notificationBorderRadius: 16px 5px 16px 16px;
+
     position: fixed;
     top: 16px;
     left: 50%;

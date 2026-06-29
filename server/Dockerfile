@@ -1,5 +1,5 @@
-# Uses node version 22 as our base image
-FROM node:23
+# Uses the current Node.js LTS release as our base image
+FROM node:22
 
 # Goes to the app directory
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json .
 
 # Install app dependencies. Runs when container is building image
-RUN npm install
+RUN npm ci
 
 # Copy the rest of our app into the container
 COPY . .
