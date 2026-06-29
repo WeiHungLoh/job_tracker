@@ -1,7 +1,7 @@
 # Job Tracker
 [![Netlify Status](https://api.netlify.com/api/v1/badges/5d3f2438-5d82-42a3-af14-d62a4ee8cd52/deploy-status)](https://app.netlify.com/projects/jobtracker-whloh/deploys)
 
-![Job Tracker UI](client/images/applicationviewer.png)
+![Job Tracker UI](client/images/view-application.png)
 
 ## Overview
 Job Tracker is a full-stack PERN application for managing job applications and interviews. It supports status tracking, interview management, archiving, CSV export, user preferences, and secure authentication.
