@@ -1,5 +1,5 @@
-import type { PrimaryButtonProps, PrimaryButtonVariant } from './models';
 import LoadingSpinner from '../loadingSpinner/LoadingSpinner';
+import type { PrimaryButtonProps, PrimaryButtonVariant } from './models';
 import styles from './PrimaryButton.module.css';
 
 const VARIANT_CLASS: Record<PrimaryButtonVariant, string> = {
@@ -20,18 +20,40 @@ const PrimaryButton = ({
     variant = 'default',
     ...props
 }: PrimaryButtonProps) => {
-    const classes = [styles.button, VARIANT_CLASS[variant], isLoading ? styles.loading : '', className]
+    const classes = [
+        styles.button,
+        VARIANT_CLASS[variant],
+        isLoading ? styles.loading : '',
+        className,
+    ]
         .filter(Boolean)
         .join(' ');
-    const spinnerVariant = variant === 'secondary' ? 'primary' : 'light';
+
+    const spinnerVariant =
+        variant === 'secondary' ? 'primary' : 'light';
 
     return (
-        <button aria-busy={isLoading || undefined} className={classes} disabled={disabled || isLoading} {...props}>
-            <span className={styles.content}>{children}</span>
-            {isLoading && (
-                <span className={styles.spinner}>
-                    <LoadingSpinner size='sm' variant={spinnerVariant} />
-                </span>
+        <button
+            aria-busy={isLoading || undefined}
+            className={classes}
+            disabled={disabled || isLoading}
+            {...props}
+        >
+            {isLoading ? (
+                <>
+                    <span className={styles.hiddenContent}>
+                        {children}
+                    </span>
+
+                    <span className={styles.spinner}>
+                        <LoadingSpinner
+                            size='sm'
+                            variant={spinnerVariant}
+                        />
+                    </span>
+                </>
+            ) : (
+                children
             )}
         </button>
     );

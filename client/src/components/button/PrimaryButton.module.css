@@ -7,18 +7,15 @@
     cursor: not-allowed;
 }
 
-.content {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: inherit;
-}
-
 .loading {
     position: relative;
 }
 
-.loading .content {
+.hiddenContent {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: inherit;
     visibility: hidden;
 }
 
@@ -62,10 +59,10 @@
 
 .secondary {
     padding: 8px 10px;
+    border: 1.5px solid var(--colorPrimary);
     border-radius: 10px;
     background: transparent;
     color: var(--colorPrimary);
-    border: 1.5px solid var(--colorPrimary);
     transition: background-color 0.2s ease;
 }
 
@@ -86,9 +83,9 @@
 }
 
 .icon {
+    padding: 0;
     background: transparent;
     color: inherit;
-    padding: 0;
     font-size: 1.25rem;
     line-height: 1;
 }
