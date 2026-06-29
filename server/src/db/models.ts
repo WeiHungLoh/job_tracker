@@ -14,23 +14,23 @@ export type JobApplication = {
     job_id: number;
     company_name: string;
     job_title: string;
-    application_date: Date | null;
+    application_date: Date;
     job_status: JobStatus;
     edit_status: boolean;
-    job_location: string | null;
-    job_posting_url: string | null;
-    notes: string | null;
+    job_location: string;
+    job_posting_url: string;
+    notes: string;
 };
 
 export type ArchivedJobApplication = {
     archived_job_id: number;
     company_name: string;
     job_title: string;
-    application_date: Date | null;
+    application_date: Date;
     job_status: JobStatus;
-    job_location: string | null;
-    job_posting_url: string | null;
-    notes: string | null;
+    job_location: string;
+    job_posting_url: string;
+    notes: string;
 };
 
 export type JobInterview = {
@@ -38,8 +38,8 @@ export type JobInterview = {
     job_id: number;
     interview_date: Date;
     interview_location: string;
-    interview_type: string | null;
-    interview_notes: string | null;
+    interview_type: string;
+    interview_notes: string;
     company_name: string;
     job_title: string;
     job_status: JobStatus;
@@ -50,8 +50,8 @@ export type ArchivedJobInterview = {
     archived_job_id: number;
     interview_date: Date;
     interview_location: string;
-    interview_type: string | null;
-    interview_notes: string | null;
+    interview_type: string;
+    interview_notes: string;
     company_name: string;
     job_title: string;
     job_status: JobStatus;

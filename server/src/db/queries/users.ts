@@ -31,7 +31,7 @@ export const findUserInfo = async (email: string): Promise<User | undefined> => 
     const result = await pool.query<User>(
         `SELECT user_id, email, hashed_password
          FROM users
-         WHERE LOWER(email) = $1`,
+         WHERE email = $1`,
         [email]
     );
 

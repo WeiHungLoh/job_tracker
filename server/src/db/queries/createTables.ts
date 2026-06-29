@@ -10,7 +10,7 @@ const createTables = async (): Promise<void> => {
             user_id SERIAL PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             hashed_password TEXT NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`;
 
     const createJobAppTable = `CREATE TABLE IF NOT EXISTS job_applications (
@@ -18,13 +18,13 @@ const createTables = async (): Promise<void> => {
             user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
             company_name TEXT NOT NULL,
             job_title TEXT NOT NULL,
-            application_date TIMESTAMPTZ,
+            application_date TIMESTAMPTZ NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             job_status TEXT NOT NULL CHECK (job_status IN (${JOB_STATUS_SQL_VALUES})),
-            edit_status BOOLEAN DEFAULT false,
-            job_location TEXT,
-            job_posting_url TEXT,
-            notes TEXT,
+            edit_status BOOLEAN NOT NULL DEFAULT false,
+            job_location TEXT NOT NULL DEFAULT '',
+            job_posting_url TEXT NOT NULL DEFAULT '',
+            notes TEXT NOT NULL DEFAULT '',
             is_archived BOOLEAN NOT NULL DEFAULT false
         )`;
 
@@ -34,8 +34,8 @@ const createTables = async (): Promise<void> => {
             user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
             interview_date TIMESTAMPTZ NOT NULL,
             interview_location TEXT NOT NULL,
-            interview_type TEXT,
-            interview_notes TEXT,
+            interview_type TEXT NOT NULL DEFAULT '',
+            interview_notes TEXT NOT NULL DEFAULT '',
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             is_archived BOOLEAN NOT NULL DEFAULT false
         )`;

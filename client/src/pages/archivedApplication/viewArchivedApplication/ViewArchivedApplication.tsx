@@ -18,6 +18,7 @@ import { useUserPreferences } from '../../../components/userPreferences/UserPref
 import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
+import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
 
 const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.accepted,
@@ -49,10 +50,8 @@ const ViewArchivedApplication = () => {
         setIsFilteringApplications(true);
 
         try {
-            const [, archivedApplications] = await Promise.all([
-                updatePreferences({ archived_application_job_statuses: jobStatuses }),
-                api.archivedApplication.listApplications({ jobStatuses }),
-            ]);
+            const archivedApplications = await api.archivedApplication.listApplications({ jobStatuses });
+            await updatePreferences({ archived_application_job_statuses: jobStatuses });
 
             setArchivedApplications(Array.isArray(archivedApplications) ? archivedApplications : []);
             return true;
@@ -63,6 +62,14 @@ const ViewArchivedApplication = () => {
             return false;
         } finally {
             setIsFilteringApplications(false);
+        }
+    };
+
+    const handlePreferenceUpdate = async (updatedPreferences: UpdateUserPreferencesRequest): Promise<void> => {
+        try {
+            await updatePreferences(updatedPreferences);
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
         }
     };
 
@@ -183,7 +190,9 @@ const ViewArchivedApplication = () => {
                                 <ToggleButton
                                     toggled={showNotes}
                                     onToggle={() =>
-                                        void updatePreferences({ archived_application_show_notes: !showNotes })
+                                        void handlePreferenceUpdate({
+                                            archived_application_show_notes: !showNotes,
+                                        })
                                     }
                                     label='Unhide Notes'
                                     toggledLabel='Hide Notes'

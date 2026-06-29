@@ -20,6 +20,7 @@ import { getErrorToastMessage } from '../../../helper/getErrorToastMessage';
 import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 import CheckboxFilter from '../../../components/checkboxFilter/CheckboxFilter';
 import ApplicationControls from '../../../components/applicationControls/ApplicationControls';
+import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
 
 const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,
@@ -91,10 +92,8 @@ const ViewApplication = () => {
         setIsFilteringApplications(true);
 
         try {
-            const [, jobApplications] = await Promise.all([
-                updatePreferences({ application_job_statuses: jobStatuses }),
-                api.application.listApplications({ jobStatuses }),
-            ]);
+            const jobApplications = await api.application.listApplications({ jobStatuses });
+            await updatePreferences({ application_job_statuses: jobStatuses });
 
             setApplications(Array.isArray(jobApplications) ? jobApplications : []);
             return true;
@@ -103,6 +102,14 @@ const ViewApplication = () => {
             return false;
         } finally {
             setIsFilteringApplications(false);
+        }
+    };
+
+    const handlePreferenceUpdate = async (updatedPreferences: UpdateUserPreferencesRequest): Promise<void> => {
+        try {
+            await updatePreferences(updatedPreferences);
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
         }
     };
 
@@ -297,7 +304,9 @@ const ViewApplication = () => {
                                     <ToggleButton
                                         toggled={enableScroll}
                                         onToggle={() =>
-                                            void updatePreferences({ application_enable_scroll: !enableScroll })
+                                            void handlePreferenceUpdate({
+                                                application_enable_scroll: !enableScroll,
+                                            })
                                         }
                                         label='Enable Auto-Scroll'
                                         toggledLabel='Disable Auto-Scroll'
@@ -307,14 +316,20 @@ const ViewApplication = () => {
                                         data-testid='unhide-archive'
                                         toggled={showArchive}
                                         onToggle={() =>
-                                            void updatePreferences({ application_show_archive: !showArchive })
+                                            void handlePreferenceUpdate({
+                                                application_show_archive: !showArchive,
+                                            })
                                         }
                                         label='Unhide Archive'
                                         toggledLabel='Hide Archive'
                                     />
                                     <ToggleButton
                                         toggled={showNotes}
-                                        onToggle={() => void updatePreferences({ application_show_notes: !showNotes })}
+                                        onToggle={() =>
+                                            void handlePreferenceUpdate({
+                                                application_show_notes: !showNotes,
+                                            })
+                                        }
                                         label='Unhide Notes'
                                         toggledLabel='Hide Notes'
                                         color='yellow'
