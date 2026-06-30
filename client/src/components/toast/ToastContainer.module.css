@@ -24,7 +24,7 @@
     background-color: var(--toastSurface);
     color: var(--toastText);
     font-size: 0.9375rem;
-    animation: toastEntrance 0.22s ease-out;
+    animation: toastEntrance 0.2s ease-out;
 }
 
 .errorToast {
@@ -46,7 +46,6 @@
     width: 38px;
     height: 38px;
     place-items: center;
-    border-radius: 11px;
     color: var(--toastAccent);
 }
 

@@ -1,0 +1,48 @@
+.archivedApplicationList {
+    max-width: 750px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    min-height: 70vh;
+}
+
+.applicationButton {
+    display: flex;
+    gap: 70px;
+}
+
+.applicationButton button {
+    margin-top: 20px;
+}
+
+.applicationButton a {
+    text-decoration: none;
+    color: var(--colorStatusApplied);
+}
+
+.highlighted {
+    animation: highlightFade 4s ease-in-out;
+}
+
+@keyframes highlightFade {
+    0% {
+        background-color: var(--colorHighlightAnim);
+    }
+
+    100% {
+        background-color: inherit;
+    }
+}
+
+@media (max-width: 803px) {
+    .archivedApplicationList {
+        max-width: 90%;
+        padding-right: 20px;
+    }
+
+    .applicationButton {
+        gap: 54px;
+    }
+}

@@ -6,7 +6,7 @@ import { UserPreferencesProvider } from '../components/userPreferences/UserPrefe
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../components/userPreferences/models';
 import { render as renderWithTestingLibrary } from '@testing-library/react';
 import { useState } from 'react';
-import { JOB_STATUSES } from '../pages/jobApplication/models';
+import { JOB_STATUSES } from '../pages/application/models';
 
 const testPreferences: UserPreferences = {
     application_job_statuses: [...JOB_STATUSES],

@@ -6,7 +6,7 @@ import type { JobStatusChartProps } from './models';
 import styles from './JobStatusChart.module.css';
 import { useTheme } from '../../components/theme/ThemeContext';
 import { LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
-import type { JobStatus } from '../jobApplication/models';
+import type { JobStatus } from '../application/models';
 
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
 

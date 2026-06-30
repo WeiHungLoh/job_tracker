@@ -1,4 +1,4 @@
-import type { JobStatus } from '../../pages/jobApplication/models';
+import type { JobStatus } from '../../pages/application/models';
 
 export type UserPreferences = {
     application_job_statuses: JobStatus[];

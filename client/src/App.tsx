@@ -1,6 +1,6 @@
 import { type RouteObject, RouterProvider, createBrowserRouter } from 'react-router-dom';
-import AddApplication from './pages/jobApplication/addApplication/AddApplication';
-import AddInterview from './pages/interview/addInterview/AddInterview';
+import AddApplication from './pages/application/jobApplication/addApplication/AddApplication';
+import AddInterview from './pages/interview/jobInterview/addInterview/AddInterview';
 import Dashboard from './pages/dashboard/Dashboard';
 import FallbackScreen from './components/fallbackScreen/FallbackScreen';
 import InvalidPage from './pages/invalidPage/InvalidPage';
@@ -9,10 +9,10 @@ import ProtectedRoutes from './components/protectedRoutes/ProtectedRoutes';
 import SignIn from './pages/authentication/signIn/SignIn';
 import SignUp from './pages/authentication/signUp/SignUp';
 import UserGuide from './pages/userGuide/UserGuide';
-import ViewApplication from './pages/jobApplication/viewApplication/ViewApplication';
-import ViewArchivedApplication from './pages/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
-import ViewArchivedInterview from './pages/archivedApplication/viewArchivedInterview/ViewArchivedInterview';
-import ViewInterview from './pages/interview/viewInterview/ViewInterview';
+import ViewApplication from './pages/application/jobApplication/viewApplication/ViewApplication';
+import ViewArchivedApplication from './pages/application/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
+import ViewArchivedInterview from './pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
+import ViewInterview from './pages/interview/jobInterview/viewInterview/ViewInterview';
 import { routes } from './routes';
 
 const reloadPage = () => window.location.reload();

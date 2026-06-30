@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { appRoutes } from '../App';
 import { render } from './renderWithToast';
 import userEvent from '@testing-library/user-event';
-import { JOB_STATUSES } from '../pages/jobApplication/models';
+import { JOB_STATUSES } from '../pages/application/models';
 
 globalThis.fetch = vi.fn();
 

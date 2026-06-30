@@ -3,19 +3,13 @@ import type {
     ArchiveApplicationResponse,
     DeleteAllArchivedApplicationsRequest,
     DeleteAllArchivedApplicationsResponse,
-    DeleteAllArchivedInterviewsRequest,
-    DeleteAllArchivedInterviewsResponse,
     DeleteArchivedApplicationRequest,
     DeleteArchivedApplicationResponse,
-    DeleteArchivedInterviewRequest,
-    DeleteArchivedInterviewResponse,
     ListArchivedApplicationsRequest,
     ListArchivedApplicationsResponse,
-    ListArchivedInterviewsRequest,
-    ListArchivedInterviewsResponse,
     UnarchiveApplicationRequest,
     UnarchiveApplicationResponse,
-} from '../pages/archivedApplication/models';
+} from '../pages/application/models';
 import type {
     CreateApplicationRequest,
     CreateApplicationResponse,
@@ -33,14 +27,20 @@ import type {
     UpdateApplicationStatusResponse,
     UpdateNotesRequest,
     UpdateNotesResponse,
-} from '../pages/jobApplication/models';
+} from '../pages/application/models';
 import type {
     CreateInterviewRequest,
     CreateInterviewResponse,
     DeleteAllInterviewsRequest,
     DeleteAllInterviewsResponse,
+    DeleteAllArchivedInterviewsRequest,
+    DeleteAllArchivedInterviewsResponse,
+    DeleteArchivedInterviewRequest,
+    DeleteArchivedInterviewResponse,
     DeleteInterviewRequest,
     DeleteInterviewResponse,
+    ListArchivedInterviewsRequest,
+    ListArchivedInterviewsResponse,
     ListInterviewsRequest,
     ListInterviewsResponse,
 } from '../pages/interview/models';

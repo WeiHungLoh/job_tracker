@@ -1,0 +1,21 @@
+import type { MouseEvent } from 'react';
+import type { ArchivedJobInterview, JobInterview } from './models';
+
+type InterviewCardBaseProps = {
+    index: number;
+    isDeleting: boolean;
+    onDelete: () => void | Promise<void>;
+    onViewApplicationClick: (event: MouseEvent<HTMLAnchorElement>) => void | Promise<void>;
+};
+
+export type JobInterviewCardProps = InterviewCardBaseProps & {
+    interview: JobInterview;
+    variant: 'job';
+};
+
+export type ArchivedInterviewCardProps = InterviewCardBaseProps & {
+    interview: ArchivedJobInterview;
+    variant: 'archived';
+};
+
+export type InterviewCardProps = JobInterviewCardProps | ArchivedInterviewCardProps;

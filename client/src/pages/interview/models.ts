@@ -1,8 +1,20 @@
-import type { JobStatus } from '../jobApplication/models';
+import type { JobStatus } from '../application/models';
 
 export type JobInterview = {
     interview_id: number;
     job_id: number;
+    company_name: string;
+    job_title: string;
+    job_status?: JobStatus;
+    interview_date: string;
+    interview_location: string;
+    interview_type: string;
+    interview_notes: string;
+};
+
+export type ArchivedJobInterview = {
+    archived_interview_id: number;
+    archived_job_id: number;
     company_name: string;
     job_title: string;
     job_status?: JobStatus;
@@ -31,6 +43,17 @@ export type DeleteInterviewResponse = null;
 
 export type DeleteAllInterviewsRequest = null;
 export type DeleteAllInterviewsResponse = null;
+
+export type ListArchivedInterviewsRequest = null;
+export type ListArchivedInterviewsResponse = ArchivedJobInterview[];
+
+export type DeleteArchivedInterviewRequest = {
+    archivedInterviewId: number;
+};
+export type DeleteArchivedInterviewResponse = null;
+
+export type DeleteAllArchivedInterviewsRequest = null;
+export type DeleteAllArchivedInterviewsResponse = null;
 
 export type InterviewCsvHeader = {
     label: string;

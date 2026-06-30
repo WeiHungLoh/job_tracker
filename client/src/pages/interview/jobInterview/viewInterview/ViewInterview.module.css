@@ -1,0 +1,32 @@
+.interviewList {
+    max-width: 710px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    min-height: 70vh;
+}
+
+.interviewButton {
+    display: flex;
+    gap: 70px;
+}
+
+.interviewButton button {
+    margin-top: 20px;
+}
+
+@media (max-width: 803px) {
+    .interviewList {
+        width: 90%;
+    }
+
+    .interviewList > h2 {
+        font-size: 1.2rem;
+    }
+
+    .interviewButton {
+        gap: 54px;
+    }
+}

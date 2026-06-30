@@ -2,7 +2,7 @@ import Icon from '../../components/icon/Icon';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import styles from './DashboardStats.module.css';
 import type { DashboardStatsProps } from './models';
-import type { JobStatus } from '../jobApplication/models';
+import type { JobStatus } from '../application/models';
 
 const RESPONDED_STATUSES = new Set<JobStatus>(['Interview', 'Offer', 'Accepted', 'Rejected', 'Declined']);
 

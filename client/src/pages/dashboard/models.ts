@@ -1,4 +1,4 @@
-import type { JobStatus } from '../jobApplication/models';
+import type { JobStatus } from '../application/models';
 import type { JobInterview } from '../interview/models';
 
 export type WeeklyApplicationCount = {
