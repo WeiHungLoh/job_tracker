@@ -60,6 +60,20 @@ describe('Job interview viewer flow', () => {
         expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
     });
 
+    test('shows a skeleton instead of a spinner during the initial fetch', () => {
+        fetch.mockImplementation(async () => await new Promise<ReturnType<typeof response>>(() => undefined));
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>
+        );
+
+        expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
+        expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument();
+        expect(screen.queryByText(/no job interview found/i)).not.toBeInTheDocument();
+    });
+
     test('deletes interview after user confirms', async () => {
         render(
             <MemoryRouter>

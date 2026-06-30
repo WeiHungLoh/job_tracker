@@ -116,6 +116,10 @@
     --colorSpinnerLight: #fff;
     --colorSpinnerLightTrack: rgb(255 255 255 / 35%);
 
+    /* Skeleton */
+    --colorSkeletonBase: #f5e9ed;
+    --colorSkeletonHighlight: #fff8fa;
+
     /* Toggle switch */
     --colorSwitchOff: #b7b9ba;
     --colorSwitchOffBorder: #aaa;
@@ -259,6 +263,10 @@
     --colorSpinnerTrack: #3a3a44;
     --colorSpinnerLight: #dee2e6;
     --colorSpinnerLightTrack: rgb(255 255 255 / 20%);
+
+    /* Skeleton */
+    --colorSkeletonBase: #333344;
+    --colorSkeletonHighlight: #444455;
 
     /* Toggle switch */
     --colorSwitchOff: #495057;

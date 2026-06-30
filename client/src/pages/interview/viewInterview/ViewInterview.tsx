@@ -5,7 +5,7 @@ import { createInterviewCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../models';
-import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
+import SkeletonCard from '../../../components/skeletonCard/SkeletonCard';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
 import styles from './ViewInterview.module.css';
@@ -133,7 +133,8 @@ const ViewInterview = () => {
             {isLoading && (
                 <>
                     <br />
-                    <LoadingSpinner />
+                    <SkeletonCard variant='interview' />
+                    <SkeletonCard variant='interview' />
                 </>
             )}
 

@@ -188,11 +188,37 @@ describe('Job application viewing flow', () => {
 
         expect(screen.getByRole('checkbox', { name: 'Accepted' })).not.toBeDisabled();
         expect(screen.getByRole('checkbox', { name: 'Offer' })).not.toBeDisabled();
-        expect(screen.getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument();
+        expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
+        expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument();
+        expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument();
 
         resolveFilterRequest?.(response([mockApplication]));
 
-        await waitFor(() => expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument());
+        await waitFor(() => expect(screen.queryAllByRole('status', { name: 'Loading results' })).toHaveLength(0));
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+    });
+
+    test('shows application controls above the skeleton during the initial fetch', () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+
+            return await new Promise<ReturnType<typeof response>>(() => undefined);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        const filterButton = screen.getByRole('button', { name: 'Job status' });
+        const [firstSkeleton] = screen.getAllByRole('status', { name: 'Loading results' });
+
+        expect(filterButton.compareDocumentPosition(firstSkeleton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(filterButton).toBeDisabled();
+        expect(screen.queryByText(/no job applications match/i)).not.toBeInTheDocument();
     });
 
     test('restores the saved filter and shows the backend message when filtering fails', async () => {

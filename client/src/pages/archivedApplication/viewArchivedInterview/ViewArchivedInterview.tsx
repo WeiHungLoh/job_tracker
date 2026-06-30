@@ -6,7 +6,7 @@ import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import { getApplicationUnavailableMessage } from '../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS } from '../../interview/models';
 import { Link, useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
+import SkeletonCard from '../../../components/skeletonCard/SkeletonCard';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { routes } from '../../../routes';
 import styles from './ViewArchivedInterview.module.css';
@@ -148,7 +148,8 @@ const ViewArchivedInterview = () => {
             {isLoading && (
                 <>
                     <br />
-                    <LoadingSpinner />
+                    <SkeletonCard variant='interview' />
+                    <SkeletonCard variant='interview' />
                 </>
             )}
 

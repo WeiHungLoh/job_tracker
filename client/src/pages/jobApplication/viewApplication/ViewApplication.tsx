@@ -4,7 +4,7 @@ import formatDate from '../../../helper/dateFormatter';
 import { createApplicationCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import type { JobInterview } from '../../interview/models';
-import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
+import SkeletonCard from '../../../components/skeletonCard/SkeletonCard';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobApplication, type JobStatus } from '../models';
 import { routes } from '../../../routes';
@@ -306,73 +306,68 @@ const ViewApplication = () => {
 
     return (
         <div className={styles.applicationList}>
-            {isLoading && (
+            <ApplicationControls
+                filter={
+                    <CheckboxFilter
+                        buttonLabel='Job status'
+                        disabled={isLoading}
+                        id='application-job-status-filter'
+                        label='Filter by'
+                        onSelectionChange={handleJobStatusChange}
+                        options={JOB_STATUSES}
+                        selectedOptions={selectedJobStatuses}
+                    />
+                }
+                viewOptions={
+                    hasApplications ? (
+                        <>
+                            <ToggleButton
+                                toggled={enableScroll}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_enable_scroll: !enableScroll,
+                                    })
+                                }
+                                label='Enable Auto-Scroll'
+                                toggledLabel='Disable Auto-Scroll'
+                                color='blue'
+                            />
+                            <ToggleButton
+                                data-testid='unhide-archive'
+                                toggled={showArchive}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_show_archive: !showArchive,
+                                    })
+                                }
+                                label='Unhide Archive'
+                                toggledLabel='Hide Archive'
+                            />
+                            <ToggleButton
+                                toggled={showNotes}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_show_notes: !showNotes,
+                                    })
+                                }
+                                label='Unhide Notes'
+                                toggledLabel='Hide Notes'
+                                color='yellow'
+                            />
+                        </>
+                    ) : undefined
+                }
+            />
+
+            {(isLoading || isFilteringApplications) && (
                 <>
-                    <br />
-                    <LoadingSpinner />
+                    <SkeletonCard variant='application' />
+                    <SkeletonCard variant='application' />
                 </>
             )}
 
-            {!isLoading && (
+            {!isLoading && !isFilteringApplications && (
                 <>
-                    <ApplicationControls
-                        filter={
-                            <CheckboxFilter
-                                buttonLabel='Job status'
-                                id='application-job-status-filter'
-                                label='Filter by'
-                                onSelectionChange={handleJobStatusChange}
-                                options={JOB_STATUSES}
-                                selectedOptions={selectedJobStatuses}
-                            />
-                        }
-                        viewOptions={
-                            hasApplications ? (
-                                <>
-                                    <ToggleButton
-                                        toggled={enableScroll}
-                                        onToggle={() =>
-                                            void handlePreferenceUpdate({
-                                                application_enable_scroll: !enableScroll,
-                                            })
-                                        }
-                                        label='Enable Auto-Scroll'
-                                        toggledLabel='Disable Auto-Scroll'
-                                        color='blue'
-                                    />
-                                    <ToggleButton
-                                        data-testid='unhide-archive'
-                                        toggled={showArchive}
-                                        onToggle={() =>
-                                            void handlePreferenceUpdate({
-                                                application_show_archive: !showArchive,
-                                            })
-                                        }
-                                        label='Unhide Archive'
-                                        toggledLabel='Hide Archive'
-                                    />
-                                    <ToggleButton
-                                        toggled={showNotes}
-                                        onToggle={() =>
-                                            void handlePreferenceUpdate({
-                                                application_show_notes: !showNotes,
-                                            })
-                                        }
-                                        label='Unhide Notes'
-                                        toggledLabel='Hide Notes'
-                                        color='yellow'
-                                    />
-                                </>
-                            ) : undefined
-                        }
-                    />
-
-                    {isFilteringApplications && (
-                        <div className={styles.filterLoading}>
-                            <LoadingSpinner />
-                        </div>
-                    )}
-
                     {!hasApplications && (
                         <div>
                             <br />

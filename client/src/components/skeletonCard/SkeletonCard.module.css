@@ -1,0 +1,109 @@
+.skeletonCard {
+    width: 100%;
+    min-height: 250px;
+    padding: 20px;
+    background: var(--colorCardBg);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 15px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 32px;
+    margin-bottom: 20px;
+}
+
+.textLines {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.skeletonLine {
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--colorSkeletonBase) 25%,
+        var(--colorSkeletonHighlight) 50%,
+        var(--colorSkeletonBase) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.title {
+    width: 62%;
+    height: 28px;
+}
+
+.medium {
+    width: 78%;
+}
+
+.long {
+    width: 100%;
+}
+
+.wide {
+    width: 88%;
+}
+
+.short {
+    width: 64%;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(2, 90px);
+    gap: 10px;
+    align-self: center;
+}
+
+.singleAction {
+    grid-template-columns: 90px;
+}
+
+.button {
+    width: 90px;
+    height: 38px;
+    border-radius: 8px;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeletonLine {
+        animation: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .skeletonCard {
+        min-height: 220px;
+        padding: 16px;
+        column-gap: 16px;
+    }
+
+    .title {
+        width: 72%;
+    }
+
+    .actions {
+        grid-template-columns: 72px;
+    }
+
+    .button {
+        width: 72px;
+        height: 34px;
+    }
+}

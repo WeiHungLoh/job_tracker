@@ -109,6 +109,46 @@ describe('Archived job application viewing flow', () => {
         );
     });
 
+    test('shows controls above the skeleton while archived applications are filtering', async () => {
+        let resolveFilterRequest: ((value: ReturnType<typeof response>) => void) | undefined;
+        const pendingFilterRequest = new Promise<ReturnType<typeof response>>((resolve) => {
+            resolveFilterRequest = resolve;
+        });
+
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/archived-job-applications?jobStatuses=Offer')) {
+                return await pendingFilterRequest;
+            }
+
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+
+        const filterButton = screen.getByRole('button', { name: 'Job status' });
+        const skeletons = screen.getAllByRole('status', { name: 'Loading results' });
+
+        expect(skeletons).toHaveLength(2);
+        expect(filterButton.compareDocumentPosition(skeletons[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(filterButton).not.toBeDisabled();
+        expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument();
+        expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument();
+
+        resolveFilterRequest?.(response([mockApplication]));
+
+        await waitFor(() => expect(screen.queryAllByRole('status', { name: 'Loading results' })).toHaveLength(0));
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+    });
+
     test('deletes application after user confirms', async () => {
         render(
             <MemoryRouter>

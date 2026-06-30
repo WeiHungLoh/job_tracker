@@ -15,6 +15,7 @@ const haveSameOptions = <Option extends string>(
 
 const CheckboxFilter = <Option extends string>({
     buttonLabel,
+    disabled = false,
     id,
     label,
     options,
@@ -98,6 +99,7 @@ const CheckboxFilter = <Option extends string>({
                 aria-controls={`${id}-options`}
                 aria-expanded={isOpen}
                 className={styles.toggle}
+                disabled={disabled}
                 onClick={() => setIsOpen((current) => !current)}
                 type='button'
                 variant='navigation'

@@ -4,7 +4,7 @@ import formatDate from '../../../helper/dateFormatter';
 import { createApplicationCsvData } from '../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../helper/deleteConfirmation';
 import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../jobApplication/models';
-import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
+import SkeletonCard from '../../../components/skeletonCard/SkeletonCard';
 import PrimaryButton from '../../../components/button/PrimaryButton';
 import { scrollAndHighlight } from '../../../helper/highlightElement';
 import ToggleButton from '../../../components/toggleButton/ToggleButton';
@@ -194,49 +194,44 @@ const ViewArchivedApplication = () => {
 
     return (
         <div className={styles.archivedApplicationList}>
-            {isLoading && (
+            <ApplicationControls
+                filter={
+                    <CheckboxFilter
+                        buttonLabel='Job status'
+                        disabled={isLoading}
+                        id='archived-application-job-status-filter'
+                        label='Filter by'
+                        onSelectionChange={handleJobStatusChange}
+                        options={JOB_STATUSES}
+                        selectedOptions={selectedJobStatuses}
+                    />
+                }
+                viewOptions={
+                    hasApplications ? (
+                        <ToggleButton
+                            toggled={showNotes}
+                            onToggle={() =>
+                                void handlePreferenceUpdate({
+                                    archived_application_show_notes: !showNotes,
+                                })
+                            }
+                            label='Unhide Notes'
+                            toggledLabel='Hide Notes'
+                            color='yellow'
+                        />
+                    ) : undefined
+                }
+            />
+
+            {(isLoading || isFilteringApplications) && (
                 <>
-                    <br />
-                    <LoadingSpinner />
+                    <SkeletonCard variant='application' />
+                    <SkeletonCard variant='application' />
                 </>
             )}
 
-            {!isLoading && (
+            {!isLoading && !isFilteringApplications && (
                 <>
-                    <ApplicationControls
-                        filter={
-                            <CheckboxFilter
-                                buttonLabel='Job status'
-                                id='archived-application-job-status-filter'
-                                label='Filter by'
-                                onSelectionChange={handleJobStatusChange}
-                                options={JOB_STATUSES}
-                                selectedOptions={selectedJobStatuses}
-                            />
-                        }
-                        viewOptions={
-                            hasApplications ? (
-                                <ToggleButton
-                                    toggled={showNotes}
-                                    onToggle={() =>
-                                        void handlePreferenceUpdate({
-                                            archived_application_show_notes: !showNotes,
-                                        })
-                                    }
-                                    label='Unhide Notes'
-                                    toggledLabel='Hide Notes'
-                                    color='yellow'
-                                />
-                            ) : undefined
-                        }
-                    />
-
-                    {isFilteringApplications && (
-                        <div className={styles.filterLoading}>
-                            <LoadingSpinner />
-                        </div>
-                    )}
-
                     {!hasApplications && (
                         <div>
                             <br />
