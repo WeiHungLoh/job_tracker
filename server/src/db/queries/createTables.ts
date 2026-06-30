@@ -25,19 +25,25 @@ const createTables = async (): Promise<void> => {
             job_location TEXT NOT NULL DEFAULT '',
             job_posting_url TEXT NOT NULL DEFAULT '',
             notes TEXT NOT NULL DEFAULT '',
-            is_archived BOOLEAN NOT NULL DEFAULT false
+            is_archived BOOLEAN NOT NULL DEFAULT false,
+            CONSTRAINT job_applications_job_user_unique
+                UNIQUE (job_id, user_id)
         )`;
 
     const createInterviewTable = `CREATE TABLE IF NOT EXISTS interviews (
             interview_id SERIAL PRIMARY KEY,
-            job_id INTEGER NOT NULL REFERENCES job_applications(job_id) ON DELETE CASCADE,
+            job_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
             interview_date TIMESTAMPTZ NOT NULL,
             interview_location TEXT NOT NULL,
             interview_type TEXT NOT NULL DEFAULT '',
             interview_notes TEXT NOT NULL DEFAULT '',
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            is_archived BOOLEAN NOT NULL DEFAULT false
+            is_archived BOOLEAN NOT NULL DEFAULT false,
+            CONSTRAINT interviews_job_user_fk
+                FOREIGN KEY (job_id, user_id)
+                REFERENCES job_applications(job_id, user_id)
+                ON DELETE CASCADE
         )`;
 
     const createUserPreferencesTable = `CREATE TABLE IF NOT EXISTS user_preferences (
