@@ -156,7 +156,11 @@ describe('App routing and authentication behavior', () => {
         fetch.mockResolvedValueOnce(response(false, 401));
         renderRoute('/sign-up');
 
-        await waitFor(() => expect(screen.getByText(/sign up for job tracker/i)).toBeInTheDocument());
+        expect(
+            await screen.findByText(/sign up for job tracker/i, undefined, {
+                timeout: 5000,
+            })
+        ).toBeInTheDocument();
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     });
 

@@ -15,11 +15,8 @@ import ViewApplication from './pages/application/jobApplication/viewApplication/
 import ViewArchivedApplication from './pages/application/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
 import ViewArchivedInterview from './pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
 import ViewInterview from './pages/interview/jobInterview/viewInterview/ViewInterview';
+import Dashboard from './pages/dashboard/Dashboard';
 import { routes } from './routes';
-
-const Dashboard = lazy(
-    () => import('./pages/dashboard/Dashboard')
-);
 
 const SignUp = lazy(
     () => import('./pages/authentication/signUp/SignUp')
