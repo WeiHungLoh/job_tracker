@@ -16,7 +16,7 @@ describe('PrimaryButton', () => {
         expect(button).toBeDisabled();
         expect(button).toHaveAttribute('aria-busy', 'true');
         expect(button).toHaveClass(styles.loading);
-        expect(screen.getByText('Delete all applications')).toHaveClass(styles.content);
+        expect(screen.getByText('Delete all applications')).toHaveClass(styles.hiddenContent);
         expect(spinner).toHaveStyle({ width: '20px', height: '20px' });
     });
 });
