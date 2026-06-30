@@ -45,6 +45,9 @@ vi.mock('material-ui-confirm', () => ({
 
 globalThis.alert = vi.fn();
 
+const applicationRequestCount = (url: string) =>
+    fetch.mock.calls.filter(([requestUrl]) => String(requestUrl) === url).length;
+
 describe('Job application viewing flow', () => {
     beforeEach(() => {
         vi.resetAllMocks();
@@ -138,25 +141,24 @@ describe('Job application viewing flow', () => {
         );
 
         await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Accepted' })).not.toBeDisabled());
-        const callsBeforeRemovingAccepted = fetch.mock.calls.length;
+        const offerOnlyUrl = `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Offer`;
+        const offerOnlyRequestsBeforeRemovingAccepted = applicationRequestCount(offerOnlyUrl);
         await userEvent.click(screen.getByRole('checkbox', { name: 'Accepted' }));
-        await waitFor(() => expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(callsBeforeRemovingAccepted + 1));
+        await waitFor(() =>
+            expect(applicationRequestCount(offerOnlyUrl)).toBeGreaterThan(offerOnlyRequestsBeforeRemovingAccepted)
+        );
 
         await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Offer' })).not.toBeDisabled());
-        const callsBeforeClearingFinalStatus = fetch.mock.calls.length;
+        const allStatusesUrl = `${
+            import.meta.env.VITE_API_URL
+        }/job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`;
+        const allStatusRequestsBeforeClearingFinalStatus = applicationRequestCount(allStatusesUrl);
         await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
 
-        await waitFor(() => expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(callsBeforeClearingFinalStatus + 1));
-        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
-        expect(fetch).toHaveBeenCalledWith(
-            `${
-                import.meta.env.VITE_API_URL
-            }/job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`,
-            {
-                method: 'GET',
-                credentials: 'include',
-            }
+        await waitFor(() =>
+            expect(applicationRequestCount(allStatusesUrl)).toBeGreaterThan(allStatusRequestsBeforeClearingFinalStatus)
         );
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
     });
 
     test('keeps filter checkboxes enabled while applications are loading', async () => {

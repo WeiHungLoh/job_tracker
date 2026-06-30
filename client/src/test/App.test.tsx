@@ -160,10 +160,10 @@ describe('App routing and authentication behavior', () => {
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     });
 
-    test('renders the user guide without checking authentication', () => {
+    test('renders the user guide without checking authentication', async () => {
         renderRoute('/user-guide');
 
-        expect(screen.getByRole('heading', { name: /job tracker user guide/i })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: /job tracker user guide/i })).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: /checking authentication/i })).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
     });
