@@ -180,11 +180,6 @@ describe('User sign up flow', () => {
         expect(screen.getByText('Create an account to track your applications and interviews.')).toBeInTheDocument();
         expect(screen.getAllByLabelText(/^password$/i)).toHaveLength(1);
         expect(screen.queryByLabelText(/confirm password/i)).not.toBeInTheDocument();
-        expect(
-            screen.getByText(
-                'The free-tier server may take up to 50 seconds to wake up. Please wait after clicking Sign up'
-            )
-        ).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
     });
 });

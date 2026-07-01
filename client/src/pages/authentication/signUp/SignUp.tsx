@@ -128,7 +128,7 @@ const SignUp = () => {
                     </Link>
                 </form>
 
-                <AuthRequestInfo action='Sign up' />
+                <AuthRequestInfo />
             </div>
         </AuthLayout>
     );

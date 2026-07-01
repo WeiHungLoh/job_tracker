@@ -108,7 +108,7 @@ const SignIn = () => {
                         Don’t have an account? Create one
                     </Link>
                 </form>
-                <AuthRequestInfo action='Sign in' />
+                <AuthRequestInfo />
             </div>
         </AuthLayout>
     );

@@ -151,11 +151,6 @@ describe('User sign in flow', () => {
         expect(screen.getByRole('heading', { name: /organise your job search in one place/i })).toBeInTheDocument();
         expect(screen.getByText('Track every application and its current status')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /see how it works/i })).toHaveAttribute('href', '/user-guide');
-        expect(
-            screen.getByText(
-                'The free-tier server may take up to 50 seconds to wake up. Please wait after clicking Sign in'
-            )
-        ).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
     });
 });
