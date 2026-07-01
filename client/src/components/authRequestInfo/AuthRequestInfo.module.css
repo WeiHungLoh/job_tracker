@@ -19,3 +19,31 @@
     margin-top: 2px;
     color: var(--colorPrimary);
 }
+
+.notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+    border: 1px solid var(--colorNoticeBorder);
+    border-radius: 10px;
+    margin: 16px 0 0;
+    background-color: var(--colorNoticeBg);
+    color: var(--colorNoticeText);
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.noticeIcon {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    border-radius: 7px;
+    background-color: var(--colorAuthCardBg);
+    place-items: center;
+}
+
+.noticeIcon svg {
+    font-size: 0.75rem;
+}

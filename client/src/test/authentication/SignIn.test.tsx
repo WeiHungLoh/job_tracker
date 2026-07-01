@@ -1,5 +1,6 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
 import SignIn from '../../pages/authentication/signIn/SignIn';
 import { render } from '../renderWithToast';
 import userEvent from '@testing-library/user-event';
@@ -39,6 +40,11 @@ describe('User sign in flow', () => {
             text: async () => '',
         });
         mockNavigate.mockReset();
+        localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
+    });
+
+    afterEach(() => {
+        localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
     });
 
     test('signs in successfully and redirects to /application/add page', async () => {
@@ -99,6 +105,8 @@ describe('User sign in flow', () => {
         );
 
         await waitFor(() => expect(screen.getByText('Invalid email or password.')).toBeInTheDocument());
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
     });
 
     test('shows the same generic authentication error for an incorrect password', async () => {
@@ -149,8 +157,84 @@ describe('User sign in flow', () => {
         );
 
         expect(screen.getByRole('heading', { name: /organise your job search in one place/i })).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /track applications, manage interviews and monitor your progress without relying on scattered/i
+            )
+        ).toBeInTheDocument();
         expect(screen.getByText('Track every application and its current status')).toBeInTheDocument();
+        expect(screen.getByText('Keep interviews connected to the right application')).toBeInTheDocument();
+        expect(screen.getByText('View your job-search progress from one dashboard')).toBeInTheDocument();
+        expect(
+            screen.getByRole('img', {
+                name: /job tracker application list showing applications, statuses, interviews and notes/i,
+            })
+        ).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /see how it works/i })).toHaveAttribute('href', '/user-guide');
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
+    });
+
+    test.each(['Email', 'Password'])('focuses authentication when the %s input receives focus', (label) => {
+        render(
+            <MemoryRouter>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        fireEvent.focus(screen.getByLabelText(label, { exact: true }));
+
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
+        expect(
+            screen.queryByRole('heading', { name: /organise your job search in one place/i })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('img', {
+                name: /job tracker application list showing applications, statuses, interviews and notes/i,
+            })
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /see how it works/i })).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /sign in to job tracker/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+    });
+
+    test('restores the overview without clearing entered sign-in details', () => {
+        render(
+            <MemoryRouter>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        const emailInput = screen.getByLabelText('Email', { exact: true });
+        const passwordInput = screen.getByLabelText('Password', { exact: true });
+        userEvent.type(emailInput, 'user@example.com');
+        userEvent.type(passwordInput, 'saved password');
+        userEvent.click(screen.getByRole('button', { name: /show password/i }));
+
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+        userEvent.click(screen.getByRole('button', { name: /why use job tracker/i }));
+
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBeNull();
+        expect(screen.getByRole('heading', { name: /organise your job search in one place/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /see how it works/i })).toBeInTheDocument();
+        expect(emailInput).toHaveValue('user@example.com');
+        expect(passwordInput).toHaveValue('saved password');
+        expect(passwordInput).toHaveAttribute('type', 'text');
+        expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
+    });
+
+    test('restores focused mode immediately from localStorage', () => {
+        localStorage.setItem(AUTH_FOCUSED_MODE_STORAGE_KEY, 'true');
+
+        render(
+            <MemoryRouter>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: /organise your job search in one place/i })
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /see how it works/i })).not.toBeInTheDocument();
     });
 });

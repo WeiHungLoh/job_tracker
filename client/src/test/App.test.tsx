@@ -4,6 +4,7 @@ import { appRoutes } from '../App';
 import { render } from './renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../pages/application/models';
+import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../components/authProductIntro/AuthProductIntro';
 
 globalThis.fetch = vi.fn();
 
@@ -59,12 +60,17 @@ const renderRoute = (path: string) => {
 describe('App routing and authentication behavior', () => {
     beforeEach(() => {
         fetch.mockReset();
+        localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
         fetch.mockImplementation(async (url: string) => {
             if (url.endsWith('/user-preferences')) {
                 return jsonResponse(mockPreferences);
             }
             return response();
         });
+    });
+
+    afterEach(() => {
+        localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
     });
 
     test('renders SignIn at the root path', async () => {
@@ -162,6 +168,46 @@ describe('App routing and authentication behavior', () => {
             })
         ).toBeInTheDocument();
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    });
+
+    test('preserves focused mode when navigating from SignIn to SignUp', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/authentication/sessions/current') || url.endsWith('/authentication/sessions/refresh')) {
+                return response(false, 401);
+            }
+            return response();
+        });
+        renderRoute('/');
+
+        userEvent.click(await screen.findByLabelText('Email', { exact: true }));
+        userEvent.click(screen.getByRole('link', { name: /create one/i }));
+
+        expect(await screen.findByRole('heading', { name: /start organising your job search/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: /organise your job search in one place/i })
+        ).not.toBeInTheDocument();
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
+    });
+
+    test('preserves focused mode when navigating from SignUp to SignIn', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/authentication/sessions/current') || url.endsWith('/authentication/sessions/refresh')) {
+                return response(false, 401);
+            }
+            return response();
+        });
+        renderRoute('/sign-up');
+
+        userEvent.click(await screen.findByLabelText('Password', { exact: true }));
+        userEvent.click(screen.getByRole('link', { name: /already have an account/i }));
+
+        expect(await screen.findByRole('heading', { name: /sign in to job tracker/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: /organise your job search in one place/i })
+        ).not.toBeInTheDocument();
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
     });
 
     test('renders the user guide without checking authentication', async () => {

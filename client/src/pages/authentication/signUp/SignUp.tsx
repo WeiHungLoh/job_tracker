@@ -67,7 +67,7 @@ const SignUp = () => {
 
     return (
         <AuthLayout>
-            <div className={styles.card}>
+            <div className={`${styles.card} ${styles.signUpCard}`}>
                 <Icon name='briefcase' className={styles.logoIcon} />
                 <h2 className={`${styles.title} ${styles.titleWithDescription}`}>Start organising your job search</h2>
                 <p className={styles.cardDescription}>Create an account to track your applications and interviews.</p>

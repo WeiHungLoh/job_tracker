@@ -11,6 +11,11 @@
     animation: fadeIn 0.4s ease-out;
 }
 
+.signUpCard {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -140,7 +145,47 @@
         padding: 24px 20px;
     }
 
+    .signUpCard {
+        padding-top: 22px;
+        padding-bottom: 22px;
+    }
+
     .title {
         margin-bottom: 24px;
+    }
+}
+
+@media (max-height: 760px) {
+    .signUpCard {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+
+    .signUpCard .logoIcon {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+    }
+
+    .signUpCard .title {
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+
+    .signUpCard .titleWithDescription {
+        margin-bottom: 6px;
+    }
+
+    .signUpCard .cardDescription {
+        margin-bottom: 14px;
+    }
+
+    .signUpCard .inputBox,
+    .signUpCard .passwordWrapper {
+        margin-bottom: 10px;
+    }
+
+    .signUpCard .authLink {
+        margin-top: 10px;
     }
 }

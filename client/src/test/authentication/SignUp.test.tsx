@@ -1,5 +1,6 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
 import SignUp from '../../pages/authentication/signUp/SignUp';
 import { render } from '../renderWithToast';
 import userEvent from '@testing-library/user-event';
@@ -31,6 +32,11 @@ describe('User sign up flow', () => {
     beforeEach(() => {
         fetch.mockReset();
         mockNavigate.mockReset();
+        localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
+    });
+
+    afterEach(() => {
+        localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
     });
 
     test('signs up successfully and redirects to SignIn page', async () => {
@@ -52,6 +58,7 @@ describe('User sign up flow', () => {
         userEvent.type(screen.getByLabelText(/email/i), 'StarBoy98@Hotmail.COM');
         userEvent.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
         userEvent.click(screen.getByRole('button', { name: /sign up/i }));
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
 
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/users`, {
@@ -143,6 +150,7 @@ describe('User sign up flow', () => {
 
         await waitFor(() => expect(screen.getByText('Password must be at least 15 characters.')).toBeInTheDocument());
         expect(fetch.mock.calls.some(([url]) => String(url).endsWith('/authentication/users'))).toBe(false);
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
     });
 
     test('shows a password-strength meter while entering a password', async () => {
@@ -181,5 +189,23 @@ describe('User sign up flow', () => {
         expect(screen.getAllByLabelText(/^password$/i)).toHaveLength(1);
         expect(screen.queryByLabelText(/confirm password/i)).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
+    });
+
+    test.each(['Email', 'Password'])('focuses authentication when the %s input receives focus', (label) => {
+        render(
+            <MemoryRouter>
+                <SignUp />
+            </MemoryRouter>
+        );
+
+        fireEvent.focus(screen.getByLabelText(label, { exact: true }));
+
+        expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
+        expect(
+            screen.queryByRole('heading', { name: /organise your job search in one place/i })
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /start organising your job search/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
+        expect(screen.getAllByLabelText(/^password$/i)).toHaveLength(1);
     });
 });

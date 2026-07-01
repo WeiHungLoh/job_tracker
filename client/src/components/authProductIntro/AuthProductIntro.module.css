@@ -1,29 +1,122 @@
 .authContainer {
+    --auth-motion-duration: 420ms;
+    --auth-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+
+    container-type: inline-size;
     display: grid;
     width: min(100%, 1240px);
     min-height: calc(100svh - 96px);
-    grid-template-areas:
-        'product-copy card'
-        'guide-link card'
-        'preview card';
     grid-template-columns: minmax(0, 1fr) minmax(360px, 400px);
-    grid-template-rows: auto auto auto;
     align-content: center;
-    align-items: center;
+    align-items: start;
     column-gap: clamp(48px, 7vw, 96px);
-    row-gap: 22px;
     margin: 0 auto;
 }
 
-.authCardSlot {
-    grid-area: card;
+.productPanel {
+    display: grid;
+    min-width: 0;
+    gap: 22px;
+    opacity: 1;
+    transform: translateX(0);
+    visibility: visible;
+    transition: opacity 260ms ease, transform var(--auth-motion-duration) var(--auth-motion-easing),
+        visibility 0s linear;
+}
+
+.authPanel {
+    position: relative;
+    display: grid;
     width: 100%;
-    align-self: start;
+    min-width: 0;
+    gap: 0;
+    left: 0;
+    transition: gap 280ms ease, left var(--auth-motion-duration) var(--auth-motion-easing);
+    will-change: left;
+}
+
+.authCardSlot {
+    width: 100%;
+}
+
+.restoreControl {
+    display: grid;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    place-items: center;
+    transform: translateY(-10px);
+    transition: max-height 320ms var(--auth-motion-easing), opacity 180ms ease,
+        transform 320ms var(--auth-motion-easing), visibility 0s linear 320ms;
+    visibility: hidden;
+}
+
+.restoreOverviewButton {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 8px;
+    border: 1px solid var(--colorPrimary);
+    border-radius: 12px;
+    background-color: var(--colorStatIconBg);
+    color: var(--colorPrimary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background-color 180ms ease, color 180ms ease, transform 220ms var(--auth-motion-easing);
+}
+
+.restoreIcon {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: var(--colorAuthCardBg);
+    place-items: center;
+    transition: transform 220ms var(--auth-motion-easing);
+}
+
+.restoreOverviewButton:hover {
+    background-color: var(--colorPrimary);
+    color: var(--colorAuthCardBg);
+    transform: translateY(-1px);
+}
+
+.restoreOverviewButton:hover .restoreIcon {
+    transform: translateX(-2px);
+}
+
+.restoreOverviewButton:focus-visible {
+    outline: 3px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 3px;
+}
+
+.focusedMode .productPanel {
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-32px);
+    transition: opacity 220ms ease, transform var(--auth-motion-duration) var(--auth-motion-easing),
+        visibility 0s linear var(--auth-motion-duration);
+    visibility: hidden;
+}
+
+.focusedMode .restoreControl {
+    max-height: 48px;
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0s;
+    visibility: visible;
+}
+
+.focusedMode .authPanel {
+    gap: 14px;
+    left: calc(200px - 50cqw);
 }
 
 .productCopy {
-    grid-area: product-copy;
-    align-self: end;
     color: var(--colorText);
 }
 
@@ -75,7 +168,6 @@
 }
 
 .guideLink {
-    grid-area: guide-link;
     display: inline-flex;
     width: fit-content;
     align-items: center;
@@ -97,11 +189,9 @@
 }
 
 .preview {
-    grid-area: preview;
     width: 100%;
     max-width: 700px;
     overflow: hidden;
-    align-self: start;
     border: 1px solid var(--colorCardBorder);
     border-radius: 14px;
     background-color: var(--colorAuthCardBg);
@@ -147,28 +237,47 @@
 }
 
 @media (max-width: 900px) {
-    .authContainer {
+    .authContainer,
+    .focusedMode {
         width: 100%;
         max-width: 680px;
         min-height: auto;
-        grid-template-areas:
-            'product-copy'
-            'guide-link'
-            'preview'
-            'card';
         grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto;
-        justify-content: center;
+        grid-template-rows: 1fr auto;
+        column-gap: 0;
         row-gap: 28px;
+        transition: grid-template-rows var(--auth-motion-duration) var(--auth-motion-easing),
+            row-gap 320ms var(--auth-motion-easing);
     }
 
-    .authCardSlot {
+    .authPanel {
         width: min(100%, 400px);
         justify-self: center;
+        left: 0;
     }
 
-    .productCopy {
-        align-self: auto;
+    .productPanel {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .focusedMode {
+        position: fixed;
+        inset: 16px;
+        width: auto;
+        height: auto;
+        max-width: none;
+        align-content: start;
+        grid-template-rows: 0fr auto;
+        row-gap: 0;
+    }
+
+    .focusedMode .productPanel {
+        transform: translateY(-24px);
+    }
+
+    .focusedMode .authPanel {
+        left: 0;
     }
 
     .productCopy h1 {
@@ -194,13 +303,13 @@
 }
 
 @media (max-width: 600px) {
-    .authContainer {
-        grid-template-areas:
-            'product-copy'
-            'guide-link'
-            'preview'
-            'card';
+    .authContainer,
+    .focusedMode {
         row-gap: 22px;
+    }
+
+    .focusedMode {
+        row-gap: 0;
     }
 
     .productCopy h1 {
@@ -227,5 +336,22 @@
 
     .benefitList li:last-child {
         border-bottom: 0;
+    }
+}
+
+@media (max-height: 760px) {
+    .focusedMode .authPanel {
+        gap: 6px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .authContainer,
+    .authPanel,
+    .productPanel,
+    .restoreControl,
+    .restoreOverviewButton,
+    .restoreIcon {
+        transition: none;
     }
 }
