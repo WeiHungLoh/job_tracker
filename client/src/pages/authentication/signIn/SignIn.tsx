@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AuthLayout from '../../../components/authLayout/AuthLayout';
+import AuthRequestInfo from '../../../components/authRequestInfo/AuthRequestInfo';
 import Icon from '../../../components/icon/Icon';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -107,15 +108,7 @@ const SignIn = () => {
                         Don’t have an account? Create one
                     </Link>
                 </form>
-                <div className={styles.noticeWrapper}>
-                    <span className={styles.noticeIcon}>
-                        <Icon name='alert' />
-                    </span>
-                    The free-tier server may take up to 50 seconds to wake up. Please wait after clicking Sign in
-                </div>
-                <Link className={styles.userGuideLink} to={routes.userGuide} target='_blank'>
-                    View user guide
-                </Link>
+                <AuthRequestInfo action='Sign in' />
             </div>
         </AuthLayout>
     );

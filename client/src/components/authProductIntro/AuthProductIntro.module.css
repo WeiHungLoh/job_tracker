@@ -1,0 +1,231 @@
+.authContainer {
+    display: grid;
+    width: min(100%, 1240px);
+    min-height: calc(100svh - 96px);
+    grid-template-areas:
+        'product-copy card'
+        'guide-link card'
+        'preview card';
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 400px);
+    grid-template-rows: auto auto auto;
+    align-content: center;
+    align-items: center;
+    column-gap: clamp(48px, 7vw, 96px);
+    row-gap: 22px;
+    margin: 0 auto;
+}
+
+.authCardSlot {
+    grid-area: card;
+    width: 100%;
+    align-self: start;
+}
+
+.productCopy {
+    grid-area: product-copy;
+    align-self: end;
+    color: var(--colorText);
+}
+
+.productCopy h1 {
+    max-width: 720px;
+    margin: 0;
+    color: var(--colorPrimary);
+    font-size: clamp(2rem, 3.2vw, 2.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+}
+
+.description {
+    max-width: 630px;
+    margin: 20px 0 0;
+    color: var(--colorTextSecondary);
+    font-size: 1.05rem;
+    line-height: 1.65;
+}
+
+.benefitList {
+    display: grid;
+    gap: 16px;
+    padding: 0;
+    margin: 28px 0 0;
+    list-style: none;
+}
+
+.benefitList li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--colorText);
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.benefitIcon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 11px;
+    background-color: var(--colorStatIconBg);
+    color: var(--colorPrimary);
+    font-size: 1.25rem;
+    place-items: center;
+}
+
+.guideLink {
+    grid-area: guide-link;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 8px;
+    color: var(--colorPrimary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.guideLink:hover {
+    color: var(--colorPrimaryHover);
+    text-decoration: underline;
+}
+
+.guideLink:focus-visible {
+    border-radius: 4px;
+    outline: 3px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 4px;
+}
+
+.preview {
+    grid-area: preview;
+    width: 100%;
+    max-width: 700px;
+    overflow: hidden;
+    align-self: start;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 14px;
+    background-color: var(--colorAuthCardBg);
+    box-shadow: 0 18px 45px var(--colorAuthCardShadow);
+}
+
+.browserBar {
+    display: flex;
+    height: 28px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--colorCardBorder);
+    background-color: var(--colorOverlayBg);
+}
+
+.browserBar > span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--colorPrimary);
+    opacity: 0.55;
+}
+
+.browserAddress {
+    max-width: 220px;
+    padding: 3px 14px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 999px;
+    background-color: var(--colorInputBg);
+    color: var(--colorTextSecondary);
+    font-size: 0.625rem;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+@media (max-width: 900px) {
+    .authContainer {
+        width: 100%;
+        max-width: 680px;
+        min-height: auto;
+        grid-template-areas:
+            'product-copy'
+            'guide-link'
+            'preview'
+            'card';
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        justify-content: center;
+        row-gap: 28px;
+    }
+
+    .authCardSlot {
+        width: min(100%, 400px);
+        justify-self: center;
+    }
+
+    .productCopy {
+        align-self: auto;
+    }
+
+    .productCopy h1 {
+        max-width: 680px;
+        font-size: clamp(2rem, 7vw, 3rem);
+        text-align: center;
+    }
+
+    .description {
+        margin-right: auto;
+        margin-left: auto;
+        text-align: center;
+    }
+
+    .guideLink {
+        justify-self: center;
+    }
+
+    .preview {
+        max-width: 640px;
+        justify-self: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .authContainer {
+        grid-template-areas:
+            'product-copy'
+            'guide-link'
+            'preview'
+            'card';
+        row-gap: 22px;
+    }
+
+    .productCopy h1 {
+        font-size: clamp(1.8rem, 9vw, 2.35rem);
+        line-height: 1.12;
+    }
+
+    .description {
+        font-size: 0.9375rem;
+        line-height: 1.55;
+    }
+
+    .benefitList {
+        gap: 0;
+    }
+
+    .benefitList li {
+        min-height: 52px;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--colorCardBorder);
+        font-size: 0.875rem;
+    }
+
+    .benefitList li:last-child {
+        border-bottom: 0;
+    }
+}
