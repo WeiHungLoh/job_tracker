@@ -16,11 +16,8 @@ import ViewArchivedApplication from './pages/application/archivedApplication/vie
 import ViewArchivedInterview from './pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
 import ViewInterview from './pages/interview/jobInterview/viewInterview/ViewInterview';
 import Dashboard from './pages/dashboard/Dashboard';
+import SignUp from './pages/authentication/signUp/SignUp';
 import { routes } from './routes';
-
-const SignUp = lazy(
-    () => import('./pages/authentication/signUp/SignUp')
-);
 
 const UserGuide = lazy(
     () => import('./pages/userGuide/UserGuide')
