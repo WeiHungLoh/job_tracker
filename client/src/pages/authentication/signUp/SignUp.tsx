@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../../components/authLayout/AuthLayout';
+import AuthRequestInfo from '../../../components/authRequestInfo/AuthRequestInfo';
 import Icon from '../../../components/icon/Icon';
 import LoadingSpinner from '../../../components/loadingSpinner/LoadingSpinner';
 import PrimaryButton from '../../../components/button/PrimaryButton';
@@ -68,7 +69,8 @@ const SignUp = () => {
         <AuthLayout>
             <div className={styles.card}>
                 <Icon name='briefcase' className={styles.logoIcon} />
-                <h2 className={styles.title}>Sign up for Job Tracker</h2>
+                <h2 className={`${styles.title} ${styles.titleWithDescription}`}>Start organising your job search</h2>
+                <p className={styles.cardDescription}>Create an account to track your applications and interviews.</p>
                 <form onSubmit={handleSignUp}>
                     <label htmlFor='email'>Email</label>
                     <div className={styles.inputBox}>
@@ -126,12 +128,7 @@ const SignUp = () => {
                     </Link>
                 </form>
 
-                <div className={styles.noticeWrapper}>
-                    <span className={styles.noticeIcon}>
-                        <Icon name='alert' />
-                    </span>
-                    The free-tier server may take up to 50 seconds to wake up. Please wait after clicking Sign up.
-                </div>
+                <AuthRequestInfo action='Sign up' />
             </div>
         </AuthLayout>
     );

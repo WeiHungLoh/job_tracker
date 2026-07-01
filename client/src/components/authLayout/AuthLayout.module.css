@@ -1,8 +1,19 @@
 .authPage {
     min-height: 100vh;
-    padding: 32px 16px;
-    display: flex;
-    justify-content: center;
+    min-height: 100svh;
+    padding: 48px 28px;
     box-sizing: border-box;
-    background-color: var(--colorPageBg);
+    background: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%), var(--colorPageBg);
+}
+
+@media (max-width: 900px) {
+    .authPage {
+        padding: 40px 24px;
+    }
+}
+
+@media (max-width: 600px) {
+    .authPage {
+        padding: 28px 16px 36px;
+    }
 }

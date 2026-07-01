@@ -157,7 +157,7 @@ describe('App routing and authentication behavior', () => {
         renderRoute('/sign-up');
 
         expect(
-            await screen.findByText(/sign up for job tracker/i, undefined, {
+            await screen.findByText(/start organising your job search/i, undefined, {
                 timeout: 5000,
             })
         ).toBeInTheDocument();

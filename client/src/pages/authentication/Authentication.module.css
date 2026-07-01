@@ -1,15 +1,14 @@
 .card {
     width: 100%;
     max-width: 400px;
-    padding: 32px;
+    padding: 34px 32px;
     margin: 0;
     box-sizing: border-box;
     background-color: var(--colorAuthCardBg);
     border: 1px solid var(--colorAuthCardBorder);
-    border-radius: 12px;
-    box-shadow: 0 16px 40px var(--colorAuthCardShadow);
-    animation: fadeIn 0.5s ease-in-out;
-    height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 20px 48px var(--colorAuthCardShadow);
+    animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
@@ -25,16 +24,37 @@
 }
 
 .logoIcon {
-    display: flex;
+    display: block;
+    width: 52px;
+    height: 52px;
+    padding: 13px;
     margin: auto;
+    box-sizing: border-box;
+    border: 1px solid var(--colorAuthCardBorder);
+    border-radius: 14px;
+    background-color: var(--colorStatIconBg);
     color: var(--colorPrimary);
-    font-size: 2.5rem;
 }
 
 .title {
-    margin: 10px 0 28px;
+    margin: 16px 0 28px;
     color: var(--colorPrimary);
-    font-size: 1.5rem;
+    font-size: 1.625rem;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    text-align: center;
+}
+
+.titleWithDescription {
+    margin-bottom: 8px;
+}
+
+.cardDescription {
+    max-width: 310px;
+    margin: 0 auto 26px;
+    color: var(--colorTextSecondary);
+    font-size: 0.875rem;
+    line-height: 1.55;
     text-align: center;
 }
 
@@ -109,40 +129,10 @@
     text-decoration: underline;
 }
 
-.noticeWrapper {
-    margin-top: 24px;
-    padding: 12px;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    background-color: var(--colorNoticeBg);
-    color: var(--colorNoticeText);
-    border-left: 4px solid var(--colorNoticeBorder);
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    line-height: 1.5;
-}
-
-.noticeIcon {
-    flex-shrink: 0;
-}
-
-.userGuideLink {
-    padding: 8px 20px;
-    margin-top: 16px;
-    display: flex;
-    justify-content: center;
-    background-color: var(--colorGuideLinkBg);
-    color: var(--colorGuideLinkText);
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-decoration: none;
-}
-
-.userGuideLink:hover {
-    background-color: var(--colorGuideLinkHover);
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        animation: none;
+    }
 }
 
 @media (max-width: 480px) {
