@@ -157,7 +157,6 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
 
                 <div
                     className={styles.authCardSlot}
-                    onClickCapture={handleAuthInteraction}
                     onFocusCapture={handleAuthInteraction}
                     onPointerDownCapture={handleAuthPointerDown}
                 >
