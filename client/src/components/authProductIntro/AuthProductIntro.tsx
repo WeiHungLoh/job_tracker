@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PointerEvent, ReactNode, SyntheticEvent } from 'react';
+import type { ReactNode, SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
 import applicationPreview from '../../../images/view-application.png';
 import { routes } from '../../routes';
@@ -26,7 +26,6 @@ type AuthProductIntroProps = {
 };
 
 export const AUTH_FOCUSED_MODE_STORAGE_KEY = 'jobTrackerAuthFocusedMode';
-const AUTH_FOCUS_TRANSITION_MS = 420;
 
 const getInitialFocusedMode = (): boolean => {
     try {
@@ -71,29 +70,6 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
         }
 
         enableFocusedMode();
-    };
-
-    const handleAuthPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-        const target = event.target as HTMLInputElement;
-        const isDesktopAuthInteraction =
-            !isFocusedMode &&
-            target.tagName === 'INPUT' &&
-            (target.id === 'email' || target.id === 'password') &&
-            typeof window.matchMedia === 'function' &&
-            window.matchMedia('(min-width: 901px)').matches;
-
-        if (!isDesktopAuthInteraction) {
-            return;
-        }
-
-        event.preventDefault();
-        enableFocusedMode();
-
-        window.setTimeout(() => {
-            if (target.isConnected) {
-                target.focus({ preventScroll: true });
-            }
-        }, AUTH_FOCUS_TRANSITION_MS);
     };
 
     return (
@@ -157,9 +133,7 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
 
                 <div
                     className={styles.authCardSlot}
-                    onClickCapture={handleAuthInteraction}
                     onFocusCapture={handleAuthInteraction}
-                    onPointerDownCapture={handleAuthPointerDown}
                 >
                     {children}
                 </div>
