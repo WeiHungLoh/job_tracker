@@ -71,10 +71,12 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByText(/software engineer/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Filter by' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
+        expect(screen.getByText('Show notes')).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all archived applications/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
-        expect(screen.getByText(/filter by/i)).toBeInTheDocument();
-        expect(screen.getByText(/unhide notes/i)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
             `${
                 import.meta.env.VITE_API_URL
@@ -94,7 +96,7 @@ describe('Archived job application viewing flow', () => {
         );
 
         await screen.findByText(/ABC Pte Ltd/i);
-        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
         await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
 
@@ -130,11 +132,11 @@ describe('Archived job application viewing flow', () => {
         );
 
         await screen.findByText(/ABC Pte Ltd/i);
-        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
         await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
 
-        const filterButton = screen.getByRole('button', { name: 'Job status' });
+        const filterButton = screen.getByRole('button', { name: 'Filter by' });
         const skeletons = screen.getAllByRole('status', { name: 'Loading results' });
 
         expect(skeletons).toHaveLength(2);
@@ -198,7 +200,8 @@ describe('Archived job application viewing flow', () => {
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
 
         // Simulates user clicking delete button and clicking confirm delete
-        userEvent.click(screen.getByRole('button', { name: /delete all archived applications/i }));
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: /delete all archived applications/i }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({
@@ -252,7 +255,7 @@ describe('Archived job application viewing flow', () => {
         expect(
             await screen.findByText(/no archived job applications match the selected job statuses/i)
         ).toBeInTheDocument();
-        await userEvent.click(screen.getByRole('button', { name: 'Job status' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeVisible();
         expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeVisible();
     });

@@ -1,11 +1,13 @@
 import type { ToggleButtonProps } from './models';
 import styles from './ToggleButton.module.css';
 
-const ToggleButton = ({ toggled, onToggle, label, toggledLabel, color = 'green', ...props }: ToggleButtonProps) => (
-    <div className={styles.toggleButton} {...props}>
-        <div>{toggled ? toggledLabel : label}</div>
-        <button type='button' className={`${styles.switch} ${toggled ? styles[color] : ''}`} onClick={onToggle}>
-            <div className={styles.thumb} />
+const ToggleButton = ({ toggled, onToggle, label }: ToggleButtonProps) => (
+    <div className={styles.toggleButton}>
+        <button aria-pressed={toggled} className={styles.row} onClick={onToggle} type='button'>
+            <span aria-hidden='true' className={`${styles.switch} ${toggled ? styles.toggled : ''}`}>
+                <span className={styles.thumb} />
+            </span>
+            <span>{label}</span>
         </button>
     </div>
 );

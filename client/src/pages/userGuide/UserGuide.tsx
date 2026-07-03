@@ -227,7 +227,8 @@ const guideSections: readonly UserGuideSection[] = [
                 <h3>Export as CSV</h3>
                 <p>
                     Application exports contain the records visible under the selected status filters. Interview and
-                    archived-record viewers also provide CSV export actions when at least one record is available.
+                    archived-record viewers also provide CSV export actions under <strong>More...</strong> when at least
+                    one record is available.
                 </p>
                 <h3>Sorting order</h3>
                 <p>
@@ -249,10 +250,10 @@ const guideSections: readonly UserGuideSection[] = [
         content: (
             <>
                 <p>
-                    Use the <strong>Enable auto scroll</strong> toggle at the top of the application viewer to control
-                    scrolling behavior. When enabled (green), changing the job status via the edit dropdown will
-                    automatically scroll the application into view. When disabled (yellow), the page stays in place
-                    after a status change.
+                    Use the <strong>Auto scroll after job status change</strong> toggle under{' '}
+                    <strong>Display options</strong> to control scrolling behavior. When enabled (green), changing the
+                    job status via the edit dropdown will automatically scroll the application into view. When disabled,
+                    the page stays in place after a status change.
                 </p>
                 <p>
                     After a status update, the application receives a green highlight for four seconds. No highlight is

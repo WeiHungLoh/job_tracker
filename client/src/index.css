@@ -69,6 +69,7 @@
     --colorBtnSecondaryHoverBg: rgb(241 53 109 / 8%);
     --colorBtnDestructiveBg: #dc3545;
     --colorBtnDestructiveHoverBg: #c82333;
+    --colorBtnDestructiveText: #dc3545;
 
     /* Notes */
     --colorNotesBg: #fff9c4;
@@ -125,8 +126,6 @@
     --colorSwitchOffBorder: #aaa;
     --colorSwitchThumb: #ffff;
     --colorSwitchOnGreen: #15b58e;
-    --colorSwitchOnYellow: #fbc02d;
-    --colorSwitchOnBlue: #2b83f6;
     --colorSwitchHoverBorder: #6f6f6f;
 
     /* Filter select */
@@ -205,8 +204,9 @@
     --colorBtnPrimaryText: #fff;
     --colorBtnCompactText: #fff;
     --colorBtnSecondaryHoverBg: rgb(244 80 126 / 12%);
-    --colorBtnDestructiveBg: #b02a37;
-    --colorBtnDestructiveHoverBg: #c0392b;
+    --colorBtnDestructiveBg: #c43d4b;
+    --colorBtnDestructiveHoverBg: #ca414f;
+    --colorBtnDestructiveText: #ff7b86;
 
     /* Notes */
     --colorNotesBg: #3d3520;
@@ -273,8 +273,6 @@
     --colorSwitchOffBorder: #6c757d;
     --colorSwitchThumb: #dee2e6;
     --colorSwitchOnGreen: #11997a;
-    --colorSwitchOnYellow: #d39e00;
-    --colorSwitchOnBlue: #1a6ed8;
     --colorSwitchHoverBorder: #adb5bd;
 
     /* Filter select */

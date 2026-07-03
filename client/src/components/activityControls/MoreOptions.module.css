@@ -1,0 +1,36 @@
+.options {
+    display: flex;
+    flex-direction: column;
+}
+
+.action {
+    display: flex;
+    width: 100%;
+    padding: 8px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--colorText);
+    font-size: 0.875rem;
+    text-align: left;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.action:hover {
+    background: var(--colorBtnSecondaryHoverBg);
+}
+
+.action.deleteAction {
+    color: var(--colorBtnDestructiveText);
+}
+
+.divider {
+    height: 1px;
+    margin: 6px 0;
+    border: 0;
+    background: var(--colorCardBorder);
+}

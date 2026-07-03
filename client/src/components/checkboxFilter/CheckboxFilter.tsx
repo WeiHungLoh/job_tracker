@@ -2,7 +2,8 @@ import type { CheckboxFilterProps } from './models';
 import Icon from '../icon/Icon';
 import PrimaryButton from '../button/PrimaryButton';
 import styles from './CheckboxFilter.module.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import useDropdown from '../../hooks/useDropdown';
 
 const haveSameOptions = <Option extends string>(
     firstOptions: readonly Option[],
@@ -17,44 +18,16 @@ const CheckboxFilter = <Option extends string>({
     buttonLabel,
     disabled = false,
     id,
-    label,
     options,
     selectedOptions: savedOptions,
     onSelectionChange,
 }: CheckboxFilterProps<Option>) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selectedOptions, setSelectedOptions] = useState<Option[]>([...savedOptions]);
+    const { alignRight, containerRef, dropdownRef, isOpen, toggleDropdown } = useDropdown();
 
     useEffect(() => {
         setSelectedOptions([...savedOptions]);
     }, [savedOptions]);
-
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        const closeOnOutsideClick = (event: MouseEvent) => {
-            if (!containerRef.current?.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-
-        const closeOnEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                setIsOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', closeOnOutsideClick);
-        document.addEventListener('keydown', closeOnEscape);
-
-        return () => {
-            document.removeEventListener('mousedown', closeOnOutsideClick);
-            document.removeEventListener('keydown', closeOnEscape);
-        };
-    }, [isOpen]);
 
     const allSelected = options.length > 0 && options.every((option) => selectedOptions.includes(option));
 
@@ -94,13 +67,12 @@ const CheckboxFilter = <Option extends string>({
 
     return (
         <div className={styles.checkboxFilter} ref={containerRef}>
-            <div>{label}</div>
             <PrimaryButton
                 aria-controls={`${id}-options`}
                 aria-expanded={isOpen}
                 className={styles.toggle}
                 disabled={disabled}
-                onClick={() => setIsOpen((current) => !current)}
+                onClick={toggleDropdown}
                 type='button'
                 variant='navigation'
             >
@@ -113,7 +85,11 @@ const CheckboxFilter = <Option extends string>({
             </PrimaryButton>
 
             {isOpen && (
-                <div className={styles.dropdown} id={`${id}-options`}>
+                <div
+                    className={`${styles.dropdown} ${alignRight ? styles.alignRight : ''}`}
+                    id={`${id}-options`}
+                    ref={dropdownRef}
+                >
                     <label className={styles.option}>
                         <input checked={allSelected} onChange={handleShowAllToggle} type='checkbox' />
                         <span aria-hidden='true' className={styles.checkbox} />

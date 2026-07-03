@@ -4,7 +4,6 @@ import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
 import type { JobInterview } from '../../../interview/models';
 import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
-import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobApplication, type JobStatus } from '../../models';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import styles from './ViewApplication.module.css';
@@ -16,11 +15,12 @@ import { useUserPreferences } from '../../../../components/userPreferences/UserP
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
 import { FIELD_MAX_LENGTHS } from '../../../../helper/formValidation';
 import CheckboxFilter from '../../../../components/checkboxFilter/CheckboxFilter';
-import ApplicationControls from '../../../../components/applicationControls/ApplicationControls';
 import type { UpdateUserPreferencesRequest } from '../../../../components/userPreferences/models';
-import CsvExportButton from '../../../../components/csvExportButton/CsvExportButton';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import ApplicationCard from '../../ApplicationCard';
+import ActivityControls from '../../../../components/activityControls/ActivityControls';
+import DisplayOptions from '../../../../components/activityControls/DisplayOptions';
+import MoreOptions from '../../../../components/activityControls/MoreOptions';
 
 const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,
@@ -295,43 +295,18 @@ const ViewApplication = () => {
 
     return (
         <div className={styles.applicationList}>
-            <ApplicationControls
-                filter={
-                    <CheckboxFilter
-                        buttonLabel='Job status'
-                        disabled={isLoading}
-                        id='application-job-status-filter'
-                        label='Filter by'
-                        onSelectionChange={handleJobStatusChange}
-                        options={JOB_STATUSES}
-                        selectedOptions={selectedJobStatuses}
-                    />
-                }
-                viewOptions={
-                    hasApplications ? (
-                        <>
-                            <ToggleButton
-                                toggled={enableScroll}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        application_enable_scroll: !enableScroll,
-                                    })
-                                }
-                                label='Enable Auto-Scroll'
-                                toggledLabel='Disable Auto-Scroll'
-                                color='blue'
-                            />
-                            <ToggleButton
-                                data-testid='unhide-archive'
-                                toggled={showArchive}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        application_show_archive: !showArchive,
-                                    })
-                                }
-                                label='Unhide Archive'
-                                toggledLabel='Hide Archive'
-                            />
+            <ActivityControls>
+                <CheckboxFilter
+                    buttonLabel='Filter by'
+                    disabled={isLoading}
+                    id='application-job-status-filter'
+                    onSelectionChange={handleJobStatusChange}
+                    options={JOB_STATUSES}
+                    selectedOptions={selectedJobStatuses}
+                />
+                {hasApplications && (
+                    <>
+                        <DisplayOptions id='application-display-options'>
                             <ToggleButton
                                 toggled={showNotes}
                                 onToggle={() =>
@@ -339,14 +314,39 @@ const ViewApplication = () => {
                                         application_show_notes: !showNotes,
                                     })
                                 }
-                                label='Unhide Notes'
-                                toggledLabel='Hide Notes'
-                                color='yellow'
+                                label='Show notes'
                             />
-                        </>
-                    ) : undefined
-                }
-            />
+                            <ToggleButton
+                                toggled={showArchive}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_show_archive: !showArchive,
+                                    })
+                                }
+                                label='Show archive'
+                            />
+                            <ToggleButton
+                                toggled={enableScroll}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_enable_scroll: !enableScroll,
+                                    })
+                                }
+                                label='Auto scroll after job status change'
+                            />
+                        </DisplayOptions>
+                        <MoreOptions
+                            csvData={csvData}
+                            csvFilename='job_applications.csv'
+                            csvHeaders={APPLICATION_CSV_HEADERS}
+                            deleteLabel='Delete all applications'
+                            id='application-more-options'
+                            isDeleting={isDeletingAll}
+                            onDelete={() => void handleDeleteAll()}
+                        />
+                    </>
+                )}
+            </ActivityControls>
 
             {(isLoading || isFilteringApplications) && (
                 <>
@@ -359,7 +359,6 @@ const ViewApplication = () => {
                 <>
                     {!hasApplications && (
                         <div>
-                            <br />
                             No job applications match the selected job statuses. Start adding one now!{' '}
                         </div>
                     )}
@@ -390,25 +389,6 @@ const ViewApplication = () => {
                             variant='job'
                         />
                     ))}
-
-                    <div className={styles.applicationButton}>
-                        {hasApplications && (
-                            <>
-                                <PrimaryButton
-                                    isLoading={isDeletingAll}
-                                    variant='destructive'
-                                    onClick={() => handleDeleteAll()}
-                                >
-                                    Delete all applications
-                                </PrimaryButton>
-                                <CsvExportButton
-                                    data={csvData}
-                                    headers={APPLICATION_CSV_HEADERS}
-                                    filename='job_applications.csv'
-                                />
-                            </>
-                        )}
-                    </div>
                 </>
             )}
         </div>

@@ -4,8 +4,8 @@
     max-width: 100%;
     margin: 20px 0;
     padding: 16px 18px;
-    align-items: flex-end;
-    gap: 16px 24px;
+    align-items: center;
+    gap: 10px;
     overflow: visible;
     border: 1px solid var(--colorCardBorder);
     border-radius: 15px;
@@ -13,10 +13,10 @@
     box-sizing: border-box;
 }
 
-.viewOptions {
-    display: flex;
-    margin-left: auto;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: 20px;
+@media (max-width: 480px) {
+    .controls {
+        padding: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }

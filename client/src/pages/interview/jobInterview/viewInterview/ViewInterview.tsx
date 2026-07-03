@@ -5,7 +5,6 @@ import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation'
 import { getApplicationUnavailableMessage } from '../../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../../models';
 import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
-import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { routes } from '../../../../routes';
 import styles from './ViewInterview.module.css';
 import { useConfirm } from 'material-ui-confirm';
@@ -13,9 +12,10 @@ import { useJobTrackerAPI } from '../../../../api/useJobTrackerAPI';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
-import CsvExportButton from '../../../../components/csvExportButton/CsvExportButton';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import InterviewCard from '../../InterviewCard';
+import ActivityControls from '../../../../components/activityControls/ActivityControls';
+import MoreOptions from '../../../../components/activityControls/MoreOptions';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
@@ -140,13 +140,26 @@ const ViewInterview = () => {
 
             {!isLoading && (
                 <>
+                    {hasInterviews && (
+                        <ActivityControls>
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='job_interviews.csv'
+                                csvHeaders={INTERVIEW_CSV_HEADERS}
+                                deleteLabel='Delete all interviews'
+                                id='interview-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
+                            />
+                        </ActivityControls>
+                    )}
                     {!hasInterviews && (
                         <div>
                             <br />
                             No job interview found. Start adding one now!{' '}
                         </div>
                     )}
-                    <br />
+
                     {interviews.map((interview, index) => (
                         <InterviewCard
                             index={index}
@@ -158,25 +171,6 @@ const ViewInterview = () => {
                             variant='job'
                         />
                     ))}
-
-                    <div className={styles.interviewButton}>
-                        {hasInterviews && (
-                            <>
-                                <PrimaryButton
-                                    isLoading={isDeletingAll}
-                                    variant='destructive'
-                                    onClick={() => handleDeleteAll()}
-                                >
-                                    Delete all interviews
-                                </PrimaryButton>
-                                <CsvExportButton
-                                    data={csvData}
-                                    headers={INTERVIEW_CSV_HEADERS}
-                                    filename='job_interviews.csv'
-                                />
-                            </>
-                        )}
-                    </div>
                 </>
             )}
         </div>

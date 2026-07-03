@@ -6,7 +6,6 @@ import { getApplicationUnavailableMessage } from '../../../../helper/application
 import { INTERVIEW_CSV_HEADERS } from '../../models';
 import { useNavigate } from 'react-router-dom';
 import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
-import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { routes } from '../../../../routes';
 import styles from './ViewArchivedInterview.module.css';
 import { useConfirm } from 'material-ui-confirm';
@@ -14,9 +13,10 @@ import { useJobTrackerAPI } from '../../../../api/useJobTrackerAPI';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
-import CsvExportButton from '../../../../components/csvExportButton/CsvExportButton';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import InterviewCard from '../../InterviewCard';
+import ActivityControls from '../../../../components/activityControls/ActivityControls';
+import MoreOptions from '../../../../components/activityControls/MoreOptions';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
@@ -155,13 +155,26 @@ const ViewArchivedInterview = () => {
 
             {!isLoading && (
                 <>
+                    {hasInterviews && (
+                        <ActivityControls>
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='archived_job_interviews.csv'
+                                csvHeaders={INTERVIEW_CSV_HEADERS}
+                                deleteLabel='Delete all archived interviews'
+                                id='archived-interview-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
+                            />
+                        </ActivityControls>
+                    )}
                     {!hasInterviews && (
                         <div>
                             <br />
                             No archived job interview found. Start archiving now!{' '}
                         </div>
                     )}
-                    <br />
+
                     {archivedInterviews.map((interview, index) => (
                         <InterviewCard
                             index={index}
@@ -173,25 +186,6 @@ const ViewArchivedInterview = () => {
                             variant='archived'
                         />
                     ))}
-
-                    <div className={styles.interviewButton}>
-                        {hasInterviews && (
-                            <>
-                                <PrimaryButton
-                                    isLoading={isDeletingAll}
-                                    variant='destructive'
-                                    onClick={() => handleDeleteAll()}
-                                >
-                                    Delete all archived interviews
-                                </PrimaryButton>
-                                <CsvExportButton
-                                    data={csvData}
-                                    headers={INTERVIEW_CSV_HEADERS}
-                                    filename='archived_job_interviews.csv'
-                                />
-                            </>
-                        )}
-                    </div>
                 </>
             )}
         </div>

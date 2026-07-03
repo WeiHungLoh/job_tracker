@@ -56,8 +56,9 @@ describe('Job interview viewer flow', () => {
         expect(screen.getByText(/hr/i)).toBeInTheDocument();
         expect(screen.getByText(/bring resume/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all interviews/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();
     });
 
     test('shows a skeleton instead of a spinner during the initial fetch', () => {
@@ -121,7 +122,8 @@ describe('Job interview viewer flow', () => {
         // Simulates user confirming delete
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
         // Simulates user clicking delete button and clicking confirm delete
-        userEvent.click(screen.getByRole('button', { name: 'Delete all interviews' }));
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Delete all interviews' }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({

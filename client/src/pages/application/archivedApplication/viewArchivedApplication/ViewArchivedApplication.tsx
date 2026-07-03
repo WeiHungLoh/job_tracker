@@ -4,7 +4,6 @@ import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
 import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../models';
 import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
-import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import ToggleButton from '../../../../components/toggleButton/ToggleButton';
 import styles from './ViewArchivedApplication.module.css';
@@ -15,11 +14,12 @@ import { useToast } from '../../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
 import CheckboxFilter from '../../../../components/checkboxFilter/CheckboxFilter';
-import ApplicationControls from '../../../../components/applicationControls/ApplicationControls';
 import type { UpdateUserPreferencesRequest } from '../../../../components/userPreferences/models';
-import CsvExportButton from '../../../../components/csvExportButton/CsvExportButton';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import ApplicationCard from '../../ApplicationCard';
+import ActivityControls from '../../../../components/activityControls/ActivityControls';
+import DisplayOptions from '../../../../components/activityControls/DisplayOptions';
+import MoreOptions from '../../../../components/activityControls/MoreOptions';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
@@ -184,34 +184,40 @@ const ViewArchivedApplication = () => {
 
     return (
         <div className={styles.archivedApplicationList}>
-            <ApplicationControls
-                filter={
-                    <CheckboxFilter
-                        buttonLabel='Job status'
-                        disabled={isLoading}
-                        id='archived-application-job-status-filter'
-                        label='Filter by'
-                        onSelectionChange={handleJobStatusChange}
-                        options={JOB_STATUSES}
-                        selectedOptions={selectedJobStatuses}
-                    />
-                }
-                viewOptions={
-                    hasApplications ? (
-                        <ToggleButton
-                            toggled={showNotes}
-                            onToggle={() =>
-                                void handlePreferenceUpdate({
-                                    archived_application_show_notes: !showNotes,
-                                })
-                            }
-                            label='Unhide Notes'
-                            toggledLabel='Hide Notes'
-                            color='yellow'
+            <ActivityControls>
+                <CheckboxFilter
+                    buttonLabel='Filter by'
+                    disabled={isLoading}
+                    id='archived-application-job-status-filter'
+                    onSelectionChange={handleJobStatusChange}
+                    options={JOB_STATUSES}
+                    selectedOptions={selectedJobStatuses}
+                />
+                {hasApplications && (
+                    <>
+                        <DisplayOptions id='archived-application-display-options'>
+                            <ToggleButton
+                                toggled={showNotes}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        archived_application_show_notes: !showNotes,
+                                    })
+                                }
+                                label='Show notes'
+                            />
+                        </DisplayOptions>
+                        <MoreOptions
+                            csvData={csvData}
+                            csvFilename='archived_job_applications.csv'
+                            csvHeaders={APPLICATION_CSV_HEADERS}
+                            deleteLabel='Delete all archived applications'
+                            id='archived-application-more-options'
+                            isDeleting={isDeletingAll}
+                            onDelete={() => void handleDeleteAll()}
                         />
-                    ) : undefined
-                }
-            />
+                    </>
+                )}
+            </ActivityControls>
 
             {(isLoading || isFilteringApplications) && (
                 <>
@@ -224,7 +230,6 @@ const ViewArchivedApplication = () => {
                 <>
                     {!hasApplications && (
                         <div>
-                            <br />
                             No archived job applications match the selected job statuses. Start archiving now!{' '}
                         </div>
                     )}
@@ -242,25 +247,6 @@ const ViewArchivedApplication = () => {
                             variant='archived'
                         />
                     ))}
-
-                    <div className={styles.applicationButton}>
-                        {hasApplications && (
-                            <>
-                                <PrimaryButton
-                                    isLoading={isDeletingAll}
-                                    variant='destructive'
-                                    onClick={() => handleDeleteAll()}
-                                >
-                                    Delete all archived applications
-                                </PrimaryButton>
-                                <CsvExportButton
-                                    data={csvData}
-                                    headers={APPLICATION_CSV_HEADERS}
-                                    filename='archived_job_applications.csv'
-                                />
-                            </>
-                        )}
-                    </div>
                 </>
             )}
         </div>

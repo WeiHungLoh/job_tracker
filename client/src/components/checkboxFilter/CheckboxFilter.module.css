@@ -46,18 +46,22 @@
 .dropdown {
     position: absolute;
     top: calc(100% + 6px);
-    left: 50%;
+    left: 0;
     z-index: 100;
-    min-width: 120px;
+    min-width: min(120px, calc(100vw - 16px));
     max-height: 250px;
     padding: 12px;
     overflow-y: auto;
-    transform: translateX(-50%);
     border: 1px solid var(--colorCardBorder);
     border-radius: 10px;
     background: var(--colorCardBg);
     box-shadow: 0 6px 18px var(--colorAuthCardShadow);
     box-sizing: border-box;
+}
+
+.alignRight {
+    right: 0;
+    left: auto;
 }
 
 .option {

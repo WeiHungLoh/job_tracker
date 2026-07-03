@@ -8,20 +8,6 @@
     min-height: 70vh;
 }
 
-.applicationButton {
-    display: flex;
-    gap: 70px;
-}
-
-.applicationButton button {
-    margin-top: 20px;
-}
-
-.applicationButton a {
-    text-decoration: none;
-    color: var(--colorStatusApplied);
-}
-
 .highlighted {
     animation: highlightFade 4s ease-in-out;
 }
@@ -39,9 +25,5 @@
 @media (max-width: 803px) {
     .applicationList {
         max-width: 90%;
-    }
-
-    .applicationButton {
-        gap: 54px;
     }
 }

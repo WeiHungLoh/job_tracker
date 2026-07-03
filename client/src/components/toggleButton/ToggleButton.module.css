@@ -1,51 +1,77 @@
 .toggleButton {
-    font-size: 0.75rem;
-    text-align: center;
+    width: 100%;
+}
+
+.row {
+    display: grid;
+    width: 100%;
+    min-height: 40px;
+    padding: 6px 8px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--colorText);
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.row:hover {
+    background: var(--colorBtnSecondaryHoverBg);
+}
+
+.row:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 1px;
 }
 
 .switch {
-    background-color: var(--colorSwitchOff);
+    position: relative;
+    width: 40px;
+    height: 28px;
+}
+
+.switch::before {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 32px;
+    height: 20px;
     border: 1px solid var(--colorSwitchOffBorder);
     border-radius: 99px;
-    width: 50px;
-    height: 28px;
+    background-color: var(--colorSwitchOff);
+    content: '';
     transition: background-color 0.1s ease, border-color 0.2s ease;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    margin: auto;
+    box-sizing: border-box;
 }
 
 .thumb {
-    height: 20px;
-    width: 20px;
-    background-color: var(--colorSwitchThumb);
-    border-radius: 99px;
-    transition: left 0.15s ease;
     position: absolute;
-    left: 3px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 9px;
+    left: 9px;
+    width: 10px;
+    height: 10px;
+    border-radius: 99px;
+    background-color: var(--colorSwitchThumb);
+    transition: top 0.15s ease, left 0.15s ease, width 0.15s ease, height 0.15s ease;
 }
 
-.switch.green {
+.switch.toggled::before {
     background-color: var(--colorSwitchOnGreen);
+    border-color: var(--colorSwitchOnGreen);
 }
 
-.switch.yellow {
-    background-color: var(--colorSwitchOnYellow);
-}
-
-.switch.blue {
-    background-color: var(--colorSwitchOnBlue);
-}
-
-.switch:hover {
+.row:hover .switch::before {
     border-color: var(--colorSwitchHoverBorder);
 }
 
-.switch.green .thumb,
-.switch.yellow .thumb,
-.switch.blue .thumb {
-    left: 25px;
+.switch.toggled .thumb {
+    top: 7px;
+    left: 21px;
+    width: 14px;
+    height: 14px;
 }

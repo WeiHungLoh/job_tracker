@@ -8,20 +8,6 @@
     min-height: 70vh;
 }
 
-.applicationButton {
-    display: flex;
-    gap: 70px;
-}
-
-.applicationButton button {
-    margin-top: 20px;
-}
-
-.applicationButton a {
-    text-decoration: none;
-    color: var(--colorStatusApplied);
-}
-
 .highlighted {
     animation: highlightFade 4s ease-in-out;
 }
@@ -40,9 +26,5 @@
     .archivedApplicationList {
         max-width: 90%;
         padding-right: 20px;
-    }
-
-    .applicationButton {
-        gap: 54px;
     }
 }
