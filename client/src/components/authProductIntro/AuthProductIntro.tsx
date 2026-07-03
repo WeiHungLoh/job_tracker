@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { PointerEvent, ReactNode, SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
-import applicationPreview from '../../../images/view-application.png';
 import { routes } from '../../routes';
 import Icon from '../icon/Icon';
 import styles from './AuthProductIntro.module.css';
+import ProductPreviewCarousel from './ProductPreviewCarousel';
 
 const productBenefits = [
     {
@@ -127,18 +127,7 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
                     <span aria-hidden='true'>→</span>
                 </Link>
 
-                <div className={styles.preview} aria-label='Job Tracker product preview'>
-                    <div className={styles.browserBar} aria-hidden='true'>
-                        <span />
-                        <span />
-                        <span />
-                        <div className={styles.browserAddress}>jobtracker.weihungloh.com</div>
-                    </div>
-                    <img
-                        src={applicationPreview}
-                        alt='Job Tracker application list showing applications, statuses, interviews and notes'
-                    />
-                </div>
+                <ProductPreviewCarousel />
             </section>
 
             <section className={styles.authPanel} aria-label='Account access'>

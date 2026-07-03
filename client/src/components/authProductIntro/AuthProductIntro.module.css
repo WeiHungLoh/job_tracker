@@ -230,10 +230,93 @@
     white-space: nowrap;
 }
 
-.preview img {
+.previewImageButton {
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background-color: var(--colorInputBg);
+    cursor: pointer;
+}
+
+.previewImageButton img {
     display: block;
     width: 100%;
     height: auto;
+}
+
+.previewImageButton:focus-visible,
+.carouselArrow:focus-visible,
+.carouselDot:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 3px solid var(--colorPrimaryFocusOutline);
+    outline-offset: -3px;
+}
+
+.carouselControls {
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--colorCardBorder);
+    background-color: var(--colorOverlayBg);
+}
+
+.carouselArrow {
+    display: grid;
+    width: 36px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--colorPrimary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.75rem;
+    line-height: 1;
+    place-items: center;
+}
+
+.carouselArrow:hover {
+    background-color: var(--colorStatIconBg);
+}
+
+.carouselDots {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+}
+
+.carouselDot {
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background-color: var(--colorTextSecondary);
+    cursor: pointer;
+    opacity: 0.45;
+}
+
+.activeCarouselDot {
+    background-color: var(--colorPrimary);
+    opacity: 1;
+}
+
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    margin: -1px;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }
 
 @media (max-width: 900px) {

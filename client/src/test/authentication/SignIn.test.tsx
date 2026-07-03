@@ -167,11 +167,33 @@ describe('User sign in flow', () => {
         expect(screen.getByText('View your job-search progress from one dashboard')).toBeInTheDocument();
         expect(
             screen.getByRole('img', {
-                name: /job tracker application list showing applications, statuses, interviews and notes/i,
+                name: /job tracker dashboard showing application and interview statistics/i,
             })
         ).toBeInTheDocument();
+        expect(screen.getByText('jobtracker.weihungloh.com/dashboard')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /see how it works/i })).toHaveAttribute('href', '/user-guide');
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
+    });
+
+    test('cycles through product previews in route order', () => {
+        render(
+            <MemoryRouter initialEntries={['/']}>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        const previewRoutes = [
+            '/application/view',
+            '/interview/view',
+            '/application/archive',
+            '/interview/archive',
+            '/dashboard',
+        ];
+
+        previewRoutes.forEach((route) => {
+            userEvent.click(screen.getByRole('button', { name: /show the next preview/i }));
+            expect(screen.getByText(`jobtracker.weihungloh.com${route}`)).toBeInTheDocument();
+        });
     });
 
     test.each(['Email', 'Password'])('focuses authentication when the %s input receives focus', (label) => {
@@ -189,7 +211,7 @@ describe('User sign in flow', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('img', {
-                name: /job tracker application list showing applications, statuses, interviews and notes/i,
+                name: /job tracker dashboard showing application and interview statistics/i,
             })
         ).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: /see how it works/i })).not.toBeInTheDocument();
