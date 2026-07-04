@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
 import SignIn from '../../pages/authentication/signIn/SignIn';
@@ -41,10 +41,12 @@ describe('User sign in flow', () => {
         });
         mockNavigate.mockReset();
         localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
+        localStorage.removeItem('theme');
     });
 
     afterEach(() => {
         localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
+        localStorage.removeItem('theme');
     });
 
     test('signs in successfully and redirects to /application/add page', async () => {
@@ -169,7 +171,7 @@ describe('User sign in flow', () => {
             screen.getByRole('img', {
                 name: /job tracker dashboard showing application and interview statistics/i,
             })
-        ).toBeInTheDocument();
+        ).toHaveAttribute('src', expect.stringContaining('light-dashboard.png'));
         expect(screen.getByText('jobtracker.weihungloh.com/dashboard')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /see how it works/i })).toHaveAttribute('href', '/user-guide');
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
@@ -191,9 +193,56 @@ describe('User sign in flow', () => {
         ];
 
         previewRoutes.forEach((route) => {
-            userEvent.click(screen.getByRole('button', { name: /show the next preview/i }));
+            userEvent.click(screen.getByRole('button', { name: /next preview/i }));
             expect(screen.getByText(`jobtracker.weihungloh.com${route}`)).toBeInTheDocument();
         });
+    });
+
+    test('uses dark preview images in dark mode', () => {
+        localStorage.setItem('theme', 'dark');
+
+        render(
+            <MemoryRouter initialEntries={['/']}>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        expect(
+            screen.getByRole('img', {
+                name: /job tracker dashboard showing application and interview statistics/i,
+            })
+        ).toHaveAttribute('src', expect.stringContaining('dark-dashboard.png'));
+    });
+
+    test('keeps carousel navigation available in fullscreen and supports both close methods', async () => {
+        render(
+            <MemoryRouter initialEntries={['/']}>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        const imageButton = screen.getByRole('button', { name: /open dashboard preview in fullscreen/i });
+        userEvent.click(imageButton);
+
+        const dialog = screen.getByRole('dialog', { name: /job tracker product preview fullscreen/i });
+        expect(document.body).toHaveStyle({ overflow: 'hidden' });
+        expect(document.documentElement).toHaveStyle({ overflow: 'hidden' });
+        expect(within(dialog).getByRole('button', { name: /close fullscreen preview/i })).toHaveFocus();
+
+        userEvent.click(within(dialog).getByRole('button', { name: /next preview/i }));
+        expect(within(dialog).getByText('jobtracker.weihungloh.com/application/view')).toBeInTheDocument();
+
+        userEvent.click(within(dialog).getByRole('button', { name: /jump to archived interview/i }));
+        expect(within(dialog).getByText('jobtracker.weihungloh.com/interview/archive')).toBeInTheDocument();
+
+        userEvent.click(within(dialog).getByRole('button', { name: /close fullscreen preview/i }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        await waitFor(() => expect(imageButton).toHaveFocus());
+        expect(document.body).not.toHaveStyle({ overflow: 'hidden' });
+
+        userEvent.click(imageButton);
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     test.each(['Email', 'Password'])('focuses authentication when the %s input receives focus', (label) => {
