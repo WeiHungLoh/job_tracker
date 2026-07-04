@@ -114,7 +114,7 @@
 }
 
 .focusedMode .authPanel {
-    gap: 24px;
+    gap: 14px;
     left: calc(200px - 50cqw);
 }
 

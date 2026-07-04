@@ -17,39 +17,30 @@ const PrimaryButton = ({
     className = '',
     disabled,
     isLoading = false,
+    ref,
     variant = 'default',
     ...props
 }: PrimaryButtonProps) => {
-    const classes = [
-        styles.button,
-        VARIANT_CLASS[variant],
-        isLoading ? styles.loading : '',
-        className,
-    ]
+    const classes = [styles.button, VARIANT_CLASS[variant], isLoading ? styles.loading : '', className]
         .filter(Boolean)
         .join(' ');
 
-    const spinnerVariant =
-        variant === 'secondary' ? 'primary' : 'light';
+    const spinnerVariant = variant === 'secondary' ? 'primary' : 'light';
 
     return (
         <button
             aria-busy={isLoading || undefined}
             className={classes}
             disabled={disabled || isLoading}
+            ref={ref}
             {...props}
         >
             {isLoading ? (
                 <>
-                    <span className={styles.hiddenContent}>
-                        {children}
-                    </span>
+                    <span className={styles.hiddenContent}>{children}</span>
 
                     <span className={styles.spinner}>
-                        <LoadingSpinner
-                            size='sm'
-                            variant={spinnerVariant}
-                        />
+                        <LoadingSpinner size='sm' variant={spinnerVariant} />
                     </span>
                 </>
             ) : (

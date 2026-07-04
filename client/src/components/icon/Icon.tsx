@@ -4,6 +4,7 @@ import { IoMdArchive, IoMdEyeOff } from 'react-icons/io';
 import {
     MdArrowBack,
     MdAutoAwesome,
+    MdCalendarToday,
     MdCancel,
     MdCheckCircle,
     MdDarkMode,
@@ -29,6 +30,7 @@ const icons: Record<IconName, IconType> = {
     arrowBack: MdArrowBack,
     archive: IoMdArchive,
     briefcase: FaBriefcase,
+    calendar: MdCalendarToday,
     chevronDown: MdExpandMore,
     error: MdCancel,
     dashboard: MdDashboard,

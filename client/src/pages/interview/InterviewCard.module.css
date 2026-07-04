@@ -11,12 +11,14 @@
 }
 
 .buttonGroup {
-    display: flex;
+    display: grid;
     margin-left: auto;
-    cursor: pointer;
+    grid-auto-flow: column;
+    justify-content: end;
     align-items: center;
     color: var(--colorBadgeText);
     gap: 10px;
+    width: 190px;
 }
 
 .interviewContent {
@@ -92,11 +94,21 @@
 @media (max-width: 803px) {
     .interview {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
     }
 
     .interviewContent {
         min-width: 260px;
         font-size: 0.9rem;
+    }
+
+    .buttonGroup {
+        grid-template-columns: 1fr;
+        grid-auto-flow: row;
+        width: auto;
+        padding-right: 16px;
+        padding-left: 24px;
     }
 
     .interviewContent h2 {

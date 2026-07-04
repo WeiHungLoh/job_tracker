@@ -1,0 +1,45 @@
+.container {
+    z-index: 20;
+}
+
+.trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.trigger:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}
+
+.container .menu {
+    min-width: min(250px, calc(100vw - 32px));
+    padding: 6px;
+}
+
+.menuItem {
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--colorText);
+    font-size: 0.875rem;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible {
+    background: var(--colorBtnSecondaryHoverBg);
+    color: var(--colorPrimary);
+}
+
+.menuItem:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: -2px;
+}

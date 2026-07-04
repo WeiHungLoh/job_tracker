@@ -25,6 +25,13 @@
     color: var(--colorBtnPrimaryText);
 }
 
+.label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+}
+
 .chevron {
     display: block;
     flex-shrink: 0;

@@ -14,13 +14,13 @@ import { useToast } from '../../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
 import { FIELD_MAX_LENGTHS } from '../../../../helper/formValidation';
-import CheckboxFilter from '../../../../components/checkboxFilter/CheckboxFilter';
+import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import type { UpdateUserPreferencesRequest } from '../../../../components/userPreferences/models';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import ApplicationCard from '../../ApplicationCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
-import DisplayOptions from '../../../../components/activityControls/DisplayOptions';
-import MoreOptions from '../../../../components/activityControls/MoreOptions';
+import DisplayOptions from '../../../../components/activityControls/displayOptions/DisplayOptions';
+import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 
 const JOB_STATUS_ORDER: Record<JobStatus, number> = {
     Accepted: 1,

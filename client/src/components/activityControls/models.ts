@@ -1,5 +1,6 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { AriaRole, ComponentProps, ReactNode } from 'react';
 import type { CSVLink } from 'react-csv';
+import type { PrimaryButtonVariant } from '../button/models';
 
 export type ActivityControlsProps = {
     children: ReactNode;
@@ -7,8 +8,16 @@ export type ActivityControlsProps = {
 
 export type ControlDropdownProps = {
     children: ReactNode;
+    closeOnSelect?: boolean;
+    containerClassName?: string;
+    disabled?: boolean;
+    dropdownAriaLabel?: string;
+    dropdownClassName?: string;
+    dropdownRole?: AriaRole;
     id: string;
-    label: string;
+    label: ReactNode;
+    triggerClassName?: string;
+    triggerVariant?: PrimaryButtonVariant;
 };
 
 export type DisplayOptionsProps = {

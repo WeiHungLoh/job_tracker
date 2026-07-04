@@ -4,20 +4,41 @@ import type { ControlDropdownProps } from './models';
 import styles from './ControlDropdown.module.css';
 import useDropdown from '../../hooks/useDropdown';
 
-const ControlDropdown = ({ children, id, label }: ControlDropdownProps) => {
-    const { alignRight, containerRef, dropdownRef, isOpen, toggleDropdown } = useDropdown();
+const ControlDropdown = ({
+    children,
+    closeOnSelect = false,
+    containerClassName = '',
+    disabled = false,
+    dropdownAriaLabel,
+    dropdownClassName = '',
+    dropdownRole,
+    id,
+    label,
+    triggerClassName = '',
+    triggerVariant = 'navigation',
+}: ControlDropdownProps) => {
+    const { alignRight, closeDropdown, containerRef, dropdownRef, isOpen, toggleDropdown, triggerRef } = useDropdown();
+    const dropdownId = `${id}-options`;
+    const containerClasses = `${styles.container} ${containerClassName}`.trim();
+    const triggerClasses = `${triggerVariant === 'navigation' ? styles.toggle : ''} ${triggerClassName}`.trim();
+    const dropdownClasses = [styles.dropdown, alignRight ? styles.alignRight : '', dropdownClassName]
+        .filter(Boolean)
+        .join(' ');
 
     return (
-        <div className={styles.container} ref={containerRef}>
+        <div className={containerClasses} ref={containerRef}>
             <PrimaryButton
-                aria-controls={`${id}-options`}
+                aria-controls={dropdownId}
                 aria-expanded={isOpen}
-                className={styles.toggle}
+                aria-haspopup={dropdownRole === 'menu' ? 'menu' : undefined}
+                className={triggerClasses}
+                disabled={disabled}
                 onClick={toggleDropdown}
+                ref={triggerRef}
                 type='button'
-                variant='navigation'
+                variant={triggerVariant}
             >
-                <span>{label}</span>
+                <span className={styles.label}>{label}</span>
                 <Icon
                     className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
                     name='chevronDown'
@@ -27,9 +48,12 @@ const ControlDropdown = ({ children, id, label }: ControlDropdownProps) => {
 
             {isOpen && (
                 <div
-                    className={`${styles.dropdown} ${alignRight ? styles.alignRight : ''}`}
-                    id={`${id}-options`}
+                    aria-label={dropdownAriaLabel}
+                    className={dropdownClasses}
+                    id={dropdownId}
+                    onClick={closeOnSelect ? closeDropdown : undefined}
                     ref={dropdownRef}
+                    role={dropdownRole}
                 >
                     {children}
                 </div>

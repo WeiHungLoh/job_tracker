@@ -16,7 +16,7 @@ import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import InterviewCard from '../../InterviewCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
-import MoreOptions from '../../../../components/activityControls/MoreOptions';
+import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();

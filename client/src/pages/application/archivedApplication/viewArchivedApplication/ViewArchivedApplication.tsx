@@ -13,13 +13,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../../components/userPreferences/UserPreferencesProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
-import CheckboxFilter from '../../../../components/checkboxFilter/CheckboxFilter';
+import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import type { UpdateUserPreferencesRequest } from '../../../../components/userPreferences/models';
 import usePendingIds from '../../../../hooks/usePendingIds';
 import ApplicationCard from '../../ApplicationCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
-import DisplayOptions from '../../../../components/activityControls/DisplayOptions';
-import MoreOptions from '../../../../components/activityControls/MoreOptions';
+import DisplayOptions from '../../../../components/activityControls/displayOptions/DisplayOptions';
+import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();

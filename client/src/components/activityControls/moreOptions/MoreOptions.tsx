@@ -1,8 +1,8 @@
 import { CSVLink } from 'react-csv';
-import Icon from '../icon/Icon';
-import PrimaryButton from '../button/PrimaryButton';
-import ControlDropdown from './ControlDropdown';
-import type { MoreOptionsProps } from './models';
+import Icon from '../../icon/Icon';
+import PrimaryButton from '../../button/PrimaryButton';
+import ControlDropdown from '../ControlDropdown';
+import type { MoreOptionsProps } from './../models';
 import styles from './MoreOptions.module.css';
 
 const MoreOptions = ({ csvData, csvFilename, csvHeaders, deleteLabel, id, isDeleting, onDelete }: MoreOptionsProps) => (

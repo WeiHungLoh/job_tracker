@@ -6,6 +6,7 @@ export type IconName =
     | 'arrowBack'
     | 'archive'
     | 'briefcase'
+    | 'calendar'
     | 'chevronDown'
     | 'error'
     | 'dashboard'

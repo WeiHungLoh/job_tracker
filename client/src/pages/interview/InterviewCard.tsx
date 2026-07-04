@@ -3,6 +3,8 @@ import PrimaryButton from '../../components/button/PrimaryButton';
 import formatDate from '../../helper/dateFormatter';
 import { routes } from '../../routes';
 import type { InterviewCardProps } from './InterviewCard.models';
+import CalendarOptions from './calendarOptions/CalendarOptions';
+import { isFutureInterviewDate } from './calendarOptions/calendarEvent';
 import styles from './InterviewCard.module.css';
 
 const InterviewCard = ({
@@ -16,6 +18,7 @@ const InterviewCard = ({
     const applicationId = variant === 'job' ? interview.job_id : interview.archived_job_id;
     const applicationRoute = variant === 'job' ? routes.viewApplications : routes.archivedApplications;
     const formattedInterviewDate = formatDate(interview.interview_date);
+    const showCalendarOptions = variant === 'job' && isFutureInterviewDate(interview.interview_date);
 
     return (
         <div className={`${styles.interview} ${variant === 'archived' ? styles.archived : ''}`}>
@@ -37,6 +40,7 @@ const InterviewCard = ({
             </div>
 
             <div className={styles.buttonGroup}>
+                {showCalendarOptions && <CalendarOptions interview={interview} />}
                 <PrimaryButton isLoading={isDeleting} variant='destructive' onClick={onDelete}>
                     Delete
                 </PrimaryButton>

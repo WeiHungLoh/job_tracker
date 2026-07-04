@@ -1,67 +1,12 @@
 .checkboxFilter {
-    position: relative;
-    z-index: 10;
     font-size: 0.75rem;
     text-align: center;
 }
 
-.toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 28px;
-    padding: 0 10px;
-    border: 1px solid var(--colorPrimary);
-    border-radius: 99px;
-    background: var(--colorBtnSecondaryHoverBg);
-    color: var(--colorPrimary);
-    font-size: 0.75rem;
-    font-weight: 700;
-    line-height: 1;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.toggle:hover,
-.toggle[aria-expanded='true'] {
-    background: var(--colorPrimary);
-    color: var(--colorBtnPrimaryText);
-}
-
-.toggleText {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-}
-
-.chevron {
-    display: block;
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-}
-
-.chevronOpen {
-    transform: rotate(180deg);
-}
-
-.dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    z-index: 100;
+.checkboxFilter .dropdown {
     min-width: min(120px, calc(100vw - 16px));
     max-height: 250px;
-    padding: 12px;
     overflow-y: auto;
-    border: 1px solid var(--colorCardBorder);
-    border-radius: 10px;
-    background: var(--colorCardBg);
-    box-shadow: 0 6px 18px var(--colorAuthCardShadow);
-    box-sizing: border-box;
-}
-
-.alignRight {
-    right: 0;
-    left: auto;
 }
 
 .option {

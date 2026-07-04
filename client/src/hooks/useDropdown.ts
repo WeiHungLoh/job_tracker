@@ -1,12 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const VIEWPORT_GUTTER = 8;
 
 const useDropdown = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [alignRight, setAlignRight] = useState(false);
+    const closeDropdown = useCallback(() => setIsOpen(false), []);
+    const toggleDropdown = useCallback(() => setIsOpen((current) => !current), []);
 
     useEffect(() => {
         if (!isOpen) {
@@ -15,13 +18,14 @@ const useDropdown = () => {
 
         const closeOnOutsideClick = (event: MouseEvent) => {
             if (!containerRef.current?.contains(event.target as Node)) {
-                setIsOpen(false);
+                closeDropdown();
             }
         };
 
         const closeOnEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                setIsOpen(false);
+                closeDropdown();
+                triggerRef.current?.focus();
             }
         };
 
@@ -32,7 +36,7 @@ const useDropdown = () => {
             document.removeEventListener('mousedown', closeOnOutsideClick);
             document.removeEventListener('keydown', closeOnEscape);
         };
-    }, [isOpen]);
+    }, [closeDropdown, isOpen]);
 
     useLayoutEffect(() => {
         if (!isOpen) {
@@ -60,10 +64,12 @@ const useDropdown = () => {
 
     return {
         alignRight,
+        closeDropdown,
         containerRef,
         dropdownRef,
         isOpen,
-        toggleDropdown: () => setIsOpen((current) => !current),
+        toggleDropdown,
+        triggerRef,
     };
 };
 

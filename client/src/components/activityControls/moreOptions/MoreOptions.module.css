@@ -24,6 +24,10 @@
     background: var(--colorBtnSecondaryHoverBg);
 }
 
+.action svg {
+    flex-shrink: 0;
+}
+
 .action.deleteAction {
     color: var(--colorBtnDestructiveText);
 }
