@@ -3,8 +3,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
 import type { JobInterview } from '../../../interview/models';
-import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
-import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobApplication, type JobStatus } from '../../models';
+import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
+import {
+    APPLICATION_CSV_HEADERS,
+    JOB_STATUSES,
+    JOB_STATUS_ORDER,
+    type JobApplication,
+    type JobStatus,
+} from '../../models';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import styles from './ViewApplication.module.css';
 import ToggleButton from '../../../../components/toggleButton/ToggleButton';
@@ -21,16 +27,10 @@ import ApplicationCard from '../../ApplicationCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
 import DisplayOptions from '../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
-
-const JOB_STATUS_ORDER: Record<JobStatus, number> = {
-    Accepted: 1,
-    Offer: 2,
-    Declined: 3,
-    Interview: 4,
-    Applied: 5,
-    Ghosted: 6,
-    Rejected: 7,
-};
+import ApplicationBoard from '../applicationBoard/ApplicationBoard';
+import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
+import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/SkeletonBoard';
 
 const sortApplications = (applications: JobApplication[]) => {
     return [...applications].sort((firstApplication, secondApplication) => {
@@ -54,6 +54,7 @@ const ViewApplication = () => {
     const showNotesTimeout = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+    const updatingStatusApplicationIdRef = useRef<Set<number>>(new Set());
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
@@ -68,11 +69,18 @@ const ViewApplication = () => {
         startPending: startArchivingApplication,
         stopPending: stopArchivingApplication,
     } = usePendingIds();
+    const {
+        pendingIds: updatingStatusApplicationIds,
+        startPending: startUpdatingApplicationStatus,
+        stopPending: stopUpdatingApplicationStatus,
+    } = usePendingIds();
     const { showErrorToast } = useToast();
     const selectedJobStatuses = preferences.application_job_statuses;
     const showArchive = preferences.application_show_archive;
     const showNotes = preferences.application_show_notes;
     const enableScroll = preferences.application_enable_scroll;
+    const viewMode = preferences.application_view_mode;
+    const isBoardView = viewMode === 'board';
 
     const csvData = createApplicationCsvData(applications);
 
@@ -88,6 +96,10 @@ const ViewApplication = () => {
         });
         return counts;
     }, [interviews]);
+
+    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+        void handlePreferenceUpdate({ application_view_mode: nextViewMode });
+    };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
         setIsFilteringApplications(true);
@@ -145,7 +157,7 @@ const ViewApplication = () => {
 
     useEffect(() => {
         const targetApplicationId = location.hash.substring(1);
-        if (isLoading || !targetApplicationId) {
+        if (isLoading || isBoardView || !targetApplicationId) {
             return;
         }
 
@@ -159,7 +171,7 @@ const ViewApplication = () => {
         scrollAndHighlight(targetApplicationId, styles.highlighted, showCorrespondingAppTimeout.current);
         // to remove the hash
         navigate(location.pathname, { replace: true });
-    }, [applications, isLoading, location.hash, location.pathname, navigate]);
+    }, [applications, isBoardView, isLoading, location.hash, location.pathname, navigate]);
 
     const handleEditNotes = (jobId: number, editedNotes: string) => {
         if (editedNotes.length > FIELD_MAX_LENGTHS.notes) {
@@ -278,6 +290,63 @@ const ViewApplication = () => {
         }
     };
 
+    const updateApplicationStatusFromBoard = async (application: JobApplication, newStatus: JobStatus) => {
+        const oldStatus = application.job_status;
+        const previousEditedJobStatus = editedJobStatuses[application.job_id];
+
+        if (newStatus === oldStatus || updatingStatusApplicationIdRef.current.has(application.job_id)) {
+            return;
+        }
+
+        updatingStatusApplicationIdRef.current.add(application.job_id);
+        startUpdatingApplicationStatus(application.job_id);
+        setApplications((current) =>
+            sortApplications(
+                current
+                    .map((item) =>
+                        item.job_id === application.job_id
+                            ? { ...item, edit_status: false, job_status: newStatus }
+                            : item
+                    )
+                    .filter((item) => selectedJobStatuses.includes(item.job_status))
+            )
+        );
+        setEditedJobStatuses((currentStatuses) => {
+            const updatedStatuses = { ...currentStatuses };
+            delete updatedStatuses[application.job_id];
+            return updatedStatuses;
+        });
+
+        try {
+            await api.application.updateStatus({
+                jobId: application.job_id,
+                editStatus: false,
+                jobStatus: newStatus,
+            });
+        } catch (error) {
+            setApplications((current) => {
+                const applicationStillVisible = current.some((item) => item.job_id === application.job_id);
+                const restoredApplications = applicationStillVisible
+                    ? current.map((item) => (item.job_id === application.job_id ? application : item))
+                    : [...current, application];
+
+                return sortApplications(restoredApplications);
+            });
+            if (previousEditedJobStatus !== undefined) {
+                setEditedJobStatuses((currentStatuses) => ({
+                    ...currentStatuses,
+                    [application.job_id]: previousEditedJobStatus,
+                }));
+            }
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to update the job application status. Please try again.')
+            );
+        } finally {
+            updatingStatusApplicationIdRef.current.delete(application.job_id);
+            stopUpdatingApplicationStatus(application.job_id);
+        }
+    };
+
     const handleArchive = async (jobId: number) => {
         startArchivingApplication(jobId);
         try {
@@ -292,103 +361,134 @@ const ViewApplication = () => {
     };
 
     const hasApplications = applications.length > 0;
+    const boardEmptyMessage =
+        selectedJobStatuses.length === JOB_STATUSES.length
+            ? 'No applications found.'
+            : 'No applications match the selected filters.';
 
     return (
-        <div className={styles.applicationList}>
-            <ActivityControls>
-                <CheckboxFilter
-                    buttonLabel='Filter by'
-                    disabled={isLoading}
-                    id='application-job-status-filter'
-                    onSelectionChange={handleJobStatusChange}
-                    options={JOB_STATUSES}
-                    selectedOptions={selectedJobStatuses}
-                />
-                {hasApplications && (
-                    <>
-                        <DisplayOptions id='application-display-options'>
-                            <ToggleButton
-                                toggled={showNotes}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        application_show_notes: !showNotes,
-                                    })
-                                }
-                                label='Show notes'
+        <div className={`${styles.applicationList} ${isBoardView ? styles.boardLayout : ''}`}>
+            <div className={styles.controlsRow}>
+                <ActivityControls>
+                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        disabled={isLoading}
+                        id='application-job-status-filter'
+                        onSelectionChange={handleJobStatusChange}
+                        options={JOB_STATUSES}
+                        selectedOptions={selectedJobStatuses}
+                    />
+                    {hasApplications && (
+                        <>
+                            {!isBoardView && (
+                                <DisplayOptions id='application-display-options'>
+                                    <ToggleButton
+                                        toggled={showNotes}
+                                        onToggle={() =>
+                                            void handlePreferenceUpdate({
+                                                application_show_notes: !showNotes,
+                                            })
+                                        }
+                                        label='Show notes'
+                                    />
+                                    <ToggleButton
+                                        toggled={showArchive}
+                                        onToggle={() =>
+                                            void handlePreferenceUpdate({
+                                                application_show_archive: !showArchive,
+                                            })
+                                        }
+                                        label='Show archive'
+                                    />
+                                    <ToggleButton
+                                        toggled={enableScroll}
+                                        onToggle={() =>
+                                            void handlePreferenceUpdate({
+                                                application_enable_scroll: !enableScroll,
+                                            })
+                                        }
+                                        label='Auto scroll after job status change'
+                                    />
+                                </DisplayOptions>
+                            )}
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='job_applications.csv'
+                                csvHeaders={APPLICATION_CSV_HEADERS}
+                                deleteLabel='Delete all applications'
+                                id='application-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
                             />
-                            <ToggleButton
-                                toggled={showArchive}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        application_show_archive: !showArchive,
-                                    })
-                                }
-                                label='Show archive'
-                            />
-                            <ToggleButton
-                                toggled={enableScroll}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        application_enable_scroll: !enableScroll,
-                                    })
-                                }
-                                label='Auto scroll after job status change'
-                            />
-                        </DisplayOptions>
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='job_applications.csv'
-                            csvHeaders={APPLICATION_CSV_HEADERS}
-                            deleteLabel='Delete all applications'
-                            id='application-more-options'
-                            isDeleting={isDeletingAll}
-                            onDelete={() => void handleDeleteAll()}
-                        />
-                    </>
-                )}
-            </ActivityControls>
+                        </>
+                    )}
+                </ActivityControls>
+            </div>
 
-            {(isLoading || isFilteringApplications) && (
+            {(isLoading || isFilteringApplications) && !isBoardView && (
                 <>
                     <SkeletonCard variant='application' />
                     <SkeletonCard variant='application' />
                 </>
             )}
 
+            {(isLoading || isFilteringApplications) && isBoardView && <SkeletonBoard />}
+
             {!isLoading && !isFilteringApplications && (
                 <>
-                    {!hasApplications && (
-                        <div>
-                            No job applications match the selected job statuses. Start adding one now!{' '}
-                        </div>
+                    {!hasApplications && !isBoardView && (
+                        <div>No job applications match the selected job statuses. Start adding one now! </div>
                     )}
 
-                    {applications.map((application, index) => (
-                        <ApplicationCard
-                            application={application}
-                            editedJobStatus={editedJobStatuses[application.job_id] ?? application.job_status}
-                            hasInterview={interviewJobIdSet.has(application.job_id)}
-                            index={index}
-                            isArchiving={archivingApplicationIds.has(application.job_id)}
-                            isDeleting={deletingApplicationIds.has(application.job_id)}
-                            key={application.job_id}
-                            note={notes[application.job_id] ?? application.notes}
+                    {!hasApplications && isBoardView && (
+                        <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>
+                    )}
+
+                    {hasApplications && isBoardView && (
+                        <ApplicationBoard
+                            applications={applications}
+                            deletingApplicationIds={deletingApplicationIds}
+                            editedNotes={notes}
+                            hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
+                            isArchivingApplication={(jobId) => archivingApplicationIds.has(jobId)}
+                            isUpdatingApplicationStatus={(jobId) => updatingStatusApplicationIds.has(jobId)}
                             onArchive={handleArchive}
                             onDelete={handleDelete}
                             onEditNotes={handleEditNotes}
-                            onJobStatusChange={(jobId, jobStatus) =>
-                                setEditedJobStatuses((currentStatuses) => ({
-                                    ...currentStatuses,
-                                    [jobId]: jobStatus,
-                                }))
-                            }
-                            onToggleEditStatus={toggleEditStatus}
-                            showArchive={showArchive}
-                            showNotes={showNotes}
-                            upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}
-                            variant='job'
+                            onStatusChange={updateApplicationStatusFromBoard}
+                            selectedJobStatuses={selectedJobStatuses}
+                            upcomingInterviewCountByJob={upcomingInterviewCountByJob}
                         />
-                    ))}
+                    )}
+
+                    {!isBoardView &&
+                        applications.map((application, index) => (
+                            <ApplicationCard
+                                application={application}
+                                editedJobStatus={editedJobStatuses[application.job_id] ?? application.job_status}
+                                hasInterview={interviewJobIdSet.has(application.job_id)}
+                                index={index}
+                                isArchiving={archivingApplicationIds.has(application.job_id)}
+                                isDeleting={deletingApplicationIds.has(application.job_id)}
+                                key={application.job_id}
+                                note={notes[application.job_id] ?? application.notes}
+                                onArchive={handleArchive}
+                                onDelete={handleDelete}
+                                onEditNotes={handleEditNotes}
+                                onJobStatusChange={(jobId, jobStatus) =>
+                                    setEditedJobStatuses((currentStatuses) => ({
+                                        ...currentStatuses,
+                                        [jobId]: jobStatus,
+                                    }))
+                                }
+                                onToggleEditStatus={toggleEditStatus}
+                                showArchive={showArchive}
+                                showNotes={showNotes}
+                                upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}
+                                variant='job'
+                            />
+                        ))}
                 </>
             )}
         </div>

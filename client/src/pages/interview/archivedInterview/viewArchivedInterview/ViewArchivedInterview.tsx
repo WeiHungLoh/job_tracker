@@ -5,7 +5,7 @@ import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation'
 import { getApplicationUnavailableMessage } from '../../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS } from '../../models';
 import { useNavigate } from 'react-router-dom';
-import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
+import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import { routes } from '../../../../routes';
 import styles from './ViewArchivedInterview.module.css';
 import { useConfirm } from 'material-ui-confirm';

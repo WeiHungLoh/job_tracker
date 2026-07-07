@@ -8,6 +8,24 @@
     min-height: 70vh;
 }
 
+.boardLayout {
+    width: min(1180px, 94vw);
+    max-width: 94vw;
+    align-items: stretch;
+}
+
+.controlsRow {
+    width: fit-content;
+    max-width: 100%;
+    align-self: center;
+}
+
+.boardEmptyMessage {
+    align-self: center;
+    color: var(--colorTextSecondary);
+    text-align: center;
+}
+
 .highlighted {
     animation: highlightFade 4s ease-in-out;
 }
@@ -25,5 +43,14 @@
 @media (max-width: 803px) {
     .applicationList {
         max-width: 90%;
+    }
+
+    .boardLayout {
+        width: 94vw;
+        max-width: 94vw;
+    }
+
+    .controlsRow {
+        width: 100%;
     }
 }

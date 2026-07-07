@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import SkeletonCard from '../../components/skeletonCard/SkeletonCard';
+import SkeletonCard from '../../components/skeletonLoader/skeletonCard/SkeletonCard';
 
 describe('SkeletonCard', () => {
     test('renders an application skeleton with two actions', () => {

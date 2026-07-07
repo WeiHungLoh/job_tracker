@@ -48,8 +48,10 @@ const mockPreferences = {
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
+    application_view_mode: 'list',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
+    archived_application_view_mode: 'list',
 };
 
 const renderRoute = (path: string) => {

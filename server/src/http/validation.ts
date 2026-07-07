@@ -1,4 +1,4 @@
-import { JOB_STATUSES, type JobStatus } from '../db/models.js';
+import { JOB_STATUSES, type ApplicationViewMode, type JobStatus } from '../db/models.js';
 import { PASSWORD_MAX_BYTES, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../config/validation.js';
 
 const HOSTNAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+$/i;
@@ -139,3 +139,9 @@ export const toJobStatusQueryValues = (value: unknown): JobStatus[] | undefined 
 
 export const isOptionalBoolean = (value: unknown): value is boolean | undefined =>
     value === undefined || typeof value === 'boolean';
+
+export const isApplicationViewMode = (value: unknown): value is ApplicationViewMode =>
+    value === 'list' || value === 'board';
+
+export const isOptionalApplicationViewMode = (value: unknown): value is ApplicationViewMode | undefined =>
+    value === undefined || isApplicationViewMode(value);

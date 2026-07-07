@@ -1,0 +1,96 @@
+.skeletonBoard {
+    display: grid;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 20px;
+    padding: 4px 2px 14px;
+    grid-template-columns: repeat(4, var(--applicationBoardColumnWidth));
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+}
+
+.skeletonColumn {
+    min-height: 320px;
+    padding: 12px;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 16px;
+    background: var(--colorCardBg);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--colorPrimary) 9%, transparent), transparent 120px),
+        var(--colorCardBg);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.skeletonCards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.skeletonCardPreview {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 13px;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 14px;
+    background: var(--colorPageBg);
+}
+
+.skeletonLine {
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--colorSkeletonBase) 25%,
+        var(--colorSkeletonHighlight) 50%,
+        var(--colorSkeletonBase) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonColumnHeading {
+    width: 60%;
+    height: 24px;
+    margin-bottom: 20px;
+}
+
+.skeletonCardTitle {
+    width: 72%;
+    height: 20px;
+}
+
+.skeletonCardLine {
+    width: 100%;
+}
+
+.skeletonCardShortLine {
+    width: 62%;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeletonLine {
+        animation: none;
+    }
+}
+
+@media (max-width: 803px) {
+    .skeletonColumn {
+        min-height: 300px;
+    }
+}

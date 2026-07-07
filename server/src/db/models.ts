@@ -1,4 +1,5 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
+export type ApplicationViewMode = 'list' | 'board';
 
 export const JOB_STATUSES: readonly JobStatus[] = [
     'Accepted',
@@ -78,6 +79,8 @@ export type UserPreferences = {
     application_show_notes: boolean;
     application_show_archive: boolean;
     application_enable_scroll: boolean;
+    application_view_mode: ApplicationViewMode;
     archived_application_job_statuses: JobStatus[];
     archived_application_show_notes: boolean;
+    archived_application_view_mode: ApplicationViewMode;
 };

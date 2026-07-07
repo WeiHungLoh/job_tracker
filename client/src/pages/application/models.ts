@@ -12,6 +12,21 @@ export const JOB_STATUSES: readonly JobStatus[] = [
     'Rejected',
 ];
 
+export const JOB_STATUS_SORT_ORDER: readonly JobStatus[] = [
+    'Accepted',
+    'Offer',
+    'Declined',
+    'Interview',
+    'Applied',
+    'Ghosted',
+    'Rejected',
+];
+
+export const JOB_STATUS_ORDER = JOB_STATUS_SORT_ORDER.reduce(
+    (order, status, index) => ({ ...order, [status]: index + 1 }),
+    {} as Record<JobStatus, number>
+);
+
 export type JobApplication = {
     job_id: number;
     company_name: string;

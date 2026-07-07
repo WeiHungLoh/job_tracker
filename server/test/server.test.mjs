@@ -14,6 +14,7 @@ import {
 } from '../dist/config/validation.js';
 import {
     getPasswordValidationError,
+    isApplicationViewMode,
     isValidDate,
     isValidHttpURL,
     normalizeEmail,
@@ -164,6 +165,28 @@ test('parses repeated job status query parameters', () => {
         'Rejected',
     ]);
     assert.equal(toJobStatusQueryValues(['Accepted', 'Unknown']), undefined);
+});
+
+test('validates application view mode values', () => {
+    assert.equal(isApplicationViewMode('list'), true);
+    assert.equal(isApplicationViewMode('board'), true);
+    assert.equal(isApplicationViewMode('calendar'), false);
+    assert.equal(isApplicationViewMode(undefined), false);
+});
+
+test('returns 422 for unsupported user preference view modes', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/user-preferences`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({ application_view_mode: 'calendar' }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), { message: 'Application view mode preferences must be list or board.' });
 });
 
 test('returns 401 when a protected route has no token', async () => {

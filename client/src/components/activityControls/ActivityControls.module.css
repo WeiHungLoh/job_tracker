@@ -13,7 +13,7 @@
     box-sizing: border-box;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 803px) {
     .controls {
         padding: 12px;
         flex-wrap: wrap;

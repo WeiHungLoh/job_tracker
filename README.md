@@ -17,6 +17,7 @@ Job Tracker is a full-stack PERN application for managing job applications and i
 
 ## Key Features
 - Manage job applications with status, dates, locations, posting URLs, and notes
+- Switch between list and Kanban board views with drag-and-drop status updates
 - Track interviews linked to job applications
 - Add upcoming interviews to Google Calendar, Apple Calendar, and Outlook
 - Archive and restore applications and interviews

@@ -2,6 +2,7 @@
 
 :root {
     --fontFamilyBase: 'Quicksand', sans-serif;
+    --applicationBoardColumnWidth: 280px;
 }
 
 [data-theme='light'] {

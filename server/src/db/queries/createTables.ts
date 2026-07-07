@@ -3,6 +3,7 @@ import { JOB_STATUSES } from '../models.js';
 
 const JOB_STATUS_SQL_VALUES = JOB_STATUSES.map((status) => `'${status}'`).join(', ');
 const JOB_STATUS_SQL_ARRAY = `ARRAY[${JOB_STATUS_SQL_VALUES}]::TEXT[]`;
+const APPLICATION_VIEW_MODE_SQL_VALUES = "'list', 'board'";
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -53,9 +54,15 @@ const createTables = async (): Promise<void> => {
             application_show_notes BOOLEAN NOT NULL DEFAULT false,
             application_show_archive BOOLEAN NOT NULL DEFAULT false,
             application_enable_scroll BOOLEAN NOT NULL DEFAULT false,
+            application_view_mode TEXT NOT NULL DEFAULT 'list'
+                CONSTRAINT user_preferences_application_view_mode_check
+                CHECK (application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
             archived_application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY}
                 CHECK (archived_application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}),
-            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false
+            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false,
+            archived_application_view_mode TEXT NOT NULL DEFAULT 'list'
+                CONSTRAINT user_preferences_archived_application_view_mode_check
+                CHECK (archived_application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES}))
         )`;
 
     const createJobApplicationArchiveIndex = `CREATE INDEX IF NOT EXISTS job_applications_user_archived_idx

@@ -100,9 +100,16 @@ const guideSections: readonly UserGuideSection[] = [
                     posting URL. Select <code>Edit Status</code> to reveal the status menu.
                 </p>
                 <p>
+                    Use the <strong>List</strong> and <strong>Board</strong> switch to choose between the standard card
+                    list and the board layout. The active application board groups cards by status, shows the
+                    application date, and lets you drag cards between columns or use the <code>Move to</code> menu to
+                    update status.
+                </p>
+                <p>
                     Changing a status to <code>Interview</code> displays a link for creating an interview tied to that
                     application. If an interview already exists, delete it before changing the status back to{' '}
-                    <code>Applied</code>.
+                    <code>Applied</code>. The board also prevents moving an application back to <code>Applied</code>{' '}
+                    while it still has an interview.
                 </p>
                 <p>
                     Use <strong>Filter by</strong> to show one or more statuses, or select <code>Show All</code>. The
@@ -172,7 +179,10 @@ const guideSections: readonly UserGuideSection[] = [
                     {FIELD_MAX_LENGTHS.notes}-character limit.
                 </p>
                 <h3>Archived applications</h3>
-                <p>Archived notes are read-only. Unarchive the application before making further changes.</p>
+                <p>
+                    Archived notes are read-only in both list and board views. Unarchive the application before making
+                    further changes.
+                </p>
             </>
         ),
     },
@@ -188,8 +198,10 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <ul>
                     <li>
-                        <strong>Archived applications:</strong> View, filter, delete or unarchive applications.
-                        Unarchiving also restores the linked interview, if one exists.
+                        <strong>Archived applications:</strong> View, filter, delete or unarchive applications in list
+                        or board view. Archived board cards use the same visual format as active board cards, but they
+                        cannot be dragged, cannot change status, and cannot edit notes. Unarchiving also restores the
+                        linked interview, if one exists.
                     </li>
                     <li>
                         <strong>Archived interviews:</strong> These are read-only. Unarchive their related application
@@ -233,8 +245,9 @@ const guideSections: readonly UserGuideSection[] = [
                 <h3>Sorting order</h3>
                 <p>
                     Applications are grouped by status in this order: <code>Accepted</code>, <code>Offer</code>,{' '}
-                    <code>Interview</code>, <code>Applied</code>, <code>Ghosted</code> and <code>Rejected</code>. Within
-                    a status, the most recent application appears first.
+                    <code>Declined</code>, <code>Interview</code>, <code>Applied</code>, <code>Ghosted</code> and{' '}
+                    <code>Rejected</code>. Within a status, the most recent application appears first. The same order is
+                    used for active and archived application board columns.
                 </p>
                 <p>
                     Interviews are grouped with upcoming dates first (closest at the top), then past dates (earliest
@@ -251,13 +264,13 @@ const guideSections: readonly UserGuideSection[] = [
             <>
                 <p>
                     Use the <strong>Auto scroll after job status change</strong> toggle under{' '}
-                    <strong>Display options</strong> to control scrolling behavior. When enabled (green), changing the
-                    job status via the edit dropdown will automatically scroll the application into view. When disabled,
-                    the page stays in place after a status change.
+                    <strong>Display options</strong> in list view to control scrolling behavior. When enabled (green),
+                    changing the job status via the edit dropdown will automatically scroll the application into view.
+                    When disabled, the page stays in place after a status change.
                 </p>
                 <p>
-                    After a status update, the application receives a green highlight for four seconds. No highlight is
-                    shown when the status did not change.
+                    After a list-view status update, the application receives a green highlight for four seconds. No
+                    highlight is shown when the status did not change.
                 </p>
                 <p>The same feedback appears when navigating from an interview to its corresponding application.</p>
             </>

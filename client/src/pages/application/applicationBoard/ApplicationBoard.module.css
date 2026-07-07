@@ -1,0 +1,361 @@
+.board {
+    display: grid;
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 4px 2px 14px;
+    grid-auto-columns: var(--applicationBoardColumnWidth);
+    grid-auto-flow: column;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    isolation: isolate;
+    scrollbar-width: thin;
+}
+
+.column {
+    --boardStatusColor: var(--colorPrimary);
+    --boardColumnAccent: linear-gradient(var(--boardStatusColor), var(--boardStatusColor)) top / 100% 4px no-repeat;
+    position: relative;
+    min-height: 320px;
+    padding: 12px;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 16px;
+    background: var(--colorCardBg);
+    background: var(--boardColumnAccent),
+        linear-gradient(180deg, color-mix(in srgb, var(--boardStatusColor) 9%, transparent), transparent 120px),
+        var(--colorCardBg);
+    box-sizing: border-box;
+    overflow: visible;
+    transition: border-color 180ms ease, background 180ms ease;
+}
+
+.dropTarget {
+    border-color: color-mix(in srgb, var(--boardStatusColor) 70%, var(--colorCardBorder));
+    outline: 2px solid color-mix(in srgb, var(--boardStatusColor) 28%, transparent);
+    outline-offset: -2px;
+    background: var(--boardColumnAccent),
+        linear-gradient(180deg, color-mix(in srgb, var(--boardStatusColor) 16%, transparent), transparent 120px),
+        var(--colorCardBg);
+}
+
+.dropDisabled {
+    border-color: color-mix(in srgb, var(--colorBtnDestructiveBg) 76%, var(--colorCardBorder));
+    outline: 2px dashed color-mix(in srgb, var(--colorBtnDestructiveBg) 72%, transparent);
+    outline-offset: -4px;
+    background: var(--boardColumnAccent),
+        repeating-linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--colorBtnDestructiveBg) 18%, transparent) 0,
+            color-mix(in srgb, var(--colorBtnDestructiveBg) 18%, transparent) 2px,
+            transparent 2px,
+            transparent 14px
+        ),
+        linear-gradient(180deg, color-mix(in srgb, var(--colorBtnDestructiveBg) 13%, transparent), transparent 120px),
+        var(--colorCardBg);
+    cursor: not-allowed;
+}
+
+.dropDisabled .columnHeading,
+.dropDisabled .columnCards {
+    opacity: 0.58;
+}
+
+.dropDisabled .columnHeading {
+    border-bottom-color: color-mix(in srgb, var(--colorBtnDestructiveBg) 42%, var(--colorCardBorder));
+}
+
+.columnHeading {
+    display: flex;
+    min-height: 34px;
+    margin: 0 0 14px;
+    padding: 4px 0 10px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid color-mix(in srgb, var(--boardStatusColor) 18%, var(--colorCardBorder));
+    color: var(--colorText);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.columnTitle {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    overflow-wrap: anywhere;
+}
+
+.columnTitle::before {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 999px;
+    background: var(--boardStatusColor);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--boardStatusColor) 15%, transparent);
+    content: '';
+}
+
+.columnCount {
+    display: inline-flex;
+    min-width: 34px;
+    min-height: 26px;
+    padding: 0 10px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--boardStatusColor) 58%, var(--colorCardBorder));
+    border-radius: 999px;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--boardStatusColor) 30%, var(--colorCardBg)),
+        color-mix(in srgb, var(--boardStatusColor) 18%, var(--colorPageBg))
+    );
+    color: var(--colorText);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.columnCards {
+    display: flex;
+    min-height: 240px;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.emptyColumn {
+    margin: 0;
+    padding: 18px 10px;
+    border: 1px dashed color-mix(in srgb, var(--boardStatusColor) 22%, var(--colorCardBorder));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--boardStatusColor) 5%, transparent);
+    color: var(--colorTextSecondary);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.card {
+    position: relative;
+    padding: 13px;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 14px;
+    background: var(--colorPageBg);
+    color: var(--colorTextSecondary);
+    box-shadow: 0 8px 20px var(--colorAuthCardShadow);
+    cursor: grab;
+    touch-action: manipulation;
+    box-sizing: border-box;
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease;
+}
+
+.card:hover {
+    border-color: color-mix(in srgb, var(--boardStatusColor) 24%, var(--colorCardBorder));
+    box-shadow: 0 12px 26px var(--colorAuthCardShadow);
+    transform: translateY(-1px);
+}
+
+.cardDragging {
+    z-index: 10;
+    cursor: grabbing;
+    box-shadow: 0 18px 36px var(--colorAuthCardShadow);
+    opacity: 0.96;
+    transform: scale(1.01);
+    will-change: transform;
+}
+
+.readOnlyCard {
+    cursor: default;
+}
+
+.readOnlyCard:hover {
+    transform: none;
+}
+
+.card:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}
+
+.cardUpdating {
+    cursor: wait;
+    opacity: 0.72;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.cardHeader h3 {
+    margin: 0;
+    color: var(--colorText);
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.jobTitle {
+    margin: 10px 0 6px;
+    color: var(--colorText);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.meta {
+    margin: 4px 0;
+    font-size: 0.8125rem;
+}
+
+.statusBadge,
+.upcomingBadge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 9px;
+    border-radius: 999px;
+    color: var(--colorBadgeText);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.statusBadge {
+    flex-shrink: 0;
+}
+
+.upcomingBadge {
+    margin-top: 8px;
+    background-color: var(--colorUpcomingBadge);
+    color: var(--colorUpcomingBadgeText);
+}
+
+.applied {
+    --boardStatusColor: var(--colorStatusApplied);
+    background-color: var(--colorStatusApplied);
+}
+
+.interview {
+    --boardStatusColor: var(--colorStatusInterview);
+    background-color: var(--colorStatusInterview);
+}
+
+.offer {
+    --boardStatusColor: var(--colorStatusOffer);
+    background-color: var(--colorStatusOffer);
+}
+
+.accepted {
+    --boardStatusColor: var(--colorStatusAccepted);
+    background-color: var(--colorStatusAccepted);
+}
+
+.rejected {
+    --boardStatusColor: var(--colorStatusRejected);
+    background-color: var(--colorStatusRejected);
+}
+
+.ghosted {
+    --boardStatusColor: var(--colorStatusGhosted);
+    background-color: var(--colorStatusGhosted);
+}
+
+.declined {
+    --boardStatusColor: var(--colorStatusDeclined);
+    background-color: var(--colorStatusDeclined);
+}
+
+.statusSelectLabel,
+.notesField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    color: var(--colorText);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.statusSelectLabel select {
+    width: 100%;
+    min-height: 34px;
+    padding: 7px 9px;
+    border: 1px solid var(--colorInputBorder);
+    border-radius: 10px;
+    background: var(--colorInputBg);
+    color: var(--colorInputText);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.actions {
+    margin-top: 10px;
+}
+
+.actions summary {
+    display: flex;
+    min-height: 32px;
+    align-items: center;
+    color: var(--colorPrimary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.actions summary:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}
+
+.actionPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 8px;
+}
+
+.actionPanel a {
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background-color: var(--colorLinkBg);
+    color: var(--colorLinkText);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.actionPanel a:hover {
+    background-color: var(--colorLinkHoverBg);
+}
+
+.notesField textarea {
+    min-height: 92px;
+    padding: 10px;
+    border: 1px solid var(--colorNotesBorder);
+    border-radius: 10px;
+    background: var(--colorNotesBg);
+    color: var(--colorNotesText);
+    resize: vertical;
+}
+
+.readOnlyNotes textarea {
+    cursor: default;
+    opacity: 1;
+}
+
+.actionButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+@media (max-width: 803px) {
+    .column {
+        min-height: 300px;
+    }
+}

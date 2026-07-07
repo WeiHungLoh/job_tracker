@@ -13,33 +13,47 @@ const testPreferences: UserPreferences = {
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
+    application_view_mode: 'list',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
+    archived_application_view_mode: 'list',
 };
 
-const TestProviders = ({ children }: { children: ReactNode }) => {
-    const [preferences, setPreferences] = useState<UserPreferences>(testPreferences);
+type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & {
+    initialPreferences?: Partial<UserPreferences>;
+};
 
-    const updatePreferences = async (updatedPreferences: UpdateUserPreferencesRequest) => {
-        let savedPreferences = testPreferences;
-        setPreferences((currentPreferences) => {
-            savedPreferences = { ...currentPreferences, ...updatedPreferences };
+const createTestProviders = (initialPreferences?: Partial<UserPreferences>) => {
+    const initialTestPreferences = { ...testPreferences, ...initialPreferences };
+
+    const TestProviders = ({ children }: { children: ReactNode }) => {
+        const [preferences, setPreferences] = useState<UserPreferences>(initialTestPreferences);
+
+        const updatePreferences = async (updatedPreferences: UpdateUserPreferencesRequest) => {
+            let savedPreferences = initialTestPreferences;
+            setPreferences((currentPreferences) => {
+                savedPreferences = { ...currentPreferences, ...updatedPreferences };
+                return savedPreferences;
+            });
             return savedPreferences;
-        });
-        return savedPreferences;
+        };
+
+        return (
+            <ThemeProvider>
+                <ToastProvider>
+                    <UserPreferencesProvider preferences={preferences} updatePreferences={updatePreferences}>
+                        {children}
+                    </UserPreferencesProvider>
+                </ToastProvider>
+            </ThemeProvider>
+        );
     };
 
-    return (
-        <ThemeProvider>
-            <ToastProvider>
-                <UserPreferencesProvider preferences={preferences} updatePreferences={updatePreferences}>
-                    {children}
-                </UserPreferencesProvider>
-            </ToastProvider>
-        </ThemeProvider>
-    );
+    return TestProviders;
 };
 
-export const render = (ui: ReactNode, options?: Omit<RenderOptions, 'wrapper'>) => {
-    return renderWithTestingLibrary(ui, { wrapper: TestProviders, ...options });
+export const render = (ui: ReactNode, options?: CustomRenderOptions) => {
+    const { initialPreferences, ...renderOptions } = options ?? {};
+
+    return renderWithTestingLibrary(ui, { wrapper: createTestProviders(initialPreferences), ...renderOptions });
 };

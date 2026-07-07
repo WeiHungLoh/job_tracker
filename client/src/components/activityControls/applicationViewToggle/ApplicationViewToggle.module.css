@@ -1,0 +1,61 @@
+.toggleWrapper {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: stretch;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1.5px solid var(--colorPrimary);
+    border-radius: 10px;
+    background: var(--colorCardBg);
+}
+
+.option {
+    min-height: 35px;
+    min-width: 68px;
+    padding: 8px 12px;
+    border: 0;
+    border-right: 1.5px solid var(--colorPrimary);
+    background: transparent;
+    color: var(--colorPrimary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.option:last-child {
+    border-right: 0;
+}
+
+.option:hover {
+    background: var(--colorBtnSecondaryHoverBg);
+}
+
+.option:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: -2px;
+}
+
+.option.active {
+    background: var(--colorPrimary);
+    color: var(--colorBtnPrimaryText);
+}
+
+@media (max-width: 803px) {
+    .toggleWrapper {
+        flex: 0 0 100%;
+        margin: 0 auto 4px;
+        order: -1;
+        justify-content: center;
+    }
+
+    .option {
+        min-height: 40px;
+        min-width: 76px;
+    }
+}

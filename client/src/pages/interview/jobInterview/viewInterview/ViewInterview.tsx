@@ -4,7 +4,7 @@ import { createInterviewCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
 import { getApplicationUnavailableMessage } from '../../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../../models';
-import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
+import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import { routes } from '../../../../routes';
 import styles from './ViewInterview.module.css';
 import { useConfirm } from 'material-ui-confirm';

@@ -6,7 +6,7 @@ import type {
 import type { Request, Response } from 'express';
 import { getUserPreferences, updateUserPreferences } from '../../db/queries/userPreferences.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isJobStatusArray, isOptionalBoolean } from '../../http/validation.js';
+import { isJobStatusArray, isOptionalApplicationViewMode, isOptionalBoolean } from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -42,8 +42,10 @@ router.patch(
             application_show_notes,
             application_show_archive,
             application_enable_scroll,
+            application_view_mode,
             archived_application_job_statuses,
             archived_application_show_notes,
+            archived_application_view_mode,
         } = req.body;
 
         if (application_job_statuses !== undefined && !isJobStatusArray(application_job_statuses)) {
@@ -56,6 +58,13 @@ router.patch(
                 422,
                 'Archived application job status preferences must contain only supported job statuses.'
             );
+            return;
+        }
+        if (
+            !isOptionalApplicationViewMode(application_view_mode) ||
+            !isOptionalApplicationViewMode(archived_application_view_mode)
+        ) {
+            sendError(res, 422, 'Application view mode preferences must be list or board.');
             return;
         }
         if (

@@ -3,7 +3,7 @@ import type { ArchivedJobApplication } from '../../models';
 import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
 import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../models';
-import SkeletonCard from '../../../../components/skeletonCard/SkeletonCard';
+import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import ToggleButton from '../../../../components/toggleButton/ToggleButton';
 import styles from './ViewArchivedApplication.module.css';
@@ -20,6 +20,10 @@ import ApplicationCard from '../../ApplicationCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
 import DisplayOptions from '../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
+import ArchivedApplicationBoard from '../archivedApplicationBoard/ArchivedApplicationBoard';
+import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
+import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/SkeletonBoard';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
@@ -45,8 +49,14 @@ const ViewArchivedApplication = () => {
     const { showErrorToast } = useToast();
     const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;
+    const viewMode = preferences.archived_application_view_mode;
+    const isBoardView = viewMode === 'board';
 
     const csvData = createApplicationCsvData(archivedApplications);
+
+    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+        void handlePreferenceUpdate({ archived_application_view_mode: nextViewMode });
+    };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
         setIsFilteringApplications(true);
@@ -181,72 +191,98 @@ const ViewArchivedApplication = () => {
     };
 
     const hasApplications = archivedApplications.length > 0;
+    const boardEmptyMessage =
+        selectedJobStatuses.length === JOB_STATUSES.length
+            ? 'No archived applications found.'
+            : 'No archived applications match the selected filters.';
 
     return (
-        <div className={styles.archivedApplicationList}>
-            <ActivityControls>
-                <CheckboxFilter
-                    buttonLabel='Filter by'
-                    disabled={isLoading}
-                    id='archived-application-job-status-filter'
-                    onSelectionChange={handleJobStatusChange}
-                    options={JOB_STATUSES}
-                    selectedOptions={selectedJobStatuses}
-                />
-                {hasApplications && (
-                    <>
-                        <DisplayOptions id='archived-application-display-options'>
-                            <ToggleButton
-                                toggled={showNotes}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        archived_application_show_notes: !showNotes,
-                                    })
-                                }
-                                label='Show notes'
+        <div className={`${styles.archivedApplicationList} ${isBoardView ? styles.boardLayout : ''}`}>
+            <div className={styles.controlsRow}>
+                <ActivityControls>
+                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        disabled={isLoading}
+                        id='archived-application-job-status-filter'
+                        onSelectionChange={handleJobStatusChange}
+                        options={JOB_STATUSES}
+                        selectedOptions={selectedJobStatuses}
+                    />
+                    {hasApplications && (
+                        <>
+                            {!isBoardView && (
+                                <DisplayOptions id='archived-application-display-options'>
+                                    <ToggleButton
+                                        toggled={showNotes}
+                                        onToggle={() =>
+                                            void handlePreferenceUpdate({
+                                                archived_application_show_notes: !showNotes,
+                                            })
+                                        }
+                                        label='Show notes'
+                                    />
+                                </DisplayOptions>
+                            )}
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='archived_job_applications.csv'
+                                csvHeaders={APPLICATION_CSV_HEADERS}
+                                deleteLabel='Delete all archived applications'
+                                id='archived-application-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
                             />
-                        </DisplayOptions>
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='archived_job_applications.csv'
-                            csvHeaders={APPLICATION_CSV_HEADERS}
-                            deleteLabel='Delete all archived applications'
-                            id='archived-application-more-options'
-                            isDeleting={isDeletingAll}
-                            onDelete={() => void handleDeleteAll()}
-                        />
-                    </>
-                )}
-            </ActivityControls>
+                        </>
+                    )}
+                </ActivityControls>
+            </div>
 
-            {(isLoading || isFilteringApplications) && (
+            {(isLoading || isFilteringApplications) && !isBoardView && (
                 <>
                     <SkeletonCard variant='application' />
                     <SkeletonCard variant='application' />
                 </>
             )}
 
+            {(isLoading || isFilteringApplications) && isBoardView && <SkeletonBoard />}
+
             {!isLoading && !isFilteringApplications && (
                 <>
-                    {!hasApplications && (
-                        <div>
-                            No archived job applications match the selected job statuses. Start archiving now!{' '}
-                        </div>
+                    {!hasApplications && !isBoardView && (
+                        <div>No archived job applications match the selected job statuses. Start archiving now! </div>
                     )}
 
-                    {archivedApplications.map((application, index) => (
-                        <ApplicationCard
-                            application={application}
-                            index={index}
-                            isDeleting={deletingApplicationIds.has(application.archived_job_id)}
-                            isUnarchiving={unarchivingApplicationIds.has(application.archived_job_id)}
-                            key={application.archived_job_id}
+                    {!hasApplications && isBoardView && (
+                        <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>
+                    )}
+
+                    {hasApplications && isBoardView && (
+                        <ArchivedApplicationBoard
+                            applications={archivedApplications}
+                            deletingApplicationIds={deletingApplicationIds}
                             onDelete={handleDelete}
                             onUnarchive={handleUnarchive}
+                            selectedJobStatuses={selectedJobStatuses}
                             showNotes={showNotes}
-                            variant='archived'
+                            unarchivingApplicationIds={unarchivingApplicationIds}
                         />
-                    ))}
+                    )}
+
+                    {!isBoardView &&
+                        archivedApplications.map((application, index) => (
+                            <ApplicationCard
+                                application={application}
+                                index={index}
+                                isDeleting={deletingApplicationIds.has(application.archived_job_id)}
+                                isUnarchiving={unarchivingApplicationIds.has(application.archived_job_id)}
+                                key={application.archived_job_id}
+                                onDelete={handleDelete}
+                                onUnarchive={handleUnarchive}
+                                showNotes={showNotes}
+                                variant='archived'
+                            />
+                        ))}
                 </>
             )}
         </div>

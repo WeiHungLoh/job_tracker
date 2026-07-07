@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedApplication from '../../../pages/application/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
 import { render } from '../../renderWithToast';
@@ -23,8 +23,10 @@ const mockPreferences = {
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
+    application_view_mode: 'list',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
+    archived_application_view_mode: 'list',
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -72,6 +74,9 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Filter by' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.queryByRole('region', { name: 'Archived application board' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
         expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'false');
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
@@ -85,6 +90,111 @@ describe('Archived job application viewing flow', () => {
                 method: 'GET',
             }
         );
+    });
+
+    test('switches to board view with read-only archived application cards', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (init?.method !== 'GET') {
+                return response(undefined, 204);
+            }
+            return response([
+                mockApplication,
+                {
+                    ...mockApplication,
+                    archived_job_id: 2,
+                    company_name: 'Offer Pte Ltd',
+                    job_status: 'Offer',
+                },
+            ]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+
+        const board = screen.getByRole('region', { name: 'Archived application board' });
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.queryByRole('button', { name: 'Display options' })).not.toBeInTheDocument();
+        expect(
+            within(board)
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent)
+        ).toEqual(['Accepted 0', 'Offer 1', 'Declined 0', 'Interview 0', 'Applied 1', 'Ghosted 0', 'Rejected 0']);
+
+        const applicationCard = within(board).getByRole('article', { name: /ABC Pte Ltd Software Engineer/i });
+        expect(within(applicationCard).getByText('20 Jun 2025')).toBeInTheDocument();
+        expect(within(applicationCard).queryByText('Remote')).not.toBeInTheDocument();
+        expect(within(applicationCard).queryByRole('combobox', { name: /move/i })).not.toBeInTheDocument();
+        expect(within(applicationCard).queryByText('Edit notes')).not.toBeInTheDocument();
+        expect(within(applicationCard).queryByPlaceholderText('Add your notes here')).not.toBeInTheDocument();
+
+        await userEvent.click(within(applicationCard).getByText('Actions'));
+
+        expect(within(applicationCard).getByRole('link', { name: 'Open job posting' })).toBeInTheDocument();
+        expect(within(applicationCard).getByRole('button', { name: 'Unarchive' })).toBeInTheDocument();
+        expect(within(applicationCard).getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    });
+
+    test('shows archived board notes as read-only when enabled', async () => {
+        fetch.mockImplementation(async (_url: string, init?: RequestInit) =>
+            init?.method === 'GET'
+                ? response([{ ...mockApplication, notes: 'Follow up after cooling period.' }])
+                : response(undefined, 204)
+        );
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show notes' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+
+        const applicationCard = screen.getByRole('article', { name: /ABC Pte Ltd Software Engineer/i });
+        await userEvent.click(within(applicationCard).getByText('Actions'));
+
+        expect(within(applicationCard).getByText('Notes')).toBeInTheDocument();
+        expect(within(applicationCard).getByDisplayValue('Follow up after cooling period.')).toBeDisabled();
+        expect(within(applicationCard).queryByText('Edit notes')).not.toBeInTheDocument();
+    });
+
+    test('uses user preferences for the selected archived application view', async () => {
+        const { unmount } = render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { initialPreferences: { archived_application_view_mode: 'board' } }
+        );
+
+        await screen.findByRole('region', { name: 'Archived application board' });
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true');
+
+        unmount();
+        fetch.mockClear();
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.queryByRole('region', { name: 'Archived application board' })).not.toBeInTheDocument();
     });
 
     test('fetches archived applications from the server when the status filter changes', async () => {
@@ -147,6 +257,21 @@ describe('Archived job application viewing flow', () => {
 
         await waitFor(() => expect(screen.queryAllByRole('status', { name: 'Loading results' })).toHaveLength(0));
         expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+    });
+
+    test('shows the board skeleton during the initial fetch in board view', async () => {
+        fetch.mockImplementation(async () => await new Promise<ReturnType<typeof response>>(() => undefined));
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { initialPreferences: { archived_application_view_mode: 'board' } }
+        );
+
+        expect(await screen.findByRole('status', { name: 'Loading board' })).toBeInTheDocument();
+        expect(screen.getAllByTestId('skeleton-board-column')).toHaveLength(4);
+        expect(screen.queryAllByRole('status', { name: 'Loading results' })).toHaveLength(0);
     });
 
     test('deletes application after user confirms', async () => {

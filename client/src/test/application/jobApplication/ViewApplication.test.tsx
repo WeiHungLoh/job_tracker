@@ -1,9 +1,10 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewApplication from '../../../pages/application/jobApplication/viewApplication/ViewApplication';
 import { render } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
+import type { ReactNode } from 'react';
 
 globalThis.fetch = vi.fn();
 
@@ -19,13 +20,26 @@ const mockApplication = {
     notes: '',
 };
 
+const mockInterview = {
+    interview_id: 1,
+    job_id: 1,
+    company_name: 'ABC Pte Ltd',
+    job_title: 'Software Engineer',
+    interview_date: '2025-07-20T00:00:00Z',
+    interview_location: 'Zoom',
+    interview_type: 'Technical',
+    interview_notes: '',
+};
+
 const mockPreferences = {
     application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
+    application_view_mode: 'list',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
+    archived_application_view_mode: 'list',
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -43,10 +57,67 @@ vi.mock('material-ui-confirm', () => ({
     useConfirm: () => mockConfirm,
 }));
 
+vi.mock('@dnd-kit/core', () => ({
+    DndContext: ({
+        children,
+        onDragCancel,
+        onDragEnd,
+        onDragStart,
+    }: {
+        children: ReactNode;
+        onDragCancel?: () => void;
+        onDragEnd: (event: { active: { id: string }; over: { id: string } }) => void;
+        onDragStart?: (event: { active: { id: string } }) => void;
+    }) => (
+        <div>
+            <button
+                data-testid='mock-start-drag-application-1'
+                hidden
+                onClick={() => onDragStart?.({ active: { id: '1' } })}
+                type='button'
+            />
+            <button data-testid='mock-cancel-drag' hidden onClick={() => onDragCancel?.()} type='button' />
+            <button
+                data-testid='mock-drag-application-1-to-interview'
+                hidden
+                onClick={() => onDragEnd({ active: { id: '1' }, over: { id: 'Interview' } })}
+                type='button'
+            />
+            <button
+                data-testid='mock-drag-application-1-to-applied'
+                hidden
+                onClick={() => onDragEnd({ active: { id: '1' }, over: { id: 'Applied' } })}
+                type='button'
+            />
+            {children}
+        </div>
+    ),
+    KeyboardSensor: vi.fn(),
+    PointerSensor: vi.fn(),
+    useDraggable: () => ({
+        attributes: {},
+        listeners: {},
+        setNodeRef: vi.fn(),
+        transform: null,
+    }),
+    useDroppable: () => ({
+        isOver: false,
+        setNodeRef: vi.fn(),
+    }),
+    useSensor: vi.fn(),
+    useSensors: vi.fn(),
+}));
+
 globalThis.alert = vi.fn();
 
 const applicationRequestCount = (url: string) =>
     fetch.mock.calls.filter(([requestUrl]) => String(requestUrl) === url).length;
+
+const statusUpdateRequestCount = (jobId: number) =>
+    fetch.mock.calls.filter(
+        ([url, init]: [string, RequestInit?]) =>
+            url.endsWith(`/job-applications/${jobId}/status`) && init?.method === 'PATCH'
+    ).length;
 
 describe('Job application viewing flow', () => {
     beforeEach(() => {
@@ -82,6 +153,9 @@ describe('Job application viewing flow', () => {
         expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Filter by' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.queryByRole('region', { name: 'Application board' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
         expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'false');
         expect(screen.getByRole('switch', { name: 'Show archive' })).toHaveAttribute('aria-checked', 'false');
@@ -100,6 +174,354 @@ describe('Job application viewing flow', () => {
                 method: 'GET',
             }
         );
+    });
+
+    test('places the view toggle before the application controls', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+
+        const listButton = screen.getByRole('button', { name: 'List' });
+        const boardButton = screen.getByRole('button', { name: 'Board' });
+        const filterButton = screen.getByRole('button', { name: 'Filter by' });
+        const displayButton = screen.getByRole('button', { name: 'Display options' });
+        const moreButton = screen.getByRole('button', { name: 'More...' });
+
+        expect(listButton.compareDocumentPosition(boardButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(boardButton.compareDocumentPosition(filterButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(filterButton.compareDocumentPosition(displayButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(displayButton.compareDocumentPosition(moreButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    test('switches to board view and groups applications by status', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (init?.method !== 'GET') {
+                return response(undefined, 204);
+            }
+            return response([
+                mockApplication,
+                { ...mockApplication, job_id: 2, company_name: 'Offer Pte Ltd', job_status: 'Offer' },
+            ]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+
+        const board = screen.getByRole('region', { name: 'Application board' });
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            within(board)
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent)
+        ).toEqual(['Accepted 0', 'Offer 1', 'Declined 0', 'Interview 0', 'Applied 1', 'Ghosted 0', 'Rejected 0']);
+        expect(within(board).getByRole('heading', { name: 'Applied 1' })).toBeInTheDocument();
+        expect(within(board).getByRole('heading', { name: 'Offer 1' })).toBeInTheDocument();
+        const applicationCard = within(board).getByRole('article', { name: /ABC Pte Ltd Software Engineer/i });
+        expect(applicationCard).toBeInTheDocument();
+        expect(within(applicationCard).getByText('20 Jun 2025')).toBeInTheDocument();
+        expect(within(applicationCard).queryByText('Remote')).not.toBeInTheDocument();
+        expect(within(applicationCard).queryByText('Applied 20 Jun 2025')).not.toBeInTheDocument();
+        expect(within(applicationCard).queryByText(/\d+ days \d+ hours \d+ minutes/)).not.toBeInTheDocument();
+        expect(within(board).getByRole('article', { name: /Offer Pte Ltd Software Engineer/i })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Display options' })).not.toBeInTheDocument();
+    });
+
+    test('board filters hide excluded columns without resetting the selected view', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications?jobStatuses=Offer')) {
+                return response([{ ...mockApplication, job_status: 'Offer' }]);
+            }
+            if (init?.method !== 'GET') {
+                return response(undefined, 204);
+            }
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+
+        await waitFor(() =>
+            expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true')
+        );
+        expect(screen.getByRole('heading', { name: 'Offer 1' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Applied 0' })).not.toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'List' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked();
+    });
+
+    test('uses user preferences for the selected application view', async () => {
+        const { unmount } = render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_view_mode: 'board' } }
+        );
+
+        await screen.findByRole('region', { name: 'Application board' });
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true');
+
+        unmount();
+        fetch.mockClear();
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.queryByRole('region', { name: 'Application board' })).not.toBeInTheDocument();
+    });
+
+    test('updates status from the board fallback without auto scrolling and shows the update in list view', async () => {
+        const scrollIntoView = vi.fn();
+        HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_enable_scroll: true } }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        await userEvent.selectOptions(
+            screen.getByRole('combobox', { name: 'Move ABC Pte Ltd to status' }),
+            'Interview'
+        );
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ editStatus: false, jobStatus: 'Interview' }),
+            })
+        );
+        expect(screen.getByRole('heading', { name: 'Applied 0' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Interview 1' })).toBeInTheDocument();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+
+        await userEvent.click(screen.getByRole('button', { name: 'List' }));
+        expect(screen.getByText(/^Job Status: Interview$/)).toBeInTheDocument();
+    });
+
+    test('dragging a board card updates status through the existing status endpoint without auto scrolling', async () => {
+        const scrollIntoView = vi.fn();
+        HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_enable_scroll: true } }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        fireEvent.click(screen.getByTestId('mock-drag-application-1-to-interview'));
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ editStatus: false, jobStatus: 'Interview' }),
+            })
+        );
+        expect(screen.getByRole('heading', { name: 'Interview 1' })).toBeInTheDocument();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    test('dropping a board card into its current status does not call the update endpoint', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        const statusUpdatesBeforeDrop = statusUpdateRequestCount(1);
+        fireEvent.click(screen.getByTestId('mock-drag-application-1-to-applied'));
+
+        expect(statusUpdateRequestCount(1)).toBe(statusUpdatesBeforeDrop);
+    });
+
+    test('disables moving board applications with interviews back to applied', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([mockInterview]);
+            }
+            if (init?.method !== 'GET') {
+                return response(undefined, 204);
+            }
+            return response([{ ...mockApplication, job_status: 'Interview' }]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+
+        const board = screen.getByRole('region', { name: 'Application board' });
+        const appliedColumn = within(board).getByRole('region', { name: 'Applied 0' });
+        const statusSelect = screen.getByRole('combobox', { name: 'Move ABC Pte Ltd to status' });
+
+        expect(within(statusSelect).getByRole('option', { name: 'Applied' })).toBeDisabled();
+        expect(appliedColumn).not.toHaveAttribute('aria-disabled');
+
+        fireEvent.click(screen.getByTestId('mock-start-drag-application-1'));
+
+        expect(appliedColumn).toHaveAttribute('aria-disabled', 'true');
+
+        const statusUpdatesBeforeDrop = statusUpdateRequestCount(1);
+        fireEvent.click(screen.getByTestId('mock-drag-application-1-to-applied'));
+
+        expect(statusUpdateRequestCount(1)).toBe(statusUpdatesBeforeDrop);
+        expect(appliedColumn).not.toHaveAttribute('aria-disabled');
+        expect(screen.getByRole('heading', { name: 'Interview 1' })).toBeInTheDocument();
+    });
+
+    test('prevents duplicate board status update requests for the same card', async () => {
+        let resolveStatusUpdate: ((value: ReturnType<typeof response>) => void) | undefined;
+        const pendingStatusUpdate = new Promise<ReturnType<typeof response>>((resolve) => {
+            resolveStatusUpdate = resolve;
+        });
+
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/status') && init?.method === 'PATCH') {
+                return await pendingStatusUpdate;
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        fireEvent.click(screen.getByTestId('mock-drag-application-1-to-interview'));
+        fireEvent.click(screen.getByTestId('mock-drag-application-1-to-interview'));
+
+        expect(statusUpdateRequestCount(1)).toBe(1);
+        resolveStatusUpdate?.(response(undefined, 204));
+        await waitFor(() => expect(screen.getByRole('heading', { name: 'Interview 1' })).toBeInTheDocument());
+    });
+
+    test('rolls back an optimistic board status update when the API fails', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/status') && init?.method === 'PATCH') {
+                return response({ message: 'Status update is temporarily unavailable.' }, 503);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        await userEvent.selectOptions(
+            screen.getByRole('combobox', { name: 'Move ABC Pte Ltd to status' }),
+            'Interview'
+        );
+
+        expect(await screen.findByText('Status update is temporarily unavailable.')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Applied 1' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Interview 0' })).toBeInTheDocument();
+    });
+
+    test('keeps board actions available without showing full notes directly on the card', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+
+        expect(screen.getByPlaceholderText('Add your notes here')).not.toBeVisible();
+        await userEvent.click(screen.getByText('Actions'));
+
+        expect(screen.getByRole('link', { name: 'Open job posting' })).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Add your notes here')).toBeVisible();
+        expect(screen.getByPlaceholderText('Add your notes here')).toHaveAttribute('maxlength', '3000');
+        expect(screen.getByRole('button', { name: 'Archive' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     });
 
     test('fetches applications from the server when the status filter changes', async () => {
@@ -225,6 +647,27 @@ describe('Job application viewing flow', () => {
         expect(filterButton.compareDocumentPosition(firstSkeleton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(filterButton).toBeDisabled();
         expect(screen.queryByText(/no job applications match/i)).not.toBeInTheDocument();
+    });
+
+    test('shows the board skeleton during the initial fetch in board view', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+
+            return await new Promise<ReturnType<typeof response>>(() => undefined);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_view_mode: 'board' } }
+        );
+
+        expect(await screen.findByRole('status', { name: 'Loading board' })).toBeInTheDocument();
+        expect(screen.getAllByTestId('skeleton-board-column')).toHaveLength(4);
+        expect(screen.queryAllByRole('status', { name: 'Loading results' })).toHaveLength(0);
     });
 
     test('restores the saved filter and shows the backend message when filtering fails', async () => {
