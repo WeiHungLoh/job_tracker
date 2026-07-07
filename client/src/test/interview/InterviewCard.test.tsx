@@ -33,6 +33,12 @@ const renderJobCard = (interview: JobInterview = futureInterview, onDelete = vi.
     return { onDelete };
 };
 
+const getCalendarTrigger = () =>
+    document.querySelector<HTMLButtonElement>(`button[aria-controls="calendar-${futureInterview.interview_id}-options"]`);
+
+const queryCalendarTrigger = () =>
+    document.querySelector<HTMLButtonElement>(`button[aria-controls="calendar-${futureInterview.interview_id}-options"]`);
+
 describe('InterviewCard calendar options', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
@@ -41,19 +47,19 @@ describe('InterviewCard calendar options', () => {
     test('shows Add to calendar only for a future active interview', () => {
         renderJobCard();
 
-        expect(screen.getByRole('button', { name: /add to calendar/i })).toBeInTheDocument();
+        expect(getCalendarTrigger()).toBeInTheDocument();
     });
 
     test('does not show Add to calendar for a past active interview', () => {
         renderJobCard({ ...futureInterview, interview_date: '2020-01-01T00:00:00Z' });
 
-        expect(screen.queryByRole('button', { name: /add to calendar/i })).not.toBeInTheDocument();
+        expect(queryCalendarTrigger()).not.toBeInTheDocument();
     });
 
     test('does not show Add to calendar for an invalid active interview date', () => {
         renderJobCard({ ...futureInterview, interview_date: 'not-a-date' });
 
-        expect(screen.queryByRole('button', { name: /add to calendar/i })).not.toBeInTheDocument();
+        expect(queryCalendarTrigger()).not.toBeInTheDocument();
     });
 
     test('does not show Add to calendar for an archived interview', () => {
@@ -76,19 +82,19 @@ describe('InterviewCard calendar options', () => {
             </MemoryRouter>
         );
 
-        expect(screen.queryByRole('button', { name: /add to calendar/i })).not.toBeInTheDocument();
+        expect(queryCalendarTrigger()).not.toBeInTheDocument();
     });
 
     test('opens both calendar actions and Google Calendar in a protected new tab', async () => {
         const open = vi.spyOn(window, 'open').mockReturnValue(null);
         renderJobCard();
 
-        await userEvent.click(screen.getByRole('button', { name: /add to calendar/i }));
+        await userEvent.click(getCalendarTrigger()!);
 
-        expect(screen.getByRole('menuitem', { name: 'Google Calendar' })).toBeInTheDocument();
-        expect(screen.getByRole('menuitem', { name: 'Apple Calendar / Outlook (.ics)' })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: 'Add to Google Calendar' })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' })).toBeInTheDocument();
 
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Google Calendar' }));
+        await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Google Calendar' }));
 
         expect(open).toHaveBeenCalledWith(
             expect.stringContaining('https://calendar.google.com/calendar/render?'),
@@ -111,8 +117,8 @@ describe('InterviewCard calendar options', () => {
             });
         renderJobCard();
 
-        await userEvent.click(screen.getByRole('button', { name: /add to calendar/i }));
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Apple Calendar / Outlook (.ics)' }));
+        await userEvent.click(getCalendarTrigger()!);
+        await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
 
         expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
         expect(anchorClick).toHaveBeenCalledOnce();
@@ -130,8 +136,8 @@ describe('InterviewCard calendar options', () => {
         });
         renderJobCard();
 
-        await userEvent.click(screen.getByRole('button', { name: /add to calendar/i }));
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Apple Calendar / Outlook (.ics)' }));
+        await userEvent.click(getCalendarTrigger()!);
+        await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
 
         expect(await screen.findByText('Unable to create the calendar event. Please try again.')).toBeInTheDocument();
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
@@ -139,7 +145,7 @@ describe('InterviewCard calendar options', () => {
 
     test('closes on Escape, restores trigger focus, and closes on outside click', async () => {
         renderJobCard();
-        const trigger = screen.getByRole('button', { name: /add to calendar/i });
+        const trigger = getCalendarTrigger()!;
 
         await userEvent.click(trigger);
         fireEvent.keyDown(document, { key: 'Escape' });
