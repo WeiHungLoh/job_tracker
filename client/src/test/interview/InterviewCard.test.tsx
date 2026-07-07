@@ -33,11 +33,19 @@ const renderJobCard = (interview: JobInterview = futureInterview, onDelete = vi.
     return { onDelete };
 };
 
-const getCalendarTrigger = () =>
-    document.querySelector<HTMLButtonElement>(`button[aria-controls="calendar-${futureInterview.interview_id}-options"]`);
+const calendarTriggerSelector = `button[aria-controls="calendar-${futureInterview.interview_id}-options"]`;
 
-const queryCalendarTrigger = () =>
-    document.querySelector<HTMLButtonElement>(`button[aria-controls="calendar-${futureInterview.interview_id}-options"]`);
+const getCalendarTrigger = () => {
+    const trigger = queryCalendarTrigger();
+
+    if (!trigger) {
+        throw new Error('Expected the calendar trigger to be rendered.');
+    }
+
+    return trigger;
+};
+
+const queryCalendarTrigger = () => document.querySelector<HTMLButtonElement>(calendarTriggerSelector);
 
 describe('InterviewCard calendar options', () => {
     beforeEach(() => {
@@ -89,7 +97,7 @@ describe('InterviewCard calendar options', () => {
         const open = vi.spyOn(window, 'open').mockReturnValue(null);
         renderJobCard();
 
-        await userEvent.click(getCalendarTrigger()!);
+        await userEvent.click(getCalendarTrigger());
 
         expect(screen.getByRole('menuitem', { name: 'Add to Google Calendar' })).toBeInTheDocument();
         expect(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' })).toBeInTheDocument();
@@ -117,7 +125,7 @@ describe('InterviewCard calendar options', () => {
             });
         renderJobCard();
 
-        await userEvent.click(getCalendarTrigger()!);
+        await userEvent.click(getCalendarTrigger());
         await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
 
         expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
@@ -136,7 +144,7 @@ describe('InterviewCard calendar options', () => {
         });
         renderJobCard();
 
-        await userEvent.click(getCalendarTrigger()!);
+        await userEvent.click(getCalendarTrigger());
         await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
 
         expect(await screen.findByText('Unable to create the calendar event. Please try again.')).toBeInTheDocument();
@@ -145,7 +153,7 @@ describe('InterviewCard calendar options', () => {
 
     test('closes on Escape, restores trigger focus, and closes on outside click', async () => {
         renderJobCard();
-        const trigger = getCalendarTrigger()!;
+        const trigger = getCalendarTrigger();
 
         await userEvent.click(trigger);
         fireEvent.keyDown(document, { key: 'Escape' });
