@@ -142,16 +142,17 @@ describe('Job application viewing flow', () => {
                 }
             )
         );
+        await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeChecked());
 
-        await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Accepted' })).not.toBeDisabled());
         const offerOnlyUrl = `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Offer`;
         const offerOnlyRequestsBeforeRemovingAccepted = applicationRequestCount(offerOnlyUrl);
         await userEvent.click(screen.getByRole('checkbox', { name: 'Accepted' }));
         await waitFor(() =>
             expect(applicationRequestCount(offerOnlyUrl)).toBeGreaterThan(offerOnlyRequestsBeforeRemovingAccepted)
         );
+        await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Accepted' })).not.toBeChecked());
 
-        await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Offer' })).not.toBeDisabled());
+        await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked());
         const allStatusesUrl = `${
             import.meta.env.VITE_API_URL
         }/job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`;
