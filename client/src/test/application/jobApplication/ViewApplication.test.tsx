@@ -83,9 +83,12 @@ describe('Job application viewing flow', () => {
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Filter by' })).toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
-        expect(screen.getByText('Show notes')).toBeInTheDocument();
-        expect(screen.getByText('Show archive')).toBeInTheDocument();
-        expect(screen.getByText('Auto scroll after job status change')).toBeInTheDocument();
+        expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'false');
+        expect(screen.getByRole('switch', { name: 'Show archive' })).toHaveAttribute('aria-checked', 'false');
+        expect(screen.getByRole('switch', { name: 'Auto scroll after job status change' })).toHaveAttribute(
+            'aria-checked',
+            'false'
+        );
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all applications/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();
@@ -390,7 +393,7 @@ describe('Job application viewing flow', () => {
 
         await screen.findByText(/ABC Pte Ltd/i);
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Show archive' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show archive' }));
         await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
 
         await waitFor(() =>
@@ -412,7 +415,7 @@ describe('Job application viewing flow', () => {
 
         await screen.findByText(/ABC Pte Ltd/i);
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Show notes' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show notes' }));
 
         expect(screen.getByPlaceholderText('Add your notes here')).toHaveAttribute('maxlength', '3000');
     });

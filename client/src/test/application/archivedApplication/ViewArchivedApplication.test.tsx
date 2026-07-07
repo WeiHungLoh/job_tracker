@@ -73,7 +73,7 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Filter by' })).toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
-        expect(screen.getByText('Show notes')).toBeInTheDocument();
+        expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'false');
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all archived applications/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();

@@ -3,7 +3,7 @@ import styles from './ToggleButton.module.css';
 
 const ToggleButton = ({ toggled, onToggle, label }: ToggleButtonProps) => (
     <div className={styles.toggleButton}>
-        <button aria-pressed={toggled} className={styles.row} onClick={onToggle} type='button'>
+        <button aria-checked={toggled} className={styles.row} onClick={onToggle} role='switch' type='button'>
             <span aria-hidden='true' className={`${styles.switch} ${toggled ? styles.toggled : ''}`}>
                 <span className={styles.thumb} />
             </span>
