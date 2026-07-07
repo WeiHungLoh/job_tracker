@@ -95,7 +95,6 @@ describe('Job application viewing flow', () => {
             }/job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`,
             {
                 method: 'GET',
-                credentials: 'include',
             }
         );
     });
@@ -125,7 +124,6 @@ describe('Job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Offer`, {
                 method: 'GET',
-                credentials: 'include',
             })
         );
         expect(fetch.mock.calls.length).toBeGreaterThan(callsBeforeSelectingOffer);
@@ -138,7 +136,6 @@ describe('Job application viewing flow', () => {
                 `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Offer&jobStatuses=Accepted`,
                 {
                     method: 'GET',
-                    credentials: 'include',
                 }
             )
         );
@@ -273,7 +270,6 @@ describe('Job application viewing flow', () => {
         await waitFor(() => {
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
                 method: 'PATCH',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ editStatus: true, jobStatus: 'Applied' }),
             });
@@ -379,7 +375,6 @@ describe('Job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1`, {
                 method: 'DELETE',
-                credentials: 'include',
             })
         );
 
@@ -401,7 +396,6 @@ describe('Job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications`, {
                 method: 'PATCH',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ jobId: 1 }),
             })
@@ -467,7 +461,6 @@ describe('Job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications`, {
                 method: 'DELETE',
-                credentials: 'include',
             })
         );
 

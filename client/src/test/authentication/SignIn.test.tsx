@@ -70,7 +70,6 @@ describe('User sign in flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
             })
@@ -100,7 +99,6 @@ describe('User sign in flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
             })
@@ -132,7 +130,6 @@ describe('User sign in flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: 'starboy98@hotmail.com', password: '123456' }),
             })

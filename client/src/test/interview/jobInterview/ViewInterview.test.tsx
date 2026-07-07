@@ -103,7 +103,6 @@ describe('Job interview viewer flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-interviews/1`, {
                 method: 'DELETE',
-                credentials: 'include',
             })
         );
 
@@ -138,7 +137,6 @@ describe('Job interview viewer flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-interviews`, {
                 method: 'DELETE',
-                credentials: 'include',
             })
         );
 

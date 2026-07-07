@@ -39,8 +39,7 @@ const parseResponse = async <T>(response: Response): Promise<T> => {
 
 export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TResponse>(
     request: TRequest,
-    config: EndpointConfigEntry,
-    credentials?: RequestCredentials
+    config: EndpointConfigEntry
 ): Promise<TResponse> => {
     let url = `${apiUrl.replace(/\/$/, '')}/${config.url.replace(/^\//, '')}`;
     const body: Record<string, unknown> = {};
@@ -72,9 +71,6 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
     const init: RequestInit = {
         method: config.verb,
     };
-    if (credentials) {
-        init.credentials = credentials;
-    }
 
     if (hasFormData) {
         init.body = formData;
@@ -124,8 +120,7 @@ const refreshAuthentication = async (): Promise<void> => {
 
     activeRefreshRequest = makeJobTrackerAPIRequest<RefreshAuthenticationRequest, RefreshAuthenticationResponse>(
         null,
-        endpointConfig.authentication.refresh,
-        'include'
+        endpointConfig.authentication.refresh
     );
 
     try {
@@ -150,7 +145,7 @@ export const makeAuthenticatedJobTrackerAPIRequest = async <TRequest extends API
     config: EndpointConfigEntry
 ): Promise<TResponse> => {
     try {
-        return await makeJobTrackerAPIRequest<TRequest, TResponse>(request, config, 'include');
+        return await makeJobTrackerAPIRequest<TRequest, TResponse>(request, config);
     } catch (error) {
         if (!isUnauthorizedError(error)) {
             throw error;
@@ -167,7 +162,7 @@ export const makeAuthenticatedJobTrackerAPIRequest = async <TRequest extends API
     }
 
     try {
-        return await makeJobTrackerAPIRequest<TRequest, TResponse>(request, config, 'include');
+        return await makeJobTrackerAPIRequest<TRequest, TResponse>(request, config);
     } catch (error) {
         if (isUnauthorizedError(error)) {
             redirectToSignIn();

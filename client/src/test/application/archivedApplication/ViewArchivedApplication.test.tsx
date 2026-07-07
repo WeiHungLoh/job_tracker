@@ -83,7 +83,6 @@ describe('Archived job application viewing flow', () => {
             }/archived-job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`,
             {
                 method: 'GET',
-                credentials: 'include',
             }
         );
     });
@@ -105,7 +104,6 @@ describe('Archived job application viewing flow', () => {
                 `${import.meta.env.VITE_API_URL}/archived-job-applications?jobStatuses=Offer`,
                 {
                     method: 'GET',
-                    credentials: 'include',
                 }
             )
         );
@@ -180,7 +178,6 @@ describe('Archived job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/1`, {
                 method: 'DELETE',
-                credentials: 'include',
             })
         );
 
@@ -216,7 +213,6 @@ describe('Archived job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications`, {
                 method: 'DELETE',
-                credentials: 'include',
             })
         );
 
@@ -237,7 +233,6 @@ describe('Archived job application viewing flow', () => {
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/1/restore`, {
                 method: 'PATCH',
-                credentials: 'include',
             })
         );
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());

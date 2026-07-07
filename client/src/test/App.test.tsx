@@ -87,7 +87,6 @@ describe('App routing and authentication behavior', () => {
 
         await waitFor(() => expect(screen.getByText(/sign in to job tracker/i)).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/current`, {
-            credentials: 'include',
             method: 'GET',
         });
     });
@@ -100,7 +99,6 @@ describe('App routing and authentication behavior', () => {
 
         await waitFor(() => expect(screen.getByText(/input company name/i)).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/refresh`, {
-            credentials: 'include',
             method: 'POST',
         });
     });
@@ -145,7 +143,6 @@ describe('App routing and authentication behavior', () => {
 
         await waitFor(() => expect(screen.getByText(/input company name/i)).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/current`, {
-            credentials: 'include',
             method: 'GET',
         });
     });

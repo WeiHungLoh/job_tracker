@@ -138,12 +138,9 @@ describe('makeJobTrackerAPIRequest', () => {
 
         expect(result).toEqual({ applications: 2 });
         expect(fetch.mock.calls).toEqual([
-            [`${import.meta.env.VITE_API_URL}/job-applications`, { credentials: 'include', method: 'GET' }],
-            [
-                `${import.meta.env.VITE_API_URL}/authentication/sessions/refresh`,
-                { credentials: 'include', method: 'POST' },
-            ],
-            [`${import.meta.env.VITE_API_URL}/job-applications`, { credentials: 'include', method: 'GET' }],
+            [`${import.meta.env.VITE_API_URL}/job-applications`, { method: 'GET' }],
+            [`${import.meta.env.VITE_API_URL}/authentication/sessions/refresh`, { method: 'POST' }],
+            [`${import.meta.env.VITE_API_URL}/job-applications`, { method: 'GET' }],
         ]);
     });
 

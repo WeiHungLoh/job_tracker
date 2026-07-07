@@ -69,8 +69,7 @@ export const useJobTrackerAPI = () => {
         const signIn = async (req: SignInRequest) => {
             return await makeJobTrackerAPIRequest<SignInRequest, SignInResponse>(
                 req,
-                endpointConfig.authentication.signIn,
-                'include'
+                endpointConfig.authentication.signIn
             );
         };
 
@@ -91,8 +90,7 @@ export const useJobTrackerAPI = () => {
         const logout = async () => {
             return await makeJobTrackerAPIRequest<LogoutRequest, LogoutResponse>(
                 null,
-                endpointConfig.authentication.logout,
-                'include'
+                endpointConfig.authentication.logout
             );
         };
 
