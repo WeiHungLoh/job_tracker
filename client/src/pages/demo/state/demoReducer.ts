@@ -1,0 +1,277 @@
+import type { ArchivedJobApplication, JobApplication, JobStatus } from '../../application/models';
+import type { ArchivedJobInterview, JobInterview } from '../../interview/models';
+import { createDemoInitialState } from './demoInitialState';
+import type { DemoState } from '../models';
+import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
+
+type CreateApplicationPayload = {
+    applicationDate: Date;
+    companyName: string;
+    jobLocation: string;
+    jobStatus: JobStatus;
+    jobTitle: string;
+    jobURL: string;
+};
+
+type CreateInterviewPayload = {
+    interviewDate: Date;
+    interviewLocation: string;
+    interviewType: string;
+    jobId: number;
+    notes: string;
+};
+
+export type DemoAction =
+    | { type: 'CREATE_APPLICATION'; payload: CreateApplicationPayload }
+    | { type: 'UPDATE_APPLICATION_STATUS'; payload: { editStatus?: boolean; jobId: number; jobStatus: JobStatus } }
+    | { type: 'UPDATE_APPLICATION_NOTES'; payload: { jobId: number; notes: string } }
+    | { type: 'DELETE_APPLICATION'; payload: { jobId: number } }
+    | { type: 'DELETE_ALL_APPLICATIONS' }
+    | { type: 'ARCHIVE_APPLICATION'; payload: { jobId: number } }
+    | { type: 'RESTORE_APPLICATION'; payload: { archivedJobId: number } }
+    | { type: 'DELETE_ARCHIVED_APPLICATION'; payload: { archivedJobId: number } }
+    | { type: 'DELETE_ALL_ARCHIVED_APPLICATIONS' }
+    | { type: 'CREATE_INTERVIEW'; payload: CreateInterviewPayload }
+    | { type: 'DELETE_INTERVIEW'; payload: { interviewId: number } }
+    | { type: 'DELETE_ALL_INTERVIEWS' }
+    | { type: 'DELETE_ARCHIVED_INTERVIEW'; payload: { archivedInterviewId: number } }
+    | { type: 'DELETE_ALL_ARCHIVED_INTERVIEWS' }
+    | { type: 'UPDATE_PREFERENCES'; payload: UpdateUserPreferencesRequest }
+    | { type: 'RESET_DEMO'; payload?: { now?: Date } };
+
+const toArchivedApplication = (application: JobApplication): ArchivedJobApplication => ({
+    archived_job_id: application.job_id,
+    company_name: application.company_name,
+    job_title: application.job_title,
+    application_date: application.application_date,
+    job_status: application.job_status,
+    job_location: application.job_location,
+    job_posting_url: application.job_posting_url,
+    notes: application.notes,
+});
+
+const toActiveApplication = (application: ArchivedJobApplication): JobApplication => ({
+    job_id: application.archived_job_id,
+    company_name: application.company_name,
+    job_title: application.job_title,
+    application_date: application.application_date,
+    job_status: application.job_status,
+    edit_status: false,
+    job_location: application.job_location,
+    job_posting_url: application.job_posting_url,
+    notes: application.notes,
+});
+
+const toArchivedInterview = (interview: JobInterview, application: JobApplication): ArchivedJobInterview => ({
+    archived_interview_id: interview.interview_id,
+    archived_job_id: interview.job_id,
+    company_name: application.company_name,
+    job_title: application.job_title,
+    job_status: application.job_status,
+    interview_date: interview.interview_date,
+    interview_location: interview.interview_location,
+    interview_type: interview.interview_type,
+    interview_notes: interview.interview_notes,
+});
+
+const toActiveInterview = (interview: ArchivedJobInterview, application: ArchivedJobApplication): JobInterview => ({
+    interview_id: interview.archived_interview_id,
+    job_id: interview.archived_job_id,
+    company_name: application.company_name,
+    job_title: application.job_title,
+    job_status: application.job_status,
+    interview_date: interview.interview_date,
+    interview_location: interview.interview_location,
+    interview_type: interview.interview_type,
+    interview_notes: interview.interview_notes,
+});
+
+const mergePreferences = (state: DemoState, updatedPreferences: UpdateUserPreferencesRequest): DemoState => {
+    const preferences = {
+        ...state.preferences,
+        ...updatedPreferences,
+    };
+
+    return { ...state, preferences };
+};
+
+export const demoReducer = (state: DemoState, action: DemoAction): DemoState => {
+    switch (action.type) {
+        case 'CREATE_APPLICATION': {
+            const { applicationDate, companyName, jobLocation, jobStatus, jobTitle, jobURL } = action.payload;
+            const application: JobApplication = {
+                job_id: state.nextApplicationId,
+                company_name: companyName,
+                job_title: jobTitle,
+                application_date: applicationDate.toISOString(),
+                job_status: jobStatus,
+                edit_status: false,
+                job_location: jobLocation,
+                job_posting_url: jobURL,
+                notes: '',
+            };
+
+            return {
+                ...state,
+                applications: [...state.applications, application],
+                nextApplicationId: state.nextApplicationId + 1,
+            };
+        }
+
+        case 'UPDATE_APPLICATION_STATUS':
+            return {
+                ...state,
+                applications: state.applications.map((application) =>
+                    application.job_id === action.payload.jobId
+                        ? {
+                              ...application,
+                              edit_status: action.payload.editStatus ?? application.edit_status,
+                              job_status: action.payload.jobStatus,
+                          }
+                        : application
+                ),
+            };
+
+        case 'UPDATE_APPLICATION_NOTES':
+            return {
+                ...state,
+                applications: state.applications.map((application) =>
+                    application.job_id === action.payload.jobId
+                        ? { ...application, notes: action.payload.notes }
+                        : application
+                ),
+            };
+
+        case 'DELETE_APPLICATION':
+            return {
+                ...state,
+                applications: state.applications.filter((application) => application.job_id !== action.payload.jobId),
+                interviews: state.interviews.filter((interview) => interview.job_id !== action.payload.jobId),
+            };
+
+        case 'DELETE_ALL_APPLICATIONS':
+            return {
+                ...state,
+                applications: [],
+                interviews: [],
+            };
+
+        case 'ARCHIVE_APPLICATION': {
+            const application = state.applications.find((item) => item.job_id === action.payload.jobId);
+            if (!application) {
+                return state;
+            }
+
+            const linkedInterviews = state.interviews
+                .filter((interview) => interview.job_id === application.job_id)
+                .map((interview) => toArchivedInterview(interview, application));
+
+            return {
+                ...state,
+                applications: state.applications.filter((item) => item.job_id !== application.job_id),
+                archivedApplications: [...state.archivedApplications, toArchivedApplication(application)],
+                interviews: state.interviews.filter((interview) => interview.job_id !== application.job_id),
+                archivedInterviews: [...state.archivedInterviews, ...linkedInterviews],
+            };
+        }
+
+        case 'RESTORE_APPLICATION': {
+            const application = state.archivedApplications.find(
+                (item) => item.archived_job_id === action.payload.archivedJobId
+            );
+            if (!application) {
+                return state;
+            }
+
+            const linkedInterviews = state.archivedInterviews
+                .filter((interview) => interview.archived_job_id === application.archived_job_id)
+                .map((interview) => toActiveInterview(interview, application));
+
+            return {
+                ...state,
+                applications: [...state.applications, toActiveApplication(application)],
+                archivedApplications: state.archivedApplications.filter(
+                    (item) => item.archived_job_id !== application.archived_job_id
+                ),
+                interviews: [...state.interviews, ...linkedInterviews],
+                archivedInterviews: state.archivedInterviews.filter(
+                    (interview) => interview.archived_job_id !== application.archived_job_id
+                ),
+            };
+        }
+
+        case 'DELETE_ARCHIVED_APPLICATION':
+            return {
+                ...state,
+                archivedApplications: state.archivedApplications.filter(
+                    (application) => application.archived_job_id !== action.payload.archivedJobId
+                ),
+                archivedInterviews: state.archivedInterviews.filter(
+                    (interview) => interview.archived_job_id !== action.payload.archivedJobId
+                ),
+            };
+
+        case 'DELETE_ALL_ARCHIVED_APPLICATIONS':
+            return {
+                ...state,
+                archivedApplications: [],
+                archivedInterviews: [],
+            };
+
+        case 'CREATE_INTERVIEW': {
+            const application = state.applications.find((item) => item.job_id === action.payload.jobId);
+            if (!application) {
+                return state;
+            }
+
+            const interview: JobInterview = {
+                interview_id: state.nextInterviewId,
+                job_id: application.job_id,
+                company_name: application.company_name,
+                job_title: application.job_title,
+                job_status: application.job_status,
+                interview_date: action.payload.interviewDate.toISOString(),
+                interview_location: action.payload.interviewLocation,
+                interview_type: action.payload.interviewType,
+                interview_notes: action.payload.notes,
+            };
+
+            return {
+                ...state,
+                interviews: [...state.interviews, interview],
+                nextInterviewId: state.nextInterviewId + 1,
+            };
+        }
+
+        case 'DELETE_INTERVIEW':
+            return {
+                ...state,
+                interviews: state.interviews.filter(
+                    (interview) => interview.interview_id !== action.payload.interviewId
+                ),
+            };
+
+        case 'DELETE_ALL_INTERVIEWS':
+            return { ...state, interviews: [] };
+
+        case 'DELETE_ARCHIVED_INTERVIEW':
+            return {
+                ...state,
+                archivedInterviews: state.archivedInterviews.filter(
+                    (interview) => interview.archived_interview_id !== action.payload.archivedInterviewId
+                ),
+            };
+
+        case 'DELETE_ALL_ARCHIVED_INTERVIEWS':
+            return { ...state, archivedInterviews: [] };
+
+        case 'UPDATE_PREFERENCES':
+            return mergePreferences(state, action.payload);
+
+        case 'RESET_DEMO':
+            return createDemoInitialState(action.payload?.now);
+
+        default:
+            return state;
+    }
+};

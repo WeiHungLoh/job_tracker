@@ -9,4 +9,12 @@ export const routes = {
     viewInterviews: '/interview/view',
     archivedApplications: '/application/archive',
     archivedInterviews: '/interview/archive',
+    demoRoot: '/demo',
+    demoDashboard: '/demo/dashboard',
+    demoAddApplication: '/demo/application/add',
+    demoViewApplications: '/demo/application/view',
+    demoAddInterview: '/demo/interview/add',
+    demoViewInterviews: '/demo/interview/view',
+    demoArchivedApplications: '/demo/application/archive',
+    demoArchivedInterviews: '/demo/interview/archive',
 } as const;

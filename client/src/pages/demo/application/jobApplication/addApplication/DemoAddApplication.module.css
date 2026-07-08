@@ -1,0 +1,7 @@
+.addApplication {
+    composes: addApplication from '../../../../application/jobApplication/addApplication/AddApplication.module.css';
+}
+
+.submitButton {
+    composes: submitButton from '../../../../application/jobApplication/addApplication/AddApplication.module.css';
+}

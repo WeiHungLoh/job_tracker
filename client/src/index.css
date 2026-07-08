@@ -27,6 +27,8 @@
     --colorCardBg: #fff;
     --colorCardBorder: #f0d8e0;
     --colorOverlayBg: #f4f3f8;
+    --colorPublicPageBg: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%),
+        var(--colorPageBg);
 
     /* Text */
     --colorText: #343a40;
@@ -164,6 +166,8 @@
     --colorCardBg: #1e1e26;
     --colorCardBorder: #333344;
     --colorOverlayBg: #16161c;
+    --colorPublicPageBg: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%),
+        var(--colorPageBg);
 
     /* Text */
     --colorText: #dee2e6;

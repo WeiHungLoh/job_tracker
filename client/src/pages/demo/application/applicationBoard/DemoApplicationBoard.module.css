@@ -1,0 +1,91 @@
+.board {
+    composes: board from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.column {
+    composes: column from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.dropTarget {
+    composes: dropTarget from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.dropDisabled {
+    composes: dropDisabled from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.columnHeading {
+    composes: columnHeading from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.columnTitle {
+    composes: columnTitle from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.columnCount {
+    composes: columnCount from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.columnCards {
+    composes: columnCards from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.emptyColumn {
+    composes: emptyColumn from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.card {
+    composes: card from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.cardDragging {
+    composes: cardDragging from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.readOnlyCard {
+    composes: readOnlyCard from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.cardHeader {
+    composes: cardHeader from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.jobTitle {
+    composes: jobTitle from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.meta {
+    composes: meta from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.statusBadge {
+    composes: statusBadge from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.upcomingBadge {
+    composes: upcomingBadge from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.statusSelectLabel {
+    composes: statusSelectLabel from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.notesField {
+    composes: notesField from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.actions {
+    composes: actions from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.actionPanel {
+    composes: actionPanel from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.readOnlyNotes {
+    composes: readOnlyNotes from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.actionButtons {
+    composes: actionButtons from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}

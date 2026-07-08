@@ -1,10 +1,11 @@
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { appRoutes } from '../App';
 import { render } from './renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../pages/application/models';
 import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../components/authProductIntro/AuthProductIntro';
+import { routes } from '../routes';
 
 globalThis.fetch = vi.fn();
 
@@ -209,6 +210,88 @@ describe('App routing and authentication behavior', () => {
 
         expect(await screen.findByRole('heading', { name: /job tracker user guide/i })).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: /checking authentication/i })).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('redirects /demo to the demo application viewer without checking authentication', async () => {
+        renderRoute(routes.demoRoot);
+
+        expect(await screen.findByText(/HorizonAI Labs/i, {}, { timeout: 5000 })).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /demo guide/i })).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test.each([
+        [routes.demoAddApplication, /input company name/i],
+        [routes.demoViewApplications, /HorizonAI Labs/i],
+        [routes.demoAddInterview, /HorizonAI Labs/i],
+        [routes.demoViewInterviews, /Atlas RecruitTech/i],
+        [routes.demoArchivedApplications, /Riverlane Studio/i],
+        [routes.demoArchivedInterviews, /Riverlane Studio/i],
+    ])('renders public demo route %s without authentication', async (route, expectedText) => {
+        renderRoute(route);
+
+        expect(await screen.findByText(expectedText, {}, { timeout: 5000 })).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('redirects unknown demo routes to the demo application viewer', async () => {
+        renderRoute(`${routes.demoRoot}${routes.userGuide}`);
+
+        expect(await screen.findByText(/HorizonAI Labs/i, {}, { timeout: 5000 })).toBeInTheDocument();
+        expect(screen.queryByText(/Demo mode mirrors/i)).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('demo application state survives navigation between demo routes', async () => {
+        renderRoute(routes.demoAddApplication);
+
+        await screen.findByText(/input company name/i);
+        await userEvent.type(screen.getByLabelText(/input company name/i), 'Demo Navigation Company');
+        await userEvent.type(screen.getByLabelText(/input job title/i), 'Demo Navigation Engineer');
+        await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
+
+        expect(await screen.findByText('Successfully added a job application!')).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: /view job applications/i }));
+        expect(await screen.findByText(/Demo Navigation Company/i)).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('link', { name: /view interviews/i }));
+        expect(await screen.findByText(/Atlas RecruitTech/i)).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('link', { name: /view job applications/i }));
+        expect(await screen.findByText(/Demo Navigation Company/i)).toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('demo interview application links highlight the corresponding application', async () => {
+        renderRoute(routes.demoViewInterviews);
+
+        const atlasHeading = await screen.findByRole('heading', { name: /Atlas RecruitTech/i });
+        const atlasCard = atlasHeading.closest('div')?.parentElement;
+        expect(atlasCard).toBeTruthy();
+
+        await userEvent.click(
+            within(atlasCard as HTMLElement).getByRole('link', {
+                name: /click here to review corresponding job application/i,
+            })
+        );
+
+        expect(await screen.findByText(/Software Engineer, Platform/i)).toBeInTheDocument();
+        await waitFor(() => expect(document.getElementById('108')?.className).toContain('highlighted'));
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('Exit Demo navigates to sign in without logout or authentication verification', async () => {
+        renderRoute(routes.demoViewApplications);
+
+        expect(await screen.findByText(/HorizonAI Labs/i)).toBeInTheDocument();
+        fetch.mockClear();
+
+        await userEvent.click(screen.getByRole('link', { name: /exit demo/i }));
+
+        expect(await screen.findByText(/Sign in to job tracker/i)).toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
     });
 

@@ -70,7 +70,7 @@
 
 .dismissButton:hover {
     background-color: var(--toastAccentSoft);
-} 
+}
 
 @keyframes toastEntrance {
     from {

@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
 import SignUp from '../../pages/authentication/signUp/SignUp';
 import { render } from '../renderWithToast';
+import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
 
 const mockNavigate = vi.fn();
@@ -186,6 +187,11 @@ describe('User sign up flow', () => {
         expect(screen.getByRole('heading', { name: /organise your job search in one place/i })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: /start organising your job search/i })).toBeInTheDocument();
         expect(screen.getByText('Create an account to track your applications and interviews.')).toBeInTheDocument();
+        expect(screen.getAllByRole('link', { name: /explore demo/i })).toHaveLength(1);
+        expect(screen.getByRole('link', { name: /explore demo/i })).toHaveAttribute(
+            'href',
+            routes.demoViewApplications
+        );
         expect(screen.getAllByLabelText(/^password$/i)).toHaveLength(1);
         expect(screen.queryByLabelText(/confirm password/i)).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
@@ -204,6 +210,7 @@ describe('User sign up flow', () => {
         expect(
             screen.queryByRole('heading', { name: /organise your job search in one place/i })
         ).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /explore demo/i })).not.toBeInTheDocument();
         expect(screen.getByRole('heading', { name: /start organising your job search/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
         expect(screen.getAllByLabelText(/^password$/i)).toHaveLength(1);

@@ -1,11 +1,6 @@
 import type { MouseEvent } from 'react';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
-import {
-    isInvalidDatetimeLocalInput,
-    MAX_DATETIME_LOCAL,
-    MIN_DATETIME_LOCAL,
-    parseDatetimeLocal,
-} from '../../../../helper/dateFormatter';
+import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../helper/dateFormatter';
 import { routes } from '../../../../routes';
 import styles from './AddApplication.module.css';
 import { useJobTrackerAPI } from '../../../../api/useJobTrackerAPI';
@@ -14,7 +9,7 @@ import { useRef, useState } from 'react';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../../models';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
-import { FIELD_MAX_LENGTHS, isValidHttpURL } from '../../../../helper/formValidation';
+import { FIELD_MAX_LENGTHS, validateApplicationForm } from '../../../../helper/formValidation';
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState<string>('');
@@ -41,63 +36,30 @@ const AddApplication = () => {
     const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
 
-        const trimmedCompanyName = companyName.trim();
-        const trimmedJobTitle = jobTitle.trim();
-        const trimmedJobLocation = jobLocation.trim();
-        const trimmedJobURL = jobURL.trim();
+        const validation = validateApplicationForm({
+            applicationDate,
+            applicationDateValidity: applicationDateInputRef.current?.validity,
+            companyName,
+            jobLocation,
+            jobTitle,
+            jobURL,
+        });
 
-        if (!trimmedCompanyName || !trimmedJobTitle) {
-            showErrorToast('Please enter company name and job title before adding a job application.');
-            return;
-        }
-
-        if (trimmedCompanyName.length > FIELD_MAX_LENGTHS.companyName) {
-            showErrorToast(`Company name must be ${FIELD_MAX_LENGTHS.companyName} characters or fewer.`);
-            return;
-        }
-
-        if (trimmedJobTitle.length > FIELD_MAX_LENGTHS.jobTitle) {
-            showErrorToast(`Job title must be ${FIELD_MAX_LENGTHS.jobTitle} characters or fewer.`);
-            return;
-        }
-
-        if (trimmedJobLocation.length > FIELD_MAX_LENGTHS.location) {
-            showErrorToast(`Job location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`);
-            return;
-        }
-
-        if (trimmedJobURL.length > FIELD_MAX_LENGTHS.jobURL) {
-            showErrorToast(`Job URL must be ${FIELD_MAX_LENGTHS.jobURL} characters or fewer.`);
-            return;
-        }
-
-        if (isInvalidDatetimeLocalInput(applicationDate, applicationDateInputRef.current?.validity)) {
-            showErrorToast('Please enter a valid application date.');
-            return;
-        }
-
-        const currentDate = new Date();
-        const appDate = applicationDate ? parseDatetimeLocal(applicationDate) : currentDate;
-
-        if (appDate > currentDate) {
-            showErrorToast('Application date cannot be later than the current date.');
-            return;
-        }
-
-        if (trimmedJobURL && !isValidHttpURL(trimmedJobURL)) {
-            showErrorToast('URL must be in a valid format.');
+        if (!validation.isValid) {
+            showErrorToast(validation.error);
             return;
         }
 
         setIsLoading(true);
         try {
+            const values = validation.values;
             const message = await api.application.createApplication({
-                companyName: trimmedCompanyName,
-                jobTitle: trimmedJobTitle,
-                appDate,
+                companyName: values.companyName,
+                jobTitle: values.jobTitle,
+                appDate: values.applicationDate,
                 jobStatus,
-                jobLocation: trimmedJobLocation,
-                jobURL: trimmedJobURL,
+                jobLocation: values.jobLocation,
+                jobURL: values.jobURL,
             });
             showSuccessToast(message);
             resetForm();

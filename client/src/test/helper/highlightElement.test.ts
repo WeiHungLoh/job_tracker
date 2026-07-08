@@ -1,0 +1,36 @@
+import { scrollAndHighlight } from '../../helper/highlightElement';
+
+describe('scrollAndHighlight', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+        document.body.innerHTML = '';
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        document.body.innerHTML = '';
+    });
+
+    test('supports composed CSS module class names', () => {
+        const element = document.createElement('div');
+        const scrollIntoView = vi.fn();
+        const timeouts: Record<string, ReturnType<typeof setTimeout>> = {};
+
+        element.id = 'target';
+        element.scrollIntoView = scrollIntoView;
+        document.body.append(element);
+
+        scrollAndHighlight('target', 'demo_highlight actual_highlight', timeouts);
+        vi.advanceTimersByTime(100);
+
+        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
+        expect(element).toHaveClass('demo_highlight');
+        expect(element).toHaveClass('actual_highlight');
+
+        vi.advanceTimersByTime(4000);
+
+        expect(element).not.toHaveClass('demo_highlight');
+        expect(element).not.toHaveClass('actual_highlight');
+        expect(timeouts.target).toBeUndefined();
+    });
+});

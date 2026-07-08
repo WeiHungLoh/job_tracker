@@ -1,6 +1,7 @@
 import { MemoryRouter } from 'react-router-dom';
 import UserGuide from '../../pages/userGuide/UserGuide';
 import { render } from '../renderWithToast';
+import { routes } from '../../routes';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -26,6 +27,15 @@ describe('renders user guide properly', () => {
         await userEvent.click(screen.getByRole('button', { name: /dashboard/i }));
 
         expect(screen.getByText(/quick visual overview/i)).toBeVisible();
+
+        await userEvent.click(screen.getByRole('button', { name: /demo mode/i }));
+
+        expect(screen.getByText(/demo mode mirrors the signed-in job tracker flows/i)).toBeVisible();
+        expect(screen.getByRole('link', { name: /explore demo/i })).toHaveAttribute(
+            'href',
+            routes.demoViewApplications
+        );
+        expect(screen.getByText(/no account, authentication, backend request or database write/i)).toBeVisible();
 
         await userEvent.click(screen.getByRole('button', { name: /adding and managing applications/i }));
 

@@ -3,19 +3,14 @@ import type { JobApplication } from '../../../application/models';
 import type { Location } from 'react-router-dom';
 import type { MouseEvent } from 'react';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
-import {
-    isInvalidDatetimeLocalInput,
-    MAX_DATETIME_LOCAL,
-    MIN_DATETIME_LOCAL,
-    parseDatetimeLocal,
-} from '../../../../helper/dateFormatter';
+import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../helper/dateFormatter';
 import { routes } from '../../../../routes';
 import styles from './AddInterview.module.css';
 import { useJobTrackerAPI } from '../../../../api/useJobTrackerAPI';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
-import { FIELD_MAX_LENGTHS } from '../../../../helper/formValidation';
+import { FIELD_MAX_LENGTHS, validateInterviewForm } from '../../../../helper/formValidation';
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState<string>('');
@@ -44,49 +39,29 @@ const AddInterview = () => {
     const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
 
-        const trimmedInterviewLocation = interviewLocation.trim();
-        const trimmedInterviewType = interviewType.trim();
-        const trimmedNotes = notes.trim();
+        const validation = validateInterviewForm({
+            applicationDate: app.application_date,
+            interviewDate,
+            interviewDateValidity: interviewDateInputRef.current?.validity,
+            interviewLocation,
+            interviewType,
+            notes,
+        });
 
-        if (isInvalidDatetimeLocalInput(interviewDate, interviewDateInputRef.current?.validity)) {
-            showErrorToast('Please enter a valid interview date.');
-            return;
-        }
-
-        if (!interviewDate || !trimmedInterviewLocation) {
-            showErrorToast('Please enter a date and location before adding an interview.');
-            return;
-        }
-
-        if (trimmedInterviewLocation.length > FIELD_MAX_LENGTHS.location) {
-            showErrorToast(`Interview location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`);
-            return;
-        }
-
-        if (trimmedInterviewType.length > FIELD_MAX_LENGTHS.interviewType) {
-            showErrorToast(`Interview type must be ${FIELD_MAX_LENGTHS.interviewType} characters or fewer.`);
-            return;
-        }
-
-        if (trimmedNotes.length > FIELD_MAX_LENGTHS.notes) {
-            showErrorToast(`Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
-            return;
-        }
-
-        const localDate = parseDatetimeLocal(interviewDate);
-        if (localDate <= new Date(app.application_date)) {
-            showErrorToast('Interview date must be after the job application date.');
+        if (!validation.isValid) {
+            showErrorToast(validation.error);
             return;
         }
 
         setIsLoading(true);
         try {
+            const values = validation.values;
             const message = await api.interview.createInterview({
                 jobId: app.job_id,
-                interviewDate: localDate,
-                interviewLocation: trimmedInterviewLocation,
-                interviewType: trimmedInterviewType,
-                notes: trimmedNotes,
+                interviewDate: values.interviewDate,
+                interviewLocation: values.interviewLocation,
+                interviewType: values.interviewType,
+                notes: values.notes,
             });
             showSuccessToast(message);
             resetForm();

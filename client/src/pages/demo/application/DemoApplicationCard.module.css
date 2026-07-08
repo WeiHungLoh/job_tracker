@@ -1,0 +1,99 @@
+.application {
+    composes: application from '../../application/ApplicationCard.module.css';
+}
+
+.applicationContent {
+    composes: applicationContent from '../../application/ApplicationCard.module.css';
+}
+
+.buttonGroup {
+    composes: buttonGroup from '../../application/ApplicationCard.module.css';
+}
+
+.statusApplied {
+    composes: statusApplied from '../../application/ApplicationCard.module.css';
+}
+
+.statusInterview {
+    composes: statusInterview from '../../application/ApplicationCard.module.css';
+}
+
+.statusOffer {
+    composes: statusOffer from '../../application/ApplicationCard.module.css';
+}
+
+.statusAccepted {
+    composes: statusAccepted from '../../application/ApplicationCard.module.css';
+}
+
+.statusRejected {
+    composes: statusRejected from '../../application/ApplicationCard.module.css';
+}
+
+.statusGhosted {
+    composes: statusGhosted from '../../application/ApplicationCard.module.css';
+}
+
+.statusDeclined {
+    composes: statusDeclined from '../../application/ApplicationCard.module.css';
+}
+
+.archiveButton {
+    composes: archiveButton from '../../application/ApplicationCard.module.css';
+}
+
+.archiveHidden {
+    composes: archiveHidden from '../../application/ApplicationCard.module.css';
+}
+
+.notes {
+    composes: notes from '../../application/ApplicationCard.module.css';
+}
+
+.location {
+    composes: location from '../../application/ApplicationCard.module.css';
+}
+
+.badgeGroup {
+    composes: badgeGroup from '../../application/ApplicationCard.module.css';
+}
+
+.upcomingBadge {
+    composes: upcomingBadge from '../../application/ApplicationCard.module.css';
+}
+
+.date {
+    composes: date from '../../application/ApplicationCard.module.css';
+}
+
+.url {
+    composes: url from '../../application/ApplicationCard.module.css';
+}
+
+.applied {
+    composes: applied from '../../application/ApplicationCard.module.css';
+}
+
+.interview {
+    composes: interview from '../../application/ApplicationCard.module.css';
+}
+
+.offer {
+    composes: offer from '../../application/ApplicationCard.module.css';
+}
+
+.accepted {
+    composes: accepted from '../../application/ApplicationCard.module.css';
+}
+
+.rejected {
+    composes: rejected from '../../application/ApplicationCard.module.css';
+}
+
+.ghosted {
+    composes: ghosted from '../../application/ApplicationCard.module.css';
+}
+
+.declined {
+    composes: declined from '../../application/ApplicationCard.module.css';
+}

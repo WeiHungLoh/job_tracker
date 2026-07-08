@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
 import SignIn from '../../pages/authentication/signIn/SignIn';
 import { render } from '../renderWithToast';
+import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
 
 const mockNavigate = vi.fn();
@@ -170,6 +171,11 @@ describe('User sign in flow', () => {
             })
         ).toHaveAttribute('src', expect.stringContaining('light-dashboard.png'));
         expect(screen.getByText('jobtracker.weihungloh.com/dashboard')).toBeInTheDocument();
+        expect(screen.getAllByRole('link', { name: /explore demo/i })).toHaveLength(1);
+        expect(screen.getByRole('link', { name: /explore demo/i })).toHaveAttribute(
+            'href',
+            routes.demoViewApplications
+        );
         expect(screen.getByRole('link', { name: /see how it works/i })).toHaveAttribute('href', '/user-guide');
         expect(screen.queryByRole('button', { name: /why use job tracker/i })).not.toBeInTheDocument();
     });
@@ -193,6 +199,22 @@ describe('User sign in flow', () => {
             userEvent.click(screen.getByRole('button', { name: /next preview/i }));
             expect(screen.getByText(`jobtracker.weihungloh.com${route}`)).toBeInTheDocument();
         });
+    });
+
+    test('supports left and right keyboard navigation in the product preview carousel', () => {
+        render(
+            <MemoryRouter initialEntries={['/']}>
+                <SignIn />
+            </MemoryRouter>
+        );
+
+        const carousel = screen.getByRole('region', { name: /job tracker product preview/i });
+        carousel.focus();
+        fireEvent.keyDown(carousel, { key: 'ArrowRight' });
+        expect(screen.getByText('jobtracker.weihungloh.com/application/view')).toBeInTheDocument();
+
+        fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
+        expect(screen.getByText('jobtracker.weihungloh.com/dashboard')).toBeInTheDocument();
     });
 
     test('uses dark preview images in dark mode', () => {
@@ -261,6 +283,7 @@ describe('User sign in flow', () => {
             })
         ).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: /see how it works/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /explore demo/i })).not.toBeInTheDocument();
         expect(screen.getByRole('heading', { name: /sign in to job tracker/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
     });
@@ -283,6 +306,7 @@ describe('User sign in flow', () => {
 
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBeNull();
         expect(screen.getByRole('heading', { name: /organise your job search in one place/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /explore demo/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /see how it works/i })).toBeInTheDocument();
         expect(emailInput).toHaveValue('user@example.com');
         expect(passwordInput).toHaveValue('saved password');
@@ -303,6 +327,7 @@ describe('User sign in flow', () => {
         expect(
             screen.queryByRole('heading', { name: /organise your job search in one place/i })
         ).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /explore demo/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: /see how it works/i })).not.toBeInTheDocument();
     });
 });

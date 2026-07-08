@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Ref } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, Ref } from 'react';
 import { createPortal } from 'react-dom';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import darkArchivedApplicationPreview from '../../../images/dark-archived-application.png';
@@ -336,6 +336,22 @@ const ProductPreviewCarousel = () => {
         selectPreview((activeIndex + 1) % productPreviews.length);
     }, [activeIndex, selectPreview]);
 
+    const handleCarouselKeyDown = useCallback(
+        (event: ReactKeyboardEvent<HTMLDivElement>) => {
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                showPreviousPreview();
+                return;
+            }
+
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                showNextPreview();
+            }
+        },
+        [showNextPreview, showPreviousPreview]
+    );
+
     const handleOpenFullscreen = useCallback(() => {
         setIsFullscreen(true);
     }, []);
@@ -369,6 +385,18 @@ const ProductPreviewCarousel = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 closeFullscreen();
+                return;
+            }
+
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                showPreviousPreview();
+                return;
+            }
+
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                showNextPreview();
             }
         };
 
@@ -387,7 +415,7 @@ const ProductPreviewCarousel = () => {
             }
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [closeFullscreen, isFullscreen]);
+    }, [closeFullscreen, isFullscreen, showNextPreview, showPreviousPreview]);
 
     return (
         <>
@@ -396,6 +424,8 @@ const ProductPreviewCarousel = () => {
                 role='region'
                 aria-roledescription='carousel'
                 aria-label='Job Tracker product preview'
+                onKeyDown={handleCarouselKeyDown}
+                tabIndex={0}
             >
                 <PreviewFrame
                     activeIndex={activeIndex}

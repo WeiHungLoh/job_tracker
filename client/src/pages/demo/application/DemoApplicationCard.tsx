@@ -1,0 +1,174 @@
+import { Link } from 'react-router-dom';
+import PrimaryButton from '../../../components/button/PrimaryButton';
+import formatDate from '../../../helper/dateFormatter';
+import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
+import { routes } from '../../../routes';
+import type { DemoApplicationCardProps } from './DemoApplicationCard.models';
+import { JOB_STATUSES, type JobStatus } from '../../application/models';
+import styles from './DemoApplicationCard.module.css';
+
+const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
+    Accepted: styles.accepted,
+    Applied: styles.applied,
+    Declined: styles.declined,
+    Ghosted: styles.ghosted,
+    Interview: styles.interview,
+    Offer: styles.offer,
+    Rejected: styles.rejected,
+};
+
+const JOB_STATUS_CARD_CLASS_MAP: Record<JobStatus, string> = {
+    Accepted: styles.statusAccepted,
+    Applied: styles.statusApplied,
+    Declined: styles.statusDeclined,
+    Ghosted: styles.statusGhosted,
+    Interview: styles.statusInterview,
+    Offer: styles.statusOffer,
+    Rejected: styles.statusRejected,
+};
+
+const DemoApplicationCard = (props: DemoApplicationCardProps) => {
+    const { application, index, isDeleting, variant } = props;
+    const applicationId = variant === 'job' ? application.job_id : application.archived_job_id;
+    const formattedApplicationDate = formatDate(application.application_date);
+
+    return (
+        <div
+            className={`${styles.application} ${JOB_STATUS_CARD_CLASS_MAP[application.job_status]}`}
+            id={String(applicationId)}
+        >
+            <div className={styles.applicationContent}>
+                <h2>
+                    {index + 1}. {application.company_name}
+                </h2>
+                <p>Job Title: {application.job_title}</p>
+                {application.job_location !== '' && (
+                    <p className={styles.location}>Location: {application.job_location}</p>
+                )}
+                <p className={styles.date}>Application Date: {formattedApplicationDate.formattedDate}</p>
+                <p>Time since application: {formattedApplicationDate.timeSinceApplication}</p>
+
+                {variant === 'job' ? (
+                    <>
+                        <div className={styles.badgeGroup}>
+                            <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>
+                                Job Status: {application.job_status}
+                            </p>
+                            {props.upcomingInterviewCount > 0 && (
+                                <span className={styles.upcomingBadge}>
+                                    {props.upcomingInterviewCount} Upcoming Interview
+                                    {props.upcomingInterviewCount > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </div>
+
+                        {application.edit_status && (
+                            <select
+                                role='listbox'
+                                value={props.editedJobStatus}
+                                onChange={(event) =>
+                                    props.onJobStatusChange(application.job_id, event.target.value as JobStatus)
+                                }
+                            >
+                                {JOB_STATUSES.map((status) => (
+                                    <option
+                                        disabled={status === 'Applied' && props.hasInterview}
+                                        key={status}
+                                        value={status}
+                                    >
+                                        {status}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+
+                        {application.job_status === 'Interview' && (
+                            <Link to={routes.demoAddInterview} state={{ app: application }}>
+                                Click here to add an interview
+                            </Link>
+                        )}
+                    </>
+                ) : (
+                    <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>Job Status: {application.job_status}</p>
+                )}
+
+                {application.job_posting_url !== '' && (
+                    <a
+                        className={styles.url}
+                        href={application.job_posting_url}
+                        rel='noreferrer noopener'
+                        target='_blank'
+                    >
+                        Click here to head to job application URL
+                    </a>
+                )}
+            </div>
+
+            <div className={styles.buttonGroup}>
+                {variant === 'job' ? (
+                    <>
+                        <PrimaryButton variant='secondary' onClick={() => props.onToggleEditStatus(application)}>
+                            {application.edit_status ? 'Save Changes' : 'Edit Status'}
+                        </PrimaryButton>
+                        <PrimaryButton
+                            isLoading={isDeleting}
+                            variant='destructive'
+                            onClick={() => props.onDelete(application.job_id)}
+                        >
+                            Delete
+                        </PrimaryButton>
+                        <PrimaryButton
+                            className={`${styles.archiveButton} ${!props.showArchive ? styles.archiveHidden : ''}`}
+                            isLoading={props.isArchiving}
+                            onClick={() => props.onArchive(application.job_id)}
+                            variant='secondary'
+                        >
+                            Archive
+                        </PrimaryButton>
+                    </>
+                ) : (
+                    <>
+                        <PrimaryButton
+                            isLoading={props.isRestoring}
+                            variant='secondary'
+                            onClick={() => props.onRestore(application.archived_job_id)}
+                        >
+                            Unarchive
+                        </PrimaryButton>
+                        <PrimaryButton
+                            isLoading={isDeleting}
+                            variant='destructive'
+                            onClick={() => props.onDelete(application.archived_job_id)}
+                        >
+                            Delete
+                        </PrimaryButton>
+                    </>
+                )}
+            </div>
+
+            {props.showNotes && (
+                <div className={styles.notes}>
+                    {variant === 'job' ? (
+                        <textarea
+                            maxLength={FIELD_MAX_LENGTHS.notes}
+                            onChange={(event) => props.onEditNotes(application.job_id, event.target.value)}
+                            placeholder='Add your notes here'
+                            value={props.note}
+                        />
+                    ) : (
+                        <textarea
+                            disabled
+                            value={
+                                !application.notes || application.notes.trim() === ''
+                                    ? 'You do not have any notes here'
+                                    : application.notes
+                            }
+                        />
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default DemoApplicationCard;

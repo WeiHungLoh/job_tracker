@@ -122,10 +122,19 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
                     </ul>
                 </div>
 
-                <Link className={styles.guideLink} to={routes.userGuide} target='_blank'>
-                    See how it works
-                    <span aria-hidden='true'>→</span>
-                </Link>
+                <div className={styles.productActions}>
+                    <div className={styles.productActionRow}>
+                        <Link className={styles.demoLink} to={routes.demoViewApplications}>
+                            Explore Demo
+                            <span aria-hidden='true'>→</span>
+                        </Link>
+                        <Link className={styles.guideLink} to={routes.userGuide} target='_blank'>
+                            See how it works
+                            <span aria-hidden='true'>→</span>
+                        </Link>
+                    </div>
+                    <p className={styles.demoCopy}>No account required. Sample data resets on refresh.</p>
+                </div>
 
                 <ProductPreviewCarousel />
             </section>
