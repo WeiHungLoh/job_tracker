@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewApplication from '../../../pages/application/jobApplication/viewApplication/ViewApplication';
 import { render } from '../../renderWithToast';
@@ -118,6 +118,12 @@ const statusUpdateRequestCount = (jobId: number) =>
         ([url, init]: [string, RequestInit?]) =>
             url.endsWith(`/job-applications/${jobId}/status`) && init?.method === 'PATCH'
     ).length;
+
+const clickConfirmedAction = async (button: HTMLElement) => {
+    await act(async () => {
+        await userEvent.click(button);
+    });
+};
 
 describe('Job application viewing flow', () => {
     beforeEach(() => {
@@ -893,7 +899,7 @@ describe('Job application viewing flow', () => {
 
         // Simulates user clicking delete button and clicking confirm delete
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
-        await userEvent.click(screen.getByRole('button', { name: /delete all applications/i }));
+        await clickConfirmedAction(screen.getByRole('button', { name: /delete all applications/i }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({

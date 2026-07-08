@@ -1,0 +1,24 @@
+.applicationList {
+    composes: applicationList from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
+}
+
+.boardLayout {
+    composes: boardLayout from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
+}
+
+.controlsRow {
+    composes: controlsRow from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
+    padding-top: 20px;
+}
+
+.controlsRow > * {
+    margin-top: 0;
+}
+
+.boardEmptyMessage {
+    composes: boardEmptyMessage from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
+}
+
+.highlighted {
+    composes: highlighted from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
+}

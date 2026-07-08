@@ -7,6 +7,8 @@ export const scrollAndHighlight = (
     highlightClass: string,
     timeouts: Record<string, ReturnType<typeof setTimeout>>
 ): void => {
+    const highlightClasses = highlightClass.split(/\s+/).filter(Boolean);
+
     setTimeout(() => {
         if (typeof document === 'undefined') {
             return;
@@ -22,13 +24,13 @@ export const scrollAndHighlight = (
             clearTimeout(existing);
         }
 
-        element.classList.remove(highlightClass);
+        element.classList.remove(...highlightClasses);
         if (typeof element.scrollIntoView === 'function') {
             element.scrollIntoView({ behavior: 'smooth' });
         }
-        element.classList.add(highlightClass);
+        element.classList.add(...highlightClasses);
         timeouts[elementId] = setTimeout(() => {
-            element.classList.remove(highlightClass);
+            element.classList.remove(...highlightClasses);
             delete timeouts[elementId];
         }, 4000);
     }, 100);

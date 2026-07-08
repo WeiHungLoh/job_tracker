@@ -10,7 +10,7 @@
     --guideMutedText: var(--colorGuideMuted);
 
     color: var(--colorGuideText);
-    background-color: var(--colorPageBg);
+    background: var(--colorPublicPageBg);
 }
 
 .guideContainer {
@@ -185,6 +185,21 @@
     color: var(--guideAccentDark);
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9em;
+}
+
+.accordionPanel a {
+    color: var(--guideAccentDark);
+    font-weight: 700;
+}
+
+.accordionPanel a:hover {
+    color: var(--guideAccent);
+}
+
+.accordionPanel a:focus-visible {
+    border-radius: 4px;
+    outline: 3px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 3px;
 }
 
 .tip {

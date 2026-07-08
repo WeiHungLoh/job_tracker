@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedInterview from '../../../pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
 import { render } from '../../renderWithToast';
@@ -32,6 +32,12 @@ const mockConfirm = vi.fn();
 vi.mock('material-ui-confirm', () => ({
     useConfirm: () => mockConfirm,
 }));
+
+const clickConfirmedAction = async (button: HTMLElement) => {
+    await act(async () => {
+        await userEvent.click(button);
+    });
+};
 
 describe('Archived job interview viewer flow', () => {
     beforeEach(() => {
@@ -87,7 +93,7 @@ describe('Archived job interview viewer flow', () => {
         // Simulates user confirming delete
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
         // Simulates user clicking delete button and clicking confirm delete
-        userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Delete' }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({
@@ -122,7 +128,7 @@ describe('Archived job interview viewer flow', () => {
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
         // Simulates user clicking delete button and clicking confirm delete
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Delete all archived interviews' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Delete all archived interviews' }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({

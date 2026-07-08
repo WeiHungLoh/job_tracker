@@ -3,6 +3,7 @@
     padding: 16px;
     background: var(--colorCardBg);
     border: 1px solid var(--colorCardBorder);
+    border-left: 5px solid var(--applicationStatusAccent);
     border-radius: 15px;
     display: flex;
     gap: 0;
@@ -10,6 +11,34 @@
     margin-bottom: 20px;
     box-sizing: border-box;
     overflow-anchor: none;
+}
+
+.statusApplied {
+    --applicationStatusAccent: var(--colorStatusApplied);
+}
+
+.statusInterview {
+    --applicationStatusAccent: var(--colorStatusInterview);
+}
+
+.statusOffer {
+    --applicationStatusAccent: var(--colorStatusOffer);
+}
+
+.statusAccepted {
+    --applicationStatusAccent: var(--colorStatusAccepted);
+}
+
+.statusRejected {
+    --applicationStatusAccent: var(--colorStatusRejected);
+}
+
+.statusGhosted {
+    --applicationStatusAccent: var(--colorStatusGhosted);
+}
+
+.statusDeclined {
+    --applicationStatusAccent: var(--colorStatusDeclined);
 }
 
 .buttonGroup {

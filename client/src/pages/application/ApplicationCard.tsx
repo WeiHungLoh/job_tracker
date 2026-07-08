@@ -17,13 +17,26 @@ const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
     Rejected: styles.rejected,
 };
 
+const JOB_STATUS_CARD_CLASS_MAP: Record<JobStatus, string> = {
+    Accepted: styles.statusAccepted,
+    Applied: styles.statusApplied,
+    Declined: styles.statusDeclined,
+    Ghosted: styles.statusGhosted,
+    Interview: styles.statusInterview,
+    Offer: styles.statusOffer,
+    Rejected: styles.statusRejected,
+};
+
 const ApplicationCard = (props: ApplicationCardProps) => {
     const { application, index, isDeleting, variant } = props;
     const applicationId = variant === 'job' ? application.job_id : application.archived_job_id;
     const formattedApplicationDate = formatDate(application.application_date);
 
     return (
-        <div className={styles.application} id={String(applicationId)}>
+        <div
+            className={`${styles.application} ${JOB_STATUS_CARD_CLASS_MAP[application.job_status]}`}
+            id={String(applicationId)}
+        >
             <div className={styles.applicationContent}>
                 <h2>
                     {index + 1}. {application.company_name}

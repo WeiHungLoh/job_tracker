@@ -64,6 +64,46 @@ const guideSections: readonly UserGuideSection[] = [
         ),
     },
     {
+        id: 'demo-mode',
+        title: 'Demo mode',
+        icon: 'dashboard',
+        content: (
+            <>
+                <p>
+                    Demo mode mirrors the signed-in Job Tracker flows with sample data stored only in React state. Open
+                    it from the sign-in page or the <Link to={routes.demoViewApplications}>Explore Demo</Link> link.
+                </p>
+                <h3>What is different in demo mode</h3>
+                <ul>
+                    <li>No account, authentication, backend request or database write is used.</li>
+                    <li>Changes remain while you move around demo pages, then reset when the browser refreshes.</li>
+                    <li>Success toasts match the signed-in app: only adding an application or interview shows one.</li>
+                </ul>
+                <h3>Applications</h3>
+                <p>
+                    Add applications, switch between list and board view, filter by status, edit notes, update status,
+                    archive, restore, delete and export CSV records.
+                </p>
+                <p>
+                    Form validation uses the same limits as the signed-in app, including the{' '}
+                    {FIELD_MAX_LENGTHS.companyName}-character company limit, {FIELD_MAX_LENGTHS.jobTitle}-character job
+                    title limit and valid <code>http://</code> or <code>https://</code> job URLs.
+                </p>
+                <h3>Interviews</h3>
+                <p>
+                    Create interviews from an application with status <code>Interview</code>, view active or archived
+                    interviews, open their related application and export CSV records. The interview date must be after
+                    the linked application date, and notes use the shared {FIELD_MAX_LENGTHS.notes}-character limit.
+                </p>
+                <h3>Navigation and reset</h3>
+                <p>
+                    Use <code>Show Archived</code> to switch the demo navigation between active and archived records.
+                    Use <code>Exit Demo</code> to return to sign in without logging out or verifying authentication.
+                </p>
+            </>
+        ),
+    },
+    {
         id: 'applications',
         title: 'Adding and managing applications',
         icon: 'briefcase',

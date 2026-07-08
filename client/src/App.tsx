@@ -1,9 +1,5 @@
 import { lazy, Suspense } from 'react';
-import {
-    type RouteObject,
-    RouterProvider,
-    createBrowserRouter,
-} from 'react-router-dom';
+import { type RouteObject, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import AddApplication from './pages/application/jobApplication/addApplication/AddApplication';
 import AddInterview from './pages/interview/jobInterview/addInterview/AddInterview';
 import FallbackScreen from './components/fallbackScreen/FallbackScreen';
@@ -19,20 +15,14 @@ import Dashboard from './pages/dashboard/Dashboard';
 import SignUp from './pages/authentication/signUp/SignUp';
 import { routes } from './routes';
 
-const UserGuide = lazy(
-    () => import('./pages/userGuide/UserGuide')
-);
+const UserGuide = lazy(() => import('./pages/userGuide/UserGuide'));
+const DemoLayout = lazy(() => import('./pages/demo/components/demoLayout/DemoLayout'));
 
 const reloadPage = () => window.location.reload();
 
 export const appRoutes: RouteObject[] = [
     {
-        errorElement: (
-            <FallbackScreen
-                variant='authenticationError'
-                onAction={reloadPage}
-            />
-        ),
+        errorElement: <FallbackScreen variant='authenticationError' onAction={reloadPage} />,
         children: [
             {
                 path: routes.signIn,
@@ -45,6 +35,10 @@ export const appRoutes: RouteObject[] = [
             {
                 path: routes.userGuide,
                 element: <UserGuide />,
+            },
+            {
+                path: `${routes.demoRoot}/*`,
+                element: <DemoLayout />,
             },
             {
                 element: <ProtectedRoutes />,

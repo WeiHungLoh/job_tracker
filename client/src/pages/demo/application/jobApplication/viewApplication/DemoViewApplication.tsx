@@ -1,0 +1,264 @@
+import { useMemo, useRef, useState } from 'react';
+import { createApplicationCsvData } from '../../../../../helper/csvData';
+import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
+import {
+    APPLICATION_CSV_HEADERS,
+    JOB_STATUSES,
+    type JobApplication,
+    type JobStatus,
+} from '../../../../application/models';
+import { scrollAndHighlight } from '../../../../../helper/highlightElement';
+import ToggleButton from '../../../../../components/toggleButton/ToggleButton';
+import { useConfirm } from 'material-ui-confirm';
+import { useDemo } from '../../../context/DemoContext';
+import { useToast } from '../../../../../components/toast/ToastProvider';
+import { useUserPreferences } from '../../../../../components/userPreferences/UserPreferencesProvider';
+import { FIELD_MAX_LENGTHS } from '../../../../../helper/formValidation';
+import ActivityControls from '../../../../../components/activityControls/ActivityControls';
+import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
+import DisplayOptions from '../../../../../components/activityControls/displayOptions/DisplayOptions';
+import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
+import DemoApplicationBoard from '../applicationBoard/DemoApplicationBoard';
+import DemoApplicationCard from '../../DemoApplicationCard';
+import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
+import type { ApplicationViewMode } from '../../../../../components/activityControls/applicationViewToggle/models';
+import {
+    selectApplications,
+    selectInterviewJobIdSet,
+    selectUpcomingInterviewCountByJob,
+} from '../../../state/demoSelectors';
+import styles from './DemoViewApplication.module.css';
+import { useDemoHashHighlight } from '../../../hooks/useDemoHashHighlight';
+
+const DemoViewApplication = () => {
+    const { dispatch, state } = useDemo();
+    const { preferences, updatePreferences } = useUserPreferences();
+    const [editedJobStatuses, setEditedJobStatuses] = useState<Record<number, JobStatus>>({});
+    const confirm = useConfirm();
+    const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+    const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+    const { showErrorToast } = useToast();
+    const applications = useMemo(() => selectApplications(state), [state]);
+    const interviewJobIdSet = useMemo(() => selectInterviewJobIdSet(state), [state]);
+    const upcomingInterviewCountByJob = useMemo(() => selectUpcomingInterviewCountByJob(state), [state]);
+    const selectedJobStatuses = preferences.application_job_statuses;
+    const showArchive = preferences.application_show_archive;
+    const showNotes = preferences.application_show_notes;
+    const enableScroll = preferences.application_enable_scroll;
+    const viewMode = preferences.application_view_mode;
+    const isBoardView = viewMode === 'board';
+    const csvData = createApplicationCsvData(applications);
+    const visibleApplicationIds = useMemo(
+        () => applications.map((application) => String(application.job_id)),
+        [applications]
+    );
+
+    useDemoHashHighlight({
+        disabled: isBoardView,
+        highlightClass: styles.highlighted,
+        timeouts: showCorrespondingAppTimeout.current,
+        visibleIds: visibleApplicationIds,
+    });
+
+    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+        void updatePreferences({ application_view_mode: nextViewMode });
+    };
+
+    const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
+        await updatePreferences({ application_job_statuses: jobStatuses });
+        return true;
+    };
+
+    const handleEditNotes = (jobId: number, editedNotes: string) => {
+        if (editedNotes.length > FIELD_MAX_LENGTHS.notes) {
+            showErrorToast(`Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
+            return;
+        }
+
+        dispatch({ type: 'UPDATE_APPLICATION_NOTES', payload: { jobId, notes: editedNotes } });
+    };
+
+    const handleDelete = async (jobId: number) => {
+        const { confirmed } = await confirm(createDeleteConfirmation('job application'));
+
+        if (!confirmed) {
+            return;
+        }
+
+        dispatch({ type: 'DELETE_APPLICATION', payload: { jobId } });
+    };
+
+    const handleDeleteAll = async () => {
+        const { confirmed } = await confirm(createDeleteConfirmation('job application', true));
+
+        if (!confirmed) {
+            return;
+        }
+
+        dispatch({ type: 'DELETE_ALL_APPLICATIONS' });
+    };
+
+    const toggleEditStatus = (application: JobApplication) => {
+        const editStatus = application.edit_status;
+        const newStatus = editedJobStatuses[application.job_id] ?? application.job_status;
+        const isSaving = editStatus;
+        const statusChanged = newStatus !== application.job_status;
+
+        if (isSaving) {
+            setEditedJobStatuses((currentStatuses) => {
+                const updatedStatuses = { ...currentStatuses };
+                delete updatedStatuses[application.job_id];
+                return updatedStatuses;
+            });
+        }
+
+        dispatch({
+            type: 'UPDATE_APPLICATION_STATUS',
+            payload: {
+                jobId: application.job_id,
+                editStatus: !editStatus,
+                jobStatus: isSaving ? newStatus : application.job_status,
+            },
+        });
+
+        if (isSaving && statusChanged && enableScroll) {
+            setTimeout(() => {
+                scrollAndHighlight(String(application.job_id), styles.highlighted, showEditStatusTimeout.current);
+            }, 100);
+        }
+    };
+
+    const updateApplicationStatusFromBoard = (application: JobApplication, newStatus: JobStatus) => {
+        if (newStatus === application.job_status) {
+            return;
+        }
+
+        dispatch({
+            type: 'UPDATE_APPLICATION_STATUS',
+            payload: { jobId: application.job_id, editStatus: false, jobStatus: newStatus },
+        });
+    };
+
+    const handleArchive = async (jobId: number) => {
+        dispatch({ type: 'ARCHIVE_APPLICATION', payload: { jobId } });
+    };
+
+    const hasApplications = applications.length > 0;
+    const boardEmptyMessage =
+        selectedJobStatuses.length === JOB_STATUSES.length
+            ? 'No applications found.'
+            : 'No applications match the selected filters.';
+
+    return (
+        <div className={`${styles.applicationList} ${isBoardView ? styles.boardLayout : ''}`}>
+            <div className={styles.controlsRow}>
+                <ActivityControls>
+                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        id='demo-application-job-status-filter'
+                        onSelectionChange={handleJobStatusChange}
+                        options={JOB_STATUSES}
+                        selectedOptions={selectedJobStatuses}
+                    />
+                    {hasApplications && (
+                        <>
+                            {!isBoardView && (
+                                <DisplayOptions id='demo-application-display-options'>
+                                    <ToggleButton
+                                        toggled={showNotes}
+                                        onToggle={() =>
+                                            void updatePreferences({
+                                                application_show_notes: !showNotes,
+                                            })
+                                        }
+                                        label='Show notes'
+                                    />
+                                    <ToggleButton
+                                        toggled={showArchive}
+                                        onToggle={() =>
+                                            void updatePreferences({
+                                                application_show_archive: !showArchive,
+                                            })
+                                        }
+                                        label='Show archive'
+                                    />
+                                    <ToggleButton
+                                        toggled={enableScroll}
+                                        onToggle={() =>
+                                            void updatePreferences({
+                                                application_enable_scroll: !enableScroll,
+                                            })
+                                        }
+                                        label='Auto scroll after job status change'
+                                    />
+                                </DisplayOptions>
+                            )}
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='demo_job_applications.csv'
+                                csvHeaders={APPLICATION_CSV_HEADERS}
+                                deleteLabel='Delete all applications'
+                                id='demo-application-more-options'
+                                isDeleting={false}
+                                onDelete={() => void handleDeleteAll()}
+                            />
+                        </>
+                    )}
+                </ActivityControls>
+            </div>
+
+            {!hasApplications && !isBoardView && (
+                <div>No job applications match the selected job statuses. Start adding one now! </div>
+            )}
+
+            {!hasApplications && isBoardView && <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>}
+
+            {hasApplications && isBoardView && (
+                <DemoApplicationBoard
+                    applications={applications}
+                    deletingApplicationIds={new Set<number>()}
+                    editedNotes={{}}
+                    hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
+                    isArchivingApplication={() => false}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                    onEditNotes={handleEditNotes}
+                    onStatusChange={updateApplicationStatusFromBoard}
+                    selectedJobStatuses={selectedJobStatuses}
+                    upcomingInterviewCountByJob={upcomingInterviewCountByJob}
+                />
+            )}
+
+            {!isBoardView &&
+                applications.map((application, index) => (
+                    <DemoApplicationCard
+                        application={application}
+                        editedJobStatus={editedJobStatuses[application.job_id] ?? application.job_status}
+                        hasInterview={interviewJobIdSet.has(application.job_id)}
+                        index={index}
+                        isArchiving={false}
+                        isDeleting={false}
+                        key={application.job_id}
+                        note={application.notes}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                        onEditNotes={handleEditNotes}
+                        onJobStatusChange={(jobId, jobStatus) =>
+                            setEditedJobStatuses((currentStatuses) => ({
+                                ...currentStatuses,
+                                [jobId]: jobStatus,
+                            }))
+                        }
+                        onToggleEditStatus={toggleEditStatus}
+                        showArchive={showArchive}
+                        showNotes={showNotes}
+                        upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}
+                        variant='job'
+                    />
+                ))}
+        </div>
+    );
+};
+
+export default DemoViewApplication;

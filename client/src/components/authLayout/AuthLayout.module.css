@@ -3,7 +3,7 @@
     min-height: 100svh;
     padding: 48px 28px;
     box-sizing: border-box;
-    background: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%), var(--colorPageBg);
+    background: var(--colorPublicPageBg);
 }
 
 .authPage:has([data-auth-focused='true']) {

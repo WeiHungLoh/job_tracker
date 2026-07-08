@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedApplication from '../../../pages/application/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
 import { render } from '../../renderWithToast';
@@ -43,6 +43,12 @@ const mockConfirm = vi.fn();
 vi.mock('material-ui-confirm', () => ({
     useConfirm: () => mockConfirm,
 }));
+
+const clickConfirmedAction = async (button: HTMLElement) => {
+    await act(async () => {
+        await userEvent.click(button);
+    });
+};
 
 describe('Archived job application viewing flow', () => {
     beforeEach(() => {
@@ -323,7 +329,7 @@ describe('Archived job application viewing flow', () => {
 
         // Simulates user clicking delete button and clicking confirm delete
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
-        await userEvent.click(screen.getByRole('button', { name: /delete all archived applications/i }));
+        await clickConfirmedAction(screen.getByRole('button', { name: /delete all archived applications/i }));
 
         await waitFor(() =>
             expect(mockConfirm).toHaveBeenCalledWith({

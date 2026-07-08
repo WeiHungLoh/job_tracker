@@ -14,7 +14,8 @@ import OfflineBanner from '../offlineBanner/OfflineBanner';
 import styles from './ToastProvider.module.css';
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
-const TOAST_DURATION_MS = 8000;
+const ERROR_TOAST_DURATION_MS = 8000;
+const SUCCESS_TOAST_DURATION_MS = 3000;
 
 export const ToastProvider = ({ children }: PropsWithChildren) => {
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -36,7 +37,8 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
             const id = nextToastId.current;
 
             setToasts((currentToasts) => [...currentToasts, { id, message, type }]);
-            const timeout = window.setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
+            const duration = type === 'success' ? SUCCESS_TOAST_DURATION_MS : ERROR_TOAST_DURATION_MS;
+            const timeout = window.setTimeout(() => dismissToast(id), duration);
             toastTimeouts.current.set(id, timeout);
         },
         [dismissToast]

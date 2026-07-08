@@ -132,7 +132,7 @@
     color: var(--colorPrimary);
     font-size: clamp(2rem, 3.2vw, 2.75rem);
     line-height: 1.08;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
 }
 
 .description {
@@ -173,14 +173,52 @@
     place-items: center;
 }
 
+.productActions {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+}
+
+.productActionRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+}
+
+.demoLink,
 .guideLink {
     display: inline-flex;
     width: fit-content;
     align-items: center;
-    gap: 8px;
-    color: var(--colorPrimary);
     font-weight: 700;
     text-decoration: none;
+}
+
+.demoLink {
+    min-height: 42px;
+    gap: 7px;
+    justify-content: center;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background-color: var(--colorPrimary);
+    color: var(--colorBtnPrimaryText);
+    font-size: 0.95rem;
+    box-shadow: none;
+    transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.demoLink:hover {
+    background-color: var(--colorPrimaryHover);
+    color: var(--colorBtnPrimaryText);
+    transform: translateY(-1px);
+}
+
+.guideLink {
+    gap: 8px;
+    color: var(--colorPrimary);
+    font-size: 0.95rem;
 }
 
 .guideLink:hover {
@@ -188,16 +226,31 @@
     text-decoration: underline;
 }
 
+.demoLink:focus-visible,
 .guideLink:focus-visible {
     border-radius: 4px;
     outline: 3px solid var(--colorPrimaryFocusOutline);
     outline-offset: 4px;
 }
 
+.demoCopy {
+    margin: 0;
+    color: var(--colorTextSecondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
 .carouselRegion,
 .preview {
     width: 100%;
     max-width: 700px;
+}
+
+.carouselRegion:focus-visible {
+    border-radius: 14px;
+    outline: 3px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 4px;
 }
 
 .preview {
@@ -477,8 +530,17 @@
         text-align: center;
     }
 
-    .guideLink {
+    .productActions {
         justify-self: center;
+        justify-content: center;
+    }
+
+    .productActionRow {
+        justify-content: center;
+    }
+
+    .demoCopy {
+        text-align: center;
     }
 
     .preview {
