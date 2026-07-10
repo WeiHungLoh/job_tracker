@@ -29,6 +29,9 @@ import {
 } from '../../../state/demoSelectors';
 import styles from './DemoViewApplication.module.css';
 import { useDemoHashHighlight } from '../../../hooks/useDemoHashHighlight';
+import EmptyState from '../../../../../components/emptyState/EmptyState';
+import { routes } from '../../../../../routes';
+import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
 
 const DemoViewApplication = () => {
     const { dispatch, state } = useDemo();
@@ -144,10 +147,13 @@ const DemoViewApplication = () => {
     };
 
     const hasApplications = applications.length > 0;
-    const boardEmptyMessage =
-        selectedJobStatuses.length === JOB_STATUSES.length
-            ? 'No applications found.'
-            : 'No applications match the selected filters.';
+    const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
+    const emptyState = createApplicationEmptyState({
+        actionRoute: routes.demoAddApplication,
+        filtersAreActive,
+        onClearFilters: () => void handleJobStatusChange([...JOB_STATUSES]),
+        variant: 'active',
+    });
 
     return (
         <div className={`${styles.applicationList} ${isBoardView ? styles.boardLayout : ''}`}>
@@ -208,11 +214,7 @@ const DemoViewApplication = () => {
                 </ActivityControls>
             </div>
 
-            {!hasApplications && !isBoardView && (
-                <div>No job applications match the selected job statuses. Start adding one now! </div>
-            )}
-
-            {!hasApplications && isBoardView && <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>}
+            {!hasApplications && <EmptyState {...emptyState} />}
 
             {hasApplications && isBoardView && (
                 <DemoApplicationBoard

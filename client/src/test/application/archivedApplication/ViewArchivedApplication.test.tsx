@@ -369,7 +369,7 @@ describe('Archived job application viewing flow', () => {
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
     });
 
-    test('renders message for empty application list on successful fetch with no data', async () => {
+    test('renders the archived application empty state with no data', async () => {
         fetch.mockResolvedValue(response([]));
 
         render(
@@ -378,11 +378,87 @@ describe('Archived job application viewing flow', () => {
             </MemoryRouter>
         );
 
-        expect(
-            await screen.findByText(/no archived job applications match the selected job statuses/i)
-        ).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
+        expect(screen.getByText(/archive applications you no longer need/i)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View active applications' })).toHaveAttribute(
+            'href',
+            '/application/view'
+        );
+        expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeVisible();
         expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeVisible();
+    });
+
+    test('clears archived application filters, saves all statuses, and refreshes list results', async () => {
+        fetch.mockImplementation(async (url: string) =>
+            url.includes('jobStatuses=Accepted') ? response([mockApplication]) : response([])
+        );
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { initialPreferences: { archived_application_job_statuses: ['Offer'] } }
+        );
+
+        expect(
+            await screen.findByRole('heading', { name: 'No archived applications match your filters' })
+        ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+        expect(await screen.findByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledWith(
+            `${
+                import.meta.env.VITE_API_URL
+            }/archived-job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`,
+            { method: 'GET' }
+        );
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
+    });
+
+    test('clears archived application filters and refreshes board results', async () => {
+        fetch.mockImplementation(async (url: string) =>
+            url.includes('jobStatuses=Accepted') ? response([mockApplication]) : response([])
+        );
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            {
+                initialPreferences: {
+                    archived_application_job_statuses: ['Offer'],
+                    archived_application_view_mode: 'board',
+                },
+            }
+        );
+
+        expect(
+            await screen.findByRole('heading', { name: 'No archived applications match your filters' })
+        ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+        const board = await screen.findByRole('region', { name: 'Archived application board' });
+        expect(within(board).getByRole('article', { name: /ABC Pte Ltd Software Engineer/i })).toBeInTheDocument();
+    });
+
+    test('renders the archived application empty state inside board layout', async () => {
+        fetch.mockResolvedValue(response([]));
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { initialPreferences: { archived_application_view_mode: 'board' } }
+        );
+
+        expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View active applications' })).toHaveAttribute(
+            'href',
+            '/application/view'
+        );
+        expect(screen.queryByRole('region', { name: 'Archived application board' })).not.toBeInTheDocument();
     });
 });

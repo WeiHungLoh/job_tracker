@@ -149,7 +149,7 @@ describe('Archived job interview viewer flow', () => {
         await waitFor(() => expect(screen.queryByText(/abc pte ltd/i)).not.toBeInTheDocument());
     });
 
-    test('renders message for empty interview list on successful fetch with no data', async () => {
+    test('renders the archived interview empty state without filter actions', async () => {
         fetch.mockResolvedValue(response([]));
 
         render(
@@ -158,7 +158,10 @@ describe('Archived job interview viewer flow', () => {
             </MemoryRouter>
         );
 
-        expect(await screen.findByText(/no archived job interview found/i)).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No archived interviews yet' })).toBeInTheDocument();
+        expect(screen.getByText(/interviews linked to archived applications/i)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View active interviews' })).toHaveAttribute('href', '/interview/view');
+        expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
     });
 
     test('shows error toast when corresponding archived job application is not available', async () => {

@@ -8,7 +8,6 @@
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
-    margin-bottom: 32px;
 }
 
 .card {
@@ -21,6 +20,7 @@
     border: 1px solid var(--colorCardBorder);
     border-radius: 15px;
     text-align: center;
+    min-width: 0;
 }
 
 .icon {

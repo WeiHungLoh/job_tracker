@@ -124,13 +124,17 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
 
                 <div className={styles.productActions}>
                     <div className={styles.productActionRow}>
-                        <Link className={styles.demoLink} to={routes.demoViewApplications}>
+                        <a
+                            className={styles.demoLink}
+                            href={routes.demoViewApplications}
+                            rel='noreferrer'
+                            target='_blank'
+                        >
                             Explore Demo
                             <span aria-hidden='true'>→</span>
-                        </Link>
-                        <Link className={styles.guideLink} to={routes.userGuide} target='_blank'>
-                            See how it works
-                            <span aria-hidden='true'>→</span>
+                        </a>
+                        <Link className={styles.guideLink} rel='noreferrer' to={routes.userGuide} target='_blank'>
+                            See how it works <span aria-hidden='true'>→</span>
                         </Link>
                     </div>
                     <p className={styles.demoCopy}>No account required. Sample data resets on refresh.</p>

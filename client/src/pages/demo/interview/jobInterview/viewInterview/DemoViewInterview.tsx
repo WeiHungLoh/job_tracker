@@ -13,6 +13,8 @@ import { useUserPreferences } from '../../../../../components/userPreferences/Us
 import ActivityControls from '../../../../../components/activityControls/ActivityControls';
 import DemoInterviewCard from '../../DemoInterviewCard';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
+import EmptyState from '../../../../../components/emptyState/EmptyState';
+import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
 
 const DemoViewInterview = () => {
     const { dispatch, state } = useDemo();
@@ -22,6 +24,10 @@ const DemoViewInterview = () => {
     const { showErrorToast } = useToast();
     const csvData = createInterviewCsvData(state.interviews);
     const hasInterviews = state.interviews.length > 0;
+    const emptyState = createInterviewEmptyState({
+        applicationsRoute: routes.demoViewApplications,
+        variant: 'active',
+    });
 
     const handleDelete = async (interviewId: number) => {
         const { confirmed } = await confirm(createDeleteConfirmation('job interview'));
@@ -81,12 +87,7 @@ const DemoViewInterview = () => {
                     />
                 </ActivityControls>
             )}
-            {!hasInterviews && (
-                <div>
-                    <br />
-                    No job interview found. Start adding one now!{' '}
-                </div>
-            )}
+            {!hasInterviews && <EmptyState {...emptyState} />}
 
             {state.interviews.map((interview, index) => (
                 <DemoInterviewCard

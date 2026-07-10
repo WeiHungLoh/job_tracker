@@ -31,6 +31,9 @@ import ApplicationBoard from '../applicationBoard/ApplicationBoard';
 import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
 import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/SkeletonBoard';
+import EmptyState from '../../../../components/emptyState/EmptyState';
+import { routes } from '../../../../routes';
+import { createApplicationEmptyState } from '../../applicationEmptyState';
 
 const sortApplications = (applications: JobApplication[]) => {
     return [...applications].sort((firstApplication, secondApplication) => {
@@ -361,10 +364,13 @@ const ViewApplication = () => {
     };
 
     const hasApplications = applications.length > 0;
-    const boardEmptyMessage =
-        selectedJobStatuses.length === JOB_STATUSES.length
-            ? 'No applications found.'
-            : 'No applications match the selected filters.';
+    const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
+    const emptyState = createApplicationEmptyState({
+        actionRoute: routes.addApplication,
+        filtersAreActive,
+        onClearFilters: () => void handleJobStatusChange([...JOB_STATUSES]),
+        variant: 'active',
+    });
 
     return (
         <div className={`${styles.applicationList} ${isBoardView ? styles.boardLayout : ''}`}>
@@ -437,13 +443,7 @@ const ViewApplication = () => {
 
             {!isLoading && !isFilteringApplications && (
                 <>
-                    {!hasApplications && !isBoardView && (
-                        <div>No job applications match the selected job statuses. Start adding one now! </div>
-                    )}
-
-                    {!hasApplications && isBoardView && (
-                        <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>
-                    )}
+                    {!hasApplications && <EmptyState {...emptyState} />}
 
                     {hasApplications && isBoardView && (
                         <ApplicationBoard

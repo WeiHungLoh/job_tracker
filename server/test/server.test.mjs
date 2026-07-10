@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
+import { readFile } from 'node:fs/promises';
 import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from '../dist/config/auth.js';
 import { createAccessToken, createRefreshToken } from '../dist/auth/tokens.js';
 import { createApp } from '../dist/app.js';
@@ -58,6 +59,19 @@ test('returns security headers without identifying Express', async () => {
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
     assert.match(response.headers.get('content-security-policy'), /default-src 'self'/);
+});
+
+test('creates new user preference rows with enabled display defaults', async () => {
+    const createTablesSource = await readFile(new URL('../src/db/queries/createTables.ts', import.meta.url), 'utf8');
+    const userPreferencesTable = createTablesSource.match(
+        /CREATE TABLE IF NOT EXISTS user_preferences \([\s\S]*?\n\s*\)`/
+    )?.[0];
+
+    assert.ok(userPreferencesTable);
+    assert.match(userPreferencesTable, /application_show_notes BOOLEAN NOT NULL DEFAULT true/);
+    assert.match(userPreferencesTable, /application_show_archive BOOLEAN NOT NULL DEFAULT true/);
+    assert.match(userPreferencesTable, /application_enable_scroll BOOLEAN NOT NULL DEFAULT true/);
+    assert.match(userPreferencesTable, /archived_application_show_notes BOOLEAN NOT NULL DEFAULT true/);
 });
 
 test('returns 204 with no body when logging out', async () => {

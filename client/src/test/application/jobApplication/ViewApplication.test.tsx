@@ -870,7 +870,7 @@ describe('Job application viewing flow', () => {
         expect(screen.getByPlaceholderText('Add your notes here')).toHaveAttribute('maxlength', '3000');
     });
 
-    test('renders message for empty application list on successful fetch with no data', async () => {
+    test('renders the active application empty state with no data', async () => {
         fetch.mockResolvedValue(response([]));
 
         render(
@@ -879,10 +879,85 @@ describe('Job application viewing flow', () => {
             </MemoryRouter>
         );
 
-        expect(await screen.findByText(/no job applications match the selected job statuses/i)).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+        expect(screen.getByText(/add your first job application/i)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Add application' })).toHaveAttribute('href', '/application/add');
+        expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeVisible();
         expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeVisible();
+    });
+
+    test('clears active application filters, saves all statuses, and refreshes list results', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.includes('jobStatuses=Accepted')) {
+                return response([mockApplication]);
+            }
+            return response([]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_job_statuses: ['Offer'] } }
+        );
+
+        expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+        expect(await screen.findByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledWith(
+            `${
+                import.meta.env.VITE_API_URL
+            }/job-applications?jobStatuses=Accepted&jobStatuses=Applied&jobStatuses=Declined&jobStatuses=Ghosted&jobStatuses=Interview&jobStatuses=Offer&jobStatuses=Rejected`,
+            { method: 'GET' }
+        );
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
+    });
+
+    test('clears active application filters and refreshes board results', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.includes('jobStatuses=Accepted')) {
+                return response([mockApplication]);
+            }
+            return response([]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_job_statuses: ['Offer'], application_view_mode: 'board' } }
+        );
+
+        expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+        const board = await screen.findByRole('region', { name: 'Application board' });
+        expect(within(board).getByRole('article', { name: /ABC Pte Ltd Software Engineer/i })).toBeInTheDocument();
+    });
+
+    test('renders the active application empty state inside board layout', async () => {
+        fetch.mockResolvedValue(response([]));
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_view_mode: 'board' } }
+        );
+
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Add application' })).toHaveAttribute('href', '/application/add');
+        expect(screen.queryByRole('region', { name: 'Application board' })).not.toBeInTheDocument();
     });
 
     test('deletes all applications after user confirms', async () => {

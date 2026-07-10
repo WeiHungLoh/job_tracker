@@ -51,15 +51,15 @@ const createTables = async (): Promise<void> => {
             user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
             application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY}
                 CHECK (application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}),
-            application_show_notes BOOLEAN NOT NULL DEFAULT false,
-            application_show_archive BOOLEAN NOT NULL DEFAULT false,
-            application_enable_scroll BOOLEAN NOT NULL DEFAULT false,
+            application_show_notes BOOLEAN NOT NULL DEFAULT true,
+            application_show_archive BOOLEAN NOT NULL DEFAULT true,
+            application_enable_scroll BOOLEAN NOT NULL DEFAULT true,
             application_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_application_view_mode_check
                 CHECK (application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
             archived_application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY}
                 CHECK (archived_application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}),
-            archived_application_show_notes BOOLEAN NOT NULL DEFAULT false,
+            archived_application_show_notes BOOLEAN NOT NULL DEFAULT true,
             archived_application_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_archived_application_view_mode_check
                 CHECK (archived_application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES}))

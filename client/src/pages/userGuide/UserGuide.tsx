@@ -46,17 +46,29 @@ const guideSections: readonly UserGuideSection[] = [
                 <ul>
                     <li>
                         <strong>Stat cards:</strong> Shows total applications, applications added this week, upcoming
-                        interviews, offers received, and response rate.
+                        interviews, interview rate, and offer rate.
                     </li>
                     <li>
-                        <strong>Line chart:</strong> Shows applications added over the past eight weeks. Each x-axis
-                        label is the Monday that begins that week.
+                        <strong>Application trend:</strong> Shows applications added over the past eight weeks, with a
+                        summary of this week, the change from last week, and the best week.
                     </li>
                     <li>
-                        <strong>Pie chart:</strong> Shows the distribution of applications by status, including Applied,
-                        Interview, Offer and Rejected.
+                        <strong>Upcoming interviews:</strong> Shows the next three scheduled interviews.
+                    </li>
+                    <li>
+                        <strong>Application pipeline:</strong> Shows current Applied, Interview, Offer, and Accepted
+                        totals.
+                    </li>
+                    <li>
+                        <strong>Closed outcomes:</strong> Shows current Rejected, Ghosted, and Declined totals.
                     </li>
                 </ul>
+                <p>
+                    Interview rate counts applications currently at <code>Interview</code>, <code>Offer</code>,{' '}
+                    <code>Accepted</code> or <code>Declined</code>. Offer rate counts <code>Offer</code>,{' '}
+                    <code>Accepted</code> or <code>Declined</code>. A declined application is included because it means
+                    you received an offer and chose not to accept it.
+                </p>
                 <p>
                     Open it by selecting <code>Dashboard</code> from the navigation bar.
                 </p>
@@ -281,6 +293,10 @@ const guideSections: readonly UserGuideSection[] = [
                     Application exports contain the records visible under the selected status filters. Interview and
                     archived-record viewers also provide CSV export actions under <strong>More...</strong> when at least
                     one record is available.
+                </p>
+                <p>
+                    Values that spreadsheet apps could interpret as formulas are exported as text for safer opening in
+                    CSV software.
                 </p>
                 <h3>Sorting order</h3>
                 <p>

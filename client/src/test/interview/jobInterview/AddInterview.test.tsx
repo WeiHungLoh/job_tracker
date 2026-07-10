@@ -39,10 +39,10 @@ describe('AddInterview page', () => {
         expect(screen.getByText(/iras/i)).toBeInTheDocument();
         expect(screen.getByText(/data engineer/i)).toBeInTheDocument();
 
-        fireEvent.change(screen.getByLabelText('Input Interview Date'), { target: { value: '2025-08-03T14:30' } });
-        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
-        userEvent.type(screen.getByLabelText('Input Interview Type (optional)'), 'HR');
-        userEvent.type(screen.getByLabelText('Input Additional Notes (optional)'), '2nd round');
+        fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
+        userEvent.type(screen.getByLabelText('Interview Type (optional)'), 'HR');
+        userEvent.type(screen.getByLabelText('Additional Notes (optional)'), '2nd round');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() => expect(fetch).toHaveBeenCalled());
@@ -57,8 +57,8 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        fireEvent.change(screen.getByLabelText('Input Interview Date'), { target: { value: '2025-08-03T14:30' } });
-        userEvent.type(screen.getByLabelText('Input Interview Location'), '   ');
+        fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Interview Location'), '   ');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() =>
@@ -81,10 +81,10 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        fireEvent.change(screen.getByLabelText('Input Interview Date'), {
+        fireEvent.change(screen.getByLabelText('Interview Date'), {
             target: { value: '2025-08-03T14:30' },
         });
-        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() =>
@@ -102,10 +102,10 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        fireEvent.change(screen.getByLabelText('Input Interview Date'), {
+        fireEvent.change(screen.getByLabelText('Interview Date'), {
             target: { value: '20300-03-30T00:00' },
         });
-        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() => expect(screen.getByText('Please enter a valid interview date.')).toBeInTheDocument());
@@ -128,10 +128,10 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        fireEvent.change(screen.getByLabelText('Input Interview Date'), { target: { value: '2025-08-03T14:30' } });
-        userEvent.type(screen.getByLabelText('Input Interview Location'), '  Zoom  ');
-        userEvent.type(screen.getByLabelText('Input Interview Type (optional)'), '  HR  ');
-        userEvent.type(screen.getByLabelText('Input Additional Notes (optional)'), '   ');
+        fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Interview Location'), '  Zoom  ');
+        userEvent.type(screen.getByLabelText('Interview Type (optional)'), '  HR  ');
+        userEvent.type(screen.getByLabelText('Additional Notes (optional)'), '   ');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() => expect(fetch).toHaveBeenCalled());
@@ -153,10 +153,10 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByLabelText('Input Interview Location')).toHaveAttribute('maxlength', '200');
-        expect(screen.getByLabelText('Input Interview Type (optional)')).toHaveAttribute('maxlength', '100');
-        expect(screen.getByLabelText('Input Additional Notes (optional)')).toHaveAttribute('maxlength', '3000');
-        expect(screen.getByLabelText('Input Interview Date')).toHaveAttribute('max', '9999-12-31T23:59');
+        expect(screen.getByLabelText('Interview Location')).toHaveAttribute('maxlength', '200');
+        expect(screen.getByLabelText('Interview Type (optional)')).toHaveAttribute('maxlength', '100');
+        expect(screen.getByLabelText('Additional Notes (optional)')).toHaveAttribute('maxlength', '3000');
+        expect(screen.getByLabelText('Interview Date')).toHaveAttribute('max', '9999-12-31T23:59');
     });
 
     test('preserves form contents after a backend error', async () => {
@@ -176,17 +176,17 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
-        fireEvent.change(screen.getByLabelText('Input Interview Date'), {
+        fireEvent.change(screen.getByLabelText('Interview Date'), {
             target: { value: '2025-08-03T14:30' },
         });
-        userEvent.type(screen.getByLabelText('Input Interview Location'), 'Zoom');
-        userEvent.type(screen.getByLabelText('Input Interview Type (optional)'), 'Technical');
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
+        userEvent.type(screen.getByLabelText('Interview Type (optional)'), 'Technical');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() => expect(screen.getByText('Interview fields are invalid.')).toBeInTheDocument());
-        expect(screen.getByLabelText('Input Interview Date')).toHaveValue('2025-08-03T14:30');
-        expect(screen.getByLabelText('Input Interview Location')).toHaveValue('Zoom');
-        expect(screen.getByLabelText('Input Interview Type (optional)')).toHaveValue('Technical');
+        expect(screen.getByLabelText('Interview Date')).toHaveValue('2025-08-03T14:30');
+        expect(screen.getByLabelText('Interview Location')).toHaveValue('Zoom');
+        expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('Technical');
     });
 
     test('redirects to /application/view when no state is passed', async () => {

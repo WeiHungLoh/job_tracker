@@ -1,0 +1,52 @@
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 18px;
+    margin: 10px 0 0;
+    padding: 0;
+    color: var(--colorText);
+    font-size: 0.8rem;
+    list-style: none;
+}
+
+.legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.swatch {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border-radius: 50%;
+}
+
+.accepted {
+    background-color: var(--colorStatusAccepted);
+}
+
+.applied {
+    background-color: var(--colorStatusApplied);
+}
+
+.declined {
+    background-color: var(--colorStatusDeclined);
+}
+
+.ghosted {
+    background-color: var(--colorStatusGhosted);
+}
+
+.interview {
+    background-color: var(--colorStatusInterview);
+}
+
+.offer {
+    background-color: var(--colorStatusOffer);
+}
+
+.rejected {
+    background-color: var(--colorStatusRejected);
+}

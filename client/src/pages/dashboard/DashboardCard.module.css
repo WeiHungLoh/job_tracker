@@ -1,0 +1,43 @@
+.card {
+    display: flex;
+    height: 100%;
+    min-height: 360px;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 15px;
+    background: var(--colorCardBg);
+}
+
+.header {
+    flex: 0 0 auto;
+}
+
+.header h2 {
+    margin: 0;
+    color: var(--colorText);
+    font-size: 1.1rem;
+}
+
+.header p {
+    margin: 6px 0 0;
+    color: var(--colorTextSecondary);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.content {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+@media (max-width: 768px) {
+    .card {
+        min-height: 0;
+    }
+}

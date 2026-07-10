@@ -8,6 +8,7 @@ import DemoDashboard from '../../pages/demo/dashboard/DemoDashboard';
 import DemoViewApplication from '../../pages/demo/application/jobApplication/viewApplication/DemoViewApplication';
 import DemoViewArchivedApplication from '../../pages/demo/application/archivedApplication/viewArchivedApplication/DemoViewArchivedApplication';
 import DemoViewInterview from '../../pages/demo/interview/jobInterview/viewInterview/DemoViewInterview';
+import DemoViewArchivedInterview from '../../pages/demo/interview/archivedInterview/viewArchivedInterview/DemoViewArchivedInterview';
 import { UserPreferencesProvider } from '../../components/userPreferences/UserPreferencesProvider';
 import { createDemoInitialState } from '../../pages/demo/state/demoInitialState';
 import { daysFromNow, toDateTimeString } from '../../pages/demo/state/demoDateHelpers';
@@ -22,8 +23,8 @@ vi.mock('material-ui-confirm', () => ({
 }));
 
 vi.mock('react-chartjs-2', () => ({
+    Bar: () => <div>Demo bar chart</div>,
     Line: () => <div>Demo line chart</div>,
-    Pie: () => <div>Demo pie chart</div>,
 }));
 
 const DemoPreferenceBridge = ({ children }: { children: ReactNode }) => {
@@ -125,27 +126,38 @@ describe('demo page interactions', () => {
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         await clickConfirmedAction(screen.getByRole('button', { name: /delete all archived applications/i }));
         expect(screen.queryByText('Archived applications deleted.')).not.toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View active applications' })).toHaveAttribute(
+            'href',
+            routes.demoViewApplications
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
         expect(
-            await screen.findByText(/No archived job applications match the selected job statuses/i)
+            await screen.findByRole('heading', { name: 'No archived applications match your filters' })
         ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
     });
 
     test('validates and creates demo applications', async () => {
         renderDemo(<DemoAddApplication />, [routes.demoAddApplication]);
 
-        await userEvent.type(screen.getByLabelText(/input company name/i), 'Demo Form Company');
-        await userEvent.type(screen.getByLabelText(/input job title/i), 'Demo Form Engineer');
-        await userEvent.type(screen.getByLabelText(/input job posting url/i), 'not-a-url');
+        await userEvent.type(screen.getByLabelText(/company name/i), 'Demo Form Company');
+        await userEvent.type(screen.getByLabelText(/job title/i), 'Demo Form Engineer');
+        await userEvent.type(screen.getByLabelText(/job posting url/i), 'not-a-url');
         await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
         expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument();
 
-        fireEvent.change(screen.getByLabelText(/input job posting url/i), {
+        fireEvent.change(screen.getByLabelText(/job posting url/i), {
             target: { value: 'https://jobs.example.com/demo-form-engineer' },
         });
         await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
         expect(screen.getByText('Successfully added a job application!')).toBeInTheDocument();
-        expect(screen.getByLabelText(/input company name/i)).toHaveValue('');
-        expect(screen.getByLabelText(/input job title/i)).toHaveValue('');
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('');
     });
 
     test('validates and creates demo interviews', async () => {
@@ -159,16 +171,16 @@ describe('demo page interactions', () => {
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
         expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument();
 
-        fireEvent.change(screen.getByLabelText(/input interview date/i), {
+        fireEvent.change(screen.getByLabelText(/interview date/i), {
             target: { value: toDateTimeString(daysFromNow(new Date(), 4, 10)) },
         });
-        await userEvent.type(screen.getByLabelText(/input interview location/i), 'Zoom');
-        await userEvent.type(screen.getByLabelText(/input interview type/i), 'Technical interview');
+        await userEvent.type(screen.getByLabelText(/interview location/i), 'Zoom');
+        await userEvent.type(screen.getByLabelText(/interview type/i), 'Technical interview');
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
 
         expect(screen.getByText('Successfully added an interview!')).toBeInTheDocument();
-        expect(screen.getByLabelText(/input interview location/i)).toHaveValue('');
-        expect(screen.getByLabelText(/input interview type/i)).toHaveValue('');
+        expect(screen.getByLabelText(/interview location/i)).toHaveValue('');
+        expect(screen.getByLabelText(/interview type/i)).toHaveValue('');
     });
 
     test('deletes interviews without success toasts', async () => {
@@ -181,7 +193,66 @@ describe('demo page interactions', () => {
         await clickConfirmedAction(screen.getByRole('button', { name: /delete all interviews/i }));
         await waitFor(() => expect(mockConfirm).toHaveBeenCalled());
         expect(screen.queryByText('Interviews deleted.')).not.toBeInTheDocument();
-        expect(await screen.findByText(/No job interview found/i)).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No interviews yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View applications' })).toHaveAttribute(
+            'href',
+            routes.demoViewApplications
+        );
+        expect(screen.queryByRole('link', { name: 'Add interview' })).not.toBeInTheDocument();
+    });
+
+    test('uses demo-only links for archived interview empty state', async () => {
+        renderDemo(<DemoViewArchivedInterview />, [routes.demoArchivedInterviews]);
+
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: /delete all archived interviews/i }));
+
+        expect(await screen.findByRole('heading', { name: 'No archived interviews yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View active interviews' })).toHaveAttribute(
+            'href',
+            routes.demoViewInterviews
+        );
+        expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+    });
+
+    test('clears demo application filters in reducer state without backend calls', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        renderDemo(<DemoViewApplication />);
+
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: /delete all applications/i }));
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Declined' }));
+
+        expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
+        expect(fetchSpy).not.toHaveBeenCalled();
+        fetchSpy.mockRestore();
+    });
+
+    test('keeps demo application empty-state actions inside demo routes in board view', async () => {
+        renderDemo(<DemoViewApplication />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: /delete all applications/i }));
+
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Add application' })).toHaveAttribute(
+            'href',
+            routes.demoAddApplication
+        );
+        expect(screen.queryByRole('region', { name: 'Application board' })).not.toBeInTheDocument();
     });
 
     test('renders dashboard from demo selectors', () => {
@@ -189,7 +260,10 @@ describe('demo page interactions', () => {
 
         expect(screen.getByText('Total Applications')).toBeInTheDocument();
         expect(screen.getByText('Demo line chart')).toBeInTheDocument();
-        expect(screen.getByText('Demo pie chart')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Upcoming Interviews' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Application Pipeline' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Closed Outcomes' })).toBeInTheDocument();
+        expect(screen.getAllByText('Demo bar chart')).toHaveLength(2);
     });
 
     test('uses empty job URLs for built-in demo application data', () => {

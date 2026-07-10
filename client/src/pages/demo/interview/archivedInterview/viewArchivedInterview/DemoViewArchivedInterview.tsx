@@ -13,6 +13,8 @@ import { useUserPreferences } from '../../../../../components/userPreferences/Us
 import ActivityControls from '../../../../../components/activityControls/ActivityControls';
 import DemoInterviewCard from '../../DemoInterviewCard';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
+import EmptyState from '../../../../../components/emptyState/EmptyState';
+import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
 
 const DemoViewArchivedInterview = () => {
     const { dispatch, state } = useDemo();
@@ -22,6 +24,10 @@ const DemoViewArchivedInterview = () => {
     const { showErrorToast } = useToast();
     const csvData = createInterviewCsvData(state.archivedInterviews);
     const hasInterviews = state.archivedInterviews.length > 0;
+    const emptyState = createInterviewEmptyState({
+        activeInterviewsRoute: routes.demoViewInterviews,
+        variant: 'archived',
+    });
 
     const handleDelete = async (archivedInterviewId: number) => {
         const { confirmed } = await confirm(createDeleteConfirmation('archived job interview'));
@@ -81,12 +87,7 @@ const DemoViewArchivedInterview = () => {
                     />
                 </ActivityControls>
             )}
-            {!hasInterviews && (
-                <div>
-                    <br />
-                    No archived job interview found. Start archiving now!{' '}
-                </div>
-            )}
+            {!hasInterviews && <EmptyState {...emptyState} />}
 
             {state.archivedInterviews.map((interview, index) => (
                 <DemoInterviewCard

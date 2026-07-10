@@ -27,6 +27,7 @@ describe('renders user guide properly', () => {
         await userEvent.click(screen.getByRole('button', { name: /dashboard/i }));
 
         expect(screen.getByText(/quick visual overview/i)).toBeVisible();
+        expect(screen.getByText(/interview rate counts applications currently at/i)).toBeVisible();
 
         await userEvent.click(screen.getByRole('button', { name: /demo mode/i }));
 
@@ -56,6 +57,7 @@ describe('renders user guide properly', () => {
 
         await userEvent.click(screen.getByRole('button', { name: /exporting and sorting records/i }));
 
+        expect(screen.getByText(/spreadsheet apps could interpret as formulas/i)).toBeVisible();
         expect(
             screen.getByText((_content, element) => {
                 const text = element?.textContent?.replace(/\s+/g, ' ') ?? '';

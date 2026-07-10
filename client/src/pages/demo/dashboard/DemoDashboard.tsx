@@ -1,8 +1,5 @@
-import ApplicationsLineChart from '../../dashboard/ApplicationsLineChart';
-import DashboardStats from '../../dashboard/DashboardStats';
-import JobStatusChart from '../../dashboard/JobStatusChart';
+import DashboardContent from '../../dashboard/DashboardContent';
 import { selectJobStatusCounts, selectWeeklyApplications } from '../state/demoSelectors';
-import styles from './DemoDashboard.module.css';
 import { useDemo } from '../context/DemoContext';
 
 const DemoDashboard = () => {
@@ -11,16 +8,12 @@ const DemoDashboard = () => {
     const weeklyApplications = selectWeeklyApplications(state);
 
     return (
-        <div className={styles.dashboard}>
-            <DashboardStats
-                statusCounts={statusCounts}
-                interviews={state.interviews}
-                weeklyApplications={weeklyApplications}
-                isLoading={false}
-            />
-            <ApplicationsLineChart weeklyApplications={weeklyApplications} isLoading={false} />
-            <JobStatusChart statusCounts={statusCounts} isLoading={false} />
-        </div>
+        <DashboardContent
+            statusCounts={statusCounts}
+            interviews={state.interviews}
+            weeklyApplications={weeklyApplications}
+            isLoading={false}
+        />
     );
 };
 

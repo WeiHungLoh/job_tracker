@@ -17,6 +17,9 @@ import type { ApplicationViewMode } from '../../../../../components/activityCont
 import { selectArchivedApplications } from '../../../state/demoSelectors';
 import styles from './DemoViewArchivedApplication.module.css';
 import { useDemoHashHighlight } from '../../../hooks/useDemoHashHighlight';
+import EmptyState from '../../../../../components/emptyState/EmptyState';
+import { routes } from '../../../../../routes';
+import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
 
 const DemoViewArchivedApplication = () => {
     const { dispatch, state } = useDemo();
@@ -75,10 +78,13 @@ const DemoViewArchivedApplication = () => {
     };
 
     const hasApplications = archivedApplications.length > 0;
-    const boardEmptyMessage =
-        selectedJobStatuses.length === JOB_STATUSES.length
-            ? 'No archived applications found.'
-            : 'No archived applications match the selected filters.';
+    const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
+    const emptyState = createApplicationEmptyState({
+        actionRoute: routes.demoViewApplications,
+        filtersAreActive,
+        onClearFilters: () => void handleJobStatusChange([...JOB_STATUSES]),
+        variant: 'archived',
+    });
 
     return (
         <div className={`${styles.archivedApplicationList} ${isBoardView ? styles.boardLayout : ''}`}>
@@ -121,11 +127,7 @@ const DemoViewArchivedApplication = () => {
                 </ActivityControls>
             </div>
 
-            {!hasApplications && !isBoardView && (
-                <div>No archived job applications match the selected job statuses. Start archiving now! </div>
-            )}
-
-            {!hasApplications && isBoardView && <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>}
+            {!hasApplications && <EmptyState {...emptyState} />}
 
             {hasApplications && isBoardView && (
                 <DemoArchivedApplicationBoard

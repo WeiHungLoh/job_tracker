@@ -41,20 +41,31 @@ describe('AuthProductIntro demo action', () => {
         localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
     });
 
-    test('renders one Explore Demo action inside the product overview and navigates in the same tab', async () => {
+    test('renders one Explore Demo anchor that opens the demo in a new tab', async () => {
         const { onSubmit } = renderIntro();
 
         const demoLinks = screen.getAllByRole('link', { name: /explore demo/i });
         expect(demoLinks).toHaveLength(1);
         expect(demoLinks[0]).toHaveAttribute('href', routes.demoViewApplications);
+        expect(demoLinks[0]).toHaveAttribute('target', '_blank');
+        expect(demoLinks[0]).toHaveAttribute('rel', 'noreferrer');
         expect(screen.getByText(/no account required/i)).toBeInTheDocument();
 
         await userEvent.click(demoLinks[0]);
 
-        expect(screen.getByTestId('current-path')).toHaveTextContent(routes.demoViewApplications);
+        expect(screen.getByTestId('current-path')).toHaveTextContent(routes.signIn);
         expect(onSubmit).not.toHaveBeenCalled();
         expect(fetch).not.toHaveBeenCalled();
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBeNull();
+    });
+
+    test('keeps the user guide link in a new tab', () => {
+        renderIntro();
+
+        const guideLink = screen.getByRole('link', { name: /see how it works/i });
+        expect(guideLink).toHaveAttribute('href', routes.userGuide);
+        expect(guideLink).toHaveAttribute('target', '_blank');
+        expect(guideLink).toHaveAttribute('rel', 'noreferrer');
     });
 
     test('hides Explore Demo in focused authentication mode and restores it with the overview', async () => {
@@ -65,6 +76,9 @@ describe('AuthProductIntro demo action', () => {
         await userEvent.click(screen.getByLabelText('Email', { exact: true }));
 
         expect(screen.queryByRole('link', { name: /explore demo/i })).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Organise your job search in one place', { selector: 'section' })).toHaveAttribute(
+            'inert'
+        );
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
 
         await userEvent.click(screen.getByRole('button', { name: /why use job tracker/i }));

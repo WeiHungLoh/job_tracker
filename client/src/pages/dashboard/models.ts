@@ -11,19 +11,27 @@ export type JobStatusCount = {
     count: string;
 };
 
-export type DashboardStatsProps = {
+export type DashboardDataProps = {
     statusCounts: JobStatusCount[];
     interviews: JobInterview[];
     weeklyApplications: WeeklyApplicationCount[];
     isLoading: boolean;
 };
 
+export type DashboardContentProps = DashboardDataProps;
+export type DashboardStatsProps = DashboardDataProps;
+
 export type ApplicationsLineChartProps = {
     weeklyApplications: WeeklyApplicationCount[];
     isLoading: boolean;
 };
 
-export type JobStatusChartProps = {
+export type StatusChartProps = {
     statusCounts: JobStatusCount[];
+    isLoading: boolean;
+};
+
+export type UpcomingInterviewsProps = {
+    interviews: JobInterview[];
     isLoading: boolean;
 };

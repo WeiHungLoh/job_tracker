@@ -1,3 +1,0 @@
-.dashboard {
-    composes: dashboard from '../../dashboard/Dashboard.module.css';
-}

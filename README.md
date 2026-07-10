@@ -23,11 +23,12 @@ Job Tracker is a full-stack PERN application for managing job applications and i
 
 -   Manage job applications with status, dates, locations, posting URLs, and notes
 -   Explore a fully interactive frontend demo without creating an account
+-   Review application trends, pipeline stages, closed outcomes, conversion rates, and upcoming interviews
 -   Switch between list and Kanban board views with drag-and-drop status updates
 -   Track interviews linked to job applications
 -   Add upcoming interviews to Google Calendar, Apple Calendar, and Outlook
 -   Archive and restore applications and interviews
--   Export interview data to CSV
+-   Export application and interview data to CSV
 -   Save user display preferences
 -   JWT authentication with access and refresh tokens stored in Secure, HttpOnly, SameSite cookies
 -   bcrypt password hashing, rate limiting, Helmet, CORS, and user-scoped database queries

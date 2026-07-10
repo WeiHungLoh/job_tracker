@@ -151,7 +151,7 @@ describe('Job interview viewer flow', () => {
         await waitFor(() => expect(screen.queryByText(/abc pte ltd/i)).not.toBeInTheDocument());
     });
 
-    test('renders message for empty interview list on successful fetch with no data', async () => {
+    test('renders the interview empty state without filter actions', async () => {
         fetch.mockResolvedValue(response([]));
 
         render(
@@ -160,7 +160,11 @@ describe('Job interview viewer flow', () => {
             </MemoryRouter>
         );
 
-        expect(await screen.findByText(/no job interview found/i)).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No interviews yet' })).toBeInTheDocument();
+        expect(screen.getByText(/add interviews after creating a job application/i)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View applications' })).toHaveAttribute('href', '/application/view');
+        expect(screen.queryByRole('link', { name: 'Add interview' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
     });
 
     test('shows error toast when corresponding job application is not available', async () => {

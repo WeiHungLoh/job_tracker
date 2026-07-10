@@ -3,6 +3,13 @@
 :root {
     --fontFamilyBase: 'Quicksand', sans-serif;
     --applicationBoardColumnWidth: 280px;
+
+    /* Preserve the existing 1470px desktop proportions while allowing wider layouts. */
+    --widePageMaxWidth: 1600px;
+    --wideNavbarMaxWidth: 1576px;
+    --applicationListWidth: clamp(750px, 51.0204%, 1000px);
+    --interviewListWidth: clamp(710px, 48.2993%, 1000px);
+    --applicationBoardWidth: clamp(1180px, 80.2721%, 1573.3333px);
 }
 
 [data-theme='light'] {

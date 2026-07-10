@@ -100,7 +100,7 @@ describe('App routing and authentication behavior', () => {
         fetch.mockResolvedValueOnce(jsonResponse({ message: 'Authenticated user.' }));
         renderRoute('/application/add');
 
-        await waitFor(() => expect(screen.getByText(/input company name/i)).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText(/company name/i)).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/refresh`, {
             method: 'POST',
         });
@@ -144,7 +144,7 @@ describe('App routing and authentication behavior', () => {
     test('renders AddApplication page when user is authenticated', async () => {
         renderRoute('/application/add');
 
-        await waitFor(() => expect(screen.getByText(/input company name/i)).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText(/company name/i)).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/current`, {
             method: 'GET',
         });
@@ -223,7 +223,7 @@ describe('App routing and authentication behavior', () => {
     });
 
     test.each([
-        [routes.demoAddApplication, /input company name/i],
+        [routes.demoAddApplication, /company name/i],
         [routes.demoViewApplications, /HorizonAI Labs/i],
         [routes.demoAddInterview, /HorizonAI Labs/i],
         [routes.demoViewInterviews, /Atlas RecruitTech/i],
@@ -248,9 +248,9 @@ describe('App routing and authentication behavior', () => {
     test('demo application state survives navigation between demo routes', async () => {
         renderRoute(routes.demoAddApplication);
 
-        await screen.findByText(/input company name/i);
-        await userEvent.type(screen.getByLabelText(/input company name/i), 'Demo Navigation Company');
-        await userEvent.type(screen.getByLabelText(/input job title/i), 'Demo Navigation Engineer');
+        await screen.findByText(/company name/i);
+        await userEvent.type(screen.getByLabelText(/company name/i), 'Demo Navigation Company');
+        await userEvent.type(screen.getByLabelText(/job title/i), 'Demo Navigation Engineer');
         await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
 
         expect(await screen.findByText('Successfully added a job application!')).toBeInTheDocument();

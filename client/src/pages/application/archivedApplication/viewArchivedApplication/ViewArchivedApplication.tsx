@@ -24,6 +24,9 @@ import ArchivedApplicationBoard from '../archivedApplicationBoard/ArchivedApplic
 import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
 import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/SkeletonBoard';
+import EmptyState from '../../../../components/emptyState/EmptyState';
+import { routes } from '../../../../routes';
+import { createApplicationEmptyState } from '../../applicationEmptyState';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
@@ -191,10 +194,13 @@ const ViewArchivedApplication = () => {
     };
 
     const hasApplications = archivedApplications.length > 0;
-    const boardEmptyMessage =
-        selectedJobStatuses.length === JOB_STATUSES.length
-            ? 'No archived applications found.'
-            : 'No archived applications match the selected filters.';
+    const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
+    const emptyState = createApplicationEmptyState({
+        actionRoute: routes.viewApplications,
+        filtersAreActive,
+        onClearFilters: () => void handleJobStatusChange([...JOB_STATUSES]),
+        variant: 'archived',
+    });
 
     return (
         <div className={`${styles.archivedApplicationList} ${isBoardView ? styles.boardLayout : ''}`}>
@@ -249,13 +255,7 @@ const ViewArchivedApplication = () => {
 
             {!isLoading && !isFilteringApplications && (
                 <>
-                    {!hasApplications && !isBoardView && (
-                        <div>No archived job applications match the selected job statuses. Start archiving now! </div>
-                    )}
-
-                    {!hasApplications && isBoardView && (
-                        <div className={styles.boardEmptyMessage}>{boardEmptyMessage}</div>
-                    )}
+                    {!hasApplications && <EmptyState {...emptyState} />}
 
                     {hasApplications && isBoardView && (
                         <ArchivedApplicationBoard

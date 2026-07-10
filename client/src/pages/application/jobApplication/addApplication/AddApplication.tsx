@@ -73,7 +73,7 @@ const AddApplication = () => {
     return (
         <div className={styles.addApplication}>
             <br />
-            <label htmlFor='company-name'>Input Company Name</label>
+            <label htmlFor='company-name'>Company Name</label>
             <input
                 id='company-name'
                 maxLength={FIELD_MAX_LENGTHS.companyName}
@@ -82,7 +82,7 @@ const AddApplication = () => {
                 required
             />
 
-            <label htmlFor='job-title'>Input Job Title</label>
+            <label htmlFor='job-title'>Job Title</label>
             <input
                 id='job-title'
                 maxLength={FIELD_MAX_LENGTHS.jobTitle}
@@ -91,8 +91,8 @@ const AddApplication = () => {
                 required
             />
 
-            <label>Input Job Status</label>
-            <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value as JobStatus)}>
+            <label htmlFor='job-status'>Job Status</label>
+            <select id='job-status' value={jobStatus} onChange={(e) => setJobStatus(e.target.value as JobStatus)}>
                 {JOB_STATUSES.map((status) => (
                     <option key={status} value={status}>
                         {status}
@@ -100,7 +100,7 @@ const AddApplication = () => {
                 ))}
             </select>
 
-            <label htmlFor='app-date'>Input Application Date (uses current date if left blank)</label>
+            <label htmlFor='app-date'>Application Date (uses current date if left blank)</label>
             <input
                 ref={applicationDateInputRef}
                 id='app-date'
@@ -111,7 +111,7 @@ const AddApplication = () => {
                 type='datetime-local'
             />
 
-            <label htmlFor='job-location'>Input Job Location (optional)</label>
+            <label htmlFor='job-location'>Job Location (optional)</label>
             <input
                 id='job-location'
                 maxLength={FIELD_MAX_LENGTHS.location}
@@ -119,7 +119,7 @@ const AddApplication = () => {
                 onChange={(e) => setJobLocation(e.target.value)}
             />
 
-            <label htmlFor='job-url'>Input Job Posting URL (optional)</label>
+            <label htmlFor='job-url'>Job Posting URL (optional)</label>
             <input
                 id='job-url'
                 maxLength={FIELD_MAX_LENGTHS.jobURL}

@@ -84,7 +84,7 @@ const AddInterview = () => {
                 </p>
             </div>
 
-            <label htmlFor='date'>Input Interview Date</label>
+            <label htmlFor='date'>Interview Date</label>
             <input
                 ref={interviewDateInputRef}
                 id='date'
@@ -96,7 +96,7 @@ const AddInterview = () => {
                 required
             />
 
-            <label htmlFor='location'>Input Interview Location</label>
+            <label htmlFor='location'>Interview Location</label>
             <input
                 id='location'
                 maxLength={FIELD_MAX_LENGTHS.location}
@@ -106,7 +106,7 @@ const AddInterview = () => {
                 placeholder='E.g. Zoom'
             />
 
-            <label htmlFor='type'>Input Interview Type (optional)</label>
+            <label htmlFor='type'>Interview Type (optional)</label>
             <input
                 id='type'
                 maxLength={FIELD_MAX_LENGTHS.interviewType}
@@ -114,7 +114,7 @@ const AddInterview = () => {
                 onChange={(e) => setInterviewType(e.target.value)}
             />
 
-            <label htmlFor='notes'>Input Additional Notes (optional)</label>
+            <label htmlFor='notes'>Additional Notes (optional)</label>
             <input
                 id='notes'
                 maxLength={FIELD_MAX_LENGTHS.notes}

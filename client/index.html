@@ -5,24 +5,14 @@
         <link rel="icon" href="/job.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#000000" />
-        <meta name="description" content="Web site created using create-react-app" />
+        <meta name="description" content="Track job applications, interviews and job-search progress in one place." />
         <link rel="apple-touch-icon" href="/job.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <script src="/theme-init.js"></script>
         <title>Job Tracker</title>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
-        <script>
-            (function () {
-                try {
-                    var t = localStorage.getItem('theme');
-                    document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
-                } catch (_) {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                }
-            })();
-        </script>
         <script type="module" src="/src/index.tsx"></script>
     </body>
 </html>

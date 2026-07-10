@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import ApplicationsLineChart from './ApplicationsLineChart';
-import DashboardStats from './DashboardStats';
-import JobStatusChart from './JobStatusChart';
+import DashboardContent from './DashboardContent';
 import type { JobInterview } from '../interview/models';
 import type { JobStatusCount, WeeklyApplicationCount } from './models';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
-import styles from './Dashboard.module.css';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
 
@@ -52,16 +49,12 @@ const Dashboard = () => {
     }, []);
 
     return (
-        <div className={styles.dashboard}>
-            <DashboardStats
-                statusCounts={statusCounts}
-                interviews={interviews}
-                weeklyApplications={weeklyApplications}
-                isLoading={isLoading}
-            />
-            <ApplicationsLineChart weeklyApplications={weeklyApplications} isLoading={isLoading} />
-            <JobStatusChart statusCounts={statusCounts} isLoading={isLoading} />
-        </div>
+        <DashboardContent
+            statusCounts={statusCounts}
+            interviews={interviews}
+            weeklyApplications={weeklyApplications}
+            isLoading={isLoading}
+        />
     );
 };
 

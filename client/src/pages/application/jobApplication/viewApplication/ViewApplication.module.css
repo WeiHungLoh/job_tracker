@@ -1,5 +1,6 @@
 .applicationList {
-    max-width: 750px;
+    width: var(--applicationListWidth);
+    max-width: 100%;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -9,7 +10,7 @@
 }
 
 .boardLayout {
-    width: min(1180px, 94vw);
+    width: var(--applicationBoardWidth);
     max-width: 94vw;
     align-items: stretch;
 }
@@ -18,12 +19,6 @@
     width: fit-content;
     max-width: 100%;
     align-self: center;
-}
-
-.boardEmptyMessage {
-    align-self: center;
-    color: var(--colorTextSecondary);
-    text-align: center;
 }
 
 .highlighted {

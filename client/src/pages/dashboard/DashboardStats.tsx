@@ -3,8 +3,10 @@ import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import styles from './DashboardStats.module.css';
 import type { DashboardStatsProps } from './models';
 import type { JobStatus } from '../application/models';
+import { getStatusCountMap, getTotalStatusCount, getUpcomingInterviews } from './dashboardData';
 
-const RESPONDED_STATUSES = new Set<JobStatus>(['Interview', 'Offer', 'Accepted', 'Rejected', 'Declined']);
+const INTERVIEW_PLUS_STATUSES: readonly JobStatus[] = ['Interview', 'Offer', 'Accepted', 'Declined'];
+const OFFER_PLUS_STATUSES: readonly JobStatus[] = ['Offer', 'Accepted', 'Declined'];
 
 const DashboardStats = ({ statusCounts, interviews, weeklyApplications, isLoading }: DashboardStatsProps) => {
     if (isLoading) {
@@ -15,26 +17,22 @@ const DashboardStats = ({ statusCounts, interviews, weeklyApplications, isLoadin
         );
     }
 
-    const total = statusCounts.reduce((sum, row) => sum + Number(row.count), 0);
-    const offerCount = statusCounts.find((row) => row.job_status === 'Offer');
-    const offers = offerCount ? Number(offerCount.count) : 0;
-    const responded = statusCounts
-        .filter((row) => RESPONDED_STATUSES.has(row.job_status))
-        .reduce((sum, row) => sum + Number(row.count), 0);
-    const responseRate = total > 0 ? `${Math.round((responded / total) * 100)}%` : '—';
-    const applicationsThisWeek =
-        weeklyApplications.length > 0
-            ? Number(weeklyApplications[weeklyApplications.length - 1].applications_count)
-            : 0;
-    const now = new Date();
-    const upcomingInterviews = interviews.filter((interview) => new Date(interview.interview_date) > now).length;
+    const countByStatus = getStatusCountMap(statusCounts);
+    const total = getTotalStatusCount(countByStatus);
+    const interviewPlus = INTERVIEW_PLUS_STATUSES.reduce((sum, status) => sum + (countByStatus[status] ?? 0), 0);
+    const offerPlus = OFFER_PLUS_STATUSES.reduce((sum, status) => sum + (countByStatus[status] ?? 0), 0);
+    const interviewRate = total > 0 ? `${Math.round((interviewPlus / total) * 100)}%` : '—';
+    const offerRate = total > 0 ? `${Math.round((offerPlus / total) * 100)}%` : '—';
+    const latestApplicationCount = Number(weeklyApplications[weeklyApplications.length - 1]?.applications_count ?? 0);
+    const applicationsThisWeek = Number.isFinite(latestApplicationCount) ? latestApplicationCount : 0;
+    const upcomingInterviews = getUpcomingInterviews(interviews).length;
 
     const cards = [
         { icon: 'briefcase' as const, label: 'Total Applications', value: total },
-        { icon: 'briefcase' as const, label: 'Applied this Week', value: applicationsThisWeek },
+        { icon: 'activeApplications' as const, label: 'Applied This Week', value: applicationsThisWeek },
         { icon: 'interview' as const, label: 'Upcoming Interviews', value: upcomingInterviews },
-        { icon: 'success' as const, label: 'Offers Received', value: offers },
-        { icon: 'highlight' as const, label: 'Response Rate', value: responseRate },
+        { icon: 'highlight' as const, label: 'Interview Rate', value: interviewRate },
+        { icon: 'success' as const, label: 'Offer Rate', value: offerRate },
     ];
 
     return (

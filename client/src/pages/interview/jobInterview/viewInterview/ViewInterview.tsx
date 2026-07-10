@@ -16,6 +16,8 @@ import usePendingIds from '../../../../hooks/usePendingIds';
 import InterviewCard from '../../InterviewCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
+import EmptyState from '../../../../components/emptyState/EmptyState';
+import { createInterviewEmptyState } from '../../interviewEmptyState';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
@@ -99,6 +101,10 @@ const ViewInterview = () => {
     };
 
     const hasInterviews = interviews.length > 0;
+    const emptyState = createInterviewEmptyState({
+        applicationsRoute: routes.viewApplications,
+        variant: 'active',
+    });
 
     const handleViewApplicationClick = async (event: MouseEvent<HTMLAnchorElement>, interview: JobInterview) => {
         event.preventDefault();
@@ -153,12 +159,7 @@ const ViewInterview = () => {
                             />
                         </ActivityControls>
                     )}
-                    {!hasInterviews && (
-                        <div>
-                            <br />
-                            No job interview found. Start adding one now!{' '}
-                        </div>
-                    )}
+                    {!hasInterviews && <EmptyState {...emptyState} />}
 
                     {interviews.map((interview, index) => (
                         <InterviewCard

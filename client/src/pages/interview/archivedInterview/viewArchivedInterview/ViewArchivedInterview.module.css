@@ -1,5 +1,6 @@
 .archivedInterviewList {
-    max-width: 710px;
+    width: var(--interviewListWidth);
+    max-width: 100%;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -11,9 +12,5 @@
 @media (max-width: 803px) {
     .archivedInterviewList {
         width: 90%;
-    }
-
-    .archivedInterviewList > h2 {
-        font-size: 1.2rem;
     }
 }

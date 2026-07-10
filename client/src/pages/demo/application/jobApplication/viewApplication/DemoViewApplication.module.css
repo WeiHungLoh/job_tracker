@@ -15,10 +15,6 @@
     margin-top: 0;
 }
 
-.boardEmptyMessage {
-    composes: boardEmptyMessage from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
-}
-
 .highlighted {
     composes: highlighted from '../../../../application/jobApplication/viewApplication/ViewApplication.module.css';
 }

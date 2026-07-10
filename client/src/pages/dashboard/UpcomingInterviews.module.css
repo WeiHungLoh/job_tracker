@@ -1,0 +1,88 @@
+.interviewList {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.interviewList li {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 10px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 12px;
+    background: var(--colorOverlayBg);
+}
+
+.index {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--colorPrimary);
+    color: var(--colorBtnPrimaryText);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.interviewDetails {
+    min-width: 0;
+}
+
+.interviewList h3,
+.centered h3 {
+    margin: 0;
+    color: var(--colorText);
+    font-size: 0.95rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.interviewList p,
+.interviewList time,
+.centered p {
+    color: var(--colorTextSecondary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.jobTitle {
+    margin: 2px 0 5px;
+    overflow-wrap: anywhere;
+}
+
+.interviewList time {
+    display: block;
+    color: var(--colorPrimary);
+    font-weight: 600;
+}
+
+.details {
+    width: fit-content;
+    max-width: 100%;
+    margin: 6px 0 0;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: var(--colorStatIconBg);
+    overflow-wrap: anywhere;
+}
+
+.centered {
+    display: grid;
+    min-height: 220px;
+    flex: 1;
+    place-items: center;
+    text-align: center;
+}
+
+.centered p {
+    margin: 6px 0 0;
+}

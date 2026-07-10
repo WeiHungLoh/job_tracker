@@ -25,8 +25,8 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(fetch).toHaveBeenCalled());
@@ -40,7 +40,7 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() =>
@@ -57,8 +57,8 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), '   ');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/company name/i), '   ');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() =>
@@ -76,10 +76,10 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
 
-        const applicationDateInput = screen.getByLabelText(/input application date/i);
+        const applicationDateInput = screen.getByLabelText(/application date/i);
         Object.defineProperty(applicationDateInput, 'validity', {
             configurable: true,
             value: { badInput: true },
@@ -105,9 +105,9 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
-        fireEvent.change(screen.getByLabelText(/input application date/i), {
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        fireEvent.change(screen.getByLabelText(/application date/i), {
             target: { value: '1899-12-31T23:59' },
         });
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
@@ -125,9 +125,9 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
-        userEvent.type(screen.getByLabelText(/input job posting url/i), 'not-a-valid-url');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/job posting url/i), 'not-a-valid-url');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
@@ -141,9 +141,9 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
-        userEvent.type(screen.getByLabelText(/input job posting url/i), 'javascript:alert(1)');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/job posting url/i), 'javascript:alert(1)');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
@@ -157,9 +157,9 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
-        userEvent.type(screen.getByLabelText(/input job posting url/i), 'https://localhost/jobs/1');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/job posting url/i), 'https://localhost/jobs/1');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
@@ -173,9 +173,9 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
-        fireEvent.change(screen.getByLabelText(/input application date/i), {
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        fireEvent.change(screen.getByLabelText(/application date/i), {
             target: { value: '2999-12-31T23:59' },
         });
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
@@ -193,10 +193,11 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByLabelText(/input company name/i)).toHaveAttribute('maxlength', '150');
-        expect(screen.getByLabelText(/input job title/i)).toHaveAttribute('maxlength', '150');
-        expect(screen.getByLabelText(/input job location/i)).toHaveAttribute('maxlength', '200');
-        expect(screen.getByLabelText(/input job posting url/i)).toHaveAttribute('maxlength', '2048');
+        expect(screen.getByLabelText(/company name/i)).toHaveAttribute('maxlength', '150');
+        expect(screen.getByLabelText(/job title/i)).toHaveAttribute('maxlength', '150');
+        expect(screen.getByLabelText(/job status/i)).toHaveValue('Applied');
+        expect(screen.getByLabelText(/job location/i)).toHaveAttribute('maxlength', '200');
+        expect(screen.getByLabelText(/job posting url/i)).toHaveAttribute('maxlength', '2048');
     });
 
     test('submits whitespace-only optional fields as empty strings', async () => {
@@ -213,10 +214,10 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
-        userEvent.type(screen.getByLabelText(/input job location/i), '   ');
-        userEvent.type(screen.getByLabelText(/input job posting url/i), '   ');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/job location/i), '   ');
+        userEvent.type(screen.getByLabelText(/job posting url/i), '   ');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(fetch).toHaveBeenCalled());
@@ -239,10 +240,10 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), '  Morgan Stanley  ');
-        userEvent.type(screen.getByLabelText(/input job title/i), '  Software Engineer  ');
-        userEvent.type(screen.getByLabelText(/input job location/i), '  Singapore  ');
-        userEvent.type(screen.getByLabelText(/input job posting url/i), '  https://example.com/jobs/1  ');
+        userEvent.type(screen.getByLabelText(/company name/i), '  Morgan Stanley  ');
+        userEvent.type(screen.getByLabelText(/job title/i), '  Software Engineer  ');
+        userEvent.type(screen.getByLabelText(/job location/i), '  Singapore  ');
+        userEvent.type(screen.getByLabelText(/job posting url/i), '  https://example.com/jobs/1  ');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(fetch).toHaveBeenCalled());
@@ -271,12 +272,12 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/input company name/i), 'ABC Pte Ltd');
-        userEvent.type(screen.getByLabelText(/input job title/i), 'Cleaner');
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('Failed to add a job application')).toBeInTheDocument());
-        expect(screen.getByLabelText(/input company name/i)).toHaveValue('ABC Pte Ltd');
-        expect(screen.getByLabelText(/input job title/i)).toHaveValue('Cleaner');
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('ABC Pte Ltd');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('Cleaner');
     });
 });

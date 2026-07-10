@@ -17,6 +17,8 @@ import usePendingIds from '../../../../hooks/usePendingIds';
 import InterviewCard from '../../InterviewCard';
 import ActivityControls from '../../../../components/activityControls/ActivityControls';
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
+import EmptyState from '../../../../components/emptyState/EmptyState';
+import { createInterviewEmptyState } from '../../interviewEmptyState';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
@@ -102,6 +104,10 @@ const ViewArchivedInterview = () => {
     };
 
     const hasInterviews = archivedInterviews.length > 0;
+    const emptyState = createInterviewEmptyState({
+        activeInterviewsRoute: routes.viewInterviews,
+        variant: 'archived',
+    });
 
     const handleViewApplicationClick = async (
         event: MouseEvent<HTMLAnchorElement>,
@@ -168,12 +174,7 @@ const ViewArchivedInterview = () => {
                             />
                         </ActivityControls>
                     )}
-                    {!hasInterviews && (
-                        <div>
-                            <br />
-                            No archived job interview found. Start archiving now!{' '}
-                        </div>
-                    )}
+                    {!hasInterviews && <EmptyState {...emptyState} />}
 
                     {archivedInterviews.map((interview, index) => (
                         <InterviewCard
