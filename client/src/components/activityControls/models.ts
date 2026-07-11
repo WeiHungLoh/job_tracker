@@ -4,6 +4,8 @@ import type { PrimaryButtonVariant } from '../button/models';
 import type { IconName } from '../icon/models';
 
 export type ActivityControlsProps = {
+    actions?: ReactNode;
+    ariaLabel: string;
     children: ReactNode;
 };
 
@@ -17,7 +19,9 @@ export type ControlDropdownProps = {
     dropdownRole?: AriaRole;
     id: string;
     label: ReactNode;
+    triggerAriaLabel?: string;
     triggerClassName?: string;
+    triggerStyle?: 'activity';
     triggerVariant?: PrimaryButtonVariant;
 };
 

@@ -16,7 +16,13 @@ const MoreOptions = ({
     middleAction,
     onDelete,
 }: MoreOptionsProps) => (
-    <ControlDropdown id={id} label='More...'>
+    <ControlDropdown
+        dropdownAriaLabel='More options'
+        dropdownRole='group'
+        id={id}
+        label='More...'
+        triggerStyle='activity'
+    >
         <div className={styles.options}>
             <CSVLink className={styles.action} data={csvData} filename={csvFilename} headers={csvHeaders}>
                 <Icon name='export' size={18} />

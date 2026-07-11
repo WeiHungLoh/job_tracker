@@ -429,7 +429,30 @@ const ViewApplication = () => {
     return (
         <div className={`${styles.applicationList} ${isBoardView ? styles.boardLayout : ''}`}>
             <div className={styles.controlsRow}>
-                <ActivityControls>
+                <ActivityControls
+                    actions={
+                        applicationTotal > 0 ? (
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='job_applications.csv'
+                                csvHeaders={APPLICATION_CSV_HEADERS}
+                                deleteLabel='Delete all applications'
+                                id='application-more-options'
+                                deleteDisabled={pendingBulkAction === 'archive'}
+                                isDeleting={pendingBulkAction === 'delete'}
+                                middleAction={{
+                                    disabled: pendingBulkAction === 'delete',
+                                    icon: 'archive',
+                                    isLoading: pendingBulkAction === 'archive',
+                                    label: 'Archive all applications',
+                                    onClick: () => void handleBulkAction('archive'),
+                                }}
+                                onDelete={() => void handleBulkAction('delete')}
+                            />
+                        ) : undefined
+                    }
+                    ariaLabel='Application view and management controls'
+                >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter
                         buttonLabel='Filter by'
@@ -469,25 +492,6 @@ const ViewApplication = () => {
                                 label='Auto scroll after job status change'
                             />
                         </DisplayOptions>
-                    )}
-                    {applicationTotal > 0 && (
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='job_applications.csv'
-                            csvHeaders={APPLICATION_CSV_HEADERS}
-                            deleteLabel='Delete all applications'
-                            id='application-more-options'
-                            deleteDisabled={pendingBulkAction === 'archive'}
-                            isDeleting={pendingBulkAction === 'delete'}
-                            middleAction={{
-                                disabled: pendingBulkAction === 'delete',
-                                icon: 'archive',
-                                isLoading: pendingBulkAction === 'archive',
-                                label: 'Archive all applications',
-                                onClick: () => void handleBulkAction('archive'),
-                            }}
-                            onDelete={() => void handleBulkAction('delete')}
-                        />
                     )}
                 </ActivityControls>
             </div>

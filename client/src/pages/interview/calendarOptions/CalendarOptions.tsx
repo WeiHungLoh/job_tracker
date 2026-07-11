@@ -37,20 +37,21 @@ const CalendarOptions = ({ interview }: CalendarOptionsProps) => {
             containerClassName={styles.container}
             dropdownAriaLabel='Calendar options'
             dropdownClassName={styles.menu}
-            dropdownRole='menu'
+            dropdownRole='group'
             id={`calendar-${interview.interview_id}`}
             label={
                 <>
                     <Icon name='calendar' size={17} />
                 </>
             }
+            triggerAriaLabel='Add to calendar'
             triggerClassName={styles.trigger}
             triggerVariant='secondary'
         >
-            <button className={styles.menuItem} onClick={handleGoogleCalendar} role='menuitem' type='button'>
+            <button className={styles.menuItem} onClick={handleGoogleCalendar} type='button'>
                 Add to Google Calendar
             </button>
-            <button className={styles.menuItem} onClick={handleIcsDownload} role='menuitem' type='button'>
+            <button className={styles.menuItem} onClick={handleIcsDownload} type='button'>
                 Add to Apple Calendar / Outlook (.ics)
             </button>
         </ControlDropdown>

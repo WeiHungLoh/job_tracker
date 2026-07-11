@@ -1,22 +1,66 @@
 .controls {
     position: relative;
     display: flex;
+    width: fit-content;
     max-width: 100%;
     margin: 20px 0;
-    padding: 16px 18px;
+    padding: 8px;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     overflow: visible;
-    border: 1px solid var(--colorCardBorder);
-    border-radius: 15px;
-    background: var(--colorCardBg);
+    border: 1px solid var(--colorControlBorder);
+    border-radius: 14px;
     box-sizing: border-box;
 }
 
-@media (max-width: 803px) {
+.primaryControls,
+.actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+.actions {
+    padding-left: 9px;
+    border-left: 1px solid var(--colorControlBorder);
+}
+
+@media (max-width: 600px) {
     .controls {
-        padding: 12px;
+        width: 100%;
+        padding: 10px;
         flex-wrap: wrap;
-        justify-content: center;
+        gap: 8px;
+    }
+
+    .primaryControls,
+    .actions {
+        display: contents;
+    }
+
+    .primaryControls > :first-child {
+        flex: 0 0 100%;
+        margin-bottom: 2px;
+    }
+
+    .primaryControls > :not(:first-child),
+    .actions > * {
+        min-width: 0;
+        flex: 1 1 0;
+    }
+
+    .controls:not(:has(.primaryControls > :nth-child(2))) .actions > :only-child,
+    .controls:not(:has(.actions)) .primaryControls > :nth-child(2):last-child {
+        max-width: 160px;
+        margin-inline: auto;
+        flex: 0 1 160px;
+    }
+}
+
+@media (max-width: 350px) {
+    .controls {
+        padding: 8px;
+        gap: 6px;
     }
 }

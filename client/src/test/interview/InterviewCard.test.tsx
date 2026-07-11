@@ -34,19 +34,9 @@ const renderJobCard = (interview: JobInterview = futureInterview, onDelete = vi.
     return { onDelete };
 };
 
-const calendarTriggerSelector = `button[aria-controls="calendar-${futureInterview.interview_id}-options"]`;
+const getCalendarTrigger = () => screen.getByRole('button', { name: 'Add to calendar' });
 
-const getCalendarTrigger = () => {
-    const trigger = queryCalendarTrigger();
-
-    if (!trigger) {
-        throw new Error('Expected the calendar trigger to be rendered.');
-    }
-
-    return trigger;
-};
-
-const queryCalendarTrigger = () => document.querySelector<HTMLButtonElement>(calendarTriggerSelector);
+const queryCalendarTrigger = () => screen.queryByRole('button', { name: 'Add to calendar' });
 
 describe('InterviewCard calendar options', () => {
     beforeEach(() => {
@@ -121,20 +111,26 @@ describe('InterviewCard calendar options', () => {
     test('opens both calendar actions and Google Calendar in a protected new tab', async () => {
         const open = vi.spyOn(window, 'open').mockReturnValue(null);
         renderJobCard();
+        const trigger = getCalendarTrigger();
 
-        await userEvent.click(getCalendarTrigger());
+        await userEvent.click(trigger);
 
-        expect(screen.getByRole('menuitem', { name: 'Add to Google Calendar' })).toBeInTheDocument();
-        expect(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' })).toBeInTheDocument();
+        const googleCalendarAction = screen.getByRole('button', { name: 'Add to Google Calendar' });
+        expect(screen.getByRole('group', { name: 'Calendar options' })).toBeInTheDocument();
+        expect(googleCalendarAction).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Add to Apple Calendar / Outlook (.ics)' })).toBeInTheDocument();
 
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Google Calendar' }));
+        await userEvent.tab();
+        expect(googleCalendarAction).toHaveFocus();
+        await userEvent.click(googleCalendarAction);
 
         expect(open).toHaveBeenCalledWith(
             expect.stringContaining('https://calendar.google.com/calendar/render?'),
             '_blank',
             'noopener,noreferrer'
         );
-        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: 'Calendar options' })).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
     });
 
     test('downloads an iCalendar file and revokes its temporary URL', async () => {
@@ -151,13 +147,13 @@ describe('InterviewCard calendar options', () => {
         renderJobCard();
 
         await userEvent.click(getCalendarTrigger());
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
 
         expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
         expect(anchorClick).toHaveBeenCalledOnce();
         expect(downloadedFilename).toBe('Acme-Technical-Interview.ics');
         expect(revokeObjectURL).toHaveBeenCalledWith('blob:calendar-event');
-        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: 'Calendar options' })).not.toBeInTheDocument();
     });
 
     test('shows the standard frontend error toast when calendar creation fails', async () => {
@@ -170,10 +166,10 @@ describe('InterviewCard calendar options', () => {
         renderJobCard();
 
         await userEvent.click(getCalendarTrigger());
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Add to Apple Calendar / Outlook (.ics)' }));
 
         expect(await screen.findByText('Unable to create the calendar event. Please try again.')).toBeInTheDocument();
-        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: 'Calendar options' })).not.toBeInTheDocument();
     });
 
     test('closes on Escape, restores trigger focus, and closes on outside click', async () => {
@@ -183,13 +179,13 @@ describe('InterviewCard calendar options', () => {
         await userEvent.click(trigger);
         fireEvent.keyDown(document, { key: 'Escape' });
 
-        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: 'Calendar options' })).not.toBeInTheDocument();
         expect(trigger).toHaveFocus();
 
         await userEvent.click(trigger);
         fireEvent.mouseDown(document.body);
 
-        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: 'Calendar options' })).not.toBeInTheDocument();
     });
 
     test('preserves the existing Delete action', async () => {

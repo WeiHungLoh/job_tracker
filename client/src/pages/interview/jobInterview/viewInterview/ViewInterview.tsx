@@ -184,23 +184,27 @@ const ViewInterview = () => {
     return (
         <div className={`${styles.interviewList} ${isBoardView ? styles.boardLayout : ''}`}>
             <div className={styles.controlsRow}>
-                <ActivityControls>
+                <ActivityControls
+                    actions={
+                        !isLoading && hasInterviews ? (
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='job_interviews.csv'
+                                csvHeaders={INTERVIEW_CSV_HEADERS}
+                                deleteLabel='Delete all interviews'
+                                id='interview-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
+                            />
+                        ) : undefined
+                    }
+                    ariaLabel='Interview view and management controls'
+                >
                     <ApplicationViewToggle
                         ariaLabel='Interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}
                     />
-                    {!isLoading && hasInterviews && (
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='job_interviews.csv'
-                            csvHeaders={INTERVIEW_CSV_HEADERS}
-                            deleteLabel='Delete all interviews'
-                            id='interview-more-options'
-                            isDeleting={isDeletingAll}
-                            onDelete={() => void handleDeleteAll()}
-                        />
-                    )}
                 </ActivityControls>
             </div>
 

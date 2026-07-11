@@ -1,17 +1,19 @@
 .options {
     display: flex;
+    width: min(250px, calc(100vw - 48px));
     flex-direction: column;
 }
 
 .action {
     display: flex;
     width: 100%;
-    padding: 8px;
+    min-height: 38px;
+    padding: 8px 10px;
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
     color: var(--colorText);
     font-size: 0.875rem;
@@ -20,8 +22,19 @@
     box-sizing: border-box;
 }
 
-.action:hover {
-    background: var(--colorBtnSecondaryHoverBg);
+.action:not(:disabled):hover {
+    background: var(--colorNavHoverBg);
+}
+
+.action:focus-visible {
+    outline: 2px solid var(--colorControlFocusRing);
+    outline-offset: -2px;
+}
+
+.action:disabled {
+    color: var(--colorTextSecondary);
+    cursor: not-allowed;
+    opacity: 0.58;
 }
 
 .action svg {
@@ -37,4 +50,10 @@
     margin: 6px 0;
     border: 0;
     background: var(--colorCardBorder);
+}
+
+@media (max-width: 600px) {
+    .action {
+        min-height: 42px;
+    }
 }

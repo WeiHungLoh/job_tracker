@@ -1,11 +1,10 @@
 .checkboxFilter {
-    font-size: 0.75rem;
     text-align: center;
 }
 
 .checkboxFilter .dropdown {
-    min-width: min(120px, calc(100vw - 16px));
-    max-height: 250px;
+    min-width: min(168px, calc(100vw - 16px));
+    max-height: min(250px, var(--dropdown-max-height, 250px));
     overflow-y: auto;
 }
 
@@ -14,11 +13,18 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 0;
+    min-height: 36px;
+    padding: 5px 8px;
+    border-radius: 8px;
     color: var(--colorText);
     font-size: 0.875rem;
     white-space: nowrap;
     cursor: pointer;
+    box-sizing: border-box;
+}
+
+.option:hover {
+    background: var(--colorNavHoverBg);
 }
 
 .option input {
@@ -62,6 +68,12 @@
 }
 
 .option input:focus-visible + .checkbox {
-    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline: 2px solid var(--colorControlFocusRing);
     outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+    .option {
+        min-height: 42px;
+    }
 }

@@ -199,23 +199,27 @@ const ViewArchivedInterview = () => {
     return (
         <div className={`${styles.interviewList} ${isBoardView ? styles.boardLayout : ''}`}>
             <div className={styles.controlsRow}>
-                <ActivityControls>
+                <ActivityControls
+                    actions={
+                        !isLoading && hasInterviews ? (
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='archived_job_interviews.csv'
+                                csvHeaders={INTERVIEW_CSV_HEADERS}
+                                deleteLabel='Delete all archived interviews'
+                                id='archived-interview-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
+                            />
+                        ) : undefined
+                    }
+                    ariaLabel='Archived interview view and management controls'
+                >
                     <ApplicationViewToggle
                         ariaLabel='Archived interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}
                     />
-                    {!isLoading && hasInterviews && (
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='archived_job_interviews.csv'
-                            csvHeaders={INTERVIEW_CSV_HEADERS}
-                            deleteLabel='Delete all archived interviews'
-                            id='archived-interview-more-options'
-                            isDeleting={isDeletingAll}
-                            onDelete={() => void handleDeleteAll()}
-                        />
-                    )}
                 </ActivityControls>
             </div>
 

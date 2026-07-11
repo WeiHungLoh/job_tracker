@@ -25,13 +25,8 @@
 }
 
 .row:focus-visible {
-    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline: 2px solid var(--colorControlFocusRing);
     outline-offset: 1px;
-}
-
-.row:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
 }
 
 .switch {
@@ -70,8 +65,8 @@
 }
 
 .switch.toggled {
-    background-color: var(--colorSwitchOnGreen);
-    border-color: var(--colorSwitchOnGreen);
+    background-color: var(--colorPrimary);
+    border-color: var(--colorPrimary);
 }
 
 .row:hover .switch:not(.toggled) {
@@ -89,4 +84,11 @@
 
 .row:active .switch.toggled .thumb {
     transform: translate3d(var(--switch-thumb-translate), -50%, 0) scaleX(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .switch,
+    .thumb {
+        transition: none;
+    }
 }

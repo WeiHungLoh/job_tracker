@@ -27,6 +27,7 @@ const CheckboxFilter = <Option extends string>({
     }, [savedOptions]);
 
     const allSelected = options.length > 0 && options.every((option) => selectedOptions.includes(option));
+    const someSelected = selectedOptions.length > 0 && !allSelected;
 
     const applySelection = async (nextOptions: Option[]) => {
         setSelectedOptions(nextOptions);
@@ -67,11 +68,23 @@ const CheckboxFilter = <Option extends string>({
             containerClassName={styles.checkboxFilter}
             disabled={disabled}
             dropdownClassName={styles.dropdown}
+            dropdownAriaLabel={`${buttonLabel} options`}
+            dropdownRole='group'
             id={id}
             label={buttonLabel}
+            triggerStyle='activity'
         >
             <label className={styles.option}>
-                <input checked={allSelected} onChange={handleShowAllToggle} type='checkbox' />
+                <input
+                    checked={allSelected}
+                    onChange={handleShowAllToggle}
+                    ref={(input) => {
+                        if (input) {
+                            input.indeterminate = someSelected;
+                        }
+                    }}
+                    type='checkbox'
+                />
                 <span aria-hidden='true' className={styles.checkbox} />
                 <span>Show All</span>
             </label>

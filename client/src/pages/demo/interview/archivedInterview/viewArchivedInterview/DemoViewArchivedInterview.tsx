@@ -108,7 +108,22 @@ const DemoViewArchivedInterview = () => {
     return (
         <div className={`${styles.interviewList} ${isBoardView ? styles.boardLayout : ''}`}>
             <div className={styles.controlsRow}>
-                <ActivityControls>
+                <ActivityControls
+                    actions={
+                        hasInterviews ? (
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='demo_archived_job_interviews.csv'
+                                csvHeaders={INTERVIEW_CSV_HEADERS}
+                                deleteLabel='Delete all archived interviews'
+                                id='demo-archived-interview-more-options'
+                                isDeleting={isDeletingAll}
+                                onDelete={() => void handleDeleteAll()}
+                            />
+                        ) : undefined
+                    }
+                    ariaLabel='Demo archived interview view and management controls'
+                >
                     <ApplicationViewToggle
                         ariaLabel='Archived interview view'
                         currentView={viewMode}
@@ -116,17 +131,6 @@ const DemoViewArchivedInterview = () => {
                             void updatePreferences({ archived_interview_view_mode: nextViewMode })
                         }
                     />
-                    {hasInterviews && (
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='demo_archived_job_interviews.csv'
-                            csvHeaders={INTERVIEW_CSV_HEADERS}
-                            deleteLabel='Delete all archived interviews'
-                            id='demo-archived-interview-more-options'
-                            isDeleting={isDeletingAll}
-                            onDelete={() => void handleDeleteAll()}
-                        />
-                    )}
                 </ActivityControls>
             </div>
             {!hasInterviews && <EmptyState {...emptyState} />}

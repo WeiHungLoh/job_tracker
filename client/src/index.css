@@ -36,6 +36,13 @@
     --colorOverlayBg: #f4f3f8;
     --colorPublicPageBg: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%),
         var(--colorPageBg);
+    --colorControlSurface: #fffafb;
+    --colorControlMutedSurface: #f8f3f5;
+    --colorControlBorder: #ead7de;
+    --colorControlShadow: rgb(74 40 54 / 10%);
+    --colorControlFocusRing: #c82457;
+    --colorSelectedControlBg: #d12b5a;
+    --colorSelectedControlText: #fff;
 
     /* Text */
     --colorText: #343a40;
@@ -69,9 +76,10 @@
 
     /* Nav */
     --colorNavHoverBg: rgb(241 53 109 / 8%);
-    --colorNavBorder: #f0d8e0;
-    --colorNavActiveText: red;
-    --colorNavInactiveText: blue;
+    --colorNavBorder: #ead7de;
+    --colorNavActiveBg: rgb(241 53 109 / 10%);
+    --colorNavActiveText: #c82457;
+    --colorNavInactiveText: #514850;
 
     /* Buttons */
     --colorBtnPrimaryText: #fff;
@@ -135,7 +143,6 @@
     --colorSwitchOff: #b7b9ba;
     --colorSwitchOffBorder: #aaa;
     --colorSwitchThumb: #ffff;
-    --colorSwitchOnGreen: #15b58e;
     --colorSwitchHoverBorder: #6f6f6f;
 
     /* Filter select */
@@ -175,6 +182,13 @@
     --colorOverlayBg: #16161c;
     --colorPublicPageBg: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%),
         var(--colorPageBg);
+    --colorControlSurface: #191920;
+    --colorControlMutedSurface: #25252f;
+    --colorControlBorder: #3a3a48;
+    --colorControlShadow: rgb(0 0 0 / 30%);
+    --colorControlFocusRing: #ff86a6;
+    --colorSelectedControlBg: #b92f58;
+    --colorSelectedControlText: #fff;
 
     /* Text */
     --colorText: #dee2e6;
@@ -208,9 +222,10 @@
 
     /* Nav */
     --colorNavHoverBg: rgb(244 80 126 / 12%);
-    --colorNavBorder: #333344;
-    --colorNavActiveText: #f4507e;
-    --colorNavInactiveText: #6ea8fe;
+    --colorNavBorder: #3a3a48;
+    --colorNavActiveBg: rgb(244 80 126 / 16%);
+    --colorNavActiveText: #ff86a6;
+    --colorNavInactiveText: #d0cbd2;
 
     /* Buttons */
     --colorBtnPrimaryText: #fff;
@@ -284,7 +299,6 @@
     --colorSwitchOff: #495057;
     --colorSwitchOffBorder: #6c757d;
     --colorSwitchThumb: #dee2e6;
-    --colorSwitchOnGreen: #11997a;
     --colorSwitchHoverBorder: #adb5bd;
 
     /* Filter select */

@@ -125,7 +125,30 @@ const DemoViewArchivedApplication = () => {
     return (
         <div className={`${styles.archivedApplicationList} ${isBoardView ? styles.boardLayout : ''}`}>
             <div className={styles.controlsRow}>
-                <ActivityControls>
+                <ActivityControls
+                    actions={
+                        state.archivedApplications.length > 0 ? (
+                            <MoreOptions
+                                csvData={csvData}
+                                csvFilename='demo_archived_job_applications.csv'
+                                csvHeaders={APPLICATION_CSV_HEADERS}
+                                deleteLabel='Delete all archived applications'
+                                id='demo-archived-application-more-options'
+                                deleteDisabled={pendingBulkAction === 'unarchive'}
+                                isDeleting={pendingBulkAction === 'delete'}
+                                middleAction={{
+                                    disabled: pendingBulkAction === 'delete',
+                                    icon: 'archive',
+                                    isLoading: pendingBulkAction === 'unarchive',
+                                    label: 'Unarchive all applications',
+                                    onClick: () => void handleBulkAction('unarchive'),
+                                }}
+                                onDelete={() => void handleBulkAction('delete')}
+                            />
+                        ) : undefined
+                    }
+                    ariaLabel='Demo archived application view and management controls'
+                >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter
                         buttonLabel='Filter by'
@@ -146,25 +169,6 @@ const DemoViewArchivedApplication = () => {
                                 label='Show notes'
                             />
                         </DisplayOptions>
-                    )}
-                    {state.archivedApplications.length > 0 && (
-                        <MoreOptions
-                            csvData={csvData}
-                            csvFilename='demo_archived_job_applications.csv'
-                            csvHeaders={APPLICATION_CSV_HEADERS}
-                            deleteLabel='Delete all archived applications'
-                            id='demo-archived-application-more-options'
-                            deleteDisabled={pendingBulkAction === 'unarchive'}
-                            isDeleting={pendingBulkAction === 'delete'}
-                            middleAction={{
-                                disabled: pendingBulkAction === 'delete',
-                                icon: 'archive',
-                                isLoading: pendingBulkAction === 'unarchive',
-                                label: 'Unarchive all applications',
-                                onClick: () => void handleBulkAction('unarchive'),
-                            }}
-                            onDelete={() => void handleBulkAction('delete')}
-                        />
                     )}
                 </ActivityControls>
             </div>

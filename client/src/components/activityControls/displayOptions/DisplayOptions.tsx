@@ -3,7 +3,21 @@ import ControlDropdown from '../ControlDropdown';
 import styles from './DisplayOptions.module.css';
 
 const DisplayOptions = ({ children, id }: DisplayOptionsProps) => (
-    <ControlDropdown id={id} label='Display options'>
+    <ControlDropdown
+        dropdownAriaLabel='Display options'
+        dropdownRole='group'
+        id={id}
+        label={
+            <>
+                <span className={styles.fullLabel}>Display options</span>
+                <span aria-hidden='true' className={styles.compactLabel}>
+                    Display
+                </span>
+            </>
+        }
+        triggerAriaLabel='Display options'
+        triggerStyle='activity'
+    >
         <div className={styles.options}>{children}</div>
     </ControlDropdown>
 );

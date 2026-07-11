@@ -66,6 +66,7 @@ describe('App routing and authentication behavior', () => {
     beforeEach(() => {
         fetch.mockReset();
         localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
+        localStorage.removeItem('theme');
         fetch.mockImplementation(async (url: string) => {
             if (url.endsWith('/user-preferences')) {
                 return jsonResponse(mockPreferences);
@@ -76,6 +77,7 @@ describe('App routing and authentication behavior', () => {
 
     afterEach(() => {
         localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
+        localStorage.removeItem('theme');
     });
 
     test('renders SignIn at the root path', async () => {
@@ -159,6 +161,33 @@ describe('App routing and authentication behavior', () => {
             await waitFor(() => expect(screen.getByRole('navigation')).toBeInTheDocument());
         }
     );
+
+    test('exposes the active page and keeps archive navigation separate from utility actions', async () => {
+        renderRoute(routes.addApplication);
+
+        await screen.findByLabelText(/company name/i);
+        expect(screen.getByRole('navigation', { name: 'Primary navigation' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Add Job Application' })).toHaveAttribute('aria-current', 'page');
+
+        await userEvent.click(screen.getByRole('button', { name: 'Show Archived' }));
+        expect(screen.getByRole('link', { name: 'View Archived Applications' })).toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Add Job Application' })).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Show Active' }));
+        expect(screen.getByRole('link', { name: 'Add Job Application' })).toHaveAttribute('aria-current', 'page');
+    });
+
+    test('labels the production theme action with the theme it will switch to', async () => {
+        renderRoute(routes.addApplication);
+
+        await screen.findByLabelText(/company name/i);
+        const switchToDark = screen.getByRole('button', { name: 'Switch to dark mode' });
+        await userEvent.click(switchToDark);
+
+        expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+        expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeInTheDocument();
+        expect(localStorage.getItem('theme')).toBe('dark');
+    });
 
     test('hides navigation bar on public routes like "/sign-up"', async () => {
         fetch.mockResolvedValueOnce(response(false, 401));
@@ -295,6 +324,18 @@ describe('App routing and authentication behavior', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    test('gives the demo navbar the same accessible theme behavior', async () => {
+        renderRoute(routes.demoViewApplications);
+
+        expect(await screen.findByText(/HorizonAI Labs/i)).toBeInTheDocument();
+        expect(screen.getByRole('navigation', { name: 'Demo navigation' })).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Switch to dark mode' }));
+
+        expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+        expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeInTheDocument();
+    });
+
     test('displays page 404 not found on unknown routes without checking authentication', () => {
         renderRoute('/addassignment');
 
@@ -342,5 +383,28 @@ describe('App routing and authentication behavior', () => {
         await waitFor(() => expect(screen.getByRole('navigation')).toBeInTheDocument());
         await userEvent.click(screen.getByText(/logout/i));
         await waitFor(() => expect(screen.getByText(/Sign in to job tracker/i)).toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/authentication/sessions/current`, {
+            method: 'DELETE',
+        });
+    });
+
+    test('keeps the current page visible and shows the backend message when logout fails', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return jsonResponse(mockPreferences);
+            }
+            if (url.endsWith('/authentication/sessions/current') && init?.method === 'DELETE') {
+                return jsonResponse({ message: 'Sign out is temporarily unavailable.' }, 503);
+            }
+            return response();
+        });
+        renderRoute(routes.addApplication);
+
+        await screen.findByLabelText(/company name/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
+
+        expect(await screen.findByText('Sign out is temporarily unavailable.')).toBeInTheDocument();
+        expect(screen.getByLabelText(/company name/i)).toBeInTheDocument();
+        expect(screen.getByRole('navigation', { name: 'Primary navigation' })).toBeInTheDocument();
     });
 });

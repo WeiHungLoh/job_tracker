@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { type MouseEvent, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from '../icon/Icon';
 import PrimaryButton from '../button/PrimaryButton';
 import { routes } from '../../routes';
@@ -27,7 +27,8 @@ const Navbar = () => {
     const location = useLocation();
     const currentLocation = location.pathname;
     const navigate = useNavigate();
-    const [archived, setArchived] = useState<boolean>(false);
+    const [archived, setArchived] = useState<boolean>(() => ARCHIVED_LOCATIONS.includes(currentLocation));
+    const activeLinkRef = useRef<HTMLAnchorElement>(null);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
     const { theme, toggleTheme } = useTheme();
@@ -36,8 +37,11 @@ const Navbar = () => {
         setArchived(ARCHIVED_LOCATIONS.includes(currentLocation));
     }, [currentLocation]);
 
-    const handleSignOut = async (event: MouseEvent) => {
-        event.preventDefault();
+    useEffect(() => {
+        activeLinkRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    }, [archived, currentLocation]);
+
+    const handleSignOut = async () => {
         try {
             await api.authentication.logout();
             navigate(routes.signIn, { state: { fromLogout: true } });
@@ -49,31 +53,59 @@ const Navbar = () => {
     const navLinks = archived ? ARCHIVED_NAV_LINKS : ACTIVE_NAV_LINKS;
 
     return (
-        <nav className={styles.navbar}>
-            <h1>Job Tracker</h1>
-            <div className={styles.links}>
-                {navLinks.map(({ to, label }) => (
-                    <NavLink key={to} to={to} className={currentLocation === to ? styles.active : styles.inactive}>
-                        {label}
-                    </NavLink>
-                ))}
-                <PrimaryButton
-                    variant='navigation'
-                    type='button'
-                    className={styles.archiveStatus}
-                    onClick={() => setArchived((isArchived) => !isArchived)}
-                >
-                    <Icon name={archived ? 'archive' : 'activeApplications'} />
-                    <span>{archived ? 'Show Active' : 'Show Archived'}</span>
-                </PrimaryButton>
+        <nav aria-label='Primary navigation' className={styles.navbar}>
+            <div className={styles.navbarContent}>
+                <div className={styles.brand}>
+                    <span className={styles.brandIcon}>
+                        <Icon name='briefcase' size={17} />
+                    </span>
+                    <h1>Job Tracker</h1>
+                </div>
 
-                <PrimaryButton variant='navigation' type='button' className={styles.inactive} onClick={toggleTheme}>
-                    <Icon name={theme === 'dark' ? 'lightMode' : 'darkMode'} />
-                </PrimaryButton>
+                <div aria-label={archived ? 'Archived pages' : 'Active pages'} className={styles.primaryLinks}>
+                    {navLinks.map(({ to, label }) => (
+                        <NavLink
+                            className={currentLocation === to ? styles.active : styles.inactive}
+                            key={to}
+                            ref={currentLocation === to ? activeLinkRef : undefined}
+                            to={to}
+                        >
+                            {label}
+                        </NavLink>
+                    ))}
+                </div>
 
-                <NavLink to={routes.signIn} className={styles.inactive} onClick={handleSignOut}>
-                    Logout
-                </NavLink>
+                <div className={styles.utilityActions}>
+                    <PrimaryButton
+                        aria-label={archived ? 'Show Active' : 'Show Archived'}
+                        className={styles.archiveStatus}
+                        onClick={() => setArchived((isArchived) => !isArchived)}
+                        type='button'
+                        variant='navigation'
+                    >
+                        <Icon name={archived ? 'archive' : 'activeApplications'} size={18} />
+                        <span className={styles.utilityLabel}>{archived ? 'Show Active' : 'Show Archived'}</span>
+                    </PrimaryButton>
+
+                    <PrimaryButton
+                        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                        className={styles.iconAction}
+                        onClick={toggleTheme}
+                        type='button'
+                        variant='navigation'
+                    >
+                        <Icon name={theme === 'dark' ? 'lightMode' : 'darkMode'} size={20} />
+                    </PrimaryButton>
+
+                    <PrimaryButton
+                        className={styles.utilityAction}
+                        onClick={() => void handleSignOut()}
+                        type='button'
+                        variant='navigation'
+                    >
+                        Logout
+                    </PrimaryButton>
+                </div>
             </div>
         </nav>
     );
