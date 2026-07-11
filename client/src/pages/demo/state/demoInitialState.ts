@@ -13,6 +13,8 @@ const defaultDemoPreferences = {
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: true,
     archived_application_view_mode: 'list',
+    interview_view_mode: 'list',
+    archived_interview_view_mode: 'list',
 } as const;
 
 type ApplicationSeed = {
@@ -350,6 +352,39 @@ const createInterviews = (now: Date): JobInterview[] => [
         interview_type: 'Final discussion',
         interview_notes: 'Offer details shared after final round.',
     },
+    {
+        interview_id: 407,
+        job_id: 108,
+        company_name: 'Atlas RecruitTech',
+        job_title: 'Software Engineer, Platform',
+        job_status: 'Interview',
+        interview_date: '2027-03-18T06:00:00.000Z',
+        interview_location: 'Zoom',
+        interview_type: 'System design interview',
+        interview_notes: 'Review platform scaling and API design examples.',
+    },
+    {
+        interview_id: 408,
+        job_id: 109,
+        company_name: 'Harbour Analytics',
+        job_title: 'Data Product Engineer',
+        job_status: 'Interview',
+        interview_date: '2027-11-04T03:00:00.000Z',
+        interview_location: 'HarbourFront office',
+        interview_type: 'Product case interview',
+        interview_notes: '',
+    },
+    {
+        interview_id: 409,
+        job_id: 110,
+        company_name: 'NovaStack',
+        job_title: 'TypeScript Engineer',
+        job_status: 'Interview',
+        interview_date: '2028-06-22T08:00:00.000Z',
+        interview_location: 'Microsoft Teams',
+        interview_type: 'Technical panel interview',
+        interview_notes: 'Prepare TypeScript architecture tradeoffs.',
+    },
 ];
 
 const createArchivedInterviews = (now: Date): ArchivedJobInterview[] => [
@@ -410,5 +445,5 @@ export const createDemoInitialState = (now = new Date()): DemoState => ({
         archived_application_job_statuses: [...defaultDemoPreferences.archived_application_job_statuses],
     },
     nextApplicationId: 121,
-    nextInterviewId: 407,
+    nextInterviewId: 410,
 });

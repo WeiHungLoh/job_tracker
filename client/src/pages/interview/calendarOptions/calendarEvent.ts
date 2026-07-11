@@ -31,6 +31,11 @@ export const isFutureInterviewDate = (interviewDate: string, now = new Date()): 
     return !Number.isNaN(date.getTime()) && date.getTime() > now.getTime();
 };
 
+export const isOverdueInterviewDate = (interviewDate: string, now = new Date()): boolean => {
+    const date = new Date(interviewDate);
+    return !Number.isNaN(date.getTime()) && date.getTime() < now.getTime();
+};
+
 export const formatGoogleCalendarTimestamp = (date: Date): string => {
     if (Number.isNaN(date.getTime())) {
         throw new Error('Invalid calendar date');

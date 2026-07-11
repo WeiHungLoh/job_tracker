@@ -3,11 +3,17 @@
     padding: 16px;
     background: var(--colorCardBg);
     border: 1px solid var(--colorCardBorder);
+    border-left: 5px solid var(--colorStatusInterview);
     border-radius: 15px;
     display: flex;
     gap: 60px;
     margin-bottom: 20px;
     box-sizing: border-box;
+    min-width: 0;
+}
+
+.overdue {
+    border-left-color: color-mix(in srgb, var(--colorStatusInterview) 30%, transparent);
 }
 
 .buttonGroup {
@@ -24,8 +30,13 @@
 .interviewContent {
     color: var(--colorTextSecondary);
     overflow-wrap: anywhere;
-    gap: 16px;
     width: 500px;
+    min-width: 0;
+}
+
+.interviewContent p {
+    margin: 8px 0;
+    line-height: 1.45;
 }
 
 .archived .interviewContent {
@@ -56,7 +67,7 @@
 }
 
 .interviewContent h2 {
-    margin-top: 0;
+    margin: 0 0 14px;
     font-size: 1.5rem;
     color: var(--colorText);
 }
@@ -66,7 +77,7 @@
     color: var(--colorText);
 }
 
-.interviewContent p:last-of-type {
+.timeLeft {
     font-weight: bold;
     color: var(--colorTimeLeft);
 }
@@ -89,6 +100,37 @@
 
 .interviewContent a:hover {
     background-color: var(--colorLinkHoverBg);
+}
+
+.interviewContent a:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}
+
+.board {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100%;
+    margin: 0 auto;
+    flex-direction: column;
+    gap: 0;
+    overflow: visible;
+    border-top: 4px solid var(--colorStatusInterview);
+}
+
+.board.overdue {
+    border-top-color: color-mix(in srgb, var(--colorStatusInterview) 30%, transparent);
+}
+
+.board .interviewContent {
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.board.archived .interviewContent {
+    word-break: normal;
+    overflow-wrap: anywhere;
 }
 
 @media (max-width: 803px) {
@@ -121,5 +163,13 @@
 
     .interviewContent a {
         font-size: 0.7rem;
+    }
+
+    .board {
+        overflow: visible;
+    }
+
+    .board .interviewContent {
+        min-width: 0;
     }
 }

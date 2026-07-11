@@ -1,0 +1,53 @@
+.actions {
+    margin-top: 10px;
+}
+
+.actions summary {
+    display: flex;
+    min-height: 32px;
+    align-items: center;
+    color: var(--colorPrimary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.actions summary:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}
+
+.actionPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 8px;
+}
+
+.actionButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.actionButtons > * {
+    width: 100%;
+    min-width: 0;
+}
+
+.actionButtons button {
+    width: 100%;
+}
+
+.compactActions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.compactActions > * {
+    width: auto;
+}
+
+.compactActions button {
+    width: auto;
+}

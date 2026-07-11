@@ -14,6 +14,7 @@ export const endpointConfig = {
         },
         listWeeklyApplications: { url: '/job-applications/weekly-counts', verb: 'GET' },
         listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET' },
+        getSummary: { url: '/job-applications/summary', verb: 'GET' },
         createApplication: { url: '/job-applications', verb: 'POST' },
         deleteApplication: {
             url: '/job-applications/:jobId',
@@ -26,6 +27,7 @@ export const endpointConfig = {
     },
     interview: {
         listInterviews: { url: '/job-interviews', verb: 'GET' },
+        getSummary: { url: '/job-interviews/summary', verb: 'GET' },
         createInterview: { url: '/job-interviews', verb: 'POST' },
         deleteInterview: {
             url: '/job-interviews/:interviewId',
@@ -41,6 +43,9 @@ export const endpointConfig = {
             fieldMap: { jobStatuses: 'query' },
         },
         archiveApplication: { url: '/archived-job-applications', verb: 'PATCH' },
+        archiveAllApplications: { url: '/archived-job-applications/archive-all', verb: 'PATCH' },
+        unarchiveAllApplications: { url: '/archived-job-applications/unarchive-all', verb: 'PATCH' },
+        getSummary: { url: '/archived-job-applications/summary', verb: 'GET' },
         deleteApplication: {
             url: '/archived-job-applications/:archivedJobId',
             verb: 'DELETE',
@@ -55,6 +60,7 @@ export const endpointConfig = {
     },
     archivedInterview: {
         listInterviews: { url: '/archived-job-interviews', verb: 'GET' },
+        getSummary: { url: '/archived-job-interviews/summary', verb: 'GET' },
         deleteInterview: {
             url: '/archived-job-interviews/:archivedInterviewId',
             verb: 'DELETE',

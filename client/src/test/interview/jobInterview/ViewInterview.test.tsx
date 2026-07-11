@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewInterview from '../../../pages/interview/jobInterview/viewInterview/ViewInterview';
 import { render } from '../../renderWithToast';
@@ -43,9 +43,12 @@ describe('Job interview viewer flow', () => {
     beforeEach(() => {
         vi.resetAllMocks();
         fetch.mockReset();
-        fetch.mockImplementation(async (_url: string, init?: RequestInit) =>
-            init?.method === 'GET' ? response([mockInterview]) : response(undefined, 204)
-        );
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-interviews/summary')) {
+                return response({ interview_count: 1 });
+            }
+            return init?.method === 'GET' ? response([mockInterview]) : response(undefined, 204);
+        });
     });
 
     test('displays job interview details and action buttons', async () => {
@@ -62,7 +65,7 @@ describe('Job interview viewer flow', () => {
         expect(screen.getByText(/hr/i)).toBeInTheDocument();
         expect(screen.getByText(/bring resume/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
-        expect(screen.queryByRole('group', { name: 'Application view' })).not.toBeInTheDocument();
+        expect(screen.getByRole('group', { name: 'Interview view' })).toBeInTheDocument();
         expect(screen.queryByRole('region', { name: 'Application board' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all interviews/i })).toBeInTheDocument();
@@ -81,6 +84,7 @@ describe('Job interview viewer flow', () => {
         expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
         expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument();
         expect(screen.queryByText(/no job interview found/i)).not.toBeInTheDocument();
+        expect(document.querySelector('br')).not.toBeInTheDocument();
     });
 
     test('deletes interview after user confirms', async () => {
@@ -133,13 +137,19 @@ describe('Job interview viewer flow', () => {
         await clickConfirmedAction(screen.getByRole('button', { name: 'Delete all interviews' }));
 
         await waitFor(() =>
-            expect(mockConfirm).toHaveBeenCalledWith({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all job interviews? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            })
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: 'Confirm Delete All',
+                    description:
+                        'Delete all 1 active interview you own? This affects every active interview in your account. This action is permanent and cannot be undone.',
+                    confirmationText: 'Delete All',
+                    cancellationText: 'Cancel',
+                    confirmationButtonProps: expect.objectContaining({
+                        autoFocus: false,
+                        onKeyDown: expect.any(Function),
+                    }),
+                })
+            )
         );
 
         await waitFor(() =>
@@ -161,6 +171,9 @@ describe('Job interview viewer flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No interviews yet' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'No interviews yet' }).closest('section')?.className).toContain(
+            'followsControls'
+        );
         expect(screen.getByText(/add interviews after creating a job application/i)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'View applications' })).toHaveAttribute('href', '/application/view');
         expect(screen.queryByRole('link', { name: 'Add interview' })).not.toBeInTheDocument();
@@ -181,5 +194,96 @@ describe('Job interview viewer flow', () => {
         expect(
             await screen.findByText(/this job application is not available in active applications/i)
         ).toBeInTheDocument();
+    });
+
+    test('renders only the responsive interview Board skeleton for a saved Board preference', () => {
+        fetch.mockImplementation(async () => await new Promise<ReturnType<typeof response>>(() => undefined));
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>,
+            { initialPreferences: { interview_view_mode: 'board' } }
+        );
+
+        expect(screen.getByRole('status', { name: 'Loading interviews' })).toBeInTheDocument();
+        expect(screen.getAllByTestId('skeleton-card')).toHaveLength(6);
+        expect(screen.queryByRole('status', { name: 'Loading results' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('status', { name: 'Loading board' })).not.toBeInTheDocument();
+    });
+
+    test('switches the loaded array to Board without refetching or changing order', async () => {
+        const secondInterview = { ...mockInterview, company_name: 'Second Company', interview_id: 2, job_id: 2 };
+        fetch.mockResolvedValue(response([mockInterview, secondInterview]));
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>
+        );
+
+        const list = await screen.findByRole('region', { name: 'Active interviews' });
+        expect(
+            within(list)
+                .getAllByRole('article')
+                .map((card) => card.getAttribute('aria-label'))
+        ).toEqual(['ABC Pte Ltd interview', 'Second Company interview']);
+
+        await userEvent.click(
+            within(screen.getByRole('group', { name: 'Interview view' })).getByRole('button', {
+                name: 'Board',
+            })
+        );
+
+        await waitFor(() => expect(list).toHaveAttribute('data-layout', 'board'));
+        expect(
+            within(list)
+                .getAllByRole('article')
+                .map((card) => card.getAttribute('aria-label'))
+        ).toEqual(['ABC Pte Ltd interview', 'Second Company interview']);
+        expect(within(list).queryByText(/time left/i)).not.toBeInTheDocument();
+        expect(within(list).queryByText(/notes:/i)).not.toBeInTheDocument();
+        expect(
+            within(list).queryByRole('link', { name: /review corresponding job application/i })
+        ).not.toBeInTheDocument();
+        expect(within(list).getAllByText('Actions')).toHaveLength(2);
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('keeps the current view and shows the standard toast when saving the preference fails', async () => {
+        const updatePreferences = vi.fn().mockRejectedValue(new Error('save failed'));
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByText(/abc pte ltd/i);
+        const viewToggle = screen.getByRole('group', { name: 'Interview view' });
+        await userEvent.click(within(viewToggle).getByRole('button', { name: 'Board' }));
+
+        expect(await screen.findByText('Unable to save display preferences. Please try again.')).toBeInTheDocument();
+        expect(within(viewToggle).getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true');
+        expect(within(viewToggle).getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    test('blocks corresponding navigation before the API when applications use Board view', async () => {
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>,
+            { initialPreferences: { application_view_mode: 'board' } }
+        );
+
+        const link = await screen.findByRole('link', { name: /review corresponding job application/i });
+        await userEvent.click(link);
+
+        expect(
+            await screen.findByText(
+                'The corresponding job application can only be opened while active applications are displayed in List view. Switch to List view and try again.'
+            )
+        ).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledTimes(1);
     });
 });

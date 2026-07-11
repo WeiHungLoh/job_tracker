@@ -1,0 +1,24 @@
+.interviews {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 20px;
+    align-items: stretch;
+}
+
+@media (max-width: 430px) {
+    .board {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+}

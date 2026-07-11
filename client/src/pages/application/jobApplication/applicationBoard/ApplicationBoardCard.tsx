@@ -6,6 +6,7 @@ import { JOB_STATUS_SORT_ORDER, type JobStatus } from '../../models';
 import { getApplicationBoardStatusClassName } from '../../applicationBoard/statusClassNames';
 import type { ApplicationBoardCardProps } from './models';
 import styles from '../../applicationBoard/ApplicationBoard.module.css';
+import BoardCardActions from '../../../../components/boardCardActions/BoardCardActions';
 
 const ApplicationBoardCard = ({
     application,
@@ -86,24 +87,9 @@ const ApplicationBoardCard = ({
                 </select>
             </label>
 
-            <details className={styles.actions}>
-                <summary>Actions</summary>
-                <div className={styles.actionPanel}>
-                    {application.job_posting_url !== '' && (
-                        <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
-                            Open job posting
-                        </a>
-                    )}
-                    <label className={styles.notesField}>
-                        <span>Edit notes</span>
-                        <textarea
-                            maxLength={FIELD_MAX_LENGTHS.notes}
-                            onChange={(event) => onEditNotes(application.job_id, event.target.value)}
-                            placeholder='Add your notes here'
-                            value={note}
-                        />
-                    </label>
-                    <div className={styles.actionButtons}>
+            <BoardCardActions
+                actions={
+                    <>
                         <PrimaryButton
                             isLoading={isArchiving}
                             onClick={() => onArchive(application.job_id)}
@@ -120,9 +106,24 @@ const ApplicationBoardCard = ({
                         >
                             Delete
                         </PrimaryButton>
-                    </div>
-                </div>
-            </details>
+                    </>
+                }
+            >
+                {application.job_posting_url !== '' && (
+                    <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
+                        Open job posting
+                    </a>
+                )}
+                <label className={styles.notesField}>
+                    <span>Edit notes</span>
+                    <textarea
+                        maxLength={FIELD_MAX_LENGTHS.notes}
+                        onChange={(event) => onEditNotes(application.job_id, event.target.value)}
+                        placeholder='Add your notes here'
+                        value={note}
+                    />
+                </label>
+            </BoardCardActions>
         </article>
     );
 };

@@ -1,18 +1,13 @@
 import type { ConfirmOptions } from 'material-ui-confirm';
 
-export const createDeleteConfirmation = (target: string, deleteAll = false): ConfirmOptions => {
-    const targetLabel = deleteAll ? `all ${target}s` : `this ${target}`;
-
+export const createDeleteConfirmation = (target: string): ConfirmOptions => {
     const options: ConfirmOptions = {
         title: 'Confirm Deletion',
-        description: `Are you sure you want to delete ${targetLabel}? This action is permanent and cannot be undone.`,
-        confirmationText: deleteAll ? 'Delete All' : 'Delete',
+        description: `Are you sure you want to delete this ${target}? This action is permanent and cannot be undone.`,
+        confirmationText: 'Delete',
         cancellationText: 'Cancel',
+        confirmationButtonProps: { autoFocus: true },
     };
-
-    if (!deleteAll) {
-        options.confirmationButtonProps = { autoFocus: true };
-    }
 
     return options;
 };

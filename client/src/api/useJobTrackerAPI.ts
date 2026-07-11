@@ -1,12 +1,18 @@
 import type {
     ArchiveApplicationRequest,
     ArchiveApplicationResponse,
+    ArchiveAllApplicationsRequest,
+    ArchiveAllApplicationsResponse,
     DeleteAllArchivedApplicationsRequest,
     DeleteAllArchivedApplicationsResponse,
     DeleteArchivedApplicationRequest,
     DeleteArchivedApplicationResponse,
     ListArchivedApplicationsRequest,
     ListArchivedApplicationsResponse,
+    GetApplicationCollectionSummaryRequest,
+    GetApplicationCollectionSummaryResponse,
+    UnarchiveAllApplicationsRequest,
+    UnarchiveAllApplicationsResponse,
     UnarchiveApplicationRequest,
     UnarchiveApplicationResponse,
 } from '../pages/application/models';
@@ -43,6 +49,8 @@ import type {
     ListArchivedInterviewsResponse,
     ListInterviewsRequest,
     ListInterviewsResponse,
+    GetInterviewCollectionSummaryRequest,
+    GetInterviewCollectionSummaryResponse,
 } from '../pages/interview/models';
 import type {
     GetUserPreferencesRequest,
@@ -115,6 +123,13 @@ export const useJobTrackerAPI = () => {
             );
         };
 
+        const getApplicationSummary = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetApplicationCollectionSummaryRequest,
+                GetApplicationCollectionSummaryResponse
+            >(null, endpointConfig.application.getSummary);
+        };
+
         const createApplication = async (req: CreateApplicationRequest) => {
             return await makeAuthenticatedJobTrackerAPIRequest<CreateApplicationRequest, CreateApplicationResponse>(
                 req,
@@ -157,6 +172,13 @@ export const useJobTrackerAPI = () => {
             );
         };
 
+        const getInterviewSummary = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetInterviewCollectionSummaryRequest,
+                GetInterviewCollectionSummaryResponse
+            >(null, endpointConfig.interview.getSummary);
+        };
+
         const createInterview = async (req: CreateInterviewRequest) => {
             return await makeAuthenticatedJobTrackerAPIRequest<CreateInterviewRequest, CreateInterviewResponse>(
                 req,
@@ -192,6 +214,27 @@ export const useJobTrackerAPI = () => {
             );
         };
 
+        const archiveAllApplications = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                ArchiveAllApplicationsRequest,
+                ArchiveAllApplicationsResponse
+            >(null, endpointConfig.archivedApplication.archiveAllApplications);
+        };
+
+        const unarchiveAllApplications = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                UnarchiveAllApplicationsRequest,
+                UnarchiveAllApplicationsResponse
+            >(null, endpointConfig.archivedApplication.unarchiveAllApplications);
+        };
+
+        const getArchivedApplicationSummary = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetApplicationCollectionSummaryRequest,
+                GetApplicationCollectionSummaryResponse
+            >(null, endpointConfig.archivedApplication.getSummary);
+        };
+
         const deleteArchivedApplication = async (req: DeleteArchivedApplicationRequest) => {
             return await makeAuthenticatedJobTrackerAPIRequest<
                 DeleteArchivedApplicationRequest,
@@ -218,6 +261,13 @@ export const useJobTrackerAPI = () => {
                 ListArchivedInterviewsRequest,
                 ListArchivedInterviewsResponse
             >(null, endpointConfig.archivedInterview.listInterviews);
+        };
+
+        const getArchivedInterviewSummary = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetInterviewCollectionSummaryRequest,
+                GetInterviewCollectionSummaryResponse
+            >(null, endpointConfig.archivedInterview.getSummary);
         };
 
         const deleteArchivedInterview = async (req: DeleteArchivedInterviewRequest) => {
@@ -254,6 +304,7 @@ export const useJobTrackerAPI = () => {
                 listApplications,
                 listWeeklyApplications,
                 listJobStatusCounts,
+                getSummary: getApplicationSummary,
                 createApplication,
                 deleteApplication,
                 deleteAllApplications,
@@ -262,6 +313,7 @@ export const useJobTrackerAPI = () => {
             },
             interview: {
                 listInterviews,
+                getSummary: getInterviewSummary,
                 createInterview,
                 deleteInterview,
                 deleteAllInterviews,
@@ -269,12 +321,16 @@ export const useJobTrackerAPI = () => {
             archivedApplication: {
                 listApplications: listArchivedApplications,
                 archiveApplication,
+                archiveAllApplications,
+                unarchiveAllApplications,
+                getSummary: getArchivedApplicationSummary,
                 deleteApplication: deleteArchivedApplication,
                 deleteAllApplications: deleteAllArchivedApplications,
                 unarchiveApplication,
             },
             archivedInterview: {
                 listInterviews: listArchivedInterviews,
+                getSummary: getArchivedInterviewSummary,
                 deleteInterview: deleteArchivedInterview,
                 deleteAllInterviews: deleteAllArchivedInterviews,
             },

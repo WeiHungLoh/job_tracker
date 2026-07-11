@@ -68,6 +68,15 @@ export type WeeklyApplicationCount = {
     applications_count: string;
 };
 
+export type ApplicationCollectionSummary = {
+    application_count: number;
+    related_interview_count: number;
+};
+
+export type InterviewCollectionSummary = {
+    interview_count: number;
+};
+
 export type User = {
     user_id: number;
     email: string;
@@ -83,4 +92,6 @@ export type UserPreferences = {
     archived_application_job_statuses: JobStatus[];
     archived_application_show_notes: boolean;
     archived_application_view_mode: ApplicationViewMode;
+    interview_view_mode: ApplicationViewMode;
+    archived_interview_view_mode: ApplicationViewMode;
 };

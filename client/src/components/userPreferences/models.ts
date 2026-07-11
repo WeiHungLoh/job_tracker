@@ -10,6 +10,8 @@ export type UserPreferences = {
     archived_application_job_statuses: JobStatus[];
     archived_application_show_notes: boolean;
     archived_application_view_mode: ApplicationViewMode;
+    interview_view_mode: ApplicationViewMode;
+    archived_interview_view_mode: ApplicationViewMode;
 };
 
 export type GetUserPreferencesRequest = null;
@@ -24,6 +26,8 @@ export type UpdateUserPreferencesRequest = {
     archived_application_job_statuses?: JobStatus[];
     archived_application_show_notes?: boolean;
     archived_application_view_mode?: ApplicationViewMode;
+    interview_view_mode?: ApplicationViewMode;
+    archived_interview_view_mode?: ApplicationViewMode;
 };
 export type UpdateUserPreferencesResponse = UserPreferences;
 

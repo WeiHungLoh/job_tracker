@@ -6,7 +6,7 @@ import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import StatusLegend from './StatusLegend';
 import type { JobStatus } from '../application/models';
 import type { StatusChartProps } from './models';
-import { createStatusBarChartData, createStatusBarChartOptions } from './chartConfig';
+import { createStatusBarChartData, createStatusBarChartOptions, statusBarTooltipPlugin } from './chartConfig';
 import { getStatusCountMap } from './dashboardData';
 import styles from './ClosedOutcomesChart.module.css';
 import { useTheme } from '../../components/theme/ThemeContext';
@@ -18,10 +18,16 @@ const CLOSED_STATUSES: readonly JobStatus[] = ['Rejected', 'Ghosted', 'Declined'
 const ClosedOutcomesChart = ({ statusCounts, isLoading }: StatusChartProps) => {
     const { theme } = useTheme();
     const countByStatus = useMemo(() => getStatusCountMap(statusCounts), [statusCounts]);
-    const closedTotal = CLOSED_STATUSES.reduce((total, status) => total + (countByStatus[status] ?? 0), 0);
-    const data = useMemo(() => createStatusBarChartData(CLOSED_STATUSES, countByStatus, theme), [countByStatus, theme]);
+    const renderedStatuses = useMemo(
+        () => CLOSED_STATUSES.filter((status) => (countByStatus[status] ?? 0) > 0),
+        [countByStatus]
+    );
+    const data = useMemo(
+        () => createStatusBarChartData(renderedStatuses, countByStatus, theme),
+        [countByStatus, renderedStatuses, theme]
+    );
     const options = useMemo(() => createStatusBarChartOptions(theme), [theme]);
-    const chartLabel = CLOSED_STATUSES.map((status) => `${status}: ${countByStatus[status] ?? 0}`).join(', ');
+    const chartLabel = renderedStatuses.map((status) => `${status}: ${countByStatus[status] ?? 0}`).join(', ');
 
     return (
         <DashboardCard title='Closed Outcomes' description='Applications that are no longer active.'>
@@ -29,14 +35,14 @@ const ClosedOutcomesChart = ({ statusCounts, isLoading }: StatusChartProps) => {
                 <div className={styles.centered}>
                     <LoadingSpinner size='sm' />
                 </div>
-            ) : closedTotal === 0 ? (
+            ) : renderedStatuses.length === 0 ? (
                 <p className={styles.centered}>No closed outcomes yet.</p>
             ) : (
                 <>
                     <div className={styles.chartArea} role='img' aria-label={`Closed outcomes. ${chartLabel}`}>
-                        <Bar key={theme} data={data} options={options} />
+                        <Bar key={theme} data={data} options={options} plugins={[statusBarTooltipPlugin]} />
                     </div>
-                    <StatusLegend label='Closed outcomes legend' statuses={CLOSED_STATUSES} />
+                    <StatusLegend label='Closed outcomes legend' statuses={renderedStatuses} />
                 </>
             )}
         </DashboardCard>

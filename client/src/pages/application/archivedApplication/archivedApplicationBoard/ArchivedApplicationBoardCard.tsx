@@ -3,6 +3,7 @@ import formatDate from '../../../../helper/dateFormatter';
 import { getApplicationBoardStatusClassName } from '../../applicationBoard/statusClassNames';
 import type { ArchivedApplicationBoardCardProps } from './models';
 import styles from '../../applicationBoard/ApplicationBoard.module.css';
+import BoardCardActions from '../../../../components/boardCardActions/BoardCardActions';
 
 const EMPTY_NOTES_MESSAGE = 'You do not have any notes here';
 
@@ -34,25 +35,9 @@ const ArchivedApplicationBoardCard = ({
             <p className={styles.jobTitle}>{application.job_title}</p>
             <p className={styles.meta}>{formattedApplicationDate.formattedDay}</p>
 
-            <details className={styles.actions}>
-                <summary>Actions</summary>
-                <div className={styles.actionPanel}>
-                    {hasActions && (
-                        <>
-                            {application.job_posting_url !== '' && (
-                                <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
-                                    Open job posting
-                                </a>
-                            )}
-                            {showNotes && (
-                                <label className={`${styles.notesField} ${styles.readOnlyNotes}`}>
-                                    <span>Notes</span>
-                                    <textarea disabled readOnly value={notesValue} />
-                                </label>
-                            )}
-                        </>
-                    )}
-                    <div className={styles.actionButtons}>
+            <BoardCardActions
+                actions={
+                    <>
                         <PrimaryButton
                             isLoading={isUnarchiving}
                             onClick={() => onUnarchive(application.archived_job_id)}
@@ -69,9 +54,25 @@ const ArchivedApplicationBoardCard = ({
                         >
                             Delete
                         </PrimaryButton>
-                    </div>
-                </div>
-            </details>
+                    </>
+                }
+            >
+                {hasActions && (
+                    <>
+                        {application.job_posting_url !== '' && (
+                            <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
+                                Open job posting
+                            </a>
+                        )}
+                        {showNotes && (
+                            <label className={`${styles.notesField} ${styles.readOnlyNotes}`}>
+                                <span>Notes</span>
+                                <textarea disabled readOnly value={notesValue} />
+                            </label>
+                        )}
+                    </>
+                )}
+            </BoardCardActions>
         </article>
     );
 };

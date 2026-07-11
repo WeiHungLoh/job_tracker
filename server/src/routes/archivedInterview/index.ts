@@ -1,4 +1,9 @@
-import type { ArchivedInterviewIdParams, EmptyResponse, ListArchivedInterviewsResponse } from './models.js';
+import type {
+    ArchivedInterviewIdParams,
+    EmptyResponse,
+    GetArchivedInterviewCollectionSummaryResponse,
+    ListArchivedInterviewsResponse,
+} from './models.js';
 import type { Request, Response } from 'express';
 import {
     deleteAllArchivedJobInterviews,
@@ -8,6 +13,7 @@ import {
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
 import { toPositiveInteger } from '../../http/validation.js';
+import { getInterviewCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
 
@@ -21,6 +27,20 @@ router.get(
             res.status(200).json(await getArchivedJobInterviews(req.user.id));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived interviews.');
+        }
+    }
+);
+
+router.get(
+    '/summary',
+    async (
+        req: Request<Record<string, never>, GetArchivedInterviewCollectionSummaryResponse>,
+        res: Response<GetArchivedInterviewCollectionSummaryResponse>
+    ): Promise<void> => {
+        try {
+            res.status(200).json(await getInterviewCollectionSummary(req.user.id, true));
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to load archived interview counts.');
         }
     }
 );

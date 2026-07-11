@@ -17,6 +17,7 @@ export const createInterviewEmptyState = (options: InterviewEmptyStateOptions): 
         return {
             title: 'No archived interviews yet',
             description: 'Interviews linked to archived applications will appear here.',
+            followsControls: true,
             icon: 'archive',
             secondaryAction: { label: 'View active interviews', to: options.activeInterviewsRoute },
         };
@@ -25,6 +26,7 @@ export const createInterviewEmptyState = (options: InterviewEmptyStateOptions): 
     return {
         title: 'No interviews yet',
         description: 'Add interviews after creating a job application to keep your schedule organised.',
+        followsControls: true,
         icon: 'interview',
         primaryAction: { label: 'View applications', to: options.applicationsRoute },
     };

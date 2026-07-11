@@ -53,6 +53,8 @@ const mockPreferences = {
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    interview_view_mode: 'list',
+    archived_interview_view_mode: 'list',
 };
 
 const renderRoute = (path: string) => {
@@ -226,7 +228,7 @@ describe('App routing and authentication behavior', () => {
         [routes.demoAddApplication, /company name/i],
         [routes.demoViewApplications, /HorizonAI Labs/i],
         [routes.demoAddInterview, /HorizonAI Labs/i],
-        [routes.demoViewInterviews, /Atlas RecruitTech/i],
+        [routes.demoViewInterviews, /Quantum Ledger/i],
         [routes.demoArchivedApplications, /Riverlane Studio/i],
         [routes.demoArchivedInterviews, /Riverlane Studio/i],
     ])('renders public demo route %s without authentication', async (route, expectedText) => {
@@ -258,7 +260,7 @@ describe('App routing and authentication behavior', () => {
         expect(await screen.findByText(/Demo Navigation Company/i)).toBeInTheDocument();
 
         await userEvent.click(screen.getByRole('link', { name: /view interviews/i }));
-        expect(await screen.findByText(/Atlas RecruitTech/i)).toBeInTheDocument();
+        expect(await screen.findByText(/Quantum Ledger/i)).toBeInTheDocument();
 
         await userEvent.click(screen.getByRole('link', { name: /view job applications/i }));
         expect(await screen.findByText(/Demo Navigation Company/i)).toBeInTheDocument();
@@ -268,12 +270,10 @@ describe('App routing and authentication behavior', () => {
     test('demo interview application links highlight the corresponding application', async () => {
         renderRoute(routes.demoViewInterviews);
 
-        const atlasHeading = await screen.findByRole('heading', { name: /Atlas RecruitTech/i });
-        const atlasCard = atlasHeading.closest('div')?.parentElement;
-        expect(atlasCard).toBeTruthy();
+        const [atlasCard] = await screen.findAllByRole('article', { name: 'Atlas RecruitTech interview' });
 
         await userEvent.click(
-            within(atlasCard as HTMLElement).getByRole('link', {
+            within(atlasCard).getByRole('link', {
                 name: /click here to review corresponding job application/i,
             })
         );

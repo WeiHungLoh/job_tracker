@@ -40,6 +40,8 @@ const mockPreferences = {
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    interview_view_mode: 'list',
+    archived_interview_view_mode: 'list',
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -139,6 +141,9 @@ describe('Job application viewing flow', () => {
             if (init?.method !== 'GET') {
                 return response(undefined, 204);
             }
+            if (url.endsWith('/job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
             if (url.endsWith('/job-interviews')) {
                 return response([]);
             }
@@ -171,6 +176,7 @@ describe('Job application viewing flow', () => {
         );
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all applications/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /archive all applications/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
             `${
@@ -977,13 +983,19 @@ describe('Job application viewing flow', () => {
         await clickConfirmedAction(screen.getByRole('button', { name: /delete all applications/i }));
 
         await waitFor(() =>
-            expect(mockConfirm).toHaveBeenCalledWith({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all job applications? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            })
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: 'Confirm Delete All',
+                    description:
+                        'Delete all 1 active job application and its 0 related active interviews? This affects every active application you own, including applications not visible under the current job-status filters. This action is permanent and cannot be undone.',
+                    confirmationText: 'Delete All',
+                    cancellationText: 'Cancel',
+                    confirmationButtonProps: expect.objectContaining({
+                        autoFocus: false,
+                        onKeyDown: expect.any(Function),
+                    }),
+                })
+            )
         );
 
         await waitFor(() =>
@@ -993,5 +1005,155 @@ describe('Job application viewing flow', () => {
         );
 
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+    });
+
+    test('orders Export, Archive All, and Delete All with exactly two dividers', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        const options = screen.getByRole('link', { name: 'Export as CSV' }).parentElement;
+
+        expect(options).not.toBeNull();
+        expect(
+            Array.from(options?.children ?? []).map((item) =>
+                item.tagName === 'HR' ? 'divider' : item.textContent?.trim()
+            )
+        ).toEqual(['Export as CSV', 'divider', 'Archive all applications', 'divider', 'Delete all applications']);
+    });
+
+    test('archives every active application with accurate related-interview counts', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/summary')) {
+                return response({ application_count: 2, related_interview_count: 1 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([mockInterview]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Archive all applications' }));
+
+        expect(mockConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: 'Confirm Archive All',
+                description:
+                    'Archive all 2 active job applications and their 1 related active interview? This affects every active application you own, including applications not visible under the current job-status filters.',
+            })
+        );
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/archive-all`, {
+            method: 'PATCH',
+        });
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+    });
+
+    test('does not mutate when the bulk confirmation is cancelled or closed', async () => {
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Archive all applications' }));
+
+        expect(fetch).not.toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/archived-job-applications/archive-all`,
+            { method: 'PATCH' }
+        );
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+    });
+
+    test('keeps collection actions available when filters hide every owned application', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-applications/summary')) {
+                return response({ application_count: 3, related_interview_count: 1 });
+            }
+            return response([]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_job_statuses: ['Offer'] } }
+        );
+
+        expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'More...' })).toBeInTheDocument();
+    });
+
+    test('does not confirm or mutate when refreshed active counts fail', async () => {
+        let summaryCalls = 0;
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/summary')) {
+                summaryCalls += 1;
+                if (summaryCalls === 2) {
+                    throw new TypeError('Failed to fetch');
+                }
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Delete all applications' }));
+
+        expect(
+            await screen.findByText('Unable to load active application counts. Please try again.')
+        ).toBeInTheDocument();
+        expect(mockConfirm).not.toHaveBeenCalled();
+        expect(fetch).not.toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications`, {
+            method: 'DELETE',
+        });
+    });
+
+    test('reconciles stale local applications without confirming when the current total is zero', async () => {
+        let summaryCalls = 0;
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/summary')) {
+                summaryCalls += 1;
+                return response({ application_count: summaryCalls === 1 ? 1 : 0, related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Delete all applications' }));
+
+        expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+        expect(mockConfirm).not.toHaveBeenCalled();
     });
 });

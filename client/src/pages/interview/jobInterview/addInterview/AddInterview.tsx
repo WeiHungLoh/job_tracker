@@ -74,7 +74,7 @@ const AddInterview = () => {
 
     return (
         <div className={styles.addInterview}>
-            <div>
+            <div className={styles.context}>
                 <h2>You are adding an interview for:</h2>
                 <p>
                     Company: <em>{app.company_name}</em>

@@ -72,7 +72,6 @@ const AddApplication = () => {
 
     return (
         <div className={styles.addApplication}>
-            <br />
             <label htmlFor='company-name'>Company Name</label>
             <input
                 id='company-name'

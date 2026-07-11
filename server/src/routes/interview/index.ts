@@ -2,6 +2,7 @@ import type {
     CreateInterviewRequest,
     CreateInterviewResponse,
     EmptyResponse,
+    GetInterviewCollectionSummaryResponse,
     InterviewIdParams,
     ListInterviewsResponse,
 } from './models.js';
@@ -16,6 +17,7 @@ import {
 import { handleRouteError, sendError } from '../../http/responses.js';
 import { isValidDate, toPositiveInteger, toTrimmedString } from '../../http/validation.js';
 import express from 'express';
+import { getInterviewCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
 
@@ -76,6 +78,20 @@ router.get(
             res.status(200).json(await getInterviews(req.user.id));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load interviews.');
+        }
+    }
+);
+
+router.get(
+    '/summary',
+    async (
+        req: Request<Record<string, never>, GetInterviewCollectionSummaryResponse>,
+        res: Response<GetInterviewCollectionSummaryResponse>
+    ): Promise<void> => {
+        try {
+            res.status(200).json(await getInterviewCollectionSummary(req.user.id, false));
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to load active interview counts.');
         }
     }
 );

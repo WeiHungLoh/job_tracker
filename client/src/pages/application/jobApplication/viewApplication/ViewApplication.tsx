@@ -2,6 +2,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
+import {
+    createArchiveAllConfirmation,
+    createDeleteAllApplicationsConfirmation,
+} from '../../../../helper/bulkConfirmation';
 import type { JobInterview } from '../../../interview/models';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import {
@@ -61,7 +65,9 @@ const ViewApplication = () => {
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
-    const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const [applicationTotal, setApplicationTotal] = useState(0);
+    const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
+    const bulkActionPendingRef = useRef(false);
     const {
         pendingIds: deletingApplicationIds,
         startPending: startDeletingApplication,
@@ -145,6 +151,17 @@ const ViewApplication = () => {
                 }
             } catch (error) {
                 showErrorToast(getErrorToastMessage(error, 'Unable to load job application data. Please try again.'));
+            }
+
+            try {
+                const summary = await api.application.getSummary();
+                if (isActive) {
+                    setApplicationTotal(summary.application_count);
+                }
+            } catch (error) {
+                showErrorToast(
+                    getErrorToastMessage(error, 'Unable to load active application counts. Please try again.')
+                );
             } finally {
                 if (isActive) {
                     setIsLoading(false);
@@ -216,6 +233,7 @@ const ViewApplication = () => {
                 await api.application.deleteApplication({ jobId });
                 setApplications((current) => current.filter((application) => application.job_id !== jobId));
                 setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
+                setApplicationTotal((current) => Math.max(0, current - 1));
             } finally {
                 stopDeletingApplication(jobId);
             }
@@ -224,24 +242,59 @@ const ViewApplication = () => {
         }
     };
 
-    const handleDeleteAll = async () => {
+    const handleBulkAction = async (action: 'archive' | 'delete') => {
+        if (bulkActionPendingRef.current) {
+            return;
+        }
+
+        bulkActionPendingRef.current = true;
+        setPendingBulkAction(action);
+        let countsLoaded = false;
+
         try {
-            const { confirmed } = await confirm(createDeleteConfirmation('job application', true));
+            const summary = await api.application.getSummary();
+            countsLoaded = true;
+            setApplicationTotal(summary.application_count);
+
+            if (summary.application_count === 0) {
+                setApplications([]);
+                setInterviews([]);
+                return;
+            }
+
+            const confirmation =
+                action === 'archive'
+                    ? createArchiveAllConfirmation(summary.application_count, summary.related_interview_count)
+                    : createDeleteAllApplicationsConfirmation(
+                          summary.application_count,
+                          summary.related_interview_count,
+                          'active'
+                      );
+            const { confirmed } = await confirm(confirmation);
 
             if (!confirmed) {
                 return;
             }
 
-            setIsDeletingAll(true);
-            try {
+            if (action === 'archive') {
+                await api.archivedApplication.archiveAllApplications();
+            } else {
                 await api.application.deleteAllApplications();
-                setApplications([]);
-                setInterviews([]);
-            } finally {
-                setIsDeletingAll(false);
             }
+
+            setApplications([]);
+            setInterviews([]);
+            setApplicationTotal(0);
         } catch (error) {
-            showErrorToast(getErrorToastMessage(error, 'Unable to delete job applications. Please try again.'));
+            const fallback = !countsLoaded
+                ? 'Unable to load active application counts. Please try again.'
+                : action === 'archive'
+                ? 'Unable to archive job applications. Please try again.'
+                : 'Unable to delete job applications. Please try again.';
+            showErrorToast(getErrorToastMessage(error, fallback));
+        } finally {
+            bulkActionPendingRef.current = false;
+            setPendingBulkAction(null);
         }
     };
 
@@ -356,6 +409,7 @@ const ViewApplication = () => {
             await api.archivedApplication.archiveApplication({ jobId });
             setApplications((current) => current.filter((application) => application.job_id !== jobId));
             setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
+            setApplicationTotal((current) => Math.max(0, current - 1));
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to archive the job application. Please try again.'));
         } finally {
@@ -385,49 +439,55 @@ const ViewApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
-                    {hasApplications && (
-                        <>
-                            {!isBoardView && (
-                                <DisplayOptions id='application-display-options'>
-                                    <ToggleButton
-                                        toggled={showNotes}
-                                        onToggle={() =>
-                                            void handlePreferenceUpdate({
-                                                application_show_notes: !showNotes,
-                                            })
-                                        }
-                                        label='Show notes'
-                                    />
-                                    <ToggleButton
-                                        toggled={showArchive}
-                                        onToggle={() =>
-                                            void handlePreferenceUpdate({
-                                                application_show_archive: !showArchive,
-                                            })
-                                        }
-                                        label='Show archive'
-                                    />
-                                    <ToggleButton
-                                        toggled={enableScroll}
-                                        onToggle={() =>
-                                            void handlePreferenceUpdate({
-                                                application_enable_scroll: !enableScroll,
-                                            })
-                                        }
-                                        label='Auto scroll after job status change'
-                                    />
-                                </DisplayOptions>
-                            )}
-                            <MoreOptions
-                                csvData={csvData}
-                                csvFilename='job_applications.csv'
-                                csvHeaders={APPLICATION_CSV_HEADERS}
-                                deleteLabel='Delete all applications'
-                                id='application-more-options'
-                                isDeleting={isDeletingAll}
-                                onDelete={() => void handleDeleteAll()}
+                    {hasApplications && !isBoardView && (
+                        <DisplayOptions id='application-display-options'>
+                            <ToggleButton
+                                toggled={showNotes}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_show_notes: !showNotes,
+                                    })
+                                }
+                                label='Show notes'
                             />
-                        </>
+                            <ToggleButton
+                                toggled={showArchive}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_show_archive: !showArchive,
+                                    })
+                                }
+                                label='Show archive'
+                            />
+                            <ToggleButton
+                                toggled={enableScroll}
+                                onToggle={() =>
+                                    void handlePreferenceUpdate({
+                                        application_enable_scroll: !enableScroll,
+                                    })
+                                }
+                                label='Auto scroll after job status change'
+                            />
+                        </DisplayOptions>
+                    )}
+                    {applicationTotal > 0 && (
+                        <MoreOptions
+                            csvData={csvData}
+                            csvFilename='job_applications.csv'
+                            csvHeaders={APPLICATION_CSV_HEADERS}
+                            deleteLabel='Delete all applications'
+                            id='application-more-options'
+                            deleteDisabled={pendingBulkAction === 'archive'}
+                            isDeleting={pendingBulkAction === 'delete'}
+                            middleAction={{
+                                disabled: pendingBulkAction === 'delete',
+                                icon: 'archive',
+                                isLoading: pendingBulkAction === 'archive',
+                                label: 'Archive all applications',
+                                onClick: () => void handleBulkAction('archive'),
+                            }}
+                            onDelete={() => void handleBulkAction('delete')}
+                        />
                     )}
                 </ActivityControls>
             </div>

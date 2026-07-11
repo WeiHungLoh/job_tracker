@@ -1,6 +1,7 @@
 import type { AriaRole, ComponentProps, ReactNode } from 'react';
 import type { CSVLink } from 'react-csv';
 import type { PrimaryButtonVariant } from '../button/models';
+import type { IconName } from '../icon/models';
 
 export type ActivityControlsProps = {
     children: ReactNode;
@@ -30,7 +31,15 @@ export type MoreOptionsProps = {
     csvFilename: string;
     csvHeaders: ComponentProps<typeof CSVLink>['headers'];
     deleteLabel: string;
+    deleteDisabled?: boolean;
     id: string;
     isDeleting: boolean;
+    middleAction?: {
+        disabled?: boolean;
+        icon?: IconName;
+        isLoading?: boolean;
+        label: string;
+        onClick: () => void;
+    };
     onDelete: () => void;
 };

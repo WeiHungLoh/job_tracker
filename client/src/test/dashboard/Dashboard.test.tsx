@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import type { ChartOptions, Plugin } from 'chart.js';
 import ApplicationPipelineChart from '../../pages/dashboard/ApplicationPipelineChart';
 import ApplicationsLineChart from '../../pages/dashboard/ApplicationsLineChart';
 import ClosedOutcomesChart from '../../pages/dashboard/ClosedOutcomesChart';
@@ -7,22 +8,48 @@ import DashboardStats from '../../pages/dashboard/DashboardStats';
 import UpcomingInterviews from '../../pages/dashboard/UpcomingInterviews';
 import type { JobStatusCount, WeeklyApplicationCount } from '../../pages/dashboard/models';
 import type { JobInterview } from '../../pages/interview/models';
+import { getStatusBarTooltipPlacement, getTrendTooltipPlacement } from '../../pages/dashboard/chartConfig';
 import { render } from '../renderWithToast';
 
+const chartMocks = vi.hoisted(() => ({
+    barOptions: undefined as ChartOptions<'bar'> | undefined,
+    barPlugins: undefined as Plugin<'bar'>[] | undefined,
+    lineOptions: undefined as ChartOptions<'line'> | undefined,
+    linePlugins: undefined as Plugin<'line'>[] | undefined,
+}));
+
 vi.mock('react-chartjs-2', () => ({
-    Bar: ({ data }: { data: { labels?: unknown[]; datasets?: Array<{ data?: unknown[] }> } }) => (
-        <div data-testid='bar-chart'>
-            {data.labels?.map((label, index) => (
-                <span key={`${String(label)}-${index}`}>
-                    {String(label)}: {String(data.datasets?.[0]?.data?.[index])}
-                </span>
-            ))}
-        </div>
-    ),
-    Line: () => <div data-testid='line-chart'>Application trend line chart</div>,
+    Bar: ({
+        data,
+        options,
+        plugins,
+    }: {
+        data: { labels?: unknown[]; datasets?: Array<{ data?: unknown[] }> };
+        options?: ChartOptions<'bar'>;
+        plugins?: Plugin<'bar'>[];
+    }) => {
+        chartMocks.barOptions = options;
+        chartMocks.barPlugins = plugins;
+
+        return (
+            <div data-testid='bar-chart'>
+                {data.labels?.map((label, index) => (
+                    <span key={`${String(label)}-${index}`}>
+                        {String(label)}: {String(data.datasets?.[0]?.data?.[index])}
+                    </span>
+                ))}
+            </div>
+        );
+    },
+    Line: ({ options, plugins }: { options?: ChartOptions<'line'>; plugins?: Plugin<'line'>[] }) => {
+        chartMocks.lineOptions = options;
+        chartMocks.linePlugins = plugins;
+        return <div data-testid='line-chart'>Application trend line chart</div>;
+    },
 }));
 
 const fixedNow = new Date('2026-07-10T12:00:00.000Z');
+const chartArea = { left: 20, top: 10, right: 320, bottom: 210, width: 300, height: 200 };
 
 const createInterview = (interviewId: number, interviewDate: string, companyName: string): JobInterview => ({
     interview_id: interviewId,
@@ -40,9 +67,23 @@ const statusCount = (jobStatus: JobStatusCount['job_status'], count: number): Jo
     count: String(count),
 });
 
+const getRenderedBars = (): Array<string | null> =>
+    within(screen.getByTestId('bar-chart'))
+        .getAllByText(/:/)
+        .map((row) => row.textContent);
+
+const getLegendStatuses = (label: string): Array<string | null> =>
+    within(screen.getByRole('list', { name: label }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent);
+
 describe('Dashboard V2', () => {
     afterEach(() => {
         vi.useRealTimers();
+        chartMocks.barOptions = undefined;
+        chartMocks.barPlugins = undefined;
+        chartMocks.lineOptions = undefined;
+        chartMocks.linePlugins = undefined;
     });
 
     test('renders all dashboard sections', () => {
@@ -90,57 +131,227 @@ describe('Dashboard V2', () => {
         expect(screen.getByText('No previous week data')).toBeInTheDocument();
     });
 
-    test('keeps pipeline statuses ordered, fills missing counts, and excludes closed statuses', () => {
+    test('renders only one positive pipeline status in the chart, legend, and accessible label', () => {
         render(
             <ApplicationPipelineChart
-                statusCounts={[statusCount('Rejected', 2), statusCount('Applied', 5)]}
+                statusCounts={[statusCount('Applied', 5), statusCount('Interview', 0), statusCount('Rejected', 2)]}
                 isLoading={false}
             />
         );
 
-        const chart = screen.getByTestId('bar-chart');
-        expect(
-            within(chart)
-                .getAllByText(/:/)
-                .map((row) => row.textContent)
-        ).toEqual(['Applied: 5', 'Interview: 0', 'Offer: 0', 'Accepted: 0']);
-        expect(chart).not.toHaveTextContent('Rejected');
-        expect(chart).not.toHaveTextContent('Ghosted');
-        expect(chart).not.toHaveTextContent('Declined');
-        expect(
-            within(screen.getByRole('list', { name: 'Application pipeline legend' }))
-                .getAllByRole('listitem')
-                .map((item) => item.textContent)
-        ).toEqual(['Applied', 'Interview', 'Offer', 'Accepted']);
+        expect(getRenderedBars()).toEqual(['Applied: 5']);
+        expect(getLegendStatuses('Application pipeline legend')).toEqual(['Applied']);
+        expect(screen.getByRole('img', { name: 'Application pipeline. Applied: 5' })).toBeInTheDocument();
+        expect(chartMocks.barPlugins?.map((plugin) => plugin.id)).toContain('statusBarTooltipPositioning');
+        expect(chartMocks.barOptions?.plugins?.tooltip).toEqual(
+            expect.objectContaining({ animation: false, caretPadding: 6, caretSize: 5 })
+        );
     });
 
-    test('shows closed outcomes with missing statuses as zero', () => {
-        render(<ClosedOutcomesChart statusCounts={[statusCount('Rejected', 2)]} isLoading={false} />);
+    test('preserves pipeline order while excluding zero and closed statuses everywhere', () => {
+        render(
+            <ApplicationPipelineChart
+                statusCounts={[
+                    statusCount('Accepted', 2),
+                    statusCount('Offer', 0),
+                    statusCount('Rejected', 4),
+                    statusCount('Interview', 3),
+                    statusCount('Applied', 1),
+                ]}
+                isLoading={false}
+            />
+        );
 
+        expect(getRenderedBars()).toEqual(['Applied: 1', 'Interview: 3', 'Accepted: 2']);
+        expect(getLegendStatuses('Application pipeline legend')).toEqual(['Applied', 'Interview', 'Accepted']);
         expect(
-            within(screen.getByTestId('bar-chart'))
-                .getAllByText(/:/)
-                .map((row) => row.textContent)
-        ).toEqual(['Rejected: 2', 'Ghosted: 0', 'Declined: 0']);
-        expect(
-            within(screen.getByRole('list', { name: 'Closed outcomes legend' }))
-                .getAllByRole('listitem')
-                .map((item) => item.textContent)
-        ).toEqual(['Rejected', 'Ghosted', 'Declined']);
+            screen.getByRole('img', {
+                name: 'Application pipeline. Applied: 1, Interview: 3, Accepted: 2',
+            })
+        ).toBeInTheDocument();
     });
 
-    test('keeps the zero-value pipeline visible when applications only have closed statuses', () => {
-        render(<ApplicationPipelineChart statusCounts={[statusCount('Rejected', 2)]} isLoading={false} />);
+    test('shows the pipeline empty state when every pipeline count is zero', () => {
+        render(
+            <ApplicationPipelineChart
+                statusCounts={[
+                    statusCount('Applied', 0),
+                    statusCount('Interview', 0),
+                    statusCount('Offer', 0),
+                    statusCount('Accepted', 0),
+                ]}
+                isLoading={false}
+            />
+        );
 
-        expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
-        expect(screen.queryByText('No job applications found.')).not.toBeInTheDocument();
+        expect(screen.getByText('No applications in the pipeline yet.')).toBeInTheDocument();
+        expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument();
+        expect(screen.queryByRole('list', { name: 'Application pipeline legend' })).not.toBeInTheDocument();
+    });
+
+    test('uses only pipeline statuses to decide whether the pipeline has data', () => {
+        render(
+            <ApplicationPipelineChart
+                statusCounts={[statusCount('Rejected', 2), statusCount('Ghosted', 1)]}
+                isLoading={false}
+            />
+        );
+
+        expect(screen.getByText('No applications in the pipeline yet.')).toBeInTheDocument();
+        expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument();
+    });
+
+    test('renders only one positive closed status in the chart, legend, and accessible label', () => {
+        render(
+            <ClosedOutcomesChart
+                statusCounts={[statusCount('Rejected', 2), statusCount('Ghosted', 0), statusCount('Applied', 5)]}
+                isLoading={false}
+            />
+        );
+
+        expect(getRenderedBars()).toEqual(['Rejected: 2']);
+        expect(getLegendStatuses('Closed outcomes legend')).toEqual(['Rejected']);
+        expect(screen.getByRole('img', { name: 'Closed outcomes. Rejected: 2' })).toBeInTheDocument();
+    });
+
+    test('preserves closed-status order while excluding zero and pipeline statuses everywhere', () => {
+        render(
+            <ClosedOutcomesChart
+                statusCounts={[
+                    statusCount('Declined', 1),
+                    statusCount('Applied', 4),
+                    statusCount('Ghosted', 0),
+                    statusCount('Rejected', 3),
+                ]}
+                isLoading={false}
+            />
+        );
+
+        expect(getRenderedBars()).toEqual(['Rejected: 3', 'Declined: 1']);
+        expect(getLegendStatuses('Closed outcomes legend')).toEqual(['Rejected', 'Declined']);
+        expect(screen.getByRole('img', { name: 'Closed outcomes. Rejected: 3, Declined: 1' })).toBeInTheDocument();
     });
 
     test('shows the closed-outcomes empty state when all closed counts are zero', () => {
-        render(<ClosedOutcomesChart statusCounts={[statusCount('Applied', 3)]} isLoading={false} />);
+        render(
+            <ClosedOutcomesChart
+                statusCounts={[
+                    statusCount('Rejected', 0),
+                    statusCount('Ghosted', 0),
+                    statusCount('Declined', 0),
+                    statusCount('Applied', 3),
+                ]}
+                isLoading={false}
+            />
+        );
 
         expect(screen.getByText('No closed outcomes yet.')).toBeInTheDocument();
         expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument();
+        expect(screen.queryByRole('list', { name: 'Closed outcomes legend' })).not.toBeInTheDocument();
+    });
+
+    test('places status tooltips to the right with a left-facing caret when space allows', () => {
+        expect(getStatusBarTooltipPlacement({ x: 100, y: 60 }, { width: 80, height: 40 }, chartArea)).toEqual({
+            x: 111,
+            y: 40,
+            xAlign: 'left',
+            yAlign: 'center',
+        });
+    });
+
+    test('falls status tooltips back to the left and keeps first and last bars within the chart area', () => {
+        expect(getStatusBarTooltipPlacement({ x: 300, y: 205 }, { width: 80, height: 40 }, chartArea)).toEqual({
+            x: 209,
+            y: 170,
+            xAlign: 'right',
+            yAlign: 'center',
+        });
+        expect(getStatusBarTooltipPlacement({ x: 40, y: 12 }, { width: 80, height: 40 }, chartArea).y).toBe(10);
+    });
+
+    test('places trend tooltips above with a downward-facing caret when space allows', () => {
+        expect(getTrendTooltipPlacement({ x: 150, y: 100 }, { width: 80, height: 30 }, chartArea)).toEqual({
+            x: 110,
+            y: 59,
+            xAlign: 'center',
+            yAlign: 'bottom',
+        });
+    });
+
+    test('falls trend tooltips back to the left when above would overflow and clamps edge points', () => {
+        expect(getTrendTooltipPlacement({ x: 280, y: 40 }, { width: 80, height: 40 }, chartArea)).toEqual({
+            x: 189,
+            y: 20,
+            xAlign: 'right',
+            yAlign: 'center',
+        });
+        expect(getTrendTooltipPlacement({ x: 25, y: 100 }, { width: 80, height: 30 }, chartArea)).toEqual({
+            x: 20,
+            y: 85,
+            xAlign: 'right',
+            yAlign: 'center',
+        });
+        expect(getTrendTooltipPlacement({ x: 315, y: 100 }, { width: 80, height: 30 }, chartArea)).toEqual({
+            x: 224,
+            y: 85,
+            xAlign: 'right',
+            yAlign: 'center',
+        });
+    });
+
+    test('keeps the trend legend visible while disabling its dataset toggle', () => {
+        render(
+            <ApplicationsLineChart
+                weeklyApplications={[{ start_of_week: '2026-07-06', applications_count: '3' }]}
+                isLoading={false}
+            />
+        );
+
+        const legendOptions = chartMocks.lineOptions?.plugins?.legend;
+        const onLegendClick = legendOptions && legendOptions !== false ? legendOptions.onClick : undefined;
+        const chart = { hide: vi.fn(), show: vi.fn() };
+
+        expect(legendOptions).toEqual(expect.objectContaining({ display: true, onClick: expect.any(Function) }));
+        expect(chartMocks.linePlugins?.map((plugin) => plugin.id)).toContain('trendTooltipPositioning');
+        expect(chartMocks.lineOptions?.plugins?.tooltip).toEqual(
+            expect.objectContaining({ animation: false, caretPadding: 6, caretSize: 5 })
+        );
+        onLegendClick?.({} as never, { datasetIndex: 0 } as never, { chart } as never);
+
+        expect(chart.hide).not.toHaveBeenCalled();
+        expect(chart.show).not.toHaveBeenCalled();
+        expect(screen.getByTestId('line-chart')).toBeInTheDocument();
+    });
+
+    test('retains the complete dashboard empty state', () => {
+        render(<DashboardContent statusCounts={[]} interviews={[]} weeklyApplications={[]} isLoading={false} />);
+
+        expect(
+            screen.getByText(
+                'No job applications applied in the last eight weeks. Start adding some to see your progress here!'
+            )
+        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'No upcoming interviews' })).toBeInTheDocument();
+        expect(screen.getByText('No applications in the pipeline yet.')).toBeInTheDocument();
+        expect(screen.getByText('No closed outcomes yet.')).toBeInTheDocument();
+        expect(screen.queryByTestId('line-chart')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument();
+    });
+
+    test('retains the complete dashboard loading state', () => {
+        render(
+            <DashboardContent
+                statusCounts={[statusCount('Applied', 1), statusCount('Rejected', 1)]}
+                interviews={[]}
+                weeklyApplications={[{ start_of_week: '2026-07-06', applications_count: '1' }]}
+                isLoading
+            />
+        );
+
+        expect(screen.getAllByRole('progressbar', { name: 'Loading' })).toHaveLength(5);
+        expect(screen.queryByTestId('line-chart')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Weekly application summary')).not.toBeInTheDocument();
     });
 
     test('shows only the three nearest future interviews in order', () => {

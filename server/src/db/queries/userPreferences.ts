@@ -12,7 +12,9 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
             application_view_mode,
             archived_application_job_statuses,
             archived_application_show_notes,
-            archived_application_view_mode
+            archived_application_view_mode,
+            interview_view_mode,
+            archived_interview_view_mode
          FROM user_preferences
          WHERE user_id = $1`,
         [userId]
@@ -35,7 +37,9 @@ export const updateUserPreferences = async (
             application_view_mode = COALESCE($6, application_view_mode),
             archived_application_job_statuses = COALESCE($7, archived_application_job_statuses),
             archived_application_show_notes = COALESCE($8, archived_application_show_notes),
-            archived_application_view_mode = COALESCE($9, archived_application_view_mode)
+            archived_application_view_mode = COALESCE($9, archived_application_view_mode),
+            interview_view_mode = COALESCE($10, interview_view_mode),
+            archived_interview_view_mode = COALESCE($11, archived_interview_view_mode)
          WHERE user_id = $1
          RETURNING
             application_job_statuses,
@@ -45,7 +49,9 @@ export const updateUserPreferences = async (
             application_view_mode,
             archived_application_job_statuses,
             archived_application_show_notes,
-            archived_application_view_mode`,
+            archived_application_view_mode,
+            interview_view_mode,
+            archived_interview_view_mode`,
         [
             userId,
             preferences.application_job_statuses,
@@ -56,6 +62,8 @@ export const updateUserPreferences = async (
             preferences.archived_application_job_statuses,
             preferences.archived_application_show_notes,
             preferences.archived_application_view_mode,
+            preferences.interview_view_mode,
+            preferences.archived_interview_view_mode,
         ]
     );
 

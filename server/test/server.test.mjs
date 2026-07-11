@@ -72,6 +72,21 @@ test('creates new user preference rows with enabled display defaults', async () 
     assert.match(userPreferencesTable, /application_show_archive BOOLEAN NOT NULL DEFAULT true/);
     assert.match(userPreferencesTable, /application_enable_scroll BOOLEAN NOT NULL DEFAULT true/);
     assert.match(userPreferencesTable, /archived_application_show_notes BOOLEAN NOT NULL DEFAULT true/);
+    assert.match(userPreferencesTable, /interview_view_mode TEXT NOT NULL DEFAULT 'list'/);
+    assert.match(userPreferencesTable, /archived_interview_view_mode TEXT NOT NULL DEFAULT 'list'/);
+    assert.match(userPreferencesTable, /user_preferences_interview_view_mode_check/);
+    assert.match(userPreferencesTable, /user_preferences_archived_interview_view_mode_check/);
+});
+
+test('adds interview view preferences to existing user preference tables idempotently', async () => {
+    const createTablesSource = await readFile(new URL('../src/db/queries/createTables.ts', import.meta.url), 'utf8');
+
+    assert.match(createTablesSource, /ADD COLUMN IF NOT EXISTS interview_view_mode TEXT DEFAULT 'list'/);
+    assert.match(createTablesSource, /ADD COLUMN IF NOT EXISTS archived_interview_view_mode TEXT DEFAULT 'list'/);
+    assert.match(createTablesSource, /interview_view_mode = COALESCE\(interview_view_mode, 'list'\)/);
+    assert.match(createTablesSource, /ALTER COLUMN interview_view_mode SET NOT NULL/);
+    assert.match(createTablesSource, /ALTER COLUMN archived_interview_view_mode SET NOT NULL/);
+    assert.match(createTablesSource, /SELECT 1 FROM pg_constraint/);
 });
 
 test('returns 204 with no body when logging out', async () => {
@@ -200,7 +215,22 @@ test('returns 422 for unsupported user preference view modes', async () => {
     });
 
     assert.equal(response.status, 422);
-    assert.deepEqual(await response.json(), { message: 'Application view mode preferences must be list or board.' });
+    assert.deepEqual(await response.json(), { message: 'View mode preferences must be list or board.' });
+});
+
+test('returns 422 for unsupported interview view modes', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/user-preferences`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({ archived_interview_view_mode: 'calendar' }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), { message: 'View mode preferences must be list or board.' });
 });
 
 test('returns 401 when a protected route has no token', async () => {

@@ -46,6 +46,8 @@ router.patch(
             archived_application_job_statuses,
             archived_application_show_notes,
             archived_application_view_mode,
+            interview_view_mode,
+            archived_interview_view_mode,
         } = req.body;
 
         if (application_job_statuses !== undefined && !isJobStatusArray(application_job_statuses)) {
@@ -62,9 +64,11 @@ router.patch(
         }
         if (
             !isOptionalApplicationViewMode(application_view_mode) ||
-            !isOptionalApplicationViewMode(archived_application_view_mode)
+            !isOptionalApplicationViewMode(archived_application_view_mode) ||
+            !isOptionalApplicationViewMode(interview_view_mode) ||
+            !isOptionalApplicationViewMode(archived_interview_view_mode)
         ) {
-            sendError(res, 422, 'Application view mode preferences must be list or board.');
+            sendError(res, 422, 'View mode preferences must be list or board.');
             return;
         }
         if (

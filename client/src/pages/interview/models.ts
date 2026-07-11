@@ -27,6 +27,10 @@ export type ArchivedJobInterview = {
 export type ListInterviewsRequest = null;
 export type ListInterviewsResponse = JobInterview[];
 
+export type InterviewCollectionSummary = { interview_count: number };
+export type GetInterviewCollectionSummaryRequest = null;
+export type GetInterviewCollectionSummaryResponse = InterviewCollectionSummary;
+
 export type CreateInterviewRequest = {
     jobId: number;
     interviewDate: Date;

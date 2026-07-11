@@ -2,10 +2,20 @@ import { CSVLink } from 'react-csv';
 import Icon from '../../icon/Icon';
 import PrimaryButton from '../../button/PrimaryButton';
 import ControlDropdown from '../ControlDropdown';
-import type { MoreOptionsProps } from './../models';
+import type { MoreOptionsProps } from '../models';
 import styles from './MoreOptions.module.css';
 
-const MoreOptions = ({ csvData, csvFilename, csvHeaders, deleteLabel, id, isDeleting, onDelete }: MoreOptionsProps) => (
+const MoreOptions = ({
+    csvData,
+    csvFilename,
+    csvHeaders,
+    deleteDisabled = false,
+    deleteLabel,
+    id,
+    isDeleting,
+    middleAction,
+    onDelete,
+}: MoreOptionsProps) => (
     <ControlDropdown id={id} label='More...'>
         <div className={styles.options}>
             <CSVLink className={styles.action} data={csvData} filename={csvFilename} headers={csvHeaders}>
@@ -13,8 +23,25 @@ const MoreOptions = ({ csvData, csvFilename, csvHeaders, deleteLabel, id, isDele
                 <span>Export as CSV</span>
             </CSVLink>
             <hr className={styles.divider} />
+            {middleAction && (
+                <>
+                    <PrimaryButton
+                        className={styles.action}
+                        disabled={middleAction.disabled}
+                        isLoading={middleAction.isLoading}
+                        onClick={middleAction.onClick}
+                        type='button'
+                        variant='secondary'
+                    >
+                        {middleAction.icon && <Icon name={middleAction.icon} size={18} />}
+                        <span>{middleAction.label}</span>
+                    </PrimaryButton>
+                    <hr className={styles.divider} />
+                </>
+            )}
             <PrimaryButton
                 className={`${styles.action} ${styles.deleteAction}`}
+                disabled={deleteDisabled}
                 isLoading={isDeleting}
                 onClick={onDelete}
                 type='button'

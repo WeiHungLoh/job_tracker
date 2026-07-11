@@ -4,6 +4,7 @@ import ViewArchivedApplication from '../../../pages/application/archivedApplicat
 import { render } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
+import { routes } from '../../../routes';
 
 globalThis.fetch = vi.fn();
 
@@ -27,6 +28,8 @@ const mockPreferences = {
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    interview_view_mode: 'list',
+    archived_interview_view_mode: 'list',
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -61,6 +64,9 @@ describe('Archived job application viewing flow', () => {
                     ...(init?.body ? JSON.parse(String(init.body)) : {}),
                 });
             }
+            if (url.endsWith('/archived-job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
             return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
         });
     });
@@ -87,6 +93,7 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'false');
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all archived applications/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /unarchive all applications/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
             `${
@@ -332,13 +339,19 @@ describe('Archived job application viewing flow', () => {
         await clickConfirmedAction(screen.getByRole('button', { name: /delete all archived applications/i }));
 
         await waitFor(() =>
-            expect(mockConfirm).toHaveBeenCalledWith({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all archived job applications? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            })
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: 'Confirm Delete All',
+                    description:
+                        'Delete all 1 archived job application and its 0 related archived interviews? This affects every archived application you own, including applications not visible under the current archived job-status filters. This action is permanent and cannot be undone.',
+                    confirmationText: 'Delete All',
+                    cancellationText: 'Cancel',
+                    confirmationButtonProps: expect.objectContaining({
+                        autoFocus: false,
+                        onKeyDown: expect.any(Function),
+                    }),
+                })
+            )
         );
 
         await waitFor(() =>
@@ -348,6 +361,37 @@ describe('Archived job application viewing flow', () => {
         );
 
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+    });
+
+    test('unarchives the complete archived collection with current counts', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/archived-job-applications/summary')) {
+                return response({ application_count: 5, related_interview_count: 2 });
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Unarchive all applications' }));
+
+        expect(mockConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: 'Confirm Unarchive All',
+                description:
+                    'Unarchive all 5 archived job applications and their 2 related archived interviews? This affects every archived application you own, including applications not visible under the current archived job-status filters.',
+            })
+        );
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/unarchive-all`, {
+            method: 'PATCH',
+        });
+        expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
     });
 
     test('unarchive job application', async () => {
@@ -460,5 +504,33 @@ describe('Archived job application viewing flow', () => {
             '/application/view'
         );
         expect(screen.queryByRole('region', { name: 'Archived application board' })).not.toBeInTheDocument();
+    });
+
+    test('does not run hash scroll-and-highlight while archived applications use Board view', async () => {
+        const scrollIntoView = vi.fn();
+        HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+        render(
+            <MemoryRouter initialEntries={[`${routes.archivedApplications}#1`]}>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { initialPreferences: { archived_application_view_mode: 'board' } }
+        );
+
+        expect(await screen.findByRole('region', { name: 'Archived application board' })).toBeInTheDocument();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    test('keeps archived hash scroll-and-highlight in List view', async () => {
+        const scrollIntoView = vi.fn();
+        HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+        render(
+            <MemoryRouter initialEntries={[`${routes.archivedApplications}#1`]}>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await waitFor(() => expect(scrollIntoView).toHaveBeenCalledOnce());
     });
 });

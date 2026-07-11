@@ -1,0 +1,112 @@
+.formPage {
+    width: clamp(600px, 45vw, 760px);
+    max-width: calc(100% - 32px);
+    margin: 16px auto 30px;
+    padding: 18px clamp(18px, 2.2vw, 28px);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: 15px;
+    background: var(--colorCardBg);
+    color: var(--colorText);
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.formPage h2 {
+    margin: 0 0 20px;
+    color: var(--colorText);
+    font-size: 1.5rem;
+    line-height: 1.3;
+    text-align: center;
+    word-break: break-all;
+}
+
+.formPage label {
+    display: flex;
+    color: var(--colorLabel);
+}
+
+.formPage input,
+.formPage select {
+    width: 100%;
+    min-height: 40px;
+    margin: 10px 0;
+    padding: 8px 10px;
+    border: 1px solid var(--colorInputBorder);
+    border-radius: 10px;
+    outline: none;
+    background: var(--colorInputBg);
+    color: var(--colorInputText);
+    font: inherit;
+    text-align: left;
+    text-align-last: left;
+    box-sizing: border-box;
+    appearance: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formPage input:focus,
+.formPage select:focus {
+    border-color: var(--colorPrimary);
+    box-shadow: 0 0 0 3px var(--colorPrimaryFocusShadow);
+}
+
+.context {
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.context p {
+    margin: 4px 0;
+    overflow-wrap: anywhere;
+}
+
+.actions {
+    display: flex;
+    margin-top: 16px;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 12px 20px;
+}
+
+@media (max-width: 1150px) and (orientation: portrait), (max-width: 600px) {
+    .formPage h2 {
+        margin-bottom: 16px;
+        font-size: 1.2rem;
+    }
+
+    .formPage label {
+        font-size: 0.8rem;
+    }
+
+    .formPage input,
+    .formPage select {
+        font-size: 0.9rem;
+    }
+
+    .context p {
+        font-size: 0.9rem;
+    }
+
+    .formPage button {
+        padding: 6.4px 8px;
+        border-radius: 9.6px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .formPage {
+        max-width: calc(100% - 24px);
+        margin-top: 12px;
+        padding: 16px;
+    }
+
+    .actions {
+        gap: 8px;
+    }
+
+    .actions button {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}

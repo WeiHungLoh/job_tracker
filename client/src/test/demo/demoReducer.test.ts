@@ -15,6 +15,7 @@ describe('demo reducer state', () => {
         const earliestApplicationAgeDays = (fixedNow.getTime() - Math.min(...applicationTimes)) / (24 * 60 * 60 * 1000);
 
         expect(state.applications).toHaveLength(20);
+        expect(state.interviews).toHaveLength(9);
         expect(state.archivedApplications.length).toBeGreaterThanOrEqual(4);
         expect(state.archivedInterviews.length).toBeGreaterThanOrEqual(3);
         expect(JOB_STATUSES.every((status) => coveredStatuses.has(status))).toBe(true);
@@ -29,7 +30,12 @@ describe('demo reducer state', () => {
         expect(
             state.archivedInterviews.every((interview) => archivedApplicationIds.has(interview.archived_job_id))
         ).toBe(true);
-        expect(state.interviews.filter((interview) => new Date(interview.interview_date) > fixedNow).length).toBe(4);
+        expect(state.interviews.filter((interview) => new Date(interview.interview_date) > fixedNow).length).toBe(7);
+        expect(
+            state.interviews
+                .filter((interview) => interview.interview_id >= 407)
+                .map((interview) => new Date(interview.interview_date).getUTCFullYear())
+        ).toEqual([2027, 2027, 2028]);
     });
 
     test('creates applications with reducer-managed unique IDs and updates dashboard selectors', () => {
@@ -91,6 +97,27 @@ describe('demo reducer state', () => {
         expect(restored.archivedInterviews.some((interview) => interview.archived_job_id === 107)).toBe(false);
     });
 
+    test('bulk archives and unarchives complete collections with linked interviews', () => {
+        const state = createDemoInitialState(fixedNow);
+        const originalArchivedApplicationCount = state.archivedApplications.length;
+        const originalArchivedInterviewCount = state.archivedInterviews.length;
+        const archived = demoReducer(state, { type: 'ARCHIVE_ALL_APPLICATIONS' });
+
+        expect(archived.applications).toHaveLength(0);
+        expect(archived.interviews).toHaveLength(0);
+        expect(archived.archivedApplications).toHaveLength(
+            originalArchivedApplicationCount + state.applications.length
+        );
+        expect(archived.archivedInterviews).toHaveLength(originalArchivedInterviewCount + state.interviews.length);
+
+        const unarchived = demoReducer(archived, { type: 'UNARCHIVE_ALL_APPLICATIONS' });
+        expect(unarchived.archivedApplications).toHaveLength(0);
+        expect(unarchived.archivedInterviews).toHaveLength(0);
+        expect(unarchived.applications).toHaveLength(originalArchivedApplicationCount + state.applications.length);
+        expect(unarchived.interviews).toHaveLength(originalArchivedInterviewCount + state.interviews.length);
+        expect(unarchived.applications.every((application) => application.edit_status === false)).toBe(true);
+    });
+
     test('deletes applications and archived applications with linked interviews', () => {
         const state = createDemoInitialState(fixedNow);
         const activeDeleted = demoReducer(state, { type: 'DELETE_APPLICATION', payload: { jobId: 107 } });
@@ -150,6 +177,8 @@ describe('demo reducer state', () => {
         expect(reset.preferences.application_enable_scroll).toBe(true);
         expect(reset.preferences.archived_application_show_notes).toBe(true);
         expect(reset.preferences.application_view_mode).toBe('list');
+        expect(reset.preferences.interview_view_mode).toBe('list');
+        expect(reset.preferences.archived_interview_view_mode).toBe('list');
         expect(reset.applications).not.toBe(state.applications);
     });
 });

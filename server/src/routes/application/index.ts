@@ -2,6 +2,7 @@ import type {
     CreateApplicationRequest,
     CreateApplicationResponse,
     EmptyResponse,
+    GetApplicationCollectionSummaryResponse,
     JobIdParams,
     ListApplicationsQuery,
     ListApplicationsResponse,
@@ -33,6 +34,7 @@ import {
     toTrimmedString,
 } from '../../http/validation.js';
 import express from 'express';
+import { getApplicationCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
 
@@ -115,6 +117,20 @@ router.get(
             res.status(200).json(await getJobStatusCounts(req.user.id));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load job application status counts.');
+        }
+    }
+);
+
+router.get(
+    '/summary',
+    async (
+        req: Request<Record<string, never>, GetApplicationCollectionSummaryResponse>,
+        res: Response<GetApplicationCollectionSummaryResponse>
+    ): Promise<void> => {
+        try {
+            res.status(200).json(await getApplicationCollectionSummary(req.user.id, false));
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to load active application counts.');
         }
     }
 );

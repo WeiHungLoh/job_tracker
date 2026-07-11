@@ -79,7 +79,6 @@
     color: var(--colorTextSecondary);
     overflow-wrap: anywhere;
     width: 500px;
-    gap: 16px;
 }
 
 .location {

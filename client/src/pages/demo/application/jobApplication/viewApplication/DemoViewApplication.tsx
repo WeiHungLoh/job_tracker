@@ -2,6 +2,10 @@ import { useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
 import {
+    createArchiveAllConfirmation,
+    createDeleteAllApplicationsConfirmation,
+} from '../../../../../helper/bulkConfirmation';
+import {
     APPLICATION_CSV_HEADERS,
     JOB_STATUSES,
     type JobApplication,
@@ -41,6 +45,8 @@ const DemoViewApplication = () => {
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const { showErrorToast } = useToast();
+    const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
+    const bulkActionPendingRef = useRef(false);
     const applications = useMemo(() => selectApplications(state), [state]);
     const interviewJobIdSet = useMemo(() => selectInterviewJobIdSet(state), [state]);
     const upcomingInterviewCountByJob = useMemo(() => selectUpcomingInterviewCountByJob(state), [state]);
@@ -91,14 +97,36 @@ const DemoViewApplication = () => {
         dispatch({ type: 'DELETE_APPLICATION', payload: { jobId } });
     };
 
-    const handleDeleteAll = async () => {
-        const { confirmed } = await confirm(createDeleteConfirmation('job application', true));
-
-        if (!confirmed) {
+    const handleBulkAction = async (action: 'archive' | 'delete') => {
+        if (bulkActionPendingRef.current) {
             return;
         }
 
-        dispatch({ type: 'DELETE_ALL_APPLICATIONS' });
+        bulkActionPendingRef.current = true;
+        setPendingBulkAction(action);
+        const applicationIds = new Set(state.applications.map((application) => application.job_id));
+        const interviewCount = state.interviews.filter((interview) => applicationIds.has(interview.job_id)).length;
+
+        try {
+            if (state.applications.length === 0) {
+                return;
+            }
+
+            const confirmation =
+                action === 'archive'
+                    ? createArchiveAllConfirmation(state.applications.length, interviewCount)
+                    : createDeleteAllApplicationsConfirmation(state.applications.length, interviewCount, 'active');
+            const { confirmed } = await confirm(confirmation);
+
+            if (!confirmed) {
+                return;
+            }
+
+            dispatch({ type: action === 'archive' ? 'ARCHIVE_ALL_APPLICATIONS' : 'DELETE_ALL_APPLICATIONS' });
+        } finally {
+            bulkActionPendingRef.current = false;
+            setPendingBulkAction(null);
+        }
     };
 
     const toggleEditStatus = (application: JobApplication) => {
@@ -167,49 +195,55 @@ const DemoViewApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
-                    {hasApplications && (
-                        <>
-                            {!isBoardView && (
-                                <DisplayOptions id='demo-application-display-options'>
-                                    <ToggleButton
-                                        toggled={showNotes}
-                                        onToggle={() =>
-                                            void updatePreferences({
-                                                application_show_notes: !showNotes,
-                                            })
-                                        }
-                                        label='Show notes'
-                                    />
-                                    <ToggleButton
-                                        toggled={showArchive}
-                                        onToggle={() =>
-                                            void updatePreferences({
-                                                application_show_archive: !showArchive,
-                                            })
-                                        }
-                                        label='Show archive'
-                                    />
-                                    <ToggleButton
-                                        toggled={enableScroll}
-                                        onToggle={() =>
-                                            void updatePreferences({
-                                                application_enable_scroll: !enableScroll,
-                                            })
-                                        }
-                                        label='Auto scroll after job status change'
-                                    />
-                                </DisplayOptions>
-                            )}
-                            <MoreOptions
-                                csvData={csvData}
-                                csvFilename='demo_job_applications.csv'
-                                csvHeaders={APPLICATION_CSV_HEADERS}
-                                deleteLabel='Delete all applications'
-                                id='demo-application-more-options'
-                                isDeleting={false}
-                                onDelete={() => void handleDeleteAll()}
+                    {hasApplications && !isBoardView && (
+                        <DisplayOptions id='demo-application-display-options'>
+                            <ToggleButton
+                                toggled={showNotes}
+                                onToggle={() =>
+                                    void updatePreferences({
+                                        application_show_notes: !showNotes,
+                                    })
+                                }
+                                label='Show notes'
                             />
-                        </>
+                            <ToggleButton
+                                toggled={showArchive}
+                                onToggle={() =>
+                                    void updatePreferences({
+                                        application_show_archive: !showArchive,
+                                    })
+                                }
+                                label='Show archive'
+                            />
+                            <ToggleButton
+                                toggled={enableScroll}
+                                onToggle={() =>
+                                    void updatePreferences({
+                                        application_enable_scroll: !enableScroll,
+                                    })
+                                }
+                                label='Auto scroll after job status change'
+                            />
+                        </DisplayOptions>
+                    )}
+                    {state.applications.length > 0 && (
+                        <MoreOptions
+                            csvData={csvData}
+                            csvFilename='demo_job_applications.csv'
+                            csvHeaders={APPLICATION_CSV_HEADERS}
+                            deleteLabel='Delete all applications'
+                            id='demo-application-more-options'
+                            deleteDisabled={pendingBulkAction === 'archive'}
+                            isDeleting={pendingBulkAction === 'delete'}
+                            middleAction={{
+                                disabled: pendingBulkAction === 'delete',
+                                icon: 'archive',
+                                isLoading: pendingBulkAction === 'archive',
+                                label: 'Archive all applications',
+                                onClick: () => void handleBulkAction('archive'),
+                            }}
+                            onDelete={() => void handleBulkAction('delete')}
+                        />
                     )}
                 </ActivityControls>
             </div>

@@ -20,6 +20,7 @@ const renderJobCard = (interview: JobInterview = futureInterview, onDelete = vi.
     render(
         <MemoryRouter>
             <InterviewCard
+                applicationRoute='/application/view'
                 index={0}
                 interview={interview}
                 isDeleting={false}
@@ -62,12 +63,35 @@ describe('InterviewCard calendar options', () => {
         renderJobCard({ ...futureInterview, interview_date: '2020-01-01T00:00:00Z' });
 
         expect(queryCalendarTrigger()).not.toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'Acme interview' }).className).toContain('overdue');
     });
 
     test('does not show Add to calendar for an invalid active interview date', () => {
         renderJobCard({ ...futureInterview, interview_date: 'not-a-date' });
 
         expect(queryCalendarTrigger()).not.toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'Acme interview' }).className).not.toContain('overdue');
+    });
+
+    test('combines Board and overdue styling for a past interview', () => {
+        render(
+            <MemoryRouter>
+                <InterviewCard
+                    applicationRoute='/application/view'
+                    index={0}
+                    interview={{ ...futureInterview, interview_date: '2020-01-01T00:00:00Z' }}
+                    isDeleting={false}
+                    layout='board'
+                    onDelete={vi.fn()}
+                    onViewApplicationClick={vi.fn()}
+                    variant='job'
+                />
+            </MemoryRouter>
+        );
+
+        const card = screen.getByRole('article', { name: 'Acme interview' });
+        expect(card.className).toContain('board');
+        expect(card.className).toContain('overdue');
     });
 
     test('does not show Add to calendar for an archived interview', () => {
@@ -80,6 +104,7 @@ describe('InterviewCard calendar options', () => {
         render(
             <MemoryRouter>
                 <InterviewCard
+                    applicationRoute='/application/archived'
                     index={0}
                     interview={archivedInterview}
                     isDeleting={false}
@@ -173,5 +198,35 @@ describe('InterviewCard calendar options', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
 
         expect(onDelete).toHaveBeenCalledOnce();
+    });
+
+    test('uses shared Board actions and hides List-only interview details', async () => {
+        render(
+            <MemoryRouter>
+                <InterviewCard
+                    applicationRoute='/demo/application/view'
+                    index={0}
+                    interview={futureInterview}
+                    isDeleting={false}
+                    layout='board'
+                    onDelete={vi.fn()}
+                    onViewApplicationClick={vi.fn()}
+                    variant='job'
+                />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByRole('article', { name: 'Acme interview' })).toBeInTheDocument();
+        expect(screen.queryByText('Notes: Bring examples')).not.toBeInTheDocument();
+        expect(screen.queryByText(/time left/i)).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /review corresponding job application/i })).not.toBeInTheDocument();
+        const actions = screen.getByText('Actions').closest('details');
+        expect(actions).not.toHaveAttribute('open');
+
+        await userEvent.click(screen.getByText('Actions'));
+
+        expect(actions).toHaveAttribute('open');
+        expect(getCalendarTrigger()).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Delete' }).parentElement?.className).toContain('compactActions');
     });
 });

@@ -1,3 +1,0 @@
-.interviewList {
-    composes: interviewList from '../../../../interview/jobInterview/viewInterview/ViewInterview.module.css';
-}

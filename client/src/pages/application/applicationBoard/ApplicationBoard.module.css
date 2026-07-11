@@ -292,33 +292,7 @@
     font-weight: 600;
 }
 
-.actions {
-    margin-top: 10px;
-}
-
-.actions summary {
-    display: flex;
-    min-height: 32px;
-    align-items: center;
-    color: var(--colorPrimary);
-    cursor: pointer;
-    font-size: 0.875rem;
-    font-weight: 700;
-}
-
-.actions summary:focus-visible {
-    outline: 2px solid var(--colorPrimaryFocusOutline);
-    outline-offset: 2px;
-}
-
-.actionPanel {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 8px;
-}
-
-.actionPanel a {
+.card a {
     width: fit-content;
     padding: 4px 8px;
     border-radius: 8px;
@@ -329,7 +303,7 @@
     text-decoration: none;
 }
 
-.actionPanel a:hover {
+.card a:hover {
     background-color: var(--colorLinkHoverBg);
 }
 
@@ -346,12 +320,6 @@
 .readOnlyNotes textarea {
     cursor: default;
     opacity: 1;
-}
-
-.actionButtons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
 }
 
 @media (max-width: 803px) {

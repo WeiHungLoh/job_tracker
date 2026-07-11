@@ -3,6 +3,7 @@ import {
     buildGoogleCalendarUrl,
     buildIcsContent,
     formatGoogleCalendarTimestamp,
+    isOverdueInterviewDate,
 } from '../../pages/interview/calendarOptions/calendarEvent';
 
 const interview = {
@@ -53,6 +54,14 @@ describe('calendar event helpers', () => {
 
     test('formats timestamps without locale-dependent date formatting', () => {
         expect(formatGoogleCalendarTimestamp(new Date('2026-08-15T01:30:45.123Z'))).toBe('20260815T013045Z');
+    });
+
+    test('identifies only valid past interview dates as overdue', () => {
+        const now = new Date('2026-07-11T00:00:00Z');
+
+        expect(isOverdueInterviewDate('2026-07-10T23:59:59Z', now)).toBe(true);
+        expect(isOverdueInterviewDate('2026-07-11T00:00:01Z', now)).toBe(false);
+        expect(isOverdueInterviewDate('not-a-date', now)).toBe(false);
     });
 
     test('uses the fallback title and omits empty optional values', () => {

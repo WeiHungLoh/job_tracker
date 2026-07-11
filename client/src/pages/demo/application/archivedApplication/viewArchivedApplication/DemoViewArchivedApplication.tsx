@@ -1,6 +1,10 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
+import {
+    createDeleteAllApplicationsConfirmation,
+    createUnarchiveAllConfirmation,
+} from '../../../../../helper/bulkConfirmation';
 import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../../../application/models';
 import ToggleButton from '../../../../../components/toggleButton/ToggleButton';
 import { useConfirm } from 'material-ui-confirm';
@@ -27,6 +31,8 @@ const DemoViewArchivedApplication = () => {
     const archivedApplications = useMemo(() => selectArchivedApplications(state), [state]);
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const confirm = useConfirm();
+    const [pendingBulkAction, setPendingBulkAction] = useState<'delete' | 'unarchive' | null>(null);
+    const bulkActionPendingRef = useRef(false);
     const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;
     const viewMode = preferences.archived_application_view_mode;
@@ -63,14 +69,44 @@ const DemoViewArchivedApplication = () => {
         dispatch({ type: 'DELETE_ARCHIVED_APPLICATION', payload: { archivedJobId } });
     };
 
-    const handleDeleteAll = async () => {
-        const { confirmed } = await confirm(createDeleteConfirmation('archived job application', true));
-
-        if (!confirmed) {
+    const handleBulkAction = async (action: 'delete' | 'unarchive') => {
+        if (bulkActionPendingRef.current) {
             return;
         }
 
-        dispatch({ type: 'DELETE_ALL_ARCHIVED_APPLICATIONS' });
+        bulkActionPendingRef.current = true;
+        setPendingBulkAction(action);
+        const applicationIds = new Set(state.archivedApplications.map((application) => application.archived_job_id));
+        const interviewCount = state.archivedInterviews.filter((interview) =>
+            applicationIds.has(interview.archived_job_id)
+        ).length;
+
+        try {
+            if (state.archivedApplications.length === 0) {
+                return;
+            }
+
+            const confirmation =
+                action === 'unarchive'
+                    ? createUnarchiveAllConfirmation(state.archivedApplications.length, interviewCount)
+                    : createDeleteAllApplicationsConfirmation(
+                          state.archivedApplications.length,
+                          interviewCount,
+                          'archived'
+                      );
+            const { confirmed } = await confirm(confirmation);
+
+            if (!confirmed) {
+                return;
+            }
+
+            dispatch({
+                type: action === 'unarchive' ? 'UNARCHIVE_ALL_APPLICATIONS' : 'DELETE_ALL_ARCHIVED_APPLICATIONS',
+            });
+        } finally {
+            bulkActionPendingRef.current = false;
+            setPendingBulkAction(null);
+        }
     };
 
     const handleRestore = (archivedJobId: number) => {
@@ -98,31 +134,37 @@ const DemoViewArchivedApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
-                    {hasApplications && (
-                        <>
-                            {!isBoardView && (
-                                <DisplayOptions id='demo-archived-application-display-options'>
-                                    <ToggleButton
-                                        toggled={showNotes}
-                                        onToggle={() =>
-                                            void updatePreferences({
-                                                archived_application_show_notes: !showNotes,
-                                            })
-                                        }
-                                        label='Show notes'
-                                    />
-                                </DisplayOptions>
-                            )}
-                            <MoreOptions
-                                csvData={csvData}
-                                csvFilename='demo_archived_job_applications.csv'
-                                csvHeaders={APPLICATION_CSV_HEADERS}
-                                deleteLabel='Delete all archived applications'
-                                id='demo-archived-application-more-options'
-                                isDeleting={false}
-                                onDelete={() => void handleDeleteAll()}
+                    {hasApplications && !isBoardView && (
+                        <DisplayOptions id='demo-archived-application-display-options'>
+                            <ToggleButton
+                                toggled={showNotes}
+                                onToggle={() =>
+                                    void updatePreferences({
+                                        archived_application_show_notes: !showNotes,
+                                    })
+                                }
+                                label='Show notes'
                             />
-                        </>
+                        </DisplayOptions>
+                    )}
+                    {state.archivedApplications.length > 0 && (
+                        <MoreOptions
+                            csvData={csvData}
+                            csvFilename='demo_archived_job_applications.csv'
+                            csvHeaders={APPLICATION_CSV_HEADERS}
+                            deleteLabel='Delete all archived applications'
+                            id='demo-archived-application-more-options'
+                            deleteDisabled={pendingBulkAction === 'unarchive'}
+                            isDeleting={pendingBulkAction === 'delete'}
+                            middleAction={{
+                                disabled: pendingBulkAction === 'delete',
+                                icon: 'archive',
+                                isLoading: pendingBulkAction === 'unarchive',
+                                label: 'Unarchive all applications',
+                                onClick: () => void handleBulkAction('unarchive'),
+                            }}
+                            onDelete={() => void handleBulkAction('delete')}
+                        />
                     )}
                 </ActivityControls>
             </div>

@@ -8,9 +8,13 @@ const VIEW_MODE_LABEL: Record<ApplicationViewMode, string> = {
 
 const VIEW_MODES: readonly ApplicationViewMode[] = ['list', 'board'];
 
-const ApplicationViewToggle = ({ currentView, onViewChange }: ApplicationViewToggleProps) => (
+const ApplicationViewToggle = ({
+    ariaLabel = 'Application view',
+    currentView,
+    onViewChange,
+}: ApplicationViewToggleProps) => (
     <div className={styles.toggleWrapper}>
-        <div aria-label='Application view' className={styles.toggle} role='group'>
+        <div aria-label={ariaLabel} className={styles.toggle} role='group'>
             {VIEW_MODES.map((viewMode) => (
                 <button
                     aria-pressed={currentView === viewMode}

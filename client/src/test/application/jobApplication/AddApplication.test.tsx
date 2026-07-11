@@ -25,6 +25,7 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
+        expect(screen.queryByRole('heading', { name: 'Add Job Application' })).not.toBeInTheDocument();
         userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
         userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));

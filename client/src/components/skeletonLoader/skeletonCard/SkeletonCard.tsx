@@ -6,17 +6,19 @@ const ACTION_COUNT: Record<SkeletonCardProps['variant'], number> = {
     interview: 1,
 };
 
-const SkeletonCard = ({ variant }: SkeletonCardProps) => {
+const SkeletonCard = ({ announceLoading = true, layout = 'list', variant }: SkeletonCardProps) => {
     const actionCount = ACTION_COUNT[variant];
     const actionClasses = `${styles.actions} ${variant === 'interview' ? styles.singleAction : ''}`;
+    const cardClasses = `${styles.skeletonCard} ${layout === 'board' ? styles.board : ''}`;
 
     return (
         <div
-            className={styles.skeletonCard}
-            role='status'
-            aria-busy='true'
-            aria-label='Loading results'
+            aria-busy={announceLoading || undefined}
+            aria-hidden={!announceLoading || undefined}
+            aria-label={announceLoading ? 'Loading results' : undefined}
+            className={cardClasses}
             data-testid='skeleton-card'
+            role={announceLoading ? 'status' : undefined}
         >
             <div className={styles.textLines} data-testid='skeleton-text-lines'>
                 <div className={`${styles.skeletonLine} ${styles.title}`} />

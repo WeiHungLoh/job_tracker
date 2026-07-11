@@ -2,6 +2,10 @@
     composes: addInterview from '../../../../interview/jobInterview/addInterview/AddInterview.module.css';
 }
 
+.context {
+    composes: context from '../../../../interview/jobInterview/addInterview/AddInterview.module.css';
+}
+
 .submitButton {
     composes: submitButton from '../../../../interview/jobInterview/addInterview/AddInterview.module.css';
 }

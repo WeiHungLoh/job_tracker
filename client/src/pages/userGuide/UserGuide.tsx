@@ -103,9 +103,10 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <h3>Interviews</h3>
                 <p>
-                    Create interviews from an application with status <code>Interview</code>, view active or archived
-                    interviews, open their related application and export CSV records. The interview date must be after
-                    the linked application date, and notes use the shared {FIELD_MAX_LENGTHS.notes}-character limit.
+                    Create interviews from an application with status <code>Interview</code>, switch active or archived
+                    interviews between list and responsive board view, open their related application and export CSV
+                    records. The interview date must be after the linked application date, and notes use the shared{' '}
+                    {FIELD_MAX_LENGTHS.notes}-character limit.
                 </p>
                 <h3>Navigation and reset</h3>
                 <p>
@@ -197,12 +198,14 @@ const guideSections: readonly UserGuideSection[] = [
                 <h3>View interviews</h3>
                 <p>
                     Interview records are linked to their job applications and can be deleted from the interview viewer.
+                    Use the <strong>List</strong> and <strong>Board</strong> switch to choose a standard card list or a
+                    responsive multi-column card grid. Both views keep exactly the same interview order.
                 </p>
                 <p>
-                    Select <code>Click here to view corresponding job application</code> to return to the related
-                    application. The application is scrolled into view and highlighted for four seconds. This only works
-                    if the corresponding application is visible in the current filter on the applications page (e.g. if
-                    the application has status <code>Interview</code>, the filter must include that status).
+                    Select <code>Click here to review corresponding job application</code> to return to the related
+                    application. The relevant active or archived Application page must be in List view. The application
+                    is then scrolled into view and highlighted for four seconds if it is visible in the current filter
+                    (e.g. if the application has status <code>Interview</code>, the filter must include that status).
                 </p>
                 <p>
                     Both active and archived interviews are sorted with upcoming interviews first (closest date at the
@@ -256,8 +259,9 @@ const guideSections: readonly UserGuideSection[] = [
                         linked interview, if one exists.
                     </li>
                     <li>
-                        <strong>Archived interviews:</strong> These are read-only. Unarchive their related application
-                        to restore them. Sorted with upcoming first, past last.
+                        <strong>Archived interviews:</strong> View them in list or responsive board view. They are
+                        read-only; unarchive their related application to restore them. Sorted with upcoming first, past
+                        last.
                     </li>
                 </ul>
             </>
@@ -274,10 +278,26 @@ const guideSections: readonly UserGuideSection[] = [
                     <li>Archiving an application automatically archives its linked interview.</li>
                     <li>Unarchiving an application automatically restores its linked interview.</li>
                     <li>Archived records are not editable until they are restored.</li>
+                    <li>
+                        <strong>Archive All</strong> affects every active application you own, not only applications
+                        visible under the current filters, and archives all related active interviews.
+                    </li>
+                    <li>
+                        <strong>Unarchive All</strong> affects every archived application you own, not only archived
+                        applications visible under the current filters, and restores all related archived interviews.
+                    </li>
+                    <li>
+                        <strong>Delete All applications</strong> permanently deletes the complete active or archived
+                        application collection selected and all of its related interviews, regardless of filters.
+                    </li>
+                    <li>
+                        <strong>Delete All interviews</strong> permanently deletes the complete active or archived
+                        interview collection selected without changing the opposite collection.
+                    </li>
                 </ul>
                 <p>
-                    A confirmation dialog appears before single and bulk deletions. Deletion is permanent, so review the
-                    selected records before confirming.
+                    Bulk confirmations show the current application and related-interview counts before the action.
+                    Single and bulk deletions are permanent, so review the selected records before confirming.
                 </p>
             </>
         ),
@@ -328,7 +348,10 @@ const guideSections: readonly UserGuideSection[] = [
                     After a list-view status update, the application receives a green highlight for four seconds. No
                     highlight is shown when the status did not change.
                 </p>
-                <p>The same feedback appears when navigating from an interview to its corresponding application.</p>
+                <p>
+                    The same feedback appears when navigating from an interview to its corresponding application, but
+                    only while the relevant Application page is in List view.
+                </p>
             </>
         ),
     },

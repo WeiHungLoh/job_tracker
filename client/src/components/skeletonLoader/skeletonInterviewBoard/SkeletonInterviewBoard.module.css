@@ -1,0 +1,15 @@
+.board {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 20px;
+    align-items: stretch;
+    box-sizing: border-box;
+}
+
+@media (max-width: 430px) {
+    .board {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+}

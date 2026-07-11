@@ -28,7 +28,9 @@ export type DemoAction =
     | { type: 'DELETE_APPLICATION'; payload: { jobId: number } }
     | { type: 'DELETE_ALL_APPLICATIONS' }
     | { type: 'ARCHIVE_APPLICATION'; payload: { jobId: number } }
+    | { type: 'ARCHIVE_ALL_APPLICATIONS' }
     | { type: 'RESTORE_APPLICATION'; payload: { archivedJobId: number } }
+    | { type: 'UNARCHIVE_ALL_APPLICATIONS' }
     | { type: 'DELETE_ARCHIVED_APPLICATION'; payload: { archivedJobId: number } }
     | { type: 'DELETE_ALL_ARCHIVED_APPLICATIONS' }
     | { type: 'CREATE_INTERVIEW'; payload: CreateInterviewPayload }
@@ -175,6 +177,24 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
             };
         }
 
+        case 'ARCHIVE_ALL_APPLICATIONS': {
+            const applicationsById = new Map(
+                state.applications.map((application) => [application.job_id, application])
+            );
+            const archivedInterviews = state.interviews.flatMap((interview) => {
+                const application = applicationsById.get(interview.job_id);
+                return application ? [toArchivedInterview(interview, application)] : [];
+            });
+
+            return {
+                ...state,
+                applications: [],
+                archivedApplications: [...state.archivedApplications, ...state.applications.map(toArchivedApplication)],
+                interviews: [],
+                archivedInterviews: [...state.archivedInterviews, ...archivedInterviews],
+            };
+        }
+
         case 'RESTORE_APPLICATION': {
             const application = state.archivedApplications.find(
                 (item) => item.archived_job_id === action.payload.archivedJobId
@@ -197,6 +217,24 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 archivedInterviews: state.archivedInterviews.filter(
                     (interview) => interview.archived_job_id !== application.archived_job_id
                 ),
+            };
+        }
+
+        case 'UNARCHIVE_ALL_APPLICATIONS': {
+            const applicationsById = new Map(
+                state.archivedApplications.map((application) => [application.archived_job_id, application])
+            );
+            const interviews = state.archivedInterviews.flatMap((interview) => {
+                const application = applicationsById.get(interview.archived_job_id);
+                return application ? [toActiveInterview(interview, application)] : [];
+            });
+
+            return {
+                ...state,
+                applications: [...state.applications, ...state.archivedApplications.map(toActiveApplication)],
+                archivedApplications: [],
+                interviews: [...state.interviews, ...interviews],
+                archivedInterviews: [],
             };
         }
 

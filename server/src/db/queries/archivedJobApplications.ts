@@ -65,6 +65,64 @@ export const unarchiveJobApplication = async (archivedJobId: number, userId: num
     }
 };
 
+export const archiveAllJobApplications = async (userId: number): Promise<void> => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        await client.query(
+            `WITH archived_applications AS (
+                UPDATE job_applications
+                SET is_archived = true, edit_status = false
+                WHERE user_id = $1 AND is_archived = false
+                RETURNING job_id
+            )
+            UPDATE interviews
+            SET is_archived = true
+            FROM archived_applications
+            WHERE interviews.job_id = archived_applications.job_id
+                AND interviews.user_id = $1
+                AND interviews.is_archived = false`,
+            [userId]
+        );
+        await client.query('COMMIT');
+    } catch (error: unknown) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+export const unarchiveAllJobApplications = async (userId: number): Promise<void> => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        await client.query(
+            `WITH unarchived_applications AS (
+                UPDATE job_applications
+                SET is_archived = false
+                WHERE user_id = $1 AND is_archived = true
+                RETURNING job_id
+            )
+            UPDATE interviews
+            SET is_archived = false
+            FROM unarchived_applications
+            WHERE interviews.job_id = unarchived_applications.job_id
+                AND interviews.user_id = $1
+                AND interviews.is_archived = true`,
+            [userId]
+        );
+        await client.query('COMMIT');
+    } catch (error: unknown) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 export const getArchivedJobApplications = async (
     userId: number,
     jobStatuses: JobStatus[]

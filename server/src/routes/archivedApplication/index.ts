@@ -2,20 +2,24 @@ import type {
     ArchiveApplicationRequest,
     ArchivedJobIdParams,
     EmptyResponse,
+    GetArchivedApplicationCollectionSummaryResponse,
     ListArchivedApplicationsQuery,
     ListArchivedApplicationsResponse,
 } from './models.js';
 import type { Request, Response } from 'express';
 import {
+    archiveAllJobApplications,
     archiveJobApplication,
     deleteAllArchivedJobApplications,
     deleteArchivedJobApplication,
     getArchivedJobApplications,
+    unarchiveAllJobApplications,
     unarchiveJobApplication,
 } from '../../db/queries/archivedJobApplications.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
 import { toJobStatusQueryValues, toPositiveInteger } from '../../http/validation.js';
+import { getApplicationCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
 
@@ -65,6 +69,44 @@ router.get(
             res.status(200).json(await getArchivedJobApplications(req.user.id, jobStatuses));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived job applications.');
+        }
+    }
+);
+
+router.get(
+    '/summary',
+    async (
+        req: Request<Record<string, never>, GetArchivedApplicationCollectionSummaryResponse>,
+        res: Response<GetArchivedApplicationCollectionSummaryResponse>
+    ): Promise<void> => {
+        try {
+            res.status(200).json(await getApplicationCollectionSummary(req.user.id, true));
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to load archived application counts.');
+        }
+    }
+);
+
+router.patch(
+    '/archive-all',
+    async (req: Request<Record<string, never>, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
+        try {
+            await archiveAllJobApplications(req.user.id);
+            res.sendStatus(204);
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to archive job applications.');
+        }
+    }
+);
+
+router.patch(
+    '/unarchive-all',
+    async (req: Request<Record<string, never>, EmptyResponse>, res: Response<EmptyResponse>): Promise<void> => {
+        try {
+            await unarchiveAllJobApplications(req.user.id);
+            res.sendStatus(204);
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to unarchive job applications.');
         }
     }
 );

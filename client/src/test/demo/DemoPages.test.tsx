@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import DemoAddApplication from '../../pages/demo/application/jobApplication/addApplication/DemoAddApplication';
 import DemoAddInterview from '../../pages/demo/interview/jobInterview/addInterview/DemoAddInterview';
 import { DemoProvider, useDemo } from '../../pages/demo/context/DemoContext';
@@ -53,6 +53,23 @@ const clickConfirmedAction = async (button: HTMLElement) => {
     await act(async () => {
         await userEvent.click(button);
     });
+};
+
+const SetApplicationViewMode = ({ archived = false }: { archived?: boolean }) => {
+    const { updatePreferences } = useDemo();
+
+    return (
+        <button
+            onClick={() =>
+                void updatePreferences(
+                    archived ? { archived_application_view_mode: 'board' } : { application_view_mode: 'board' }
+                )
+            }
+            type='button'
+        >
+            Set application Board mode
+        </button>
+    );
 };
 
 describe('demo page interactions', () => {
@@ -145,6 +162,7 @@ describe('demo page interactions', () => {
     test('validates and creates demo applications', async () => {
         renderDemo(<DemoAddApplication />, [routes.demoAddApplication]);
 
+        expect(screen.queryByRole('heading', { name: 'Add Job Application' })).not.toBeInTheDocument();
         await userEvent.type(screen.getByLabelText(/company name/i), 'Demo Form Company');
         await userEvent.type(screen.getByLabelText(/job title/i), 'Demo Form Engineer');
         await userEvent.type(screen.getByLabelText(/job posting url/i), 'not-a-url');
@@ -186,7 +204,9 @@ describe('demo page interactions', () => {
     test('deletes interviews without success toasts', async () => {
         renderDemo(<DemoViewInterview />, [routes.demoViewInterviews]);
 
-        expect(screen.getByText(/Atlas RecruitTech/i)).toBeInTheDocument();
+        expect(within(screen.getByRole('region', { name: 'Active interviews' })).getAllByRole('article')).toHaveLength(
+            9
+        );
 
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
@@ -199,6 +219,50 @@ describe('demo page interactions', () => {
             routes.demoViewApplications
         );
         expect(screen.queryByRole('link', { name: 'Add interview' })).not.toBeInTheDocument();
+    });
+
+    test('switches demo interviews to the responsive Board without changing their order', async () => {
+        renderDemo(<DemoViewInterview />, [routes.demoViewInterviews]);
+
+        const interviews = screen.getByRole('region', { name: 'Active interviews' });
+        const listOrder = within(interviews)
+            .getAllByRole('article')
+            .map((card) => card.getAttribute('aria-label'));
+        await userEvent.click(
+            within(screen.getByRole('group', { name: 'Interview view' })).getByRole('button', { name: 'Board' })
+        );
+
+        expect(interviews).toHaveAttribute('data-layout', 'board');
+        expect(
+            within(interviews)
+                .getAllByRole('article')
+                .map((card) => card.getAttribute('aria-label'))
+        ).toEqual(listOrder);
+        expect(within(interviews).queryByText(/time left/i)).not.toBeInTheDocument();
+        expect(within(interviews).queryByText(/notes:/i)).not.toBeInTheDocument();
+        expect(
+            within(interviews).queryByRole('link', { name: /review corresponding job application/i })
+        ).not.toBeInTheDocument();
+        expect(within(interviews).getAllByText('Actions').length).toBeGreaterThan(0);
+    });
+
+    test('blocks demo active corresponding navigation when active applications use Board view', async () => {
+        renderDemo(
+            <>
+                <SetApplicationViewMode />
+                <DemoViewInterview />
+            </>,
+            [routes.demoViewInterviews]
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Set application Board mode' }));
+        await userEvent.click(screen.getAllByRole('link', { name: /review corresponding job application/i })[0]);
+
+        expect(
+            await screen.findByText(
+                'The corresponding job application can only be opened while active applications are displayed in List view. Switch to List view and try again.'
+            )
+        ).toBeInTheDocument();
     });
 
     test('uses demo-only links for archived interview empty state', async () => {
@@ -214,6 +278,40 @@ describe('demo page interactions', () => {
             routes.demoViewInterviews
         );
         expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+    });
+
+    test('supports archived demo interview Board mode and guards archived corresponding navigation', async () => {
+        renderDemo(
+            <>
+                <SetApplicationViewMode archived />
+                <DemoViewArchivedInterview />
+            </>,
+            [routes.demoArchivedInterviews]
+        );
+
+        await userEvent.click(
+            within(screen.getByRole('group', { name: 'Archived interview view' })).getByRole('button', {
+                name: 'Board',
+            })
+        );
+        expect(screen.getByRole('region', { name: 'Archived interviews' })).toHaveAttribute('data-layout', 'board');
+        expect(screen.queryByText(/time left/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/notes:/i)).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /review corresponding job application/i })).not.toBeInTheDocument();
+
+        await userEvent.click(
+            within(screen.getByRole('group', { name: 'Archived interview view' })).getByRole('button', {
+                name: 'List',
+            })
+        );
+        await userEvent.click(screen.getByRole('button', { name: 'Set application Board mode' }));
+        await userEvent.click(screen.getAllByRole('link', { name: /review corresponding job application/i })[0]);
+
+        expect(
+            await screen.findByText(
+                'The corresponding archived job application can only be opened while archived applications are displayed in List view. Switch to List view and try again.'
+            )
+        ).toBeInTheDocument();
     });
 
     test('clears demo application filters in reducer state without backend calls', async () => {

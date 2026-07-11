@@ -16,7 +16,14 @@ import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import type { ApplicationsLineChartProps } from './models';
 import styles from './ApplicationsLineChart.module.css';
 import { useTheme } from '../../components/theme/ThemeContext';
-import { CHART_COLORS, LEGEND_LABELS, TITLE_FONT, TITLE_PADDING } from './chartConfig';
+import {
+    CHART_COLORS,
+    DASHBOARD_TOOLTIP_OPTIONS,
+    LEGEND_LABELS,
+    TITLE_FONT,
+    TITLE_PADDING,
+    trendTooltipPlugin,
+} from './chartConfig';
 
 ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
 
@@ -121,11 +128,15 @@ const ApplicationsLineChart = ({ weeklyApplications, isLoading }: ApplicationsLi
                                         color: chartColors.title,
                                     },
                                     legend: {
+                                        display: true,
                                         position: 'bottom' as const,
                                         labels: { ...LEGEND_LABELS, color: chartColors.legend },
+                                        onClick: () => undefined,
                                     },
+                                    tooltip: DASHBOARD_TOOLTIP_OPTIONS,
                                 },
                             }}
+                            plugins={[trendTooltipPlugin]}
                         />
                     </div>
                     <p className={styles.total}>Total applications in the past eight weeks: {total}</p>

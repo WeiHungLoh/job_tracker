@@ -61,6 +61,13 @@ export type ListWeeklyApplicationsResponse = WeeklyApplicationCount[];
 export type ListJobStatusCountsRequest = null;
 export type ListJobStatusCountsResponse = JobStatusCount[];
 
+export type ApplicationCollectionSummary = {
+    application_count: number;
+    related_interview_count: number;
+};
+export type GetApplicationCollectionSummaryRequest = null;
+export type GetApplicationCollectionSummaryResponse = ApplicationCollectionSummary;
+
 export type CreateApplicationRequest = {
     companyName: string;
     jobTitle: string;
@@ -101,6 +108,8 @@ export type ArchiveApplicationRequest = {
     jobId: number;
 };
 export type ArchiveApplicationResponse = null;
+export type ArchiveAllApplicationsRequest = null;
+export type ArchiveAllApplicationsResponse = null;
 
 export type DeleteArchivedApplicationRequest = {
     archivedJobId: number;
@@ -114,6 +123,8 @@ export type UnarchiveApplicationRequest = {
     archivedJobId: number;
 };
 export type UnarchiveApplicationResponse = null;
+export type UnarchiveAllApplicationsRequest = null;
+export type UnarchiveAllApplicationsResponse = null;
 
 export type ApplicationCsvHeader = {
     label: string;

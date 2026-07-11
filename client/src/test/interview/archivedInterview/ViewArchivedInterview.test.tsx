@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedInterview from '../../../pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
 import { render } from '../../renderWithToast';
@@ -43,9 +43,12 @@ describe('Archived job interview viewer flow', () => {
     beforeEach(() => {
         vi.resetAllMocks();
         fetch.mockReset();
-        fetch.mockImplementation(async (_url: string, init?: RequestInit) =>
-            init?.method === 'GET' ? response([mockInterview]) : response(undefined, 204)
-        );
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/archived-job-interviews/summary')) {
+                return response({ interview_count: 1 });
+            }
+            return init?.method === 'GET' ? response([mockInterview]) : response(undefined, 204);
+        });
     });
 
     test('displays job interview details and action buttons', async () => {
@@ -79,6 +82,7 @@ describe('Archived job interview viewer flow', () => {
         expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
         expect(screen.queryByRole('progressbar', { name: 'Loading' })).not.toBeInTheDocument();
         expect(screen.queryByText(/no archived job interview found/i)).not.toBeInTheDocument();
+        expect(document.querySelector('br')).not.toBeInTheDocument();
     });
 
     test('deletes archived interview after user confirms', async () => {
@@ -131,13 +135,19 @@ describe('Archived job interview viewer flow', () => {
         await clickConfirmedAction(screen.getByRole('button', { name: 'Delete all archived interviews' }));
 
         await waitFor(() =>
-            expect(mockConfirm).toHaveBeenCalledWith({
-                title: 'Confirm Deletion',
-                description:
-                    'Are you sure you want to delete all archived job interviews? This action is permanent and cannot be undone.',
-                confirmationText: 'Delete All',
-                cancellationText: 'Cancel',
-            })
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: 'Confirm Delete All',
+                    description:
+                        'Delete all 1 archived interview you own? This affects every archived interview in your account. This action is permanent and cannot be undone.',
+                    confirmationText: 'Delete All',
+                    cancellationText: 'Cancel',
+                    confirmationButtonProps: expect.objectContaining({
+                        autoFocus: false,
+                        onKeyDown: expect.any(Function),
+                    }),
+                })
+            )
         );
 
         await waitFor(() =>
@@ -159,6 +169,9 @@ describe('Archived job interview viewer flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No archived interviews yet' })).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'No archived interviews yet' }).closest('section')?.className
+        ).toContain('followsControls');
         expect(screen.getByText(/interviews linked to archived applications/i)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'View active interviews' })).toHaveAttribute('href', '/interview/view');
         expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
@@ -178,5 +191,74 @@ describe('Archived job interview viewer flow', () => {
         expect(
             await screen.findByText(/this archived job application is not available in archived applications/i)
         ).toBeInTheDocument();
+    });
+
+    test('renders only the archived interview Board skeleton for a saved Board preference', () => {
+        fetch.mockImplementation(async () => await new Promise<ReturnType<typeof response>>(() => undefined));
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            { initialPreferences: { archived_interview_view_mode: 'board' } }
+        );
+
+        expect(screen.getByRole('status', { name: 'Loading interviews' })).toBeInTheDocument();
+        expect(screen.getAllByTestId('skeleton-card')).toHaveLength(6);
+        expect(screen.queryByRole('status', { name: 'Loading results' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('status', { name: 'Loading board' })).not.toBeInTheDocument();
+    });
+
+    test('switches archived interviews to Board without refetching', async () => {
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>
+        );
+
+        const interviews = await screen.findByRole('region', { name: 'Archived interviews' });
+        await userEvent.click(
+            within(screen.getByRole('group', { name: 'Archived interview view' })).getByRole('button', {
+                name: 'Board',
+            })
+        );
+
+        await waitFor(() => expect(interviews).toHaveAttribute('data-layout', 'board'));
+        expect(within(interviews).queryByText(/time left/i)).not.toBeInTheDocument();
+        expect(within(interviews).queryByText(/notes:/i)).not.toBeInTheDocument();
+        expect(
+            within(interviews).queryByRole('link', { name: /review corresponding job application/i })
+        ).not.toBeInTheDocument();
+        const actions = within(interviews).getByText('Actions').closest('details');
+        expect(actions).not.toHaveAttribute('open');
+
+        await userEvent.click(within(interviews).getByText('Actions'));
+        expect(actions).toHaveAttribute('open');
+        expect(within(interviews).getByRole('button', { name: 'Delete' }).parentElement?.className).toContain(
+            'compactActions'
+        );
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('blocks archived corresponding navigation before the API when archived applications use Board view', async () => {
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            {
+                initialPreferences: {
+                    archived_application_view_mode: 'board',
+                },
+            }
+        );
+
+        await userEvent.click(await screen.findByRole('link', { name: /review corresponding job application/i }));
+
+        expect(
+            await screen.findByText(
+                'The corresponding archived job application can only be opened while archived applications are displayed in List view. Switch to List view and try again.'
+            )
+        ).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledTimes(1);
     });
 });

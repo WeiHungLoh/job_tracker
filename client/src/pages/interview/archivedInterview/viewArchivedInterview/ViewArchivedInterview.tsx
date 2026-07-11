@@ -1,13 +1,17 @@
-import { type MouseEvent, useEffect, useState } from 'react';
+import { type MouseEvent, useEffect, useRef, useState } from 'react';
 import type { ArchivedJobInterview } from '../../models';
 import { createInterviewCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
-import { getApplicationUnavailableMessage } from '../../../../helper/applicationUnavailableMessage';
+import { createDeleteAllInterviewsConfirmation } from '../../../../helper/bulkConfirmation';
+import {
+    ARCHIVED_APPLICATION_BOARD_MESSAGE,
+    getApplicationUnavailableMessage,
+} from '../../../../helper/applicationUnavailableMessage';
 import { INTERVIEW_CSV_HEADERS } from '../../models';
 import { useNavigate } from 'react-router-dom';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import { routes } from '../../../../routes';
-import styles from './ViewArchivedInterview.module.css';
+import styles from '../../InterviewListPage.module.css';
 import { useConfirm } from 'material-ui-confirm';
 import { useJobTrackerAPI } from '../../../../api/useJobTrackerAPI';
 import { useToast } from '../../../../components/toast/ToastProvider';
@@ -19,13 +23,18 @@ import ActivityControls from '../../../../components/activityControls/ActivityCo
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../interviewEmptyState';
+import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
+import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skeletonInterviewBoard/SkeletonInterviewBoard';
+import InterviewGrid from '../../interviewGrid/InterviewGrid';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
-    const { preferences } = useUserPreferences();
+    const { preferences, updatePreferences } = useUserPreferences();
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const deleteAllPendingRef = useRef(false);
     const {
         pendingIds: deletingInterviewIds,
         startPending: startDeletingInterview,
@@ -34,6 +43,16 @@ const ViewArchivedInterview = () => {
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
+    const viewMode = preferences.archived_interview_view_mode;
+    const isBoardView = viewMode === 'board';
+
+    const handleViewModeChange = async (nextViewMode: ApplicationViewMode) => {
+        try {
+            await updatePreferences({ archived_interview_view_mode: nextViewMode });
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
+        }
+    };
 
     useEffect(() => {
         let isActive = true;
@@ -84,22 +103,45 @@ const ViewArchivedInterview = () => {
     };
 
     const handleDeleteAll = async () => {
+        if (deleteAllPendingRef.current) {
+            return;
+        }
+
+        deleteAllPendingRef.current = true;
+        setIsDeletingAll(true);
+        let countsLoaded = false;
+
         try {
-            const { confirmed } = await confirm(createDeleteConfirmation('archived job interview', true));
+            const summary = await api.archivedInterview.getSummary();
+            countsLoaded = true;
+
+            if (summary.interview_count === 0) {
+                setArchivedInterviews([]);
+                return;
+            }
+
+            const { confirmed } = await confirm(
+                createDeleteAllInterviewsConfirmation(summary.interview_count, 'archived')
+            );
 
             if (!confirmed) {
                 return;
             }
 
-            setIsDeletingAll(true);
-            try {
-                await api.archivedInterview.deleteAllInterviews();
-                setArchivedInterviews([]);
-            } finally {
-                setIsDeletingAll(false);
-            }
+            await api.archivedInterview.deleteAllInterviews();
+            setArchivedInterviews([]);
         } catch (error) {
-            showErrorToast(getErrorToastMessage(error, 'Unable to delete archived interviews. Please try again.'));
+            showErrorToast(
+                getErrorToastMessage(
+                    error,
+                    countsLoaded
+                        ? 'Unable to delete archived interviews. Please try again.'
+                        : 'Unable to load archived interview counts. Please try again.'
+                )
+            );
+        } finally {
+            deleteAllPendingRef.current = false;
+            setIsDeletingAll(false);
         }
     };
 
@@ -114,6 +156,11 @@ const ViewArchivedInterview = () => {
         interview: ArchivedJobInterview
     ) => {
         event.preventDefault();
+
+        if (preferences.archived_application_view_mode === 'board') {
+            showErrorToast(ARCHIVED_APPLICATION_BOARD_MESSAGE);
+            return;
+        }
 
         try {
             const applications = await api.archivedApplication.listApplications({
@@ -150,44 +197,56 @@ const ViewArchivedInterview = () => {
     };
 
     return (
-        <div className={styles.archivedInterviewList}>
-            {isLoading && (
-                <>
-                    <br />
-                    <SkeletonCard variant='interview' />
-                    <SkeletonCard variant='interview' />
-                </>
-            )}
-
-            {!isLoading && (
-                <>
-                    {hasInterviews && (
-                        <ActivityControls>
-                            <MoreOptions
-                                csvData={csvData}
-                                csvFilename='archived_job_interviews.csv'
-                                csvHeaders={INTERVIEW_CSV_HEADERS}
-                                deleteLabel='Delete all archived interviews'
-                                id='archived-interview-more-options'
-                                isDeleting={isDeletingAll}
-                                onDelete={() => void handleDeleteAll()}
-                            />
-                        </ActivityControls>
+        <div className={`${styles.interviewList} ${isBoardView ? styles.boardLayout : ''}`}>
+            <div className={styles.controlsRow}>
+                <ActivityControls>
+                    <ApplicationViewToggle
+                        ariaLabel='Archived interview view'
+                        currentView={viewMode}
+                        onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}
+                    />
+                    {!isLoading && hasInterviews && (
+                        <MoreOptions
+                            csvData={csvData}
+                            csvFilename='archived_job_interviews.csv'
+                            csvHeaders={INTERVIEW_CSV_HEADERS}
+                            deleteLabel='Delete all archived interviews'
+                            id='archived-interview-more-options'
+                            isDeleting={isDeletingAll}
+                            onDelete={() => void handleDeleteAll()}
+                        />
                     )}
-                    {!hasInterviews && <EmptyState {...emptyState} />}
+                </ActivityControls>
+            </div>
 
+            {isLoading &&
+                (isBoardView ? (
+                    <SkeletonInterviewBoard />
+                ) : (
+                    <>
+                        <SkeletonCard variant='interview' />
+                        <SkeletonCard variant='interview' />
+                    </>
+                ))}
+
+            {!isLoading && !hasInterviews && <EmptyState {...emptyState} />}
+
+            {!isLoading && hasInterviews && (
+                <InterviewGrid ariaLabel='Archived interviews' layout={viewMode}>
                     {archivedInterviews.map((interview, index) => (
                         <InterviewCard
+                            applicationRoute={routes.archivedApplications}
                             index={index}
                             interview={interview}
                             isDeleting={deletingInterviewIds.has(interview.archived_interview_id)}
                             key={interview.archived_interview_id}
+                            layout={viewMode}
                             onDelete={() => handleDelete(interview.archived_interview_id)}
                             onViewApplicationClick={(event) => handleViewApplicationClick(event, interview)}
                             variant='archived'
                         />
                     ))}
-                </>
+                </InterviewGrid>
             )}
         </div>
     );

@@ -1,3 +1,0 @@
-.archivedInterviewList {
-    composes: archivedInterviewList from '../../../../interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview.module.css';
-}
