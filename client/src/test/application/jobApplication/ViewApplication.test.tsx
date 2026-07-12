@@ -643,6 +643,7 @@ describe('Job application viewing flow', () => {
         await waitFor(() =>
             expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true')
         );
+        await waitFor(() => expect(screen.queryByRole('status', { name: 'Loading board' })).not.toBeInTheDocument());
         expect(screen.getByRole('heading', { name: 'Offer 1' })).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: 'Applied 0' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'List' }));
