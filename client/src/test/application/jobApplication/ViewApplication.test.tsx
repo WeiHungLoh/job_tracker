@@ -352,9 +352,15 @@ describe('Job application viewing flow', () => {
         expectListCompanyOrder(['Bravo Ltd', 'Charlie Ltd', 'Delta Ltd', 'Alpha Ltd']);
 
         const selectSortOption = async (option: string, expectedCompanyOrder: string[]) => {
-            await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
-            await userEvent.click(screen.getByRole('radio', { name: option }));
+            const sortButton = screen.getByRole('button', { name: 'Sort by' });
+
+            await waitFor(() => expect(sortButton).toBeEnabled());
+            await userEvent.click(sortButton);
+
+            await userEvent.click(await screen.findByRole('radio', { name: option }));
+
             await waitFor(() => expectListCompanyOrder(expectedCompanyOrder));
+            await waitFor(() => expect(sortButton).toBeEnabled());
         };
 
         await selectSortOption('Newest Application', ['Alpha Ltd', 'Charlie Ltd', 'Bravo Ltd', 'Delta Ltd']);

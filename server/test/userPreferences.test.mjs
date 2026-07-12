@@ -7,7 +7,6 @@ import {
     DEFAULT_APPLICATION_LIST_SORT_ORDER,
 } from '../dist/db/models.js';
 import { pool } from '../dist/db/connectDB.js';
-import createTables from '../dist/db/queries/createTables.js';
 import { getUserPreferences, updateUserPreferences } from '../dist/db/queries/userPreferences.js';
 import {
     isApplicationBoardSortOrder,
