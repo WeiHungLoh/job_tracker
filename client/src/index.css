@@ -131,7 +131,7 @@
     --colorPasswordStrengthStrong: #198754;
 
     /* Spinner */
-    --colorSpinnerTrack: #e1e3e6;
+    --colorSpinnerTrack: rgb(241 53 109 / 28%);
     --colorSpinnerLight: #fff;
     --colorSpinnerLightTrack: rgb(255 255 255 / 35%);
 
@@ -287,7 +287,7 @@
     --colorPasswordStrengthStrong: #75b798;
 
     /* Spinner */
-    --colorSpinnerTrack: #3a3a44;
+    --colorSpinnerTrack: rgb(244 80 126 / 32%);
     --colorSpinnerLight: #dee2e6;
     --colorSpinnerLightTrack: rgb(255 255 255 / 20%);
 

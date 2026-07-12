@@ -2,16 +2,24 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, Ref } from 'react';
 import { createPortal } from 'react-dom';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
-import darkArchivedApplicationPreview from '../../../images/dark-archived-application.png';
-import darkArchivedInterviewPreview from '../../../images/dark-archived-interview.png';
+import darkBoardApplicationPreview from '../../../images/dark-board-application.png';
+import darkBoardArchivedApplicationPreview from '../../../images/dark-board-archived-application.png';
+import darkBoardArchivedInterviewPreview from '../../../images/dark-board-archived-interview.png';
+import darkBoardInterviewPreview from '../../../images/dark-board-interview.png';
 import darkDashboardPreview from '../../../images/dark-dashboard.png';
-import darkApplicationPreview from '../../../images/dark-view-application.png';
-import darkInterviewPreview from '../../../images/dark-view-interview.png';
-import lightArchivedApplicationPreview from '../../../images/light-archived-application.png';
-import lightArchivedInterviewPreview from '../../../images/light-archived-interview.png';
+import darkListApplicationPreview from '../../../images/dark-list-application.png';
+import darkListArchivedApplicationPreview from '../../../images/dark-list-archived-application.png';
+import darkListArchivedInterviewPreview from '../../../images/dark-list-archived-interview.png';
+import darkListInterviewPreview from '../../../images/dark-list-interview.png';
+import lightBoardApplicationPreview from '../../../images/light-board-application.png';
+import lightBoardArchivedApplicationPreview from '../../../images/light-board-archived-application.png';
+import lightBoardArchivedInterviewPreview from '../../../images/light-board-archived-interview.png';
+import lightBoardInterviewPreview from '../../../images/light-board-interview.png';
 import lightDashboardPreview from '../../../images/light-dashboard.png';
-import lightApplicationPreview from '../../../images/light-view-application.png';
-import lightInterviewPreview from '../../../images/light-view-interview.png';
+import lightListApplicationPreview from '../../../images/light-list-application.png';
+import lightListArchivedApplicationPreview from '../../../images/light-list-archived-application.png';
+import lightListArchivedInterviewPreview from '../../../images/light-list-archived-interview.png';
+import lightListInterviewPreview from '../../../images/light-list-interview.png';
 import LoadingSpinner from '../loadingSpinner/LoadingSpinner';
 import { routes } from '../../routes';
 import type { Theme } from '../theme/models';
@@ -30,30 +38,58 @@ const productPreviews = [
     },
     {
         alt: 'Job Tracker application list showing applications, statuses, interviews and notes',
-        darkImage: darkApplicationPreview,
-        label: 'View application',
-        lightImage: lightApplicationPreview,
+        darkImage: darkListApplicationPreview,
+        label: 'List application',
+        lightImage: lightListApplicationPreview,
+        route: routes.viewApplications,
+    },
+    {
+        alt: 'Job Tracker application board showing applications grouped by status',
+        darkImage: darkBoardApplicationPreview,
+        label: 'Board application',
+        lightImage: lightBoardApplicationPreview,
         route: routes.viewApplications,
     },
     {
         alt: 'Job Tracker interview list showing scheduled job interviews',
-        darkImage: darkInterviewPreview,
-        label: 'View interview',
-        lightImage: lightInterviewPreview,
+        darkImage: darkListInterviewPreview,
+        label: 'List interview',
+        lightImage: lightListInterviewPreview,
+        route: routes.viewInterviews,
+    },
+    {
+        alt: 'Job Tracker interview board showing scheduled job interviews',
+        darkImage: darkBoardInterviewPreview,
+        label: 'Board interview',
+        lightImage: lightBoardInterviewPreview,
         route: routes.viewInterviews,
     },
     {
         alt: 'Job Tracker archived application list',
-        darkImage: darkArchivedApplicationPreview,
-        label: 'Archived application',
-        lightImage: lightArchivedApplicationPreview,
+        darkImage: darkListArchivedApplicationPreview,
+        label: 'List archived application',
+        lightImage: lightListArchivedApplicationPreview,
+        route: routes.archivedApplications,
+    },
+    {
+        alt: 'Job Tracker archived application board',
+        darkImage: darkBoardArchivedApplicationPreview,
+        label: 'Board archived application',
+        lightImage: lightBoardArchivedApplicationPreview,
         route: routes.archivedApplications,
     },
     {
         alt: 'Job Tracker archived interview list',
-        darkImage: darkArchivedInterviewPreview,
-        label: 'Archived interview',
-        lightImage: lightArchivedInterviewPreview,
+        darkImage: darkListArchivedInterviewPreview,
+        label: 'List archived interview',
+        lightImage: lightListArchivedInterviewPreview,
+        route: routes.archivedInterviews,
+    },
+    {
+        alt: 'Job Tracker archived interview board',
+        darkImage: darkBoardArchivedInterviewPreview,
+        label: 'Board archived interview',
+        lightImage: lightBoardArchivedInterviewPreview,
         route: routes.archivedInterviews,
     },
 ] as const;
@@ -140,7 +176,7 @@ const CarouselControls = memo(
             <div className={styles.carouselDots} aria-label='Jump to a product preview'>
                 {productPreviews.map((preview, index) => (
                     <button
-                        key={preview.route}
+                        key={preview.label}
                         type='button'
                         className={`${styles.carouselDot} ${index === activeIndex ? styles.activeCarouselDot : ''}`}
                         onClick={() => onSelect(index)}

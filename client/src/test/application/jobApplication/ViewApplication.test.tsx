@@ -1271,6 +1271,9 @@ describe('Job application viewing flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Application view and management controls' }).className).toContain(
+            'applicationCompact'
+        );
         expect(screen.getByText(/add your first job application/i)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Add application' })).toHaveAttribute('href', '/application/add');
         expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();

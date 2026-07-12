@@ -831,6 +831,9 @@ describe('Archived job application viewing flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Archived application view and management controls' }).className
+        ).toContain('applicationCompact');
         expect(screen.getByText(/archive applications you no longer need/i)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'View active applications' })).toHaveAttribute(
             'href',

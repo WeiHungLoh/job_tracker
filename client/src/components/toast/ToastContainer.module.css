@@ -55,6 +55,9 @@
     content: '';
     pointer-events: none;
     animation: toastDuration var(--toast-duration) linear forwards;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: clip-path;
 }
 
 .iconTile {

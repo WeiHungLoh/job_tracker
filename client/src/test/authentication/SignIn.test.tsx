@@ -187,17 +187,22 @@ describe('User sign in flow', () => {
             </MemoryRouter>
         );
 
-        const previewRoutes = [
-            '/application/view',
-            '/interview/view',
-            '/application/archive',
-            '/interview/archive',
-            '/dashboard',
+        const previews = [
+            ['application/view', 'light-list-application.png'],
+            ['application/view', 'light-board-application.png'],
+            ['interview/view', 'light-list-interview.png'],
+            ['interview/view', 'light-board-interview.png'],
+            ['application/archive', 'light-list-archived-application.png'],
+            ['application/archive', 'light-board-archived-application.png'],
+            ['interview/archive', 'light-list-archived-interview.png'],
+            ['interview/archive', 'light-board-archived-interview.png'],
+            ['dashboard', 'light-dashboard.png'],
         ];
 
-        previewRoutes.forEach((route) => {
+        previews.forEach(([route, image]) => {
             userEvent.click(screen.getByRole('button', { name: /next preview/i }));
-            expect(screen.getByText(`jobtracker.weihungloh.com${route}`)).toBeInTheDocument();
+            expect(screen.getByText(`jobtracker.weihungloh.com/${route}`)).toBeInTheDocument();
+            expect(screen.getByRole('img')).toHaveAttribute('src', expect.stringContaining(image));
         });
     });
 
@@ -231,6 +236,12 @@ describe('User sign in flow', () => {
                 name: /job tracker dashboard showing application and interview statistics/i,
             })
         ).toHaveAttribute('src', expect.stringContaining('dark-dashboard.png'));
+
+        userEvent.click(screen.getByRole('button', { name: /next preview/i }));
+        expect(screen.getByRole('img')).toHaveAttribute('src', expect.stringContaining('dark-list-application.png'));
+
+        userEvent.click(screen.getByRole('button', { name: /next preview/i }));
+        expect(screen.getByRole('img')).toHaveAttribute('src', expect.stringContaining('dark-board-application.png'));
     });
 
     test('keeps carousel navigation available in fullscreen and supports both close methods', async () => {
@@ -251,7 +262,7 @@ describe('User sign in flow', () => {
         userEvent.click(within(dialog).getByRole('button', { name: /next preview/i }));
         expect(within(dialog).getByText('jobtracker.weihungloh.com/application/view')).toBeInTheDocument();
 
-        userEvent.click(within(dialog).getByRole('button', { name: /jump to archived interview/i }));
+        userEvent.click(within(dialog).getByRole('button', { name: /jump to list archived interview/i }));
         expect(within(dialog).getByText('jobtracker.weihungloh.com/interview/archive')).toBeInTheDocument();
 
         userEvent.click(within(dialog).getByRole('button', { name: /close fullscreen preview/i }));
