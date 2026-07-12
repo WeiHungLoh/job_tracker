@@ -13,13 +13,12 @@
 
     position: relative;
     display: grid;
-    overflow: hidden;
     align-items: center;
     grid-template-columns: 38px minmax(0, 1fr) 30px;
     gap: 12px;
     padding: 14px 12px 14px 14px;
     border: 1px solid var(--colorToastBorder);
-    border-left: 3px solid var(--toastAccent);
+    border-left: 3px solid transparent;
     border-radius: var(--notificationBorderRadius);
     background-color: var(--toastSurface);
     color: var(--toastText);
@@ -39,6 +38,23 @@
     --toastAccentSoft: var(--colorToastSuccessSoft);
     --toastSurface: var(--colorToastSuccessBg);
     --toastText: var(--colorToastSuccessText);
+}
+
+.toast::after {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -3px;
+    border: 3px solid transparent;
+    border-bottom-color: var(--toastAccent);
+    border-left-color: var(--toastAccent);
+    border-radius: inherit;
+    box-sizing: border-box;
+    clip-path: inset(0 0 0 0);
+    content: '';
+    pointer-events: none;
+    animation: toastDuration var(--toast-duration) linear forwards;
 }
 
 .iconTile {
@@ -84,8 +100,24 @@
     }
 }
 
+@keyframes toastDuration {
+    from {
+        clip-path: inset(0 0 0 0);
+    }
+
+    to {
+        clip-path: inset(0 100% 0 0);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .toast {
+        border-left-color: var(--toastAccent);
+        animation: none;
+    }
+
+    .toast::after {
+        display: none;
         animation: none;
     }
 }

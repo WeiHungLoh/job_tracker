@@ -452,6 +452,7 @@ const ViewApplication = () => {
                         ) : undefined
                     }
                     ariaLabel='Application view and management controls'
+                    mobileLayout={hasApplications && !isBoardView ? 'applicationWithDisplay' : 'applicationCompact'}
                 >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter

@@ -214,6 +214,7 @@ const ViewArchivedInterview = () => {
                         ) : undefined
                     }
                     ariaLabel='Archived interview view and management controls'
+                    mobileLayout='inlineWhenPossible'
                 >
                     <ApplicationViewToggle
                         ariaLabel='Archived interview view'

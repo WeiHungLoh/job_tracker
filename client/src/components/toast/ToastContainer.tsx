@@ -1,5 +1,6 @@
 import Icon from '../icon/Icon';
 import PrimaryButton from '../button/PrimaryButton';
+import type { CSSProperties } from 'react';
 import type { ToastContainerProps } from './models';
 import styles from './ToastContainer.module.css';
 
@@ -16,6 +17,7 @@ const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
                     data-testid='toast'
                     key={toast.id}
                     role={toast.type === 'error' ? 'alert' : 'status'}
+                    style={{ '--toast-duration': `${toast.durationMs}ms` } as CSSProperties}
                 >
                     <span className={styles.iconTile}>
                         <Icon className={styles.statusIcon} name={toast.type} />

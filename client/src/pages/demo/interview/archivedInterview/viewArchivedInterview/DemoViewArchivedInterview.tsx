@@ -21,6 +21,7 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
+import { sortInterviews } from '../../../state/demoSelectors';
 
 const DemoViewArchivedInterview = () => {
     const { dispatch, state, updatePreferences } = useDemo();
@@ -30,8 +31,9 @@ const DemoViewArchivedInterview = () => {
     const { showErrorToast } = useToast();
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
-    const csvData = createInterviewCsvData(state.archivedInterviews);
-    const hasInterviews = state.archivedInterviews.length > 0;
+    const sortedArchivedInterviews = sortInterviews(state.archivedInterviews);
+    const csvData = createInterviewCsvData(sortedArchivedInterviews);
+    const hasInterviews = sortedArchivedInterviews.length > 0;
     const emptyState = createInterviewEmptyState({
         activeInterviewsRoute: routes.demoViewInterviews,
         variant: 'archived',
@@ -58,12 +60,12 @@ const DemoViewArchivedInterview = () => {
         setIsDeletingAll(true);
 
         try {
-            if (state.archivedInterviews.length === 0) {
+            if (sortedArchivedInterviews.length === 0) {
                 return;
             }
 
             const { confirmed } = await confirm(
-                createDeleteAllInterviewsConfirmation(state.archivedInterviews.length, 'archived')
+                createDeleteAllInterviewsConfirmation(sortedArchivedInterviews.length, 'archived')
             );
 
             if (!confirmed) {
@@ -123,6 +125,7 @@ const DemoViewArchivedInterview = () => {
                         ) : undefined
                     }
                     ariaLabel='Demo archived interview view and management controls'
+                    mobileLayout='inlineWhenPossible'
                 >
                     <ApplicationViewToggle
                         ariaLabel='Archived interview view'
@@ -137,7 +140,7 @@ const DemoViewArchivedInterview = () => {
 
             {hasInterviews && (
                 <InterviewGrid ariaLabel='Archived interviews' layout={viewMode}>
-                    {state.archivedInterviews.map((interview, index) => (
+                    {sortedArchivedInterviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.demoArchivedApplications}
                             index={index}

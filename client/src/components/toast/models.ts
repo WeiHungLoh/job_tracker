@@ -1,6 +1,7 @@
 export type ToastType = 'error' | 'success';
 
 export type ToastMessage = {
+    durationMs: number;
     id: number;
     message: string;
     type: ToastType;

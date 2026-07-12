@@ -26,41 +26,97 @@
     border-left: 1px solid var(--colorControlBorder);
 }
 
+@media (max-width: 803px) {
+    .controls {
+        margin-inline: auto;
+    }
+}
+
 @media (max-width: 600px) {
     .controls {
-        width: 100%;
-        padding: 10px;
-        flex-wrap: wrap;
+        width: fit-content;
+        padding: 8px;
+        justify-content: center;
         gap: 8px;
-    }
-
-    .primaryControls,
-    .actions {
-        display: contents;
-    }
-
-    .primaryControls > :first-child {
-        flex: 0 0 100%;
-        margin-bottom: 2px;
-    }
-
-    .primaryControls > :not(:first-child),
-    .actions > * {
-        min-width: 0;
-        flex: 1 1 0;
-    }
-
-    .controls:not(:has(.primaryControls > :nth-child(2))) .actions > :only-child,
-    .controls:not(:has(.actions)) .primaryControls > :nth-child(2):last-child {
-        max-width: 160px;
-        margin-inline: auto;
-        flex: 0 1 160px;
     }
 }
 
 @media (max-width: 350px) {
     .controls {
-        padding: 8px;
         gap: 6px;
+    }
+}
+
+@media (max-width: 290px) {
+    .inlineWhenPossible {
+        flex-direction: column;
+    }
+
+    .inlineWhenPossible .actions {
+        padding-left: 0;
+        border-left: 0;
+    }
+}
+
+@container (max-width: 435px) {
+    .applicationWithDisplay.hasActions {
+        display: grid;
+        grid-template-columns: repeat(3, max-content);
+        justify-content: center;
+    }
+
+    .applicationWithDisplay.hasActions .primaryControls,
+    .applicationWithDisplay.hasActions .actions {
+        display: contents;
+    }
+
+    .applicationWithDisplay.hasActions .primaryControls > :first-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+
+    .applicationWithDisplay.hasActions .actions > * {
+        padding-left: 9px;
+        border-left: 1px solid var(--colorControlBorder);
+    }
+}
+
+@container (max-width: 345px) {
+    .applicationCompact.hasActions {
+        display: grid;
+        grid-template-columns: repeat(2, max-content);
+        justify-content: center;
+    }
+
+    .applicationCompact.hasActions .primaryControls,
+    .applicationCompact.hasActions .actions {
+        display: contents;
+    }
+
+    .applicationCompact.hasActions .primaryControls > :first-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+
+    .applicationCompact.hasActions .actions > * {
+        padding-left: 9px;
+        border-left: 1px solid var(--colorControlBorder);
+    }
+}
+
+@container (max-width: 340px) {
+    .applicationWithDisplay:not(.hasActions) {
+        display: grid;
+        grid-template-columns: repeat(2, max-content);
+        justify-content: center;
+    }
+
+    .applicationWithDisplay:not(.hasActions) .primaryControls {
+        display: contents;
+    }
+
+    .applicationWithDisplay:not(.hasActions) .primaryControls > :first-child {
+        grid-column: 1 / -1;
+        justify-self: center;
     }
 }

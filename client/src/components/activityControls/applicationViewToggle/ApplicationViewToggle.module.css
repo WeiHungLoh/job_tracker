@@ -58,13 +58,14 @@
 
 @media (max-width: 600px) {
     .toggleWrapper {
-        flex: 0 0 100%;
         justify-content: center;
     }
 
     .option {
-        min-height: 42px;
-        min-width: 76px;
+        min-height: 37px;
+        min-width: 68px;
+        padding: 7px 10px;
+        font-size: 0.8125rem;
     }
 }
 

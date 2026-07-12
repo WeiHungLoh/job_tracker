@@ -35,10 +35,10 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
         (message: string, type: ToastType) => {
             nextToastId.current += 1;
             const id = nextToastId.current;
+            const durationMs = type === 'success' ? SUCCESS_TOAST_DURATION_MS : ERROR_TOAST_DURATION_MS;
 
-            setToasts((currentToasts) => [...currentToasts, { id, message, type }]);
-            const duration = type === 'success' ? SUCCESS_TOAST_DURATION_MS : ERROR_TOAST_DURATION_MS;
-            const timeout = window.setTimeout(() => dismissToast(id), duration);
+            setToasts((currentToasts) => [...currentToasts, { durationMs, id, message, type }]);
+            const timeout = window.setTimeout(() => dismissToast(id), durationMs);
             toastTimeouts.current.set(id, timeout);
         },
         [dismissToast]

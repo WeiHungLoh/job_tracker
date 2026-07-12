@@ -1,9 +1,11 @@
 import { JOB_STATUSES } from '../../pages/application/models';
 import { createDemoInitialState } from '../../pages/demo/state/demoInitialState';
 import { demoReducer } from '../../pages/demo/state/demoReducer';
-import { selectJobStatusCounts, selectWeeklyApplications } from '../../pages/demo/state/demoSelectors';
+import { selectJobStatusCounts, selectWeeklyApplications, sortInterviews } from '../../pages/demo/state/demoSelectors';
+import { createInterviewCsvData } from '../../helper/csvData';
 
 const fixedNow = new Date(2026, 6, 7, 12, 0, 0, 0);
+const fixedNowMs = fixedNow.getTime();
 
 describe('demo reducer state', () => {
     test('creates a complete deterministic fixture set', () => {
@@ -36,6 +38,51 @@ describe('demo reducer state', () => {
                 .filter((interview) => interview.interview_id >= 407)
                 .map((interview) => new Date(interview.interview_date).getUTCFullYear())
         ).toEqual([2027, 2027, 2028]);
+        const sortedInterviews = sortInterviews(state.interviews, fixedNowMs);
+        const sortedArchivedInterviews = sortInterviews(state.archivedInterviews, fixedNowMs);
+
+        expect(sortedInterviews.map((interview) => interview.interview_id)).toEqual([
+            401, 402, 403, 404, 407, 408, 409, 406, 405,
+        ]);
+        expect(sortedArchivedInterviews.map((interview) => interview.archived_interview_id)).toEqual([
+            504, 503, 502, 501,
+        ]);
+        expect(createInterviewCsvData(sortedInterviews).map((interview) => interview.interview_id)).toEqual([
+            401, 402, 403, 404, 407, 408, 409, 406, 405,
+        ]);
+        expect(
+            createInterviewCsvData(sortedArchivedInterviews).map((interview) => interview.archived_interview_id)
+        ).toEqual([504, 503, 502, 501]);
+    });
+
+    test('sorts active and archived interviews like production without mutating the input', () => {
+        const day = 24 * 60 * 60 * 1000;
+        const interviews = [
+            { id: 'later future', interview_date: new Date(fixedNowMs + 4 * day).toISOString() },
+            { id: 'recent past', interview_date: new Date(fixedNowMs - day).toISOString() },
+            { id: 'nearest future', interview_date: new Date(fixedNowMs + day).toISOString() },
+            { id: 'oldest past', interview_date: new Date(fixedNowMs - 3 * day).toISOString() },
+            { id: 'due now', interview_date: fixedNow.toISOString() },
+        ];
+        const originalOrder = [...interviews];
+
+        expect(sortInterviews(interviews, fixedNowMs).map((interview) => interview.id)).toEqual([
+            'nearest future',
+            'later future',
+            'oldest past',
+            'recent past',
+            'due now',
+        ]);
+        expect(interviews).toEqual(originalOrder);
+        expect(sortInterviews(interviews, fixedNowMs)).not.toBe(interviews);
+
+        const archivedInterviews = interviews.map((interview, index) => ({
+            archived_interview_id: index + 1,
+            interview_date: interview.interview_date,
+        }));
+        expect(
+            sortInterviews(archivedInterviews, fixedNowMs).map((interview) => interview.archived_interview_id)
+        ).toEqual([3, 1, 4, 2, 5]);
     });
 
     test('creates applications with reducer-managed unique IDs and updates dashboard selectors', () => {
@@ -88,6 +135,9 @@ describe('demo reducer state', () => {
         expect(archived.interviews.some((interview) => interview.job_id === 107)).toBe(false);
         expect(archived.archivedApplications.some((application) => application.archived_job_id === 107)).toBe(true);
         expect(archived.archivedInterviews.filter((interview) => interview.archived_job_id === 107)).toHaveLength(2);
+        expect(
+            sortInterviews(archived.archivedInterviews, fixedNowMs).map((interview) => interview.archived_interview_id)
+        ).toEqual([401, 504, 503, 502, 501, 405]);
 
         const restored = demoReducer(archived, { type: 'RESTORE_APPLICATION', payload: { archivedJobId: 107 } });
 
@@ -95,6 +145,9 @@ describe('demo reducer state', () => {
         expect(restored.interviews.filter((interview) => interview.job_id === 107)).toHaveLength(2);
         expect(restored.archivedApplications.some((application) => application.archived_job_id === 107)).toBe(false);
         expect(restored.archivedInterviews.some((interview) => interview.archived_job_id === 107)).toBe(false);
+        expect(sortInterviews(restored.interviews, fixedNowMs).map((interview) => interview.interview_id)).toEqual([
+            401, 402, 403, 404, 407, 408, 409, 406, 405,
+        ]);
     });
 
     test('bulk archives and unarchives complete collections with linked interviews', () => {
@@ -116,6 +169,9 @@ describe('demo reducer state', () => {
         expect(unarchived.applications).toHaveLength(originalArchivedApplicationCount + state.applications.length);
         expect(unarchived.interviews).toHaveLength(originalArchivedInterviewCount + state.interviews.length);
         expect(unarchived.applications.every((application) => application.edit_status === false)).toBe(true);
+        expect(sortInterviews(unarchived.interviews, fixedNowMs).map((interview) => interview.interview_id)).toEqual([
+            401, 402, 403, 404, 407, 408, 409, 504, 503, 502, 501, 406, 405,
+        ]);
     });
 
     test('deletes applications and archived applications with linked interviews', () => {
@@ -150,6 +206,12 @@ describe('demo reducer state', () => {
 
         expect(created.interviews.some((interview) => interview.interview_id === nextInterviewId)).toBe(true);
         expect(created.nextInterviewId).toBe(nextInterviewId + 1);
+        expect(created.interviews.at(-1)?.interview_id).toBe(nextInterviewId);
+        expect(
+            sortInterviews(created.interviews, fixedNowMs)
+                .slice(0, 3)
+                .map((interview) => interview.interview_id)
+        ).toEqual([401, nextInterviewId, 402]);
 
         const deleted = demoReducer(created, { type: 'DELETE_INTERVIEW', payload: { interviewId: nextInterviewId } });
         expect(deleted.interviews.some((interview) => interview.interview_id === nextInterviewId)).toBe(false);
@@ -180,5 +242,8 @@ describe('demo reducer state', () => {
         expect(reset.preferences.interview_view_mode).toBe('list');
         expect(reset.preferences.archived_interview_view_mode).toBe('list');
         expect(reset.applications).not.toBe(state.applications);
+        expect(sortInterviews(reset.interviews, fixedNowMs).map((interview) => interview.interview_id)).toEqual([
+            401, 402, 403, 404, 407, 408, 409, 406, 405,
+        ]);
     });
 });

@@ -110,12 +110,19 @@
 
 @media (max-width: 600px) {
     .activityContainer {
-        width: 100%;
+        width: auto;
     }
 
     .activityTrigger {
-        height: 42px;
-        padding: 0 8px;
+        height: 37px;
+        padding: 0 9px;
+        gap: 3px;
+        font-size: 0.75rem;
+    }
+
+    .activityTrigger .chevron {
+        width: 16px;
+        height: 16px;
     }
 }
 

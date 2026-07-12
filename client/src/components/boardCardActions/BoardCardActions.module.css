@@ -48,6 +48,6 @@
     width: auto;
 }
 
-.compactActions button {
+.compactActions > button {
     width: auto;
 }

@@ -148,6 +148,7 @@ const DemoViewArchivedApplication = () => {
                         ) : undefined
                     }
                     ariaLabel='Demo archived application view and management controls'
+                    mobileLayout={hasApplications && !isBoardView ? 'applicationWithDisplay' : 'applicationCompact'}
                 >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter

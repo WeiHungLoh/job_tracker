@@ -9,6 +9,10 @@ type StatusApplication = {
     job_status: JobStatus;
 };
 
+type InterviewWithDate = {
+    interview_date: string;
+};
+
 const sortApplications = <TApplication extends StatusApplication>(applications: TApplication[]): TApplication[] => {
     return [...applications].sort((firstApplication, secondApplication) => {
         const byStatus = JOB_STATUS_ORDER[firstApplication.job_status] - JOB_STATUS_ORDER[secondApplication.job_status];
@@ -16,6 +20,24 @@ const sortApplications = <TApplication extends StatusApplication>(applications: 
         return (
             byStatus || Date.parse(secondApplication.application_date) - Date.parse(firstApplication.application_date)
         );
+    });
+};
+
+export const sortInterviews = <Interview extends InterviewWithDate>(
+    interviews: readonly Interview[],
+    now = Date.now()
+): Interview[] => {
+    return [...interviews].sort((firstInterview, secondInterview) => {
+        const firstTime = Date.parse(firstInterview.interview_date);
+        const secondTime = Date.parse(secondInterview.interview_date);
+        const firstIsFuture = firstTime > now;
+        const secondIsFuture = secondTime > now;
+
+        if (firstIsFuture !== secondIsFuture) {
+            return firstIsFuture ? -1 : 1;
+        }
+
+        return firstTime - secondTime;
     });
 };
 

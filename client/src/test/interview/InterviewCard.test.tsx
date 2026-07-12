@@ -197,6 +197,7 @@ describe('InterviewCard calendar options', () => {
     });
 
     test('uses shared Board actions and hides List-only interview details', async () => {
+        const open = vi.spyOn(window, 'open').mockReturnValue(null);
         render(
             <MemoryRouter>
                 <InterviewCard
@@ -224,5 +225,20 @@ describe('InterviewCard calendar options', () => {
         expect(actions).toHaveAttribute('open');
         expect(getCalendarTrigger()).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' }).parentElement?.className).toContain('compactActions');
+
+        await userEvent.click(getCalendarTrigger());
+        expect(screen.getByRole('group', { name: 'Calendar options' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Add to Google Calendar' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Add to Apple Calendar / Outlook (.ics)' })).toBeInTheDocument();
+
+        const trigger = getCalendarTrigger();
+        await userEvent.click(screen.getByRole('button', { name: 'Add to Google Calendar' }));
+        expect(open).toHaveBeenCalledWith(
+            expect.stringContaining('https://calendar.google.com/calendar/render?'),
+            '_blank',
+            'noopener,noreferrer'
+        );
+        expect(screen.queryByRole('group', { name: 'Calendar options' })).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
     });
 });

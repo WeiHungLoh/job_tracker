@@ -21,6 +21,7 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
+import { sortInterviews } from '../../../state/demoSelectors';
 
 const DemoViewInterview = () => {
     const { dispatch, state, updatePreferences } = useDemo();
@@ -30,8 +31,9 @@ const DemoViewInterview = () => {
     const { showErrorToast } = useToast();
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
-    const csvData = createInterviewCsvData(state.interviews);
-    const hasInterviews = state.interviews.length > 0;
+    const sortedInterviews = sortInterviews(state.interviews);
+    const csvData = createInterviewCsvData(sortedInterviews);
+    const hasInterviews = sortedInterviews.length > 0;
     const emptyState = createInterviewEmptyState({
         applicationsRoute: routes.demoViewApplications,
         variant: 'active',
@@ -58,12 +60,12 @@ const DemoViewInterview = () => {
         setIsDeletingAll(true);
 
         try {
-            if (state.interviews.length === 0) {
+            if (sortedInterviews.length === 0) {
                 return;
             }
 
             const { confirmed } = await confirm(
-                createDeleteAllInterviewsConfirmation(state.interviews.length, 'active')
+                createDeleteAllInterviewsConfirmation(sortedInterviews.length, 'active')
             );
 
             if (!confirmed) {
@@ -123,6 +125,7 @@ const DemoViewInterview = () => {
                         ) : undefined
                     }
                     ariaLabel='Demo interview view and management controls'
+                    mobileLayout='inlineWhenPossible'
                 >
                     <ApplicationViewToggle
                         ariaLabel='Interview view'
@@ -135,7 +138,7 @@ const DemoViewInterview = () => {
 
             {hasInterviews && (
                 <InterviewGrid ariaLabel='Active interviews' layout={viewMode}>
-                    {state.interviews.map((interview, index) => (
+                    {sortedInterviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.demoViewApplications}
                             index={index}

@@ -48,5 +48,6 @@
 
     .controlsRow {
         width: 100%;
+        container-type: inline-size;
     }
 }

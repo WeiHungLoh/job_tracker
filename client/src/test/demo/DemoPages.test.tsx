@@ -246,6 +246,66 @@ describe('demo page interactions', () => {
         expect(within(interviews).getAllByText('Actions').length).toBeGreaterThan(0);
     });
 
+    test('renders active demo interviews in the production date order in List and Board views', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 6, 7, 12, 0, 0, 0));
+
+        try {
+            renderDemo(<DemoViewInterview />, [routes.demoViewInterviews]);
+            const interviews = screen.getByRole('region', { name: 'Active interviews' });
+            const expectedOrder = [
+                'Merlion Cloud interview',
+                'Atlas RecruitTech interview',
+                'Harbour Analytics interview',
+                'NovaStack interview',
+                'Atlas RecruitTech interview',
+                'Harbour Analytics interview',
+                'NovaStack interview',
+                'Quantum Ledger interview',
+                'Merlion Cloud interview',
+            ];
+
+            expect(
+                within(interviews)
+                    .getAllByRole('article')
+                    .map((card) => card.getAttribute('aria-label'))
+            ).toEqual(expectedOrder);
+
+            fireEvent.click(
+                within(screen.getByRole('group', { name: 'Interview view' })).getByRole('button', { name: 'Board' })
+            );
+            expect(
+                within(interviews)
+                    .getAllByRole('article')
+                    .map((card) => card.getAttribute('aria-label'))
+            ).toEqual(expectedOrder);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test('renders archived demo interviews in the production date order', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 6, 7, 12, 0, 0, 0));
+
+        try {
+            renderDemo(<DemoViewArchivedInterview />, [routes.demoArchivedInterviews]);
+
+            expect(
+                within(screen.getByRole('region', { name: 'Archived interviews' }))
+                    .getAllByRole('article')
+                    .map((card) => card.getAttribute('aria-label'))
+            ).toEqual([
+                'OrbitPay interview',
+                'Keppel Digital interview',
+                'SilverRail Labs interview',
+                'Riverlane Studio interview',
+            ]);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     test('blocks demo active corresponding navigation when active applications use Board view', async () => {
         renderDemo(
             <>

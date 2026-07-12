@@ -199,6 +199,7 @@ const ViewInterview = () => {
                         ) : undefined
                     }
                     ariaLabel='Interview view and management controls'
+                    mobileLayout='inlineWhenPossible'
                 >
                     <ApplicationViewToggle
                         ariaLabel='Interview view'
