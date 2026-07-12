@@ -1,4 +1,5 @@
 import type {
+    ActiveElement,
     ChartArea,
     ChartData,
     ChartOptions,
@@ -9,7 +10,7 @@ import type {
     TooltipYAlignment,
 } from 'chart.js';
 import type { Theme } from '../../components/theme/models';
-import type { JobStatus } from '../application/models';
+import { JOB_STATUSES, type JobStatus } from '../application/models';
 import type { StatusCountMap } from './dashboardData';
 
 export const TITLE_FONT = { size: 16, weight: 'bold' } as const;
@@ -200,3 +201,27 @@ export const createStatusBarChartOptions = (theme: Theme): ChartOptions<'bar'> =
         },
     };
 };
+
+export const getClickedJobStatus = (elements: ActiveElement[], labels: unknown[] | undefined): JobStatus | null => {
+    const label = elements.length > 0 ? labels?.[elements[0].index] : undefined;
+    return typeof label === 'string' && JOB_STATUSES.includes(label as JobStatus) ? (label as JobStatus) : null;
+};
+
+export const createInteractiveStatusBarChartOptions = (
+    theme: Theme,
+    onStatusSelect: (status: JobStatus) => void
+): ChartOptions<'bar'> => ({
+    ...createStatusBarChartOptions(theme),
+    onClick: (_event, elements, chart) => {
+        const status = getClickedJobStatus(elements, chart.data.labels);
+        if (status) {
+            onStatusSelect(status);
+        }
+    },
+    onHover: (event, elements) => {
+        const target = event.native?.target;
+        if (target instanceof HTMLElement) {
+            target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+        }
+    },
+});

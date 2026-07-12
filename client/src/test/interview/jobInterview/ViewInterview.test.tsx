@@ -1,8 +1,10 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import ViewInterview from '../../../pages/interview/jobInterview/viewInterview/ViewInterview';
 import { render } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
+import type { UpdateUserPreferencesRequest, UserPreferences } from '../../../components/userPreferences/models';
+import { JOB_STATUSES } from '../../../pages/application/models';
 
 globalThis.fetch = vi.fn();
 
@@ -16,6 +18,28 @@ const mockInterview = {
     interview_type: 'HR',
     interview_notes: 'Bring resume',
     interview_date: '2025-06-20T00:00:00Z',
+};
+
+const mockPreferences: UserPreferences = {
+    application_job_statuses: [...JOB_STATUSES],
+    application_show_notes: false,
+    application_show_archive: false,
+    application_enable_scroll: false,
+    application_view_mode: 'list',
+    application_list_sort_order: 'job_status',
+    application_board_sort_order: 'application_date_desc',
+    archived_application_job_statuses: [...JOB_STATUSES],
+    archived_application_show_notes: false,
+    archived_application_view_mode: 'list',
+    archived_application_list_sort_order: 'job_status',
+    archived_application_board_sort_order: 'application_date_desc',
+    interview_view_mode: 'list',
+    archived_interview_view_mode: 'list',
+};
+
+const LocationStateProbe = () => {
+    const location = useLocation();
+    return <output data-testid='location-state'>{JSON.stringify(location.state)}</output>;
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -70,6 +94,88 @@ describe('Job interview viewer flow', () => {
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));
         expect(screen.getByRole('button', { name: /delete all interviews/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Export as CSV' })).toBeInTheDocument();
+    });
+
+    test('highlights the exact dashboard interview in List view without resaving the view preference', async () => {
+        const updatePreferences = vi.fn();
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: 1 } }]}>
+                <ViewInterview />
+                <LocationStateProbe />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByText(/abc pte ltd/i);
+
+        expect(updatePreferences).not.toHaveBeenCalled();
+        await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' }));
+        expect(document.getElementById('1')?.className).toContain('highlighted');
+        await waitFor(() => expect(screen.getByTestId('location-state')).toHaveTextContent('null'));
+    });
+
+    test('switches Board mode to List once before highlighting a dashboard interview', async () => {
+        const boardPreferences = { ...mockPreferences, interview_view_mode: 'board' as const };
+        const updatePreferences = vi.fn(async (updatedPreferences: UpdateUserPreferencesRequest) => ({
+            ...boardPreferences,
+            ...updatedPreferences,
+        }));
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: 1 } }]}>
+                <ViewInterview />
+            </MemoryRouter>,
+            { initialPreferences: boardPreferences, updatePreferences }
+        );
+
+        await waitFor(() => expect(updatePreferences).toHaveBeenCalledWith({ interview_view_mode: 'list' }));
+        expect(updatePreferences).toHaveBeenCalledTimes(1);
+        await waitFor(() =>
+            expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true')
+        );
+    });
+
+    test('ignores invalid dashboard interview IDs without changing view mode', async () => {
+        const updatePreferences = vi.fn();
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: -1 } }]}>
+                <ViewInterview />
+            </MemoryRouter>,
+            { initialPreferences: { interview_view_mode: 'board' }, updatePreferences }
+        );
+
+        expect(await screen.findByText(/abc pte ltd/i)).toBeInTheDocument();
+        expect(updatePreferences).not.toHaveBeenCalled();
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    test('consumes a valid dashboard interview ID that is no longer present', async () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: 99 } }]}>
+                <ViewInterview />
+                <LocationStateProbe />
+            </MemoryRouter>
+        );
+
+        expect(await screen.findByText(/abc pte ltd/i)).toBeInTheDocument();
+        await waitFor(() => expect(screen.getByTestId('location-state')).toHaveTextContent('null'));
+    });
+
+    test('shows the standard toast when dashboard List-mode switching fails', async () => {
+        const updatePreferences = vi.fn().mockRejectedValue(new Error('save failed'));
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: 1 } }]}>
+                <ViewInterview />
+                <LocationStateProbe />
+            </MemoryRouter>,
+            { initialPreferences: { interview_view_mode: 'board' }, updatePreferences }
+        );
+
+        expect(await screen.findByText('Unable to save display preferences. Please try again.')).toBeInTheDocument();
+        expect(screen.getByTestId('location-state')).toHaveTextContent('null');
     });
 
     test('shows a skeleton instead of a spinner during the initial fetch', () => {

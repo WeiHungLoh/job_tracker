@@ -1,4 +1,4 @@
-import { type MouseEvent, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createInterviewCsvData } from '../../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
 import { createDeleteAllInterviewsConfirmation } from '../../../../../helper/bulkConfirmation';
@@ -11,7 +11,7 @@ import { routes } from '../../../../../routes';
 import styles from '../../../../interview/InterviewListPage.module.css';
 import { useConfirm } from 'material-ui-confirm';
 import { useDemo } from '../../../context/DemoContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../../../../components/userPreferences/UserPreferencesProvider';
 import ActivityControls from '../../../../../components/activityControls/ActivityControls';
@@ -22,16 +22,21 @@ import { createInterviewEmptyState } from '../../../../interview/interviewEmptyS
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
 import { sortInterviews } from '../../../state/demoSelectors';
+import { getDashboardInterviewId } from '../../../../../helper/dashboardNavigation';
+import { scrollAndHighlight } from '../../../../../helper/highlightElement';
 
 const DemoViewInterview = () => {
     const { dispatch, state, updatePreferences } = useDemo();
     const { preferences } = useUserPreferences();
     const confirm = useConfirm();
     const navigate = useNavigate();
+    const location = useLocation();
+    const dashboardInterviewIdRef = useRef(getDashboardInterviewId(location.state));
+    const dashboardHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const { showErrorToast } = useToast();
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
-    const sortedInterviews = sortInterviews(state.interviews);
+    const sortedInterviews = useMemo(() => sortInterviews(state.interviews), [state.interviews]);
     const csvData = createInterviewCsvData(sortedInterviews);
     const hasInterviews = sortedInterviews.length > 0;
     const emptyState = createInterviewEmptyState({
@@ -40,6 +45,33 @@ const DemoViewInterview = () => {
     });
     const viewMode = preferences.interview_view_mode;
     const isBoardView = viewMode === 'board';
+
+    useEffect(() => {
+        if (dashboardInterviewIdRef.current && viewMode !== 'list') {
+            void updatePreferences({ interview_view_mode: 'list' });
+        }
+    }, [updatePreferences, viewMode]);
+
+    useEffect(() => {
+        const interviewId = dashboardInterviewIdRef.current;
+        if (!interviewId || viewMode !== 'list') {
+            return;
+        }
+
+        if (sortedInterviews.some((interview) => interview.interview_id === interviewId)) {
+            scrollAndHighlight(String(interviewId), styles.highlighted, dashboardHighlightTimeout.current);
+        }
+
+        dashboardInterviewIdRef.current = null;
+        navigate(location.pathname, { replace: true, state: null });
+    }, [location.pathname, navigate, sortedInterviews, viewMode]);
+
+    useEffect(() => {
+        const highlightTimeouts = dashboardHighlightTimeout.current;
+        return () => {
+            Object.values(highlightTimeouts).forEach(clearTimeout);
+        };
+    }, []);
 
     const handleDelete = async (interviewId: number) => {
         const { confirmed } = await confirm(createDeleteConfirmation('job interview'));

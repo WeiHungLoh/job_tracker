@@ -6,7 +6,12 @@ import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import StatusLegend from './StatusLegend';
 import type { JobStatus } from '../application/models';
 import type { StatusChartProps } from './models';
-import { createStatusBarChartData, createStatusBarChartOptions, statusBarTooltipPlugin } from './chartConfig';
+import {
+    createInteractiveStatusBarChartOptions,
+    createStatusBarChartData,
+    createStatusBarChartOptions,
+    statusBarTooltipPlugin,
+} from './chartConfig';
 import { getStatusCountMap } from './dashboardData';
 import styles from './ClosedOutcomesChart.module.css';
 import { useTheme } from '../../components/theme/ThemeContext';
@@ -15,7 +20,7 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
 const CLOSED_STATUSES: readonly JobStatus[] = ['Rejected', 'Ghosted', 'Declined'];
 
-const ClosedOutcomesChart = ({ statusCounts, isLoading }: StatusChartProps) => {
+const ClosedOutcomesChart = ({ statusCounts, isLoading, onStatusSelect }: StatusChartProps) => {
     const { theme } = useTheme();
     const countByStatus = useMemo(() => getStatusCountMap(statusCounts), [statusCounts]);
     const renderedStatuses = useMemo(
@@ -26,7 +31,13 @@ const ClosedOutcomesChart = ({ statusCounts, isLoading }: StatusChartProps) => {
         () => createStatusBarChartData(renderedStatuses, countByStatus, theme),
         [countByStatus, renderedStatuses, theme]
     );
-    const options = useMemo(() => createStatusBarChartOptions(theme), [theme]);
+    const options = useMemo(
+        () =>
+            onStatusSelect
+                ? createInteractiveStatusBarChartOptions(theme, onStatusSelect)
+                : createStatusBarChartOptions(theme),
+        [onStatusSelect, theme]
+    );
     const chartLabel = renderedStatuses.map((status) => `${status}: ${countByStatus[status] ?? 0}`).join(', ');
 
     return (
@@ -42,7 +53,11 @@ const ClosedOutcomesChart = ({ statusCounts, isLoading }: StatusChartProps) => {
                     <div className={styles.chartArea} role='img' aria-label={`Closed outcomes. ${chartLabel}`}>
                         <Bar key={theme} data={data} options={options} plugins={[statusBarTooltipPlugin]} />
                     </div>
-                    <StatusLegend label='Closed outcomes legend' statuses={renderedStatuses} />
+                    <StatusLegend
+                        label='Closed outcomes legend'
+                        statuses={renderedStatuses}
+                        onStatusSelect={onStatusSelect}
+                    />
                 </>
             )}
         </DashboardCard>

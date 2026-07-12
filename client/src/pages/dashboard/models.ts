@@ -18,7 +18,12 @@ export type DashboardDataProps = {
     isLoading: boolean;
 };
 
-export type DashboardContentProps = DashboardDataProps;
+export type DashboardNavigationProps = {
+    onInterviewSelect?: (interviewId: number) => void;
+    onStatusSelect?: (status: JobStatus) => void;
+};
+
+export type DashboardContentProps = DashboardDataProps & DashboardNavigationProps;
 export type DashboardStatsProps = DashboardDataProps;
 
 export type ApplicationsLineChartProps = {
@@ -26,12 +31,12 @@ export type ApplicationsLineChartProps = {
     isLoading: boolean;
 };
 
-export type StatusChartProps = {
+export type StatusChartProps = Pick<DashboardNavigationProps, 'onStatusSelect'> & {
     statusCounts: JobStatusCount[];
     isLoading: boolean;
 };
 
-export type UpcomingInterviewsProps = {
+export type UpcomingInterviewsProps = Pick<DashboardNavigationProps, 'onInterviewSelect'> & {
     interviews: JobInterview[];
     isLoading: boolean;
 };

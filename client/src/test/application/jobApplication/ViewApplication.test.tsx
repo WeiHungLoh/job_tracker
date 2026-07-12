@@ -1,11 +1,12 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import ViewApplication from '../../../pages/application/jobApplication/viewApplication/ViewApplication';
 import { render } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../../../components/userPreferences/models';
 import type { ReactNode } from 'react';
+import * as highlightElement from '../../../helper/highlightElement';
 
 globalThis.fetch = vi.fn();
 
@@ -160,6 +161,11 @@ const statusUpdateRequestCount = (jobId: number) =>
         ([url, init]: [string, RequestInit?]) =>
             url.endsWith(`/job-applications/${jobId}/status`) && init?.method === 'PATCH'
     ).length;
+
+const LocationStateProbe = () => {
+    const location = useLocation();
+    return <output data-testid='location-state'>{JSON.stringify(location.state)}</output>;
+};
 
 const clickConfirmedAction = async (button: HTMLElement) => {
     await act(async () => {
@@ -984,6 +990,80 @@ describe('Job application viewing flow', () => {
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
     });
 
+    test('uses a valid dashboard status for the first request, saves it once, and preserves board preferences', async () => {
+        const initialPreferences: UserPreferences = {
+            ...mockPreferences,
+            application_view_mode: 'board',
+            application_list_sort_order: 'company_name_desc',
+            application_board_sort_order: 'application_date_asc',
+        };
+        const updatePreferences = vi.fn(async (updatedPreferences: UpdateUserPreferencesRequest) => ({
+            ...initialPreferences,
+            ...updatedPreferences,
+        }));
+        const offerUrl = `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Offer`;
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/application/view', state: { dashboardJobStatus: 'Offer' } }]}>
+                <ViewApplication />
+                <LocationStateProbe />
+            </MemoryRouter>,
+            { initialPreferences, updatePreferences }
+        );
+
+        await waitFor(() => expect(applicationRequestCount(offerUrl)).toBe(1));
+        expect(updatePreferences).toHaveBeenCalledTimes(1);
+        expect(updatePreferences).toHaveBeenCalledWith({ application_job_statuses: ['Offer'] });
+        expect(screen.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true');
+        await waitFor(() => expect(screen.getByTestId('location-state')).toHaveTextContent('null'));
+        expect(applicationListRequestCount()).toBe(1);
+    });
+
+    test('does not resave an already-selected dashboard status', async () => {
+        const updatePreferences = vi.fn();
+        const offerUrl = `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Offer`;
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/application/view', state: { dashboardJobStatus: 'Offer' } }]}>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_job_statuses: ['Offer'] }, updatePreferences }
+        );
+
+        await waitFor(() => expect(applicationRequestCount(offerUrl)).toBe(1));
+        expect(updatePreferences).not.toHaveBeenCalled();
+    });
+
+    test('ignores an invalid dashboard status and uses the saved filter', async () => {
+        const updatePreferences = vi.fn();
+        const appliedUrl = `${import.meta.env.VITE_API_URL}/job-applications?jobStatuses=Applied`;
+
+        render(
+            <MemoryRouter
+                initialEntries={[{ pathname: '/application/view', state: { dashboardJobStatus: 'Unknown' } }]}
+            >
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_job_statuses: ['Applied'] }, updatePreferences }
+        );
+
+        await waitFor(() => expect(applicationRequestCount(appliedUrl)).toBe(1));
+        expect(updatePreferences).not.toHaveBeenCalled();
+    });
+
+    test('shows the standard filtering toast when the dashboard preference update fails', async () => {
+        const updatePreferences = vi.fn().mockRejectedValue(new Error('save failed'));
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/application/view', state: { dashboardJobStatus: 'Offer' } }]}>
+                <ViewApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        expect(await screen.findByText('Unable to filter job applications. Please try again.')).toBeInTheDocument();
+    });
+
     test('keeps filter checkboxes enabled while applications are loading', async () => {
         let resolveFilterRequest: ((value: ReturnType<typeof response>) => void) | undefined;
         const pendingFilterRequest = new Promise<ReturnType<typeof response>>((resolve) => {
@@ -1126,6 +1206,30 @@ describe('Job application viewing flow', () => {
         await waitFor(() => {
             expect(screen.getByRole('listbox')).toBeInTheDocument();
         });
+    });
+
+    test('does not scroll when a status change removes the application from the selected filter', async () => {
+        const scrollAndHighlight = vi.spyOn(highlightElement, 'scrollAndHighlight');
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            {
+                initialPreferences: {
+                    application_enable_scroll: true,
+                    application_job_statuses: ['Applied'],
+                },
+            }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: /edit status/i }));
+        await userEvent.selectOptions(await screen.findByRole('listbox'), 'Offer');
+        await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+        await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+        expect(scrollAndHighlight).not.toHaveBeenCalled();
+        scrollAndHighlight.mockRestore();
     });
 
     test('restores database ordering after changing an application status', async () => {

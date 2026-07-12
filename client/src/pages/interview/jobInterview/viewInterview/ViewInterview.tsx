@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { type MouseEvent, useEffect, useRef, useState } from 'react';
 import { createInterviewCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
@@ -26,6 +26,8 @@ import ApplicationViewToggle from '../../../../components/activityControls/appli
 import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
 import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skeletonInterviewBoard/SkeletonInterviewBoard';
 import InterviewGrid from '../../interviewGrid/InterviewGrid';
+import { getDashboardInterviewId } from '../../../../helper/dashboardNavigation';
+import { scrollAndHighlight } from '../../../../helper/highlightElement';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
@@ -34,6 +36,10 @@ const ViewInterview = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
+    const location = useLocation();
+    const dashboardInterviewIdRef = useRef(getDashboardInterviewId(location.state));
+    const dashboardViewUpdatePendingRef = useRef(false);
+    const dashboardHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const {
         pendingIds: deletingInterviewIds,
         startPending: startDeletingInterview,
@@ -74,6 +80,50 @@ const ViewInterview = () => {
         void fetchInterviews();
         return () => {
             isActive = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const interviewId = dashboardInterviewIdRef.current;
+        if (!interviewId || viewMode === 'list' || dashboardViewUpdatePendingRef.current) {
+            return;
+        }
+
+        dashboardViewUpdatePendingRef.current = true;
+        const switchToListView = async () => {
+            try {
+                await updatePreferences({ interview_view_mode: 'list' });
+            } catch (error) {
+                showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
+                dashboardInterviewIdRef.current = null;
+                navigate(location.pathname, { replace: true, state: null });
+            } finally {
+                dashboardViewUpdatePendingRef.current = false;
+            }
+        };
+
+        void switchToListView();
+    }, [location.pathname, navigate, showErrorToast, updatePreferences, viewMode]);
+
+    useEffect(() => {
+        const interviewId = dashboardInterviewIdRef.current;
+        if (!interviewId || isLoading || viewMode !== 'list') {
+            return;
+        }
+
+        const targetId = String(interviewId);
+        if (interviews.some((interview) => interview.interview_id === interviewId)) {
+            scrollAndHighlight(targetId, styles.highlighted, dashboardHighlightTimeout.current);
+        }
+
+        dashboardInterviewIdRef.current = null;
+        navigate(location.pathname, { replace: true, state: null });
+    }, [interviews, isLoading, location.pathname, navigate, viewMode]);
+
+    useEffect(() => {
+        const highlightTimeouts = dashboardHighlightTimeout.current;
+        return () => {
+            Object.values(highlightTimeouts).forEach(clearTimeout);
         };
     }, []);
 

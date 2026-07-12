@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createApplicationCsvData } from '../../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
 import {
@@ -42,10 +43,14 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../../routes';
 import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
 import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
+import { getDashboardJobStatus } from '../../../../../helper/dashboardNavigation';
 
 const DemoViewApplication = () => {
     const { dispatch, state } = useDemo();
     const { preferences, updatePreferences } = useUserPreferences();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const dashboardJobStatusRef = useRef(getDashboardJobStatus(location.state));
     const [editedJobStatuses, setEditedJobStatuses] = useState<Record<number, JobStatus>>({});
     const confirm = useConfirm();
     const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -75,6 +80,19 @@ const DemoViewApplication = () => {
         timeouts: showCorrespondingAppTimeout.current,
         visibleIds: visibleApplicationIds,
     });
+
+    useEffect(() => {
+        const dashboardJobStatus = dashboardJobStatusRef.current;
+        if (!dashboardJobStatus) {
+            return;
+        }
+
+        dashboardJobStatusRef.current = null;
+        if (selectedJobStatuses.length !== 1 || selectedJobStatuses[0] !== dashboardJobStatus) {
+            void updatePreferences({ application_job_statuses: [dashboardJobStatus] });
+        }
+        navigate(location.pathname, { replace: true, state: null });
+    }, [location.pathname, navigate, selectedJobStatuses, updatePreferences]);
 
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
         void updatePreferences({ application_view_mode: nextViewMode });

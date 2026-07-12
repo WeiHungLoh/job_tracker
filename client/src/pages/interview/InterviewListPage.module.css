@@ -21,6 +21,27 @@
     align-self: center;
 }
 
+.highlighted {
+    animation: highlightFade 4s ease-in-out;
+}
+
+@keyframes highlightFade {
+    0% {
+        background-color: var(--colorHighlightAnim);
+    }
+
+    100% {
+        background-color: inherit;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .highlighted {
+        animation: none;
+        background-color: var(--colorHighlightAnim);
+    }
+}
+
 @media (max-width: 803px) {
     .interviewList {
         width: 90%;

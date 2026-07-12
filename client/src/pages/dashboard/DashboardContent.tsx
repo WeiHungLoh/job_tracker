@@ -6,7 +6,14 @@ import UpcomingInterviews from './UpcomingInterviews';
 import type { DashboardContentProps } from './models';
 import styles from './Dashboard.module.css';
 
-const DashboardContent = ({ statusCounts, interviews, weeklyApplications, isLoading }: DashboardContentProps) => {
+const DashboardContent = ({
+    statusCounts,
+    interviews,
+    weeklyApplications,
+    isLoading,
+    onInterviewSelect,
+    onStatusSelect,
+}: DashboardContentProps) => {
     return (
         <div className={styles.dashboard}>
             <section className={styles.statsSection} aria-label='Dashboard statistics'>
@@ -21,13 +28,25 @@ const DashboardContent = ({ statusCounts, interviews, weeklyApplications, isLoad
                 <ApplicationsLineChart weeklyApplications={weeklyApplications} isLoading={isLoading} />
             </section>
             <section className={styles.interviewsSection}>
-                <UpcomingInterviews interviews={interviews} isLoading={isLoading} />
+                <UpcomingInterviews
+                    interviews={interviews}
+                    isLoading={isLoading}
+                    onInterviewSelect={onInterviewSelect}
+                />
             </section>
             <section className={styles.pipelineSection}>
-                <ApplicationPipelineChart statusCounts={statusCounts} isLoading={isLoading} />
+                <ApplicationPipelineChart
+                    statusCounts={statusCounts}
+                    isLoading={isLoading}
+                    onStatusSelect={onStatusSelect}
+                />
             </section>
             <section className={styles.closedSection}>
-                <ClosedOutcomesChart statusCounts={statusCounts} isLoading={isLoading} />
+                <ClosedOutcomesChart
+                    statusCounts={statusCounts}
+                    isLoading={isLoading}
+                    onStatusSelect={onStatusSelect}
+                />
             </section>
         </div>
     );

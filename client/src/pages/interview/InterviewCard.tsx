@@ -32,7 +32,11 @@ const InterviewCard = ({
         .join(' ');
 
     return (
-        <article aria-label={`${interview.company_name} interview`} className={cardClasses}>
+        <article
+            aria-label={`${interview.company_name} interview`}
+            className={cardClasses}
+            id={variant === 'job' ? String(interview.interview_id) : undefined}
+        >
             <div className={styles.interviewContent}>
                 <h2>
                     {index + 1}. {interview.company_name}

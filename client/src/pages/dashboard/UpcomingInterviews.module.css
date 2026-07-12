@@ -20,6 +20,27 @@
     background: var(--colorOverlayBg);
 }
 
+.interviewButton {
+    appearance: none;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
+.interviewButton:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 3px;
+}
+
 .index {
     display: inline-flex;
     width: 30px;

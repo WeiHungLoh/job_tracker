@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ChartOptions, Plugin } from 'chart.js';
 import ApplicationPipelineChart from '../../pages/dashboard/ApplicationPipelineChart';
 import ApplicationsLineChart from '../../pages/dashboard/ApplicationsLineChart';
@@ -171,6 +172,45 @@ describe('Dashboard V2', () => {
         ).toBeInTheDocument();
     });
 
+    test('selects every pipeline status from the accessible legend and Chart.js bar handler', async () => {
+        const onStatusSelect = vi.fn();
+        render(
+            <ApplicationPipelineChart
+                statusCounts={[
+                    statusCount('Applied', 1),
+                    statusCount('Interview', 2),
+                    statusCount('Offer', 3),
+                    statusCount('Accepted', 4),
+                ]}
+                isLoading={false}
+                onStatusSelect={onStatusSelect}
+            />
+        );
+
+        for (const status of ['Applied', 'Interview', 'Offer', 'Accepted']) {
+            await userEvent.click(screen.getByRole('button', { name: `View ${status} applications` }));
+        }
+        expect(onStatusSelect.mock.calls.map(([status]) => status)).toEqual([
+            'Applied',
+            'Interview',
+            'Offer',
+            'Accepted',
+        ]);
+
+        chartMocks.barOptions?.onClick?.(
+            {} as never,
+            [{ index: 2 }] as never,
+            { data: { labels: ['Applied', 'Interview', 'Offer', 'Accepted'] } } as never
+        );
+        expect(onStatusSelect).toHaveBeenLastCalledWith('Offer');
+
+        onStatusSelect.mockClear();
+        chartMocks.barOptions?.onClick?.({} as never, [], {
+            data: { labels: ['Applied', 'Interview', 'Offer', 'Accepted'] },
+        } as never);
+        expect(onStatusSelect).not.toHaveBeenCalled();
+    });
+
     test('shows the pipeline empty state when every pipeline count is zero', () => {
         render(
             <ApplicationPipelineChart
@@ -230,6 +270,22 @@ describe('Dashboard V2', () => {
         expect(getRenderedBars()).toEqual(['Rejected: 3', 'Declined: 1']);
         expect(getLegendStatuses('Closed outcomes legend')).toEqual(['Rejected', 'Declined']);
         expect(screen.getByRole('img', { name: 'Closed outcomes. Rejected: 3, Declined: 1' })).toBeInTheDocument();
+    });
+
+    test('selects every closed status from the accessible legend', async () => {
+        const onStatusSelect = vi.fn();
+        render(
+            <ClosedOutcomesChart
+                statusCounts={[statusCount('Rejected', 1), statusCount('Ghosted', 2), statusCount('Declined', 3)]}
+                isLoading={false}
+                onStatusSelect={onStatusSelect}
+            />
+        );
+
+        for (const status of ['Rejected', 'Ghosted', 'Declined']) {
+            await userEvent.click(screen.getByRole('button', { name: `View ${status} applications` }));
+        }
+        expect(onStatusSelect.mock.calls.map(([status]) => status)).toEqual(['Rejected', 'Ghosted', 'Declined']);
     });
 
     test('shows the closed-outcomes empty state when all closed counts are zero', () => {
@@ -380,6 +436,18 @@ describe('Dashboard V2', () => {
         ).toEqual(['1', '2', '3']);
         expect(screen.queryByText('Past Company')).not.toBeInTheDocument();
         expect(screen.queryByText('Fourth Company')).not.toBeInTheDocument();
+    });
+
+    test('selects the exact upcoming interview from its accessible preview', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(fixedNow);
+        const onInterviewSelect = vi.fn();
+        const interview = createInterview(7, '2026-07-11T12:00:00.000Z', 'Target Company');
+
+        render(<UpcomingInterviews interviews={[interview]} isLoading={false} onInterviewSelect={onInterviewSelect} />);
+
+        screen.getByRole('button', { name: 'View Target Company interview' }).click();
+        expect(onInterviewSelect).toHaveBeenCalledWith(7);
     });
 
     test('shows the upcoming-interviews empty state when no future interviews exist', () => {

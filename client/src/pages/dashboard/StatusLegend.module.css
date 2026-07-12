@@ -16,6 +16,24 @@
     gap: 6px;
 }
 
+.statusButton {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.statusButton:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 3px;
+}
+
 .swatch {
     width: 10px;
     height: 10px;

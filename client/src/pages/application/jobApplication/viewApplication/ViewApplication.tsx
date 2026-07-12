@@ -44,12 +44,14 @@ import { createApplicationEmptyState } from '../../applicationEmptyState';
 import SortOptions from '../../../../components/activityControls/sortOptions/SortOptions';
 import { sortApplications } from '../../applicationSorting';
 import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
+import { getDashboardJobStatus } from '../../../../helper/dashboardNavigation';
 
 const ViewApplication = () => {
     const api = useJobTrackerAPI();
     const { preferences, updatePreferences } = useUserPreferences();
     const location = useLocation();
     const navigate = useNavigate();
+    const dashboardJobStatusRef = useRef(getDashboardJobStatus(location.state));
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [editedJobStatuses, setEditedJobStatuses] = useState<Record<number, JobStatus>>({});
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
@@ -172,10 +174,28 @@ const ViewApplication = () => {
         let isActive = true;
 
         const fetchData = async () => {
+            const dashboardJobStatus = dashboardJobStatusRef.current;
+            const initialJobStatuses = dashboardJobStatus ? [dashboardJobStatus] : selectedJobStatuses;
+
             try {
+                const preferenceUpdate =
+                    dashboardJobStatus &&
+                    (selectedJobStatuses.length !== 1 || selectedJobStatuses[0] !== dashboardJobStatus)
+                        ? updatePreferences({ application_job_statuses: initialJobStatuses }).catch(
+                              (error: unknown) => {
+                                  showErrorToast(
+                                      getErrorToastMessage(
+                                          error,
+                                          'Unable to filter job applications. Please try again.'
+                                      )
+                                  );
+                              }
+                          )
+                        : Promise.resolve();
                 const [jobApplications, jobInterviews] = await Promise.all([
-                    api.application.listApplications({ jobStatuses: selectedJobStatuses }),
+                    api.application.listApplications({ jobStatuses: initialJobStatuses }),
                     api.interview.listInterviews(),
+                    preferenceUpdate,
                 ]);
 
                 if (isActive) {
@@ -184,6 +204,11 @@ const ViewApplication = () => {
                 }
             } catch (error) {
                 showErrorToast(getErrorToastMessage(error, 'Unable to load job application data. Please try again.'));
+            } finally {
+                if (dashboardJobStatusRef.current) {
+                    dashboardJobStatusRef.current = null;
+                    navigate(location.pathname, { replace: true, state: null });
+                }
             }
 
             try {

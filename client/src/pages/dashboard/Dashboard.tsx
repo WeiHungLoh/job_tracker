@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardContent from './DashboardContent';
+import type { JobStatus } from '../application/models';
 import type { JobInterview } from '../interview/models';
 import type { JobStatusCount, WeeklyApplicationCount } from './models';
+import type {
+    DashboardApplicationNavigationState,
+    DashboardInterviewNavigationState,
+} from '../../helper/dashboardNavigation';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
+import { routes } from '../../routes';
 
 const Dashboard = () => {
     const [statusCounts, setStatusCounts] = useState<JobStatusCount[]>([]);
@@ -13,6 +20,17 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
+    const navigate = useNavigate();
+
+    const handleStatusSelect = (status: JobStatus) => {
+        const state: DashboardApplicationNavigationState = { dashboardJobStatus: status };
+        navigate(routes.viewApplications, { state });
+    };
+
+    const handleInterviewSelect = (interviewId: number) => {
+        const state: DashboardInterviewNavigationState = { dashboardInterviewId: interviewId };
+        navigate(routes.viewInterviews, { state });
+    };
 
     useEffect(() => {
         let isActive = true;
@@ -54,6 +72,8 @@ const Dashboard = () => {
             interviews={interviews}
             weeklyApplications={weeklyApplications}
             isLoading={isLoading}
+            onInterviewSelect={handleInterviewSelect}
+            onStatusSelect={handleStatusSelect}
         />
     );
 };

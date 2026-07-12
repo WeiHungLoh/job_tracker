@@ -8,7 +8,31 @@ import styles from './UpcomingInterviews.module.css';
 
 const MAX_UPCOMING_INTERVIEWS = 3;
 
-const UpcomingInterviews = ({ interviews, isLoading }: UpcomingInterviewsProps) => {
+const InterviewPreview = ({
+    interview,
+    index,
+}: {
+    interview: UpcomingInterviewsProps['interviews'][number];
+    index: number;
+}) => (
+    <>
+        <span className={styles.index} aria-hidden='true'>
+            {index + 1}
+        </span>
+        <div className={styles.interviewDetails}>
+            <h3>{interview.company_name}</h3>
+            <p className={styles.jobTitle}>{interview.job_title}</p>
+            <time dateTime={interview.interview_date}>{formatDate(interview.interview_date).formattedDate}</time>
+            {(interview.interview_type || interview.interview_location) && (
+                <p className={styles.details}>
+                    {[interview.interview_type, interview.interview_location].filter(Boolean).join(' · ')}
+                </p>
+            )}
+        </div>
+    </>
+);
+
+const UpcomingInterviews = ({ interviews, isLoading, onInterviewSelect }: UpcomingInterviewsProps) => {
     const upcomingInterviews = useMemo(
         () => getUpcomingInterviews(interviews).slice(0, MAX_UPCOMING_INTERVIEWS),
         [interviews]
@@ -31,23 +55,18 @@ const UpcomingInterviews = ({ interviews, isLoading }: UpcomingInterviewsProps) 
                 <ol className={styles.interviewList} aria-label='Upcoming interviews list'>
                     {upcomingInterviews.map((interview, index) => (
                         <li key={interview.interview_id}>
-                            <span className={styles.index} aria-hidden='true'>
-                                {index + 1}
-                            </span>
-                            <div className={styles.interviewDetails}>
-                                <h3>{interview.company_name}</h3>
-                                <p className={styles.jobTitle}>{interview.job_title}</p>
-                                <time dateTime={interview.interview_date}>
-                                    {formatDate(interview.interview_date).formattedDate}
-                                </time>
-                                {(interview.interview_type || interview.interview_location) && (
-                                    <p className={styles.details}>
-                                        {[interview.interview_type, interview.interview_location]
-                                            .filter(Boolean)
-                                            .join(' · ')}
-                                    </p>
-                                )}
-                            </div>
+                            {onInterviewSelect ? (
+                                <button
+                                    aria-label={`View ${interview.company_name} interview`}
+                                    className={styles.interviewButton}
+                                    onClick={() => onInterviewSelect(interview.interview_id)}
+                                    type='button'
+                                >
+                                    <InterviewPreview index={index} interview={interview} />
+                                </button>
+                            ) : (
+                                <InterviewPreview index={index} interview={interview} />
+                            )}
                         </li>
                     ))}
                 </ol>

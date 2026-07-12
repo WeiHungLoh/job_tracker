@@ -1,4 +1,4 @@
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import DemoAddApplication from '../../pages/demo/application/jobApplication/addApplication/DemoAddApplication';
@@ -15,6 +15,7 @@ import { daysFromNow, toDateTimeString } from '../../pages/demo/state/demoDateHe
 import { render } from '../renderWithToast';
 import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
+import DemoRoutes from '../../pages/demo/components/demoLayout/DemoRoutes';
 
 const mockConfirm = vi.fn();
 
@@ -68,6 +69,22 @@ const SetApplicationViewMode = ({ archived = false }: { archived?: boolean }) =>
             type='button'
         >
             Set application Board mode
+        </button>
+    );
+};
+
+const DemoRouteHarness = () => (
+    <Routes>
+        <Route path={`${routes.demoRoot}/*`} element={<DemoRoutes />} />
+    </Routes>
+);
+
+const SetInterviewBoardMode = () => {
+    const { updatePreferences } = useDemo();
+
+    return (
+        <button onClick={() => void updatePreferences({ interview_view_mode: 'board' })} type='button'>
+            Set interview Board mode
         </button>
     );
 };
@@ -449,6 +466,41 @@ describe('demo page interactions', () => {
         expect(screen.getByRole('heading', { name: 'Application Pipeline' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Closed Outcomes' })).toBeInTheDocument();
         expect(screen.getAllByText('Demo bar chart')).toHaveLength(2);
+    });
+
+    test('navigates from a demo dashboard status to the matching application filter without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        renderDemo(<DemoRouteHarness />, [routes.demoDashboard]);
+
+        await userEvent.click(screen.getByRole('button', { name: 'View Offer applications' }));
+
+        expect(await screen.findByRole('heading', { name: /Greenhouse CloudOps/ })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /Quantum Ledger/ })).toBeInTheDocument();
+        expect(screen.queryByText('HorizonAI Labs')).not.toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Applied' })).not.toBeChecked();
+        expect(fetchSpy).not.toHaveBeenCalled();
+        fetchSpy.mockRestore();
+    });
+
+    test('opens the exact demo dashboard interview in List view and highlights it without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        renderDemo(
+            <>
+                <SetInterviewBoardMode />
+                <DemoRouteHarness />
+            </>,
+            [routes.demoDashboard]
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Set interview Board mode' }));
+        await userEvent.click(screen.getByRole('button', { name: 'View Merlion Cloud interview' }));
+
+        expect(await screen.findByRole('region', { name: 'Active interviews' })).toHaveAttribute('data-layout', 'list');
+        await waitFor(() => expect(document.getElementById('401')?.className).toContain('highlighted'));
+        expect(fetchSpy).not.toHaveBeenCalled();
+        fetchSpy.mockRestore();
     });
 
     test('uses empty job URLs for built-in demo application data', () => {
