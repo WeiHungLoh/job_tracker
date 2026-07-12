@@ -1,6 +1,24 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
 export type ApplicationViewMode = 'list' | 'board';
 
+export const APPLICATION_LIST_SORT_ORDERS = [
+    'job_status',
+    'application_date_desc',
+    'application_date_asc',
+    'company_name_asc',
+    'company_name_desc',
+] as const;
+
+export type ApplicationListSortOrder = (typeof APPLICATION_LIST_SORT_ORDERS)[number];
+export type ApplicationBoardSortOrder = Exclude<ApplicationListSortOrder, 'job_status'>;
+
+export const APPLICATION_BOARD_SORT_ORDERS: readonly ApplicationBoardSortOrder[] = APPLICATION_LIST_SORT_ORDERS.filter(
+    (sortOrder): sortOrder is ApplicationBoardSortOrder => sortOrder !== 'job_status'
+);
+
+export const DEFAULT_APPLICATION_LIST_SORT_ORDER: ApplicationListSortOrder = 'job_status';
+export const DEFAULT_APPLICATION_BOARD_SORT_ORDER: ApplicationBoardSortOrder = 'application_date_desc';
+
 export const JOB_STATUSES: readonly JobStatus[] = [
     'Accepted',
     'Applied',
@@ -89,9 +107,13 @@ export type UserPreferences = {
     application_show_archive: boolean;
     application_enable_scroll: boolean;
     application_view_mode: ApplicationViewMode;
+    application_list_sort_order: ApplicationListSortOrder;
+    application_board_sort_order: ApplicationBoardSortOrder;
     archived_application_job_statuses: JobStatus[];
     archived_application_show_notes: boolean;
     archived_application_view_mode: ApplicationViewMode;
+    archived_application_list_sort_order: ApplicationListSortOrder;
+    archived_application_board_sort_order: ApplicationBoardSortOrder;
     interview_view_mode: ApplicationViewMode;
     archived_interview_view_mode: ApplicationViewMode;
 };

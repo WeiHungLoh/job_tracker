@@ -310,7 +310,9 @@ const guideSections: readonly UserGuideSection[] = [
             <>
                 <h3>Export as CSV</h3>
                 <p>
-                    Application exports contain the records visible under the selected status filters. Interview and
+                    Application exports contain the records visible under the selected status filters in their current
+                    display order. List exports follow the visible list. Board exports move from left to right through
+                    the visible status columns and keep each column&apos;s selected ordering. Interview and
                     archived-record viewers also provide CSV export actions under <strong>More...</strong> when at least
                     one record is available.
                 </p>
@@ -320,10 +322,16 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <h3>Sorting order</h3>
                 <p>
-                    Applications are grouped by status in this order: <code>Accepted</code>, <code>Offer</code>,{' '}
+                    Use <strong>Sort by</strong> to order application lists by <code>Job Status</code>,{' '}
+                    <code>Newest Application</code>, <code>Oldest Application</code>, <code>Company A–Z</code> or{' '}
+                    <code>Company Z–A</code>. The default list order is <code>Job Status</code>, which groups
+                    applications by status and shows the newest application first within each status.
+                </p>
+                <p>
+                    Application boards keep columns in this order: <code>Accepted</code>, <code>Offer</code>,{' '}
                     <code>Declined</code>, <code>Interview</code>, <code>Applied</code>, <code>Ghosted</code> and{' '}
-                    <code>Rejected</code>. Within a status, the most recent application appears first. The same order is
-                    used for active and archived application board columns.
+                    <code>Rejected</code>. Board sorting applies inside each column and defaults to{' '}
+                    <code>Newest Application</code>. Active and archived list and board choices are saved independently.
                 </p>
                 <p>
                     Interviews are grouped with upcoming dates first (closest at the top), then past dates (earliest

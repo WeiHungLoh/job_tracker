@@ -4,6 +4,7 @@ import ViewApplication from '../../../pages/application/jobApplication/viewAppli
 import { render } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
+import type { UpdateUserPreferencesRequest, UserPreferences } from '../../../components/userPreferences/models';
 import type { ReactNode } from 'react';
 
 globalThis.fetch = vi.fn();
@@ -31,15 +32,19 @@ const mockInterview = {
     interview_notes: '',
 };
 
-const mockPreferences = {
+const mockPreferences: UserPreferences = {
     application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
     application_view_mode: 'list',
+    application_list_sort_order: 'job_status',
+    application_board_sort_order: 'application_date_desc',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    archived_application_list_sort_order: 'job_status',
+    archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
 };
@@ -115,6 +120,41 @@ globalThis.alert = vi.fn();
 const applicationRequestCount = (url: string) =>
     fetch.mock.calls.filter(([requestUrl]) => String(requestUrl) === url).length;
 
+const applicationListRequestCount = () =>
+    fetch.mock.calls.filter(
+        ([requestUrl, init]: [string, RequestInit?]) =>
+            requestUrl.includes('/job-applications?') && init?.method === 'GET'
+    ).length;
+
+const getSortOptionLabels = () =>
+    within(screen.getByRole('radiogroup', { name: 'Sort options' }))
+        .getAllByRole('radio')
+        .map((radio) => radio.closest('label')?.textContent);
+
+const getListCompanyHeadings = () => screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+
+const expectListCompanyOrder = (companyNames: string[]) => {
+    expect(getListCompanyHeadings()).toEqual(companyNames.map((companyName, index) => `${index + 1}. ${companyName}`));
+};
+
+const getExportCsvText = async (): Promise<string> => {
+    await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+    const href = screen.getByRole('link', { name: 'Export as CSV' }).getAttribute('href') ?? '';
+    const csvStart = href.indexOf(',');
+
+    return decodeURIComponent(csvStart === -1 ? href : href.slice(csvStart + 1)).replace(/^\uFEFF/, '');
+};
+
+const expectCsvCompanyOrder = (csv: string, companyNames: string[]) => {
+    let previousCompanyIndex = -1;
+
+    for (const companyName of companyNames) {
+        const companyIndex = csv.indexOf(companyName);
+        expect(companyIndex).toBeGreaterThan(previousCompanyIndex);
+        previousCompanyIndex = companyIndex;
+    }
+};
+
 const statusUpdateRequestCount = (jobId: number) =>
     fetch.mock.calls.filter(
         ([url, init]: [string, RequestInit?]) =>
@@ -124,6 +164,24 @@ const statusUpdateRequestCount = (jobId: number) =>
 const clickConfirmedAction = async (button: HTMLElement) => {
     await act(async () => {
         await userEvent.click(button);
+    });
+};
+
+const mockApplicationCollection = (applications: unknown[]) => {
+    fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+        if (url.endsWith('/user-preferences')) {
+            return response({
+                ...mockPreferences,
+                ...(init?.body ? JSON.parse(String(init.body)) : {}),
+            });
+        }
+        if (url.endsWith('/job-interviews')) {
+            return response([]);
+        }
+        if (url.endsWith('/job-applications/summary')) {
+            return response({ application_count: applications.length, related_interview_count: 0 });
+        }
+        return init?.method === 'GET' ? response(applications) : response(undefined, 204);
     });
 };
 
@@ -200,13 +258,340 @@ describe('Job application viewing flow', () => {
         const listButton = screen.getByRole('button', { name: 'List' });
         const boardButton = screen.getByRole('button', { name: 'Board' });
         const filterButton = screen.getByRole('button', { name: 'Filter by' });
+        const sortButton = screen.getByRole('button', { name: 'Sort by' });
         const displayButton = screen.getByRole('button', { name: 'Display options' });
         const moreButton = screen.getByRole('button', { name: 'More...' });
 
         expect(listButton.compareDocumentPosition(boardButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(boardButton.compareDocumentPosition(filterButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-        expect(filterButton.compareDocumentPosition(displayButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(filterButton.compareDocumentPosition(sortButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(sortButton.compareDocumentPosition(displayButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(displayButton.compareDocumentPosition(moreButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    test('shows the exact list and board sort options with their defaults', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+
+        expect(getSortOptionLabels()).toEqual([
+            'Job Status',
+            'Newest Application',
+            'Oldest Application',
+            'Company A–Z',
+            'Company Z–A',
+        ]);
+        expect(screen.getByRole('radio', { name: 'Job Status' })).toBeChecked();
+
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        });
+        await screen.findByRole('region', { name: 'Application board' });
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+
+        expect(getSortOptionLabels()).toEqual([
+            'Newest Application',
+            'Oldest Application',
+            'Company A–Z',
+            'Company Z–A',
+        ]);
+        expect(screen.queryByRole('radio', { name: 'Job Status' })).not.toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: 'Newest Application' })).toBeChecked();
+    });
+
+    test('reorders the active application list for every sort option', async () => {
+        mockApplicationCollection([
+            {
+                ...mockApplication,
+                application_date: '2025-01-15T00:00:00Z',
+                company_name: 'Delta Ltd',
+                job_id: 1,
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-04-15T00:00:00Z',
+                company_name: 'Alpha Ltd',
+                job_id: 2,
+                job_status: 'Rejected',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-03-15T00:00:00Z',
+                company_name: 'Charlie Ltd',
+                job_id: 3,
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-02-15T00:00:00Z',
+                company_name: 'Bravo Ltd',
+                job_id: 4,
+                job_status: 'Accepted',
+            },
+        ]);
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByRole('heading', { level: 2, name: '1. Bravo Ltd' });
+        expectListCompanyOrder(['Bravo Ltd', 'Charlie Ltd', 'Delta Ltd', 'Alpha Ltd']);
+
+        const selectSortOption = async (option: string, expectedCompanyOrder: string[]) => {
+            await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+            await userEvent.click(screen.getByRole('radio', { name: option }));
+            await waitFor(() => expectListCompanyOrder(expectedCompanyOrder));
+        };
+
+        await selectSortOption('Newest Application', ['Alpha Ltd', 'Charlie Ltd', 'Bravo Ltd', 'Delta Ltd']);
+        await selectSortOption('Oldest Application', ['Delta Ltd', 'Bravo Ltd', 'Charlie Ltd', 'Alpha Ltd']);
+        await selectSortOption('Company A–Z', ['Alpha Ltd', 'Bravo Ltd', 'Charlie Ltd', 'Delta Ltd']);
+        await selectSortOption('Company Z–A', ['Delta Ltd', 'Charlie Ltd', 'Bravo Ltd', 'Alpha Ltd']);
+        await selectSortOption('Job Status', ['Bravo Ltd', 'Charlie Ltd', 'Delta Ltd', 'Alpha Ltd']);
+    });
+
+    test('saves only the active mode sort preference without refetching applications', async () => {
+        let savedPreferences: UserPreferences = { ...mockPreferences };
+        const updatePreferences = vi.fn(async (updatedPreferences: UpdateUserPreferencesRequest) => {
+            savedPreferences = { ...savedPreferences, ...updatedPreferences };
+            return savedPreferences;
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        const applicationRequestsBeforeSorting = applicationListRequestCount();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('radio', { name: 'Oldest Application' }));
+        });
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenNthCalledWith(1, {
+                application_list_sort_order: 'application_date_asc',
+            })
+        );
+
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        });
+        await screen.findByRole('region', { name: 'Application board' });
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('radio', { name: 'Company Z–A' }));
+        });
+
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenNthCalledWith(3, {
+                application_board_sort_order: 'company_name_desc',
+            })
+        );
+        expect(updatePreferences).toHaveBeenNthCalledWith(2, { application_view_mode: 'board' });
+        expect(updatePreferences).toHaveBeenCalledTimes(3);
+        expect(applicationListRequestCount()).toBe(applicationRequestsBeforeSorting);
+    });
+
+    test('reorders active cards within board columns for every board sort option', async () => {
+        mockApplicationCollection([
+            {
+                ...mockApplication,
+                application_date: '2025-01-15T00:00:00Z',
+                company_name: 'Delta Offer',
+                job_id: 1,
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-02-15T00:00:00Z',
+                company_name: 'Alpha Offer',
+                job_id: 2,
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-03-15T00:00:00Z',
+                company_name: 'Charlie Offer',
+                job_id: 3,
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-04-15T00:00:00Z',
+                company_name: 'Bravo Offer',
+                job_id: 4,
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-01-15T00:00:00Z',
+                company_name: 'Kilo Applied',
+                job_id: 5,
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-02-15T00:00:00Z',
+                company_name: 'Hotel Applied',
+                job_id: 6,
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-03-15T00:00:00Z',
+                company_name: 'Juliet Applied',
+                job_id: 7,
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-04-15T00:00:00Z',
+                company_name: 'India Applied',
+                job_id: 8,
+                job_status: 'Applied',
+            },
+        ]);
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            {
+                initialPreferences: {
+                    application_view_mode: 'board',
+                },
+            }
+        );
+
+        const board = await screen.findByRole('region', { name: 'Application board' });
+        expect(
+            within(board)
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent)
+        ).toEqual(['Accepted 0', 'Offer 4', 'Declined 0', 'Interview 0', 'Applied 4', 'Ghosted 0', 'Rejected 0']);
+
+        const expectBoardCompanyOrder = (columnName: string, expectedCompanyOrder: string[]) => {
+            expect(
+                within(within(board).getByRole('region', { name: columnName }))
+                    .getAllByRole('heading', { level: 3 })
+                    .map((heading) => heading.textContent)
+            ).toEqual(expectedCompanyOrder);
+        };
+        const expectBoardOrders = (offerOrder: string[], appliedOrder: string[]) => {
+            expectBoardCompanyOrder('Offer 4', offerOrder);
+            expectBoardCompanyOrder('Applied 4', appliedOrder);
+        };
+        const selectSortOption = async (option: string, offerOrder: string[], appliedOrder: string[]) => {
+            await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+            await userEvent.click(screen.getByRole('radio', { name: option }));
+            await waitFor(() => expectBoardOrders(offerOrder, appliedOrder));
+        };
+
+        expectBoardOrders(
+            ['Bravo Offer', 'Charlie Offer', 'Alpha Offer', 'Delta Offer'],
+            ['India Applied', 'Juliet Applied', 'Hotel Applied', 'Kilo Applied']
+        );
+        await selectSortOption(
+            'Oldest Application',
+            ['Delta Offer', 'Alpha Offer', 'Charlie Offer', 'Bravo Offer'],
+            ['Kilo Applied', 'Hotel Applied', 'Juliet Applied', 'India Applied']
+        );
+        await selectSortOption(
+            'Company A–Z',
+            ['Alpha Offer', 'Bravo Offer', 'Charlie Offer', 'Delta Offer'],
+            ['Hotel Applied', 'India Applied', 'Juliet Applied', 'Kilo Applied']
+        );
+        await selectSortOption(
+            'Company Z–A',
+            ['Delta Offer', 'Charlie Offer', 'Bravo Offer', 'Alpha Offer'],
+            ['Kilo Applied', 'Juliet Applied', 'India Applied', 'Hotel Applied']
+        );
+        await selectSortOption(
+            'Newest Application',
+            ['Bravo Offer', 'Charlie Offer', 'Alpha Offer', 'Delta Offer'],
+            ['India Applied', 'Juliet Applied', 'Hotel Applied', 'Kilo Applied']
+        );
+
+        expect(
+            within(board)
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent)
+        ).toEqual(['Accepted 0', 'Offer 4', 'Declined 0', 'Interview 0', 'Applied 4', 'Ghosted 0', 'Rejected 0']);
+    });
+
+    test.each([
+        [
+            'list',
+            { application_view_mode: 'list', application_list_sort_order: 'company_name_asc' },
+            ['Alpha Applied', 'Beta Offer', 'Yankee Offer', 'Zulu Applied'],
+        ],
+        [
+            'board',
+            { application_view_mode: 'board', application_board_sort_order: 'company_name_desc' },
+            ['Yankee Offer', 'Beta Offer', 'Zulu Applied', 'Alpha Applied'],
+        ],
+    ] as const)('exports active %s applications in their displayed order', async (_mode, initialPreferences, order) => {
+        mockApplicationCollection([
+            { ...mockApplication, company_name: 'Alpha Applied', job_id: 1, job_status: 'Applied' },
+            { ...mockApplication, company_name: 'Zulu Applied', job_id: 2, job_status: 'Applied' },
+            { ...mockApplication, company_name: 'Beta Offer', job_id: 3, job_status: 'Offer' },
+            { ...mockApplication, company_name: 'Yankee Offer', job_id: 4, job_status: 'Offer' },
+        ]);
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences }
+        );
+
+        await screen.findByRole('button', { name: 'Sort by' });
+        expectCsvCompanyOrder(await getExportCsvText(), [...order]);
+    });
+
+    test('shows an error and rolls back the active list sort when saving fails', async () => {
+        mockApplicationCollection([
+            { ...mockApplication, job_id: 1, company_name: 'Alpha Applied', job_status: 'Applied' },
+            { ...mockApplication, job_id: 2, company_name: 'Zulu Offer', job_status: 'Offer' },
+        ]);
+        const updatePreferences = vi.fn(async (): Promise<UserPreferences> => {
+            throw new Error('Preference request failed');
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByRole('heading', { level: 2, name: '1. Zulu Offer' });
+        expect(getListCompanyHeadings()).toEqual(['1. Zulu Offer', '2. Alpha Applied']);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await userEvent.click(screen.getByRole('radio', { name: 'Company A–Z' }));
+
+        expect(
+            await screen.findByText('Unable to save the application sorting preference. Please try again.')
+        ).toBeInTheDocument();
+        expect(updatePreferences).toHaveBeenCalledWith({ application_list_sort_order: 'company_name_asc' });
+        expect(getListCompanyHeadings()).toEqual(['1. Zulu Offer', '2. Alpha Applied']);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        expect(screen.getByRole('radio', { name: 'Job Status' })).toBeChecked();
+        expect(screen.getByRole('radio', { name: 'Company A–Z' })).not.toBeChecked();
     });
 
     test('switches to board view and groups applications by status', async () => {
@@ -889,6 +1274,8 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/add your first job application/i)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Add application' })).toHaveAttribute('href', '/application/add');
         expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Display options' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeVisible();
         expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeVisible();
@@ -913,9 +1300,11 @@ describe('Job application viewing flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
 
         expect(await screen.findByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Sort by' })).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
             `${
                 import.meta.env.VITE_API_URL
@@ -963,6 +1352,7 @@ describe('Job application viewing flow', () => {
 
         expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Add application' })).toHaveAttribute('href', '/application/add');
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
         expect(screen.queryByRole('region', { name: 'Application board' })).not.toBeInTheDocument();
     });
 
@@ -1094,6 +1484,7 @@ describe('Job application viewing flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'More...' })).toBeInTheDocument();
     });
 

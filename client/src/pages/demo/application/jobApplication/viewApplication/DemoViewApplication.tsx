@@ -6,8 +6,12 @@ import {
     createDeleteAllApplicationsConfirmation,
 } from '../../../../../helper/bulkConfirmation';
 import {
+    APPLICATION_BOARD_SORT_OPTIONS,
     APPLICATION_CSV_HEADERS,
+    APPLICATION_LIST_SORT_OPTIONS,
     JOB_STATUSES,
+    type ApplicationBoardSortOrder,
+    type ApplicationListSortOrder,
     type JobApplication,
     type JobStatus,
 } from '../../../../application/models';
@@ -22,6 +26,7 @@ import ActivityControls from '../../../../../components/activityControls/Activit
 import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import DisplayOptions from '../../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
+import SortOptions from '../../../../../components/activityControls/sortOptions/SortOptions';
 import DemoApplicationBoard from '../applicationBoard/DemoApplicationBoard';
 import DemoApplicationCard from '../../DemoApplicationCard';
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
@@ -36,6 +41,7 @@ import { useDemoHashHighlight } from '../../../hooks/useDemoHashHighlight';
 import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../../routes';
 import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
+import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
 
 const DemoViewApplication = () => {
     const { dispatch, state } = useDemo();
@@ -56,7 +62,8 @@ const DemoViewApplication = () => {
     const enableScroll = preferences.application_enable_scroll;
     const viewMode = preferences.application_view_mode;
     const isBoardView = viewMode === 'board';
-    const csvData = createApplicationCsvData(applications);
+    const csvApplications = isBoardView ? getApplicationsInBoardOrder(applications, selectedJobStatuses) : applications;
+    const csvData = createApplicationCsvData(csvApplications);
     const visibleApplicationIds = useMemo(
         () => applications.map((application) => String(application.job_id)),
         [applications]
@@ -75,6 +82,16 @@ const DemoViewApplication = () => {
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
         await updatePreferences({ application_job_statuses: jobStatuses });
+        return true;
+    };
+
+    const handleListSortOrderChange = async (sortOrder: ApplicationListSortOrder) => {
+        await updatePreferences({ application_list_sort_order: sortOrder });
+        return true;
+    };
+
+    const handleBoardSortOrderChange = async (sortOrder: ApplicationBoardSortOrder) => {
+        await updatePreferences({ application_board_sort_order: sortOrder });
         return true;
     };
 
@@ -209,7 +226,7 @@ const DemoViewApplication = () => {
                         ) : undefined
                     }
                     ariaLabel='Demo application view and management controls'
-                    mobileLayout={hasApplications && !isBoardView ? 'applicationWithDisplay' : 'applicationCompact'}
+                    mobileLayout={isBoardView ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter
@@ -219,6 +236,22 @@ const DemoViewApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
+                    {hasApplications &&
+                        (isBoardView ? (
+                            <SortOptions
+                                id='demo-application-board-sort-options'
+                                onSelectionChange={handleBoardSortOrderChange}
+                                options={APPLICATION_BOARD_SORT_OPTIONS}
+                                selectedOption={preferences.application_board_sort_order}
+                            />
+                        ) : (
+                            <SortOptions
+                                id='demo-application-list-sort-options'
+                                onSelectionChange={handleListSortOrderChange}
+                                options={APPLICATION_LIST_SORT_OPTIONS}
+                                selectedOption={preferences.application_list_sort_order}
+                            />
+                        ))}
                     {hasApplications && !isBoardView && (
                         <DisplayOptions id='demo-application-display-options'>
                             <ToggleButton

@@ -10,8 +10,11 @@ import type { JobInterview } from '../../../interview/models';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import {
     APPLICATION_CSV_HEADERS,
+    APPLICATION_BOARD_SORT_OPTIONS,
+    APPLICATION_LIST_SORT_OPTIONS,
     JOB_STATUSES,
-    JOB_STATUS_ORDER,
+    type ApplicationBoardSortOrder,
+    type ApplicationListSortOrder,
     type JobApplication,
     type JobStatus,
 } from '../../models';
@@ -38,16 +41,9 @@ import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/S
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../routes';
 import { createApplicationEmptyState } from '../../applicationEmptyState';
-
-const sortApplications = (applications: JobApplication[]) => {
-    return [...applications].sort((firstApplication, secondApplication) => {
-        const byStatus = JOB_STATUS_ORDER[firstApplication.job_status] - JOB_STATUS_ORDER[secondApplication.job_status];
-
-        return (
-            byStatus || Date.parse(secondApplication.application_date) - Date.parse(firstApplication.application_date)
-        );
-    });
-};
+import SortOptions from '../../../../components/activityControls/sortOptions/SortOptions';
+import { sortApplications } from '../../applicationSorting';
+import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
 
 const ViewApplication = () => {
     const api = useJobTrackerAPI();
@@ -90,8 +86,21 @@ const ViewApplication = () => {
     const enableScroll = preferences.application_enable_scroll;
     const viewMode = preferences.application_view_mode;
     const isBoardView = viewMode === 'board';
-
-    const csvData = createApplicationCsvData(applications);
+    const currentSortOrder = isBoardView
+        ? preferences.application_board_sort_order
+        : preferences.application_list_sort_order;
+    const displayedApplications = useMemo(
+        () => sortApplications(applications, currentSortOrder),
+        [applications, currentSortOrder]
+    );
+    const csvApplications = useMemo(
+        () =>
+            isBoardView
+                ? getApplicationsInBoardOrder(displayedApplications, selectedJobStatuses)
+                : displayedApplications,
+        [displayedApplications, isBoardView, selectedJobStatuses]
+    );
+    const csvData = useMemo(() => createApplicationCsvData(csvApplications), [csvApplications]);
 
     const interviewJobIdSet = useMemo(() => new Set(interviews.map((interview) => interview.job_id)), [interviews]);
 
@@ -108,6 +117,30 @@ const ViewApplication = () => {
 
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
         void handlePreferenceUpdate({ application_view_mode: nextViewMode });
+    };
+
+    const handleListSortOrderChange = async (sortOrder: ApplicationListSortOrder): Promise<boolean> => {
+        try {
+            await updatePreferences({ application_list_sort_order: sortOrder });
+            return true;
+        } catch (error) {
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to save the application sorting preference. Please try again.')
+            );
+            return false;
+        }
+    };
+
+    const handleBoardSortOrderChange = async (sortOrder: ApplicationBoardSortOrder): Promise<boolean> => {
+        try {
+            await updatePreferences({ application_board_sort_order: sortOrder });
+            return true;
+        } catch (error) {
+            showErrorToast(
+                getErrorToastMessage(error, 'Unable to save the application sorting preference. Please try again.')
+            );
+            return false;
+        }
     };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
@@ -326,12 +359,11 @@ const ViewApplication = () => {
             }
 
             setApplications((current) => {
-                const updatedApplications = current.map((item) =>
+                return current.map((item) =>
                     item.job_id === application.job_id
                         ? { ...item, edit_status: !editStatus, job_status: isSaving ? newStatus : oldStatus }
                         : item
                 );
-                return isSaving && statusChanged ? sortApplications(updatedApplications) : updatedApplications;
             });
 
             if (isSaving && statusChanged && enableScroll) {
@@ -357,15 +389,11 @@ const ViewApplication = () => {
         updatingStatusApplicationIdRef.current.add(application.job_id);
         startUpdatingApplicationStatus(application.job_id);
         setApplications((current) =>
-            sortApplications(
-                current
-                    .map((item) =>
-                        item.job_id === application.job_id
-                            ? { ...item, edit_status: false, job_status: newStatus }
-                            : item
-                    )
-                    .filter((item) => selectedJobStatuses.includes(item.job_status))
-            )
+            current
+                .map((item) =>
+                    item.job_id === application.job_id ? { ...item, edit_status: false, job_status: newStatus } : item
+                )
+                .filter((item) => selectedJobStatuses.includes(item.job_status))
         );
         setEditedJobStatuses((currentStatuses) => {
             const updatedStatuses = { ...currentStatuses };
@@ -386,7 +414,7 @@ const ViewApplication = () => {
                     ? current.map((item) => (item.job_id === application.job_id ? application : item))
                     : [...current, application];
 
-                return sortApplications(restoredApplications);
+                return restoredApplications;
             });
             if (previousEditedJobStatus !== undefined) {
                 setEditedJobStatuses((currentStatuses) => ({
@@ -452,7 +480,7 @@ const ViewApplication = () => {
                         ) : undefined
                     }
                     ariaLabel='Application view and management controls'
-                    mobileLayout={hasApplications && !isBoardView ? 'applicationWithDisplay' : 'applicationCompact'}
+                    mobileLayout={isBoardView ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter
@@ -463,6 +491,24 @@ const ViewApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
+                    {hasApplications &&
+                        (isBoardView ? (
+                            <SortOptions
+                                disabled={isLoading}
+                                id='application-board-sort-options'
+                                onSelectionChange={handleBoardSortOrderChange}
+                                options={APPLICATION_BOARD_SORT_OPTIONS}
+                                selectedOption={preferences.application_board_sort_order}
+                            />
+                        ) : (
+                            <SortOptions
+                                disabled={isLoading}
+                                id='application-list-sort-options'
+                                onSelectionChange={handleListSortOrderChange}
+                                options={APPLICATION_LIST_SORT_OPTIONS}
+                                selectedOption={preferences.application_list_sort_order}
+                            />
+                        ))}
                     {hasApplications && !isBoardView && (
                         <DisplayOptions id='application-display-options'>
                             <ToggleButton
@@ -512,7 +558,7 @@ const ViewApplication = () => {
 
                     {hasApplications && isBoardView && (
                         <ApplicationBoard
-                            applications={applications}
+                            applications={displayedApplications}
                             deletingApplicationIds={deletingApplicationIds}
                             editedNotes={notes}
                             hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
@@ -528,7 +574,7 @@ const ViewApplication = () => {
                     )}
 
                     {!isBoardView &&
-                        applications.map((application, index) => (
+                        displayedApplications.map((application, index) => (
                             <ApplicationCard
                                 application={application}
                                 editedJobStatus={editedJobStatuses[application.job_id] ?? application.job_status}

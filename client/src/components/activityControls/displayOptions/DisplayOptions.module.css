@@ -4,17 +4,3 @@
     flex-direction: column;
     gap: 2px;
 }
-
-.compactLabel {
-    display: none;
-}
-
-@media (max-width: 600px) {
-    .fullLabel {
-        display: none;
-    }
-
-    .compactLabel {
-        display: inline;
-    }
-}

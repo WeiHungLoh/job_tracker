@@ -62,9 +62,17 @@ describe('renders user guide properly', () => {
             screen.getByText((_content, element) => {
                 const text = element?.textContent?.replace(/\s+/g, ' ') ?? '';
 
+                return element?.tagName.toLowerCase() === 'p' && /use sort by to order application lists/i.test(text);
+            })
+        ).toBeVisible();
+        expect(screen.getByText(/active and archived list and board choices are saved independently/i)).toBeVisible();
+        expect(
+            screen.getByText((_content, element) => {
+                const text = element?.textContent?.replace(/\s+/g, ' ') ?? '';
+
                 return (
                     element?.tagName.toLowerCase() === 'p' &&
-                    /applications are grouped by status in this order:.*accepted.*offer.*declined.*interview.*applied.*ghosted.*rejected/i.test(
+                    /application boards keep columns in this order:.*accepted.*offer.*declined.*interview.*applied.*ghosted.*rejected/i.test(
                         text
                     )
                 );

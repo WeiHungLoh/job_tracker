@@ -1,0 +1,77 @@
+.sortOptions {
+    text-align: center;
+}
+
+.sortOptions .dropdown {
+    min-width: min(220px, calc(100vw - 16px));
+}
+
+.option {
+    position: relative;
+    display: flex;
+    min-height: 36px;
+    padding: 5px 8px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    color: var(--colorText);
+    cursor: pointer;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.option:hover {
+    background: var(--colorNavHoverBg);
+}
+
+.option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.radio {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    border: 1px solid var(--colorInputBorder);
+    border-radius: 50%;
+    background: var(--colorInputBg);
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.option input:checked + .radio {
+    border-color: var(--colorPrimary);
+}
+
+.option input:checked + .radio::after {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--colorPrimary);
+    content: '';
+}
+
+.option input:focus-visible + .radio {
+    outline: 2px solid var(--colorControlFocusRing);
+    outline-offset: 2px;
+}
+
+.option input:disabled ~ span {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+@media (max-width: 600px) {
+    .option {
+        min-height: 42px;
+    }
+}

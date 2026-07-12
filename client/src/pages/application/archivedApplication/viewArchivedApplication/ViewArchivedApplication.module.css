@@ -38,7 +38,6 @@
 @media (max-width: 803px) {
     .archivedApplicationList {
         max-width: 90%;
-        padding-right: 20px;
     }
 
     .boardLayout {

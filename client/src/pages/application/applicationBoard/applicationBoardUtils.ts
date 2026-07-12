@@ -27,3 +27,12 @@ export const groupApplicationsByStatus = <TApplication extends StatusApplication
 export const getOrderedBoardStatuses = (selectedJobStatuses: readonly JobStatus[]): JobStatus[] => {
     return JOB_STATUS_SORT_ORDER.filter((status) => selectedJobStatuses.includes(status));
 };
+
+export const getApplicationsInBoardOrder = <TApplication extends StatusApplication>(
+    applications: readonly TApplication[],
+    selectedJobStatuses: readonly JobStatus[]
+): TApplication[] => {
+    const groupedApplications = groupApplicationsByStatus(applications);
+
+    return getOrderedBoardStatuses(selectedJobStatuses).flatMap((status) => groupedApplications[status]);
+};

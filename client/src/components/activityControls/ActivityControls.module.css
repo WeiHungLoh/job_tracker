@@ -26,6 +26,13 @@
     border-left: 1px solid var(--colorControlBorder);
 }
 
+.applicationWithDisplay .primaryControls > *,
+.applicationCompact .primaryControls > *,
+.applicationWithDisplay .actions > *,
+.applicationCompact .actions > * {
+    flex-shrink: 0;
+}
+
 @media (max-width: 803px) {
     .controls {
         margin-inline: auto;
@@ -58,7 +65,7 @@
     }
 }
 
-@container (max-width: 435px) {
+@container (max-width: 610px) {
     .applicationWithDisplay.hasActions {
         display: grid;
         grid-template-columns: repeat(3, max-content);
@@ -71,20 +78,39 @@
     }
 
     .applicationWithDisplay.hasActions .primaryControls > :first-child {
-        grid-column: 1 / -1;
-        justify-self: center;
+        grid-row: 1;
+        grid-column: 1 / 3;
+        justify-self: end;
+    }
+
+    .applicationWithDisplay.hasActions .primaryControls > :nth-child(2) {
+        grid-row: 2;
+        grid-column: 1;
+    }
+
+    .applicationWithDisplay.hasActions .primaryControls > :nth-child(3) {
+        grid-row: 2;
+        grid-column: 2;
+    }
+
+    .applicationWithDisplay.hasActions .primaryControls > :nth-child(4) {
+        grid-row: 2;
+        grid-column: 3;
     }
 
     .applicationWithDisplay.hasActions .actions > * {
+        grid-row: 1;
+        grid-column: 3;
+        justify-self: start;
         padding-left: 9px;
         border-left: 1px solid var(--colorControlBorder);
     }
 }
 
-@container (max-width: 345px) {
+@container (max-width: 435px) {
     .applicationCompact.hasActions {
         display: grid;
-        grid-template-columns: repeat(2, max-content);
+        grid-template-columns: repeat(3, max-content);
         justify-content: center;
     }
 
@@ -104,10 +130,10 @@
     }
 }
 
-@container (max-width: 340px) {
+@container (max-width: 425px) {
     .applicationWithDisplay:not(.hasActions) {
         display: grid;
-        grid-template-columns: repeat(2, max-content);
+        grid-template-columns: repeat(3, max-content);
         justify-content: center;
     }
 
@@ -116,6 +142,56 @@
     }
 
     .applicationWithDisplay:not(.hasActions) .primaryControls > :first-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+}
+
+@container (max-width: 350px) {
+    .applicationCompact:not(.hasActions) {
+        display: grid;
+        grid-template-columns: repeat(2, max-content);
+        justify-content: center;
+    }
+
+    .applicationCompact:not(.hasActions) .primaryControls {
+        display: contents;
+    }
+
+    .applicationCompact:not(.hasActions) .primaryControls > :first-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+}
+
+@container (max-width: 285px) {
+    .applicationWithDisplay.hasActions,
+    .applicationWithDisplay:not(.hasActions) {
+        grid-template-columns: repeat(2, max-content);
+    }
+
+    .applicationWithDisplay.hasActions .primaryControls > :first-child {
+        grid-row: 1;
+        grid-column: 1;
+    }
+
+    .applicationWithDisplay.hasActions .actions > * {
+        grid-row: 1;
+        grid-column: 2;
+    }
+
+    .applicationWithDisplay .primaryControls > :nth-child(2) {
+        grid-row: 2;
+        grid-column: 1;
+    }
+
+    .applicationWithDisplay .primaryControls > :nth-child(3) {
+        grid-row: 2;
+        grid-column: 2;
+    }
+
+    .applicationWithDisplay .primaryControls > :nth-child(4) {
+        grid-row: 3;
         grid-column: 1 / -1;
         justify-self: center;
     }

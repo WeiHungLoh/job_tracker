@@ -1,7 +1,13 @@
 import { JOB_STATUSES } from '../../pages/application/models';
 import { createDemoInitialState } from '../../pages/demo/state/demoInitialState';
 import { demoReducer } from '../../pages/demo/state/demoReducer';
-import { selectJobStatusCounts, selectWeeklyApplications, sortInterviews } from '../../pages/demo/state/demoSelectors';
+import {
+    selectApplications,
+    selectArchivedApplications,
+    selectJobStatusCounts,
+    selectWeeklyApplications,
+    sortInterviews,
+} from '../../pages/demo/state/demoSelectors';
 import { createInterviewCsvData } from '../../helper/csvData';
 
 const fixedNow = new Date(2026, 6, 7, 12, 0, 0, 0);
@@ -83,6 +89,44 @@ describe('demo reducer state', () => {
         expect(
             sortInterviews(archivedInterviews, fixedNowMs).map((interview) => interview.archived_interview_id)
         ).toEqual([3, 1, 4, 2, 5]);
+    });
+
+    test('uses independent list and board sorting preferences for demo applications', () => {
+        const state = createDemoInitialState(fixedNow);
+        const customSortPreferences = demoReducer(state, {
+            type: 'UPDATE_PREFERENCES',
+            payload: {
+                application_list_sort_order: 'company_name_asc',
+                application_board_sort_order: 'application_date_asc',
+                archived_application_list_sort_order: 'company_name_desc',
+                archived_application_board_sort_order: 'application_date_asc',
+            },
+        });
+
+        expect(selectApplications(customSortPreferences)[0].company_name).toBe('Aster Security');
+        expect(selectArchivedApplications(customSortPreferences)[0].company_name).toBe('SilverRail Labs');
+
+        const boardPreferences = demoReducer(customSortPreferences, {
+            type: 'UPDATE_PREFERENCES',
+            payload: {
+                application_view_mode: 'board',
+                archived_application_view_mode: 'board',
+            },
+        });
+
+        expect(selectApplications(boardPreferences)[0].company_name).toBe('Cedar FinTech');
+        expect(selectArchivedApplications(boardPreferences)[0].company_name).toBe('OrbitPay');
+
+        const restoredListPreferences = demoReducer(boardPreferences, {
+            type: 'UPDATE_PREFERENCES',
+            payload: {
+                application_view_mode: 'list',
+                archived_application_view_mode: 'list',
+            },
+        });
+
+        expect(selectApplications(restoredListPreferences)[0].company_name).toBe('Aster Security');
+        expect(selectArchivedApplications(restoredListPreferences)[0].company_name).toBe('SilverRail Labs');
     });
 
     test('creates applications with reducer-managed unique IDs and updates dashboard selectors', () => {
@@ -239,6 +283,10 @@ describe('demo reducer state', () => {
         expect(reset.preferences.application_enable_scroll).toBe(true);
         expect(reset.preferences.archived_application_show_notes).toBe(true);
         expect(reset.preferences.application_view_mode).toBe('list');
+        expect(reset.preferences.application_list_sort_order).toBe('job_status');
+        expect(reset.preferences.application_board_sort_order).toBe('application_date_desc');
+        expect(reset.preferences.archived_application_list_sort_order).toBe('job_status');
+        expect(reset.preferences.archived_application_board_sort_order).toBe('application_date_desc');
         expect(reset.preferences.interview_view_mode).toBe('list');
         expect(reset.preferences.archived_interview_view_mode).toBe('list');
         expect(reset.applications).not.toBe(state.applications);

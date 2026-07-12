@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from '../dist/config/auth.js';
 import { createAccessToken, createRefreshToken } from '../dist/auth/tokens.js';
 import { createApp } from '../dist/app.js';
+import { pool } from '../dist/db/connectDB.js';
 import { handleRouteError } from '../dist/http/responses.js';
 import jwt from 'jsonwebtoken';
 import { AUTH_EMAIL_IP_LIMIT, REQUEST_LIMIT } from '../dist/config/server.js';
@@ -231,6 +232,85 @@ test('returns 422 for unsupported interview view modes', async () => {
 
     assert.equal(response.status, 422);
     assert.deepEqual(await response.json(), { message: 'View mode preferences must be list or board.' });
+});
+
+test('returns 422 for unsupported application list sort preferences', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/user-preferences`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({ application_list_sort_order: 'recent' }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Application list sort order preference must use a supported value.',
+    });
+});
+
+test('does not allow the list-only job status order for application boards', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+    const response = await fetch(`${baseUrl}/user-preferences`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Cookie: `access_token=${token}`,
+        },
+        body: JSON.stringify({ archived_application_board_sort_order: 'job_status' }),
+    });
+
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+        message: 'Archived application board sort order preference must use a supported value.',
+    });
+});
+
+test('saves a supported application sort preference and returns the complete preference row', async () => {
+    const originalQuery = pool.query;
+    const storedPreferences = {
+        application_job_statuses: ['Applied'],
+        application_show_notes: true,
+        application_show_archive: true,
+        application_enable_scroll: true,
+        application_view_mode: 'list',
+        application_list_sort_order: 'job_status',
+        application_board_sort_order: 'application_date_desc',
+        archived_application_job_statuses: ['Offer'],
+        archived_application_show_notes: false,
+        archived_application_view_mode: 'board',
+        archived_application_list_sort_order: 'job_status',
+        archived_application_board_sort_order: 'company_name_desc',
+        interview_view_mode: 'list',
+        archived_interview_view_mode: 'board',
+    };
+    let queryValues;
+    pool.query = async (_sql, values) => {
+        queryValues = values;
+        return { rows: [storedPreferences] };
+    };
+
+    try {
+        const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+        const response = await fetch(`${baseUrl}/user-preferences`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Cookie: `access_token=${token}`,
+            },
+            body: JSON.stringify({ archived_application_board_sort_order: 'company_name_desc' }),
+        });
+
+        assert.equal(response.status, 200);
+        assert.deepEqual(await response.json(), storedPreferences);
+        assert.equal(queryValues.length, 15);
+        assert.equal(queryValues[0], TEST_USER.id);
+        assert.equal(queryValues[12], 'company_name_desc');
+    } finally {
+        pool.query = originalQuery;
+    }
 });
 
 test('returns 401 when a protected route has no token', async () => {

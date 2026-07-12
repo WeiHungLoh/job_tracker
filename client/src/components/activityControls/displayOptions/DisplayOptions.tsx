@@ -10,9 +10,6 @@ const DisplayOptions = ({ children, id }: DisplayOptionsProps) => (
         label={
             <>
                 <span className={styles.fullLabel}>Display options</span>
-                <span aria-hidden='true' className={styles.compactLabel}>
-                    Display
-                </span>
             </>
         }
         triggerAriaLabel='Display options'

@@ -1,0 +1,53 @@
+import { JOB_STATUS_ORDER, type ApplicationListSortOrder, type JobStatus } from './models';
+
+type SortableApplication = {
+    application_date: string;
+    company_name: string;
+    job_status: JobStatus;
+};
+
+const compareApplicationDates = (firstDate: string, secondDate: string): number =>
+    Date.parse(firstDate) - Date.parse(secondDate);
+
+const compareCompanyNames = (firstCompanyName: string, secondCompanyName: string): number =>
+    firstCompanyName.localeCompare(secondCompanyName, undefined, { sensitivity: 'base' });
+
+const compareCompanyNamesWithNewestFirst = (
+    firstApplication: SortableApplication,
+    secondApplication: SortableApplication,
+    direction: 'asc' | 'desc'
+): number => {
+    const byCompany =
+        direction === 'asc'
+            ? compareCompanyNames(firstApplication.company_name, secondApplication.company_name)
+            : compareCompanyNames(secondApplication.company_name, firstApplication.company_name);
+
+    return byCompany || compareApplicationDates(secondApplication.application_date, firstApplication.application_date);
+};
+
+export const sortApplications = <Application extends SortableApplication>(
+    applications: readonly Application[],
+    sortOrder: ApplicationListSortOrder
+): Application[] => {
+    return [...applications].sort((firstApplication, secondApplication) => {
+        switch (sortOrder) {
+            case 'job_status': {
+                const byStatus =
+                    JOB_STATUS_ORDER[firstApplication.job_status] - JOB_STATUS_ORDER[secondApplication.job_status];
+
+                return (
+                    byStatus ||
+                    compareApplicationDates(secondApplication.application_date, firstApplication.application_date)
+                );
+            }
+            case 'application_date_desc':
+                return compareApplicationDates(secondApplication.application_date, firstApplication.application_date);
+            case 'application_date_asc':
+                return compareApplicationDates(firstApplication.application_date, secondApplication.application_date);
+            case 'company_name_asc':
+                return compareCompanyNamesWithNewestFirst(firstApplication, secondApplication, 'asc');
+            case 'company_name_desc':
+                return compareCompanyNamesWithNewestFirst(firstApplication, secondApplication, 'desc');
+        }
+    });
+};

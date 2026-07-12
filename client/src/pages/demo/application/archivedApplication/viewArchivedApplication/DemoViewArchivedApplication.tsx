@@ -5,7 +5,15 @@ import {
     createDeleteAllApplicationsConfirmation,
     createUnarchiveAllConfirmation,
 } from '../../../../../helper/bulkConfirmation';
-import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../../../application/models';
+import {
+    APPLICATION_BOARD_SORT_OPTIONS,
+    APPLICATION_CSV_HEADERS,
+    APPLICATION_LIST_SORT_OPTIONS,
+    JOB_STATUSES,
+    type ApplicationBoardSortOrder,
+    type ApplicationListSortOrder,
+    type JobStatus,
+} from '../../../../application/models';
 import ToggleButton from '../../../../../components/toggleButton/ToggleButton';
 import { useConfirm } from 'material-ui-confirm';
 import { useDemo } from '../../../context/DemoContext';
@@ -14,6 +22,7 @@ import ActivityControls from '../../../../../components/activityControls/Activit
 import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import DisplayOptions from '../../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
+import SortOptions from '../../../../../components/activityControls/sortOptions/SortOptions';
 import DemoArchivedApplicationBoard from '../archivedApplicationBoard/DemoArchivedApplicationBoard';
 import DemoApplicationCard from '../../DemoApplicationCard';
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
@@ -24,6 +33,7 @@ import { useDemoHashHighlight } from '../../../hooks/useDemoHashHighlight';
 import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../../routes';
 import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
+import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
 
 const DemoViewArchivedApplication = () => {
     const { dispatch, state } = useDemo();
@@ -37,7 +47,10 @@ const DemoViewArchivedApplication = () => {
     const showNotes = preferences.archived_application_show_notes;
     const viewMode = preferences.archived_application_view_mode;
     const isBoardView = viewMode === 'board';
-    const csvData = createApplicationCsvData(archivedApplications);
+    const csvApplications = isBoardView
+        ? getApplicationsInBoardOrder(archivedApplications, selectedJobStatuses)
+        : archivedApplications;
+    const csvData = createApplicationCsvData(csvApplications);
     const visibleApplicationIds = useMemo(
         () => archivedApplications.map((application) => String(application.archived_job_id)),
         [archivedApplications]
@@ -56,6 +69,16 @@ const DemoViewArchivedApplication = () => {
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
         await updatePreferences({ archived_application_job_statuses: jobStatuses });
+        return true;
+    };
+
+    const handleListSortOrderChange = async (sortOrder: ApplicationListSortOrder) => {
+        await updatePreferences({ archived_application_list_sort_order: sortOrder });
+        return true;
+    };
+
+    const handleBoardSortOrderChange = async (sortOrder: ApplicationBoardSortOrder) => {
+        await updatePreferences({ archived_application_board_sort_order: sortOrder });
         return true;
     };
 
@@ -148,7 +171,7 @@ const DemoViewArchivedApplication = () => {
                         ) : undefined
                     }
                     ariaLabel='Demo archived application view and management controls'
-                    mobileLayout={hasApplications && !isBoardView ? 'applicationWithDisplay' : 'applicationCompact'}
+                    mobileLayout={isBoardView ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter
@@ -158,6 +181,22 @@ const DemoViewArchivedApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
+                    {hasApplications &&
+                        (isBoardView ? (
+                            <SortOptions
+                                id='demo-archived-application-board-sort-options'
+                                onSelectionChange={handleBoardSortOrderChange}
+                                options={APPLICATION_BOARD_SORT_OPTIONS}
+                                selectedOption={preferences.archived_application_board_sort_order}
+                            />
+                        ) : (
+                            <SortOptions
+                                id='demo-archived-application-list-sort-options'
+                                onSelectionChange={handleListSortOrderChange}
+                                options={APPLICATION_LIST_SORT_OPTIONS}
+                                selectedOption={preferences.archived_application_list_sort_order}
+                            />
+                        ))}
                     {hasApplications && !isBoardView && (
                         <DisplayOptions id='demo-archived-application-display-options'>
                             <ToggleButton

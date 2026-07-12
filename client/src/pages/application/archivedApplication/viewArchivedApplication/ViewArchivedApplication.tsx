@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../../models';
 import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
@@ -6,7 +6,15 @@ import {
     createDeleteAllApplicationsConfirmation,
     createUnarchiveAllConfirmation,
 } from '../../../../helper/bulkConfirmation';
-import { APPLICATION_CSV_HEADERS, JOB_STATUSES, type JobStatus } from '../../models';
+import {
+    APPLICATION_BOARD_SORT_OPTIONS,
+    APPLICATION_CSV_HEADERS,
+    APPLICATION_LIST_SORT_OPTIONS,
+    JOB_STATUSES,
+    type ApplicationBoardSortOrder,
+    type ApplicationListSortOrder,
+    type JobStatus,
+} from '../../models';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import ToggleButton from '../../../../components/toggleButton/ToggleButton';
@@ -31,6 +39,9 @@ import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/S
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../routes';
 import { createApplicationEmptyState } from '../../applicationEmptyState';
+import SortOptions from '../../../../components/activityControls/sortOptions/SortOptions';
+import { sortApplications } from '../../applicationSorting';
+import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
@@ -60,11 +71,54 @@ const ViewArchivedApplication = () => {
     const showNotes = preferences.archived_application_show_notes;
     const viewMode = preferences.archived_application_view_mode;
     const isBoardView = viewMode === 'board';
-
-    const csvData = createApplicationCsvData(archivedApplications);
+    const currentSortOrder = isBoardView
+        ? preferences.archived_application_board_sort_order
+        : preferences.archived_application_list_sort_order;
+    const displayedApplications = useMemo(
+        () => sortApplications(archivedApplications, currentSortOrder),
+        [archivedApplications, currentSortOrder]
+    );
+    const csvApplications = useMemo(
+        () =>
+            isBoardView
+                ? getApplicationsInBoardOrder(displayedApplications, selectedJobStatuses)
+                : displayedApplications,
+        [displayedApplications, isBoardView, selectedJobStatuses]
+    );
+    const csvData = useMemo(() => createApplicationCsvData(csvApplications), [csvApplications]);
 
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
         void handlePreferenceUpdate({ archived_application_view_mode: nextViewMode });
+    };
+
+    const handleListSortOrderChange = async (sortOrder: ApplicationListSortOrder): Promise<boolean> => {
+        try {
+            await updatePreferences({ archived_application_list_sort_order: sortOrder });
+            return true;
+        } catch (error) {
+            showErrorToast(
+                getErrorToastMessage(
+                    error,
+                    'Unable to save the archived application sorting preference. Please try again.'
+                )
+            );
+            return false;
+        }
+    };
+
+    const handleBoardSortOrderChange = async (sortOrder: ApplicationBoardSortOrder): Promise<boolean> => {
+        try {
+            await updatePreferences({ archived_application_board_sort_order: sortOrder });
+            return true;
+        } catch (error) {
+            showErrorToast(
+                getErrorToastMessage(
+                    error,
+                    'Unable to save the archived application sorting preference. Please try again.'
+                )
+            );
+            return false;
+        }
     };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
@@ -279,7 +333,7 @@ const ViewArchivedApplication = () => {
                         ) : undefined
                     }
                     ariaLabel='Archived application view and management controls'
-                    mobileLayout={hasApplications && !isBoardView ? 'applicationWithDisplay' : 'applicationCompact'}
+                    mobileLayout={isBoardView ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
                     <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
                     <CheckboxFilter
@@ -290,6 +344,24 @@ const ViewArchivedApplication = () => {
                         options={JOB_STATUSES}
                         selectedOptions={selectedJobStatuses}
                     />
+                    {hasApplications &&
+                        (isBoardView ? (
+                            <SortOptions
+                                disabled={isLoading}
+                                id='archived-application-board-sort-options'
+                                onSelectionChange={handleBoardSortOrderChange}
+                                options={APPLICATION_BOARD_SORT_OPTIONS}
+                                selectedOption={preferences.archived_application_board_sort_order}
+                            />
+                        ) : (
+                            <SortOptions
+                                disabled={isLoading}
+                                id='archived-application-list-sort-options'
+                                onSelectionChange={handleListSortOrderChange}
+                                options={APPLICATION_LIST_SORT_OPTIONS}
+                                selectedOption={preferences.archived_application_list_sort_order}
+                            />
+                        ))}
                     {hasApplications && !isBoardView && (
                         <DisplayOptions id='archived-application-display-options'>
                             <ToggleButton
@@ -321,7 +393,7 @@ const ViewArchivedApplication = () => {
 
                     {hasApplications && isBoardView && (
                         <ArchivedApplicationBoard
-                            applications={archivedApplications}
+                            applications={displayedApplications}
                             deletingApplicationIds={deletingApplicationIds}
                             onDelete={handleDelete}
                             onUnarchive={handleUnarchive}
@@ -332,7 +404,7 @@ const ViewArchivedApplication = () => {
                     )}
 
                     {!isBoardView &&
-                        archivedApplications.map((application, index) => (
+                        displayedApplications.map((application, index) => (
                             <ApplicationCard
                                 application={application}
                                 index={index}

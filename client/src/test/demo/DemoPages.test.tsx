@@ -126,6 +126,33 @@ describe('demo page interactions', () => {
         expect(screen.queryByText('Application archived.')).not.toBeInTheDocument();
     });
 
+    test('keeps independent list and board sorting preferences in the demo', async () => {
+        renderDemo(<DemoViewApplication />);
+
+        expect(await screen.findByRole('heading', { name: '1. Pinecone Health' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await userEvent.click(screen.getByRole('radio', { name: /Company A/ }));
+        expect(await screen.findByRole('heading', { name: '1. Aster Security' })).toBeInTheDocument();
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Sort by' })).toBeEnabled());
+
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        expect(screen.getByRole('radio', { name: 'Newest Application' })).toBeChecked();
+        await userEvent.click(screen.getByRole('radio', { name: 'Oldest Application' }));
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Sort by' })).toBeEnabled());
+
+        const appliedColumn = screen.getByRole('heading', { name: 'Applied 6' }).closest('section');
+        if (!appliedColumn) {
+            throw new Error('Expected the Applied board column.');
+        }
+        expect(appliedColumn.querySelector('article')).toHaveAccessibleName(/Northstar Mobility/);
+
+        await userEvent.click(screen.getByRole('button', { name: 'List' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        expect(screen.getByRole('radio', { name: /Company A/ })).toBeChecked();
+        expect(screen.getByRole('heading', { name: '1. Aster Security' })).toBeInTheDocument();
+    });
+
     test('restores and deletes archived applications without success toasts', async () => {
         renderDemo(<DemoViewArchivedApplication />, [routes.demoArchivedApplications]);
 

@@ -15,9 +15,13 @@ const testPreferences: UserPreferences = {
     application_show_archive: false,
     application_enable_scroll: false,
     application_view_mode: 'list',
+    application_list_sort_order: 'job_status',
+    application_board_sort_order: 'application_date_desc',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    archived_application_list_sort_order: 'job_status',
+    archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
 };
@@ -38,7 +42,9 @@ const createTestProviders = (
 
         const updatePreferences = async (updatedPreferences: UpdateUserPreferencesRequest) => {
             if (customUpdatePreferences) {
-                return await customUpdatePreferences(updatedPreferences);
+                const savedPreferences = await customUpdatePreferences(updatedPreferences);
+                setPreferences(savedPreferences);
+                return savedPreferences;
             }
 
             let savedPreferences = initialTestPreferences;

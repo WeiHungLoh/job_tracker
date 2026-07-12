@@ -1,4 +1,12 @@
-import { JOB_STATUSES, type ApplicationViewMode, type JobStatus } from '../db/models.js';
+import {
+    APPLICATION_BOARD_SORT_ORDERS,
+    APPLICATION_LIST_SORT_ORDERS,
+    JOB_STATUSES,
+    type ApplicationBoardSortOrder,
+    type ApplicationListSortOrder,
+    type ApplicationViewMode,
+    type JobStatus,
+} from '../db/models.js';
 import { PASSWORD_MAX_BYTES, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../config/validation.js';
 
 const HOSTNAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+$/i;
@@ -145,3 +153,15 @@ export const isApplicationViewMode = (value: unknown): value is ApplicationViewM
 
 export const isOptionalApplicationViewMode = (value: unknown): value is ApplicationViewMode | undefined =>
     value === undefined || isApplicationViewMode(value);
+
+export const isApplicationListSortOrder = (value: unknown): value is ApplicationListSortOrder =>
+    typeof value === 'string' && APPLICATION_LIST_SORT_ORDERS.some((sortOrder) => sortOrder === value);
+
+export const isApplicationBoardSortOrder = (value: unknown): value is ApplicationBoardSortOrder =>
+    typeof value === 'string' && APPLICATION_BOARD_SORT_ORDERS.some((sortOrder) => sortOrder === value);
+
+export const isOptionalApplicationListSortOrder = (value: unknown): value is ApplicationListSortOrder | undefined =>
+    value === undefined || isApplicationListSortOrder(value);
+
+export const isOptionalApplicationBoardSortOrder = (value: unknown): value is ApplicationBoardSortOrder | undefined =>
+    value === undefined || isApplicationBoardSortOrder(value);

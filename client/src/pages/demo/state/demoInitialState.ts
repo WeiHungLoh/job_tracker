@@ -1,4 +1,10 @@
-import { JOB_STATUSES, type ArchivedJobApplication, type JobApplication } from '../../application/models';
+import {
+    DEFAULT_APPLICATION_BOARD_SORT_ORDER,
+    DEFAULT_APPLICATION_LIST_SORT_ORDER,
+    JOB_STATUSES,
+    type ArchivedJobApplication,
+    type JobApplication,
+} from '../../application/models';
 import type { ArchivedJobInterview, JobInterview } from '../../interview/models';
 import type { DemoState } from '../models';
 import type { JobStatus } from '../../application/models';
@@ -10,9 +16,13 @@ const defaultDemoPreferences = {
     application_show_archive: true,
     application_enable_scroll: true,
     application_view_mode: 'list',
+    application_list_sort_order: DEFAULT_APPLICATION_LIST_SORT_ORDER,
+    application_board_sort_order: DEFAULT_APPLICATION_BOARD_SORT_ORDER,
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: true,
     archived_application_view_mode: 'list',
+    archived_application_list_sort_order: DEFAULT_APPLICATION_LIST_SORT_ORDER,
+    archived_application_board_sort_order: DEFAULT_APPLICATION_BOARD_SORT_ORDER,
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
 } as const;

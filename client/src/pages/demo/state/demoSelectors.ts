@@ -1,26 +1,12 @@
-import type { ArchivedJobApplication, JobApplication, JobStatus } from '../../application/models';
-import { JOB_STATUSES, JOB_STATUS_ORDER } from '../../application/models';
+import type { ArchivedJobApplication, JobApplication } from '../../application/models';
+import { JOB_STATUSES } from '../../application/models';
+import { sortApplications } from '../../application/applicationSorting';
 import type { DemoState } from '../models';
 import type { JobStatusCount, WeeklyApplicationCount } from '../../dashboard/models';
 import { startOfLocalWeek, toDateString } from './demoDateHelpers';
 
-type StatusApplication = {
-    application_date: string;
-    job_status: JobStatus;
-};
-
 type InterviewWithDate = {
     interview_date: string;
-};
-
-const sortApplications = <TApplication extends StatusApplication>(applications: TApplication[]): TApplication[] => {
-    return [...applications].sort((firstApplication, secondApplication) => {
-        const byStatus = JOB_STATUS_ORDER[firstApplication.job_status] - JOB_STATUS_ORDER[secondApplication.job_status];
-
-        return (
-            byStatus || Date.parse(secondApplication.application_date) - Date.parse(firstApplication.application_date)
-        );
-    });
 };
 
 export const sortInterviews = <Interview extends InterviewWithDate>(
@@ -43,17 +29,27 @@ export const sortInterviews = <Interview extends InterviewWithDate>(
 
 export const selectApplications = (state: DemoState): JobApplication[] => {
     const selectedStatuses = state.preferences.application_job_statuses;
+    const sortOrder =
+        state.preferences.application_view_mode === 'board'
+            ? state.preferences.application_board_sort_order
+            : state.preferences.application_list_sort_order;
 
     return sortApplications(
-        state.applications.filter((application) => selectedStatuses.includes(application.job_status))
+        state.applications.filter((application) => selectedStatuses.includes(application.job_status)),
+        sortOrder
     );
 };
 
 export const selectArchivedApplications = (state: DemoState): ArchivedJobApplication[] => {
     const selectedStatuses = state.preferences.archived_application_job_statuses;
+    const sortOrder =
+        state.preferences.archived_application_view_mode === 'board'
+            ? state.preferences.archived_application_board_sort_order
+            : state.preferences.archived_application_list_sort_order;
 
     return sortApplications(
-        state.archivedApplications.filter((application) => selectedStatuses.includes(application.job_status))
+        state.archivedApplications.filter((application) => selectedStatuses.includes(application.job_status)),
+        sortOrder
     );
 };
 

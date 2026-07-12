@@ -50,9 +50,13 @@ const mockPreferences = {
     application_show_archive: false,
     application_enable_scroll: false,
     application_view_mode: 'list',
+    application_list_sort_order: 'job_status',
+    application_board_sort_order: 'application_date_desc',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    archived_application_list_sort_order: 'job_status',
+    archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
 };
@@ -161,6 +165,66 @@ describe('App routing and authentication behavior', () => {
             await waitFor(() => expect(screen.getByRole('navigation')).toBeInTheDocument());
         }
     );
+
+    test('persists a visible Sort by choice through the production preference provider and reorders cards', async () => {
+        let preferences = { ...mockPreferences };
+        const applications = [
+            {
+                application_date: '2025-06-20T00:00:00Z',
+                company_name: 'Alpha Applied',
+                edit_status: false,
+                job_id: 1,
+                job_location: '',
+                job_posting_url: '',
+                job_status: 'Applied',
+                job_title: 'Engineer',
+                notes: '',
+            },
+            {
+                application_date: '2025-06-19T00:00:00Z',
+                company_name: 'Zulu Offer',
+                edit_status: false,
+                job_id: 2,
+                job_location: '',
+                job_posting_url: '',
+                job_status: 'Offer',
+                job_title: 'Engineer',
+                notes: '',
+            },
+        ];
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                if (init?.method === 'PATCH' && init.body) {
+                    preferences = { ...preferences, ...JSON.parse(String(init.body)) };
+                }
+                return jsonResponse(preferences);
+            }
+            if (url.endsWith('/job-applications/summary')) {
+                return jsonResponse({ application_count: 2, related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return jsonResponse([]);
+            }
+            if (url.includes('/job-applications?')) {
+                return jsonResponse(applications);
+            }
+            return response();
+        });
+
+        renderRoute(routes.viewApplications);
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. Zulu Offer' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await userEvent.click(screen.getByText('Company A–Z'));
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. Alpha Applied' })).toBeInTheDocument();
+        const sortPreferenceRequest = fetch.mock.calls.find(
+            ([url, init]) => String(url).endsWith('/user-preferences') && init?.method === 'PATCH'
+        );
+        expect(sortPreferenceRequest?.[1]).toMatchObject({
+            body: JSON.stringify({ application_list_sort_order: 'company_name_asc' }),
+        });
+    });
 
     test('exposes the active page and keeps archive navigation separate from utility actions', async () => {
         renderRoute(routes.addApplication);

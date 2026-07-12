@@ -6,7 +6,13 @@ import type {
 import type { Request, Response } from 'express';
 import { getUserPreferences, updateUserPreferences } from '../../db/queries/userPreferences.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isJobStatusArray, isOptionalApplicationViewMode, isOptionalBoolean } from '../../http/validation.js';
+import {
+    isJobStatusArray,
+    isOptionalApplicationBoardSortOrder,
+    isOptionalApplicationListSortOrder,
+    isOptionalApplicationViewMode,
+    isOptionalBoolean,
+} from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -43,9 +49,13 @@ router.patch(
             application_show_archive,
             application_enable_scroll,
             application_view_mode,
+            application_list_sort_order,
+            application_board_sort_order,
             archived_application_job_statuses,
             archived_application_show_notes,
             archived_application_view_mode,
+            archived_application_list_sort_order,
+            archived_application_board_sort_order,
             interview_view_mode,
             archived_interview_view_mode,
         } = req.body;
@@ -69,6 +79,22 @@ router.patch(
             !isOptionalApplicationViewMode(archived_interview_view_mode)
         ) {
             sendError(res, 422, 'View mode preferences must be list or board.');
+            return;
+        }
+        if (!isOptionalApplicationListSortOrder(application_list_sort_order)) {
+            sendError(res, 422, 'Application list sort order preference must use a supported value.');
+            return;
+        }
+        if (!isOptionalApplicationBoardSortOrder(application_board_sort_order)) {
+            sendError(res, 422, 'Application board sort order preference must use a supported value.');
+            return;
+        }
+        if (!isOptionalApplicationListSortOrder(archived_application_list_sort_order)) {
+            sendError(res, 422, 'Archived application list sort order preference must use a supported value.');
+            return;
+        }
+        if (!isOptionalApplicationBoardSortOrder(archived_application_board_sort_order)) {
+            sendError(res, 422, 'Archived application board sort order preference must use a supported value.');
             return;
         }
         if (

@@ -1,6 +1,6 @@
 import Icon from '../icon/Icon';
 import PrimaryButton from '../button/PrimaryButton';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import type { ControlDropdownProps } from './models';
 import styles from './ControlDropdown.module.css';
 import useDropdown from '../../hooks/useDropdown';
@@ -50,7 +50,12 @@ const ControlDropdown = ({
         '--dropdown-max-height': dropdownMaxHeight === null ? undefined : `${dropdownMaxHeight}px`,
         '--dropdown-offset': `${dropdownOffset}px`,
     } as CSSProperties;
-    const handleSelect = () => {
+    const handleSelect = (event: ReactMouseEvent<HTMLDivElement>) => {
+        const target = event.target;
+        if (target instanceof Element && target.closest('label') && target.tagName !== 'INPUT') {
+            return;
+        }
+
         closeDropdown();
         triggerRef.current?.focus();
     };

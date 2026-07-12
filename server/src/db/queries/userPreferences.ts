@@ -10,9 +10,13 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
             application_show_archive,
             application_enable_scroll,
             application_view_mode,
+            application_list_sort_order,
+            application_board_sort_order,
             archived_application_job_statuses,
             archived_application_show_notes,
             archived_application_view_mode,
+            archived_application_list_sort_order,
+            archived_application_board_sort_order,
             interview_view_mode,
             archived_interview_view_mode
          FROM user_preferences
@@ -35,11 +39,15 @@ export const updateUserPreferences = async (
             application_show_archive = COALESCE($4, application_show_archive),
             application_enable_scroll = COALESCE($5, application_enable_scroll),
             application_view_mode = COALESCE($6, application_view_mode),
-            archived_application_job_statuses = COALESCE($7, archived_application_job_statuses),
-            archived_application_show_notes = COALESCE($8, archived_application_show_notes),
-            archived_application_view_mode = COALESCE($9, archived_application_view_mode),
-            interview_view_mode = COALESCE($10, interview_view_mode),
-            archived_interview_view_mode = COALESCE($11, archived_interview_view_mode)
+            application_list_sort_order = COALESCE($7, application_list_sort_order),
+            application_board_sort_order = COALESCE($8, application_board_sort_order),
+            archived_application_job_statuses = COALESCE($9, archived_application_job_statuses),
+            archived_application_show_notes = COALESCE($10, archived_application_show_notes),
+            archived_application_view_mode = COALESCE($11, archived_application_view_mode),
+            archived_application_list_sort_order = COALESCE($12, archived_application_list_sort_order),
+            archived_application_board_sort_order = COALESCE($13, archived_application_board_sort_order),
+            interview_view_mode = COALESCE($14, interview_view_mode),
+            archived_interview_view_mode = COALESCE($15, archived_interview_view_mode)
          WHERE user_id = $1
          RETURNING
             application_job_statuses,
@@ -47,9 +55,13 @@ export const updateUserPreferences = async (
             application_show_archive,
             application_enable_scroll,
             application_view_mode,
+            application_list_sort_order,
+            application_board_sort_order,
             archived_application_job_statuses,
             archived_application_show_notes,
             archived_application_view_mode,
+            archived_application_list_sort_order,
+            archived_application_board_sort_order,
             interview_view_mode,
             archived_interview_view_mode`,
         [
@@ -59,9 +71,13 @@ export const updateUserPreferences = async (
             preferences.application_show_archive,
             preferences.application_enable_scroll,
             preferences.application_view_mode,
+            preferences.application_list_sort_order,
+            preferences.application_board_sort_order,
             preferences.archived_application_job_statuses,
             preferences.archived_application_show_notes,
             preferences.archived_application_view_mode,
+            preferences.archived_application_list_sort_order,
+            preferences.archived_application_board_sort_order,
             preferences.interview_view_mode,
             preferences.archived_interview_view_mode,
         ]

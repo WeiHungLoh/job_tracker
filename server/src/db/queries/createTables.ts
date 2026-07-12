@@ -1,9 +1,19 @@
 import { pool } from '../connectDB.js';
-import { JOB_STATUSES } from '../models.js';
+import {
+    APPLICATION_BOARD_SORT_ORDERS,
+    APPLICATION_LIST_SORT_ORDERS,
+    DEFAULT_APPLICATION_BOARD_SORT_ORDER,
+    DEFAULT_APPLICATION_LIST_SORT_ORDER,
+    JOB_STATUSES,
+} from '../models.js';
 
-const JOB_STATUS_SQL_VALUES = JOB_STATUSES.map((status) => `'${status}'`).join(', ');
+const toSQLTextValues = (values: readonly string[]): string => values.map((value) => `'${value}'`).join(', ');
+
+const JOB_STATUS_SQL_VALUES = toSQLTextValues(JOB_STATUSES);
 const JOB_STATUS_SQL_ARRAY = `ARRAY[${JOB_STATUS_SQL_VALUES}]::TEXT[]`;
 const APPLICATION_VIEW_MODE_SQL_VALUES = "'list', 'board'";
+const APPLICATION_LIST_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_LIST_SORT_ORDERS);
+const APPLICATION_BOARD_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_BOARD_SORT_ORDERS);
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -57,12 +67,24 @@ const createTables = async (): Promise<void> => {
             application_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_application_view_mode_check
                 CHECK (application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+            application_list_sort_order TEXT NOT NULL DEFAULT '${DEFAULT_APPLICATION_LIST_SORT_ORDER}'
+                CONSTRAINT user_preferences_application_list_sort_order_check
+                CHECK (application_list_sort_order IN (${APPLICATION_LIST_SORT_ORDER_SQL_VALUES})),
+            application_board_sort_order TEXT NOT NULL DEFAULT '${DEFAULT_APPLICATION_BOARD_SORT_ORDER}'
+                CONSTRAINT user_preferences_application_board_sort_order_check
+                CHECK (application_board_sort_order IN (${APPLICATION_BOARD_SORT_ORDER_SQL_VALUES})),
             archived_application_job_statuses TEXT[] NOT NULL DEFAULT ${JOB_STATUS_SQL_ARRAY}
                 CHECK (archived_application_job_statuses <@ ${JOB_STATUS_SQL_ARRAY}),
             archived_application_show_notes BOOLEAN NOT NULL DEFAULT true,
             archived_application_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_archived_application_view_mode_check
                 CHECK (archived_application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+            archived_application_list_sort_order TEXT NOT NULL DEFAULT '${DEFAULT_APPLICATION_LIST_SORT_ORDER}'
+                CONSTRAINT user_preferences_archived_application_list_sort_order_check
+                CHECK (archived_application_list_sort_order IN (${APPLICATION_LIST_SORT_ORDER_SQL_VALUES})),
+            archived_application_board_sort_order TEXT NOT NULL DEFAULT '${DEFAULT_APPLICATION_BOARD_SORT_ORDER}'
+                CONSTRAINT user_preferences_archived_application_board_sort_order_check
+                CHECK (archived_application_board_sort_order IN (${APPLICATION_BOARD_SORT_ORDER_SQL_VALUES})),
             interview_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_interview_view_mode_check
                 CHECK (interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),

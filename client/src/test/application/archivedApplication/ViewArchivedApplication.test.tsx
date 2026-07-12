@@ -5,6 +5,7 @@ import { render } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
 import { routes } from '../../../routes';
+import type { UpdateUserPreferencesRequest, UserPreferences } from '../../../components/userPreferences/models';
 
 globalThis.fetch = vi.fn();
 
@@ -19,15 +20,19 @@ const mockApplication = {
     notes: '',
 };
 
-const mockPreferences = {
+const mockPreferences: UserPreferences = {
     application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
     application_enable_scroll: false,
     application_view_mode: 'list',
+    application_list_sort_order: 'job_status',
+    application_board_sort_order: 'application_date_desc',
     archived_application_job_statuses: [...JOB_STATUSES],
     archived_application_show_notes: false,
     archived_application_view_mode: 'list',
+    archived_application_list_sort_order: 'job_status',
+    archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
 };
@@ -50,6 +55,56 @@ vi.mock('material-ui-confirm', () => ({
 const clickConfirmedAction = async (button: HTMLElement) => {
     await act(async () => {
         await userEvent.click(button);
+    });
+};
+
+const archivedApplicationListRequestCount = () =>
+    fetch.mock.calls.filter(
+        ([requestUrl, init]: [string, RequestInit?]) =>
+            requestUrl.includes('/archived-job-applications?') && init?.method === 'GET'
+    ).length;
+
+const getSortOptionLabels = () =>
+    within(screen.getByRole('radiogroup', { name: 'Sort options' }))
+        .getAllByRole('radio')
+        .map((radio) => radio.closest('label')?.textContent);
+
+const getListCompanyHeadings = () => screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+
+const expectListCompanyOrder = (companyNames: string[]) => {
+    expect(getListCompanyHeadings()).toEqual(companyNames.map((companyName, index) => `${index + 1}. ${companyName}`));
+};
+
+const getExportCsvText = async (): Promise<string> => {
+    await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+    const href = screen.getByRole('link', { name: 'Export as CSV' }).getAttribute('href') ?? '';
+    const csvStart = href.indexOf(',');
+
+    return decodeURIComponent(csvStart === -1 ? href : href.slice(csvStart + 1)).replace(/^\uFEFF/, '');
+};
+
+const expectCsvCompanyOrder = (csv: string, companyNames: string[]) => {
+    let previousCompanyIndex = -1;
+
+    for (const companyName of companyNames) {
+        const companyIndex = csv.indexOf(companyName);
+        expect(companyIndex).toBeGreaterThan(previousCompanyIndex);
+        previousCompanyIndex = companyIndex;
+    }
+};
+
+const mockArchivedApplicationCollection = (applications: unknown[]) => {
+    fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+        if (url.endsWith('/user-preferences')) {
+            return response({
+                ...mockPreferences,
+                ...(init?.body ? JSON.parse(String(init.body)) : {}),
+            });
+        }
+        if (url.endsWith('/archived-job-applications/summary')) {
+            return response({ application_count: applications.length, related_interview_count: 0 });
+        }
+        return init?.method === 'GET' ? response(applications) : response(undefined, 204);
     });
 };
 
@@ -103,6 +158,359 @@ describe('Archived job application viewing flow', () => {
                 method: 'GET',
             }
         );
+    });
+
+    test('places Sort by between Filter by and Display options while keeping actions last', async () => {
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+
+        const listButton = screen.getByRole('button', { name: 'List' });
+        const boardButton = screen.getByRole('button', { name: 'Board' });
+        const filterButton = screen.getByRole('button', { name: 'Filter by' });
+        const sortButton = screen.getByRole('button', { name: 'Sort by' });
+        const displayButton = screen.getByRole('button', { name: 'Display options' });
+        const moreButton = screen.getByRole('button', { name: 'More...' });
+
+        expect(listButton.compareDocumentPosition(boardButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(boardButton.compareDocumentPosition(filterButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(filterButton.compareDocumentPosition(sortButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(sortButton.compareDocumentPosition(displayButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(displayButton.compareDocumentPosition(moreButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    test('shows the exact archived list and board sort options with their defaults', async () => {
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+
+        expect(getSortOptionLabels()).toEqual([
+            'Job Status',
+            'Newest Application',
+            'Oldest Application',
+            'Company A–Z',
+            'Company Z–A',
+        ]);
+        expect(screen.getByRole('radio', { name: 'Job Status' })).toBeChecked();
+
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        });
+        await screen.findByRole('region', { name: 'Archived application board' });
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+
+        expect(getSortOptionLabels()).toEqual([
+            'Newest Application',
+            'Oldest Application',
+            'Company A–Z',
+            'Company Z–A',
+        ]);
+        expect(screen.queryByRole('radio', { name: 'Job Status' })).not.toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: 'Newest Application' })).toBeChecked();
+    });
+
+    test('reorders the archived application list for every sort option', async () => {
+        mockArchivedApplicationCollection([
+            {
+                ...mockApplication,
+                application_date: '2025-01-15T00:00:00Z',
+                archived_job_id: 1,
+                company_name: 'Delta Ltd',
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-04-15T00:00:00Z',
+                archived_job_id: 2,
+                company_name: 'Alpha Ltd',
+                job_status: 'Rejected',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-03-15T00:00:00Z',
+                archived_job_id: 3,
+                company_name: 'Charlie Ltd',
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-02-15T00:00:00Z',
+                archived_job_id: 4,
+                company_name: 'Bravo Ltd',
+                job_status: 'Accepted',
+            },
+        ]);
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByRole('heading', { level: 2, name: '1. Bravo Ltd' });
+        expectListCompanyOrder(['Bravo Ltd', 'Charlie Ltd', 'Delta Ltd', 'Alpha Ltd']);
+
+        const selectSortOption = async (option: string, expectedCompanyOrder: string[]) => {
+            await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+            await userEvent.click(screen.getByRole('radio', { name: option }));
+            await waitFor(() => expectListCompanyOrder(expectedCompanyOrder));
+        };
+
+        await selectSortOption('Newest Application', ['Alpha Ltd', 'Charlie Ltd', 'Bravo Ltd', 'Delta Ltd']);
+        await selectSortOption('Oldest Application', ['Delta Ltd', 'Bravo Ltd', 'Charlie Ltd', 'Alpha Ltd']);
+        await selectSortOption('Company A–Z', ['Alpha Ltd', 'Bravo Ltd', 'Charlie Ltd', 'Delta Ltd']);
+        await selectSortOption('Company Z–A', ['Delta Ltd', 'Charlie Ltd', 'Bravo Ltd', 'Alpha Ltd']);
+        await selectSortOption('Job Status', ['Bravo Ltd', 'Charlie Ltd', 'Delta Ltd', 'Alpha Ltd']);
+    });
+
+    test('saves only the archived mode sort preference without refetching applications', async () => {
+        let savedPreferences: UserPreferences = { ...mockPreferences };
+        const updatePreferences = vi.fn(async (updatedPreferences: UpdateUserPreferencesRequest) => {
+            savedPreferences = { ...savedPreferences, ...updatedPreferences };
+            return savedPreferences;
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        const applicationRequestsBeforeSorting = archivedApplicationListRequestCount();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('radio', { name: 'Oldest Application' }));
+        });
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenNthCalledWith(1, {
+                archived_application_list_sort_order: 'application_date_asc',
+            })
+        );
+
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+        });
+        await screen.findByRole('region', { name: 'Archived application board' });
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('radio', { name: 'Company Z–A' }));
+        });
+
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenNthCalledWith(3, {
+                archived_application_board_sort_order: 'company_name_desc',
+            })
+        );
+        expect(updatePreferences).toHaveBeenNthCalledWith(2, { archived_application_view_mode: 'board' });
+        expect(updatePreferences).toHaveBeenCalledTimes(3);
+        expect(archivedApplicationListRequestCount()).toBe(applicationRequestsBeforeSorting);
+    });
+
+    test('reorders archived cards within board columns for every board sort option', async () => {
+        mockArchivedApplicationCollection([
+            {
+                ...mockApplication,
+                application_date: '2025-01-15T00:00:00Z',
+                archived_job_id: 1,
+                company_name: 'Delta Offer',
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-02-15T00:00:00Z',
+                archived_job_id: 2,
+                company_name: 'Alpha Offer',
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-03-15T00:00:00Z',
+                archived_job_id: 3,
+                company_name: 'Charlie Offer',
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-04-15T00:00:00Z',
+                archived_job_id: 4,
+                company_name: 'Bravo Offer',
+                job_status: 'Offer',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-01-15T00:00:00Z',
+                archived_job_id: 5,
+                company_name: 'Kilo Applied',
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-02-15T00:00:00Z',
+                archived_job_id: 6,
+                company_name: 'Hotel Applied',
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-03-15T00:00:00Z',
+                archived_job_id: 7,
+                company_name: 'Juliet Applied',
+                job_status: 'Applied',
+            },
+            {
+                ...mockApplication,
+                application_date: '2025-04-15T00:00:00Z',
+                archived_job_id: 8,
+                company_name: 'India Applied',
+                job_status: 'Applied',
+            },
+        ]);
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            {
+                initialPreferences: {
+                    archived_application_view_mode: 'board',
+                },
+            }
+        );
+
+        const board = await screen.findByRole('region', { name: 'Archived application board' });
+        expect(
+            within(board)
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent)
+        ).toEqual(['Accepted 0', 'Offer 4', 'Declined 0', 'Interview 0', 'Applied 4', 'Ghosted 0', 'Rejected 0']);
+
+        const expectBoardCompanyOrder = (columnName: string, expectedCompanyOrder: string[]) => {
+            expect(
+                within(within(board).getByRole('region', { name: columnName }))
+                    .getAllByRole('heading', { level: 3 })
+                    .map((heading) => heading.textContent)
+            ).toEqual(expectedCompanyOrder);
+        };
+        const expectBoardOrders = (offerOrder: string[], appliedOrder: string[]) => {
+            expectBoardCompanyOrder('Offer 4', offerOrder);
+            expectBoardCompanyOrder('Applied 4', appliedOrder);
+        };
+        const selectSortOption = async (option: string, offerOrder: string[], appliedOrder: string[]) => {
+            await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+            await userEvent.click(screen.getByRole('radio', { name: option }));
+            await waitFor(() => expectBoardOrders(offerOrder, appliedOrder));
+        };
+
+        expectBoardOrders(
+            ['Bravo Offer', 'Charlie Offer', 'Alpha Offer', 'Delta Offer'],
+            ['India Applied', 'Juliet Applied', 'Hotel Applied', 'Kilo Applied']
+        );
+        await selectSortOption(
+            'Oldest Application',
+            ['Delta Offer', 'Alpha Offer', 'Charlie Offer', 'Bravo Offer'],
+            ['Kilo Applied', 'Hotel Applied', 'Juliet Applied', 'India Applied']
+        );
+        await selectSortOption(
+            'Company A–Z',
+            ['Alpha Offer', 'Bravo Offer', 'Charlie Offer', 'Delta Offer'],
+            ['Hotel Applied', 'India Applied', 'Juliet Applied', 'Kilo Applied']
+        );
+        await selectSortOption(
+            'Company Z–A',
+            ['Delta Offer', 'Charlie Offer', 'Bravo Offer', 'Alpha Offer'],
+            ['Kilo Applied', 'Juliet Applied', 'India Applied', 'Hotel Applied']
+        );
+        await selectSortOption(
+            'Newest Application',
+            ['Bravo Offer', 'Charlie Offer', 'Alpha Offer', 'Delta Offer'],
+            ['India Applied', 'Juliet Applied', 'Hotel Applied', 'Kilo Applied']
+        );
+
+        expect(
+            within(board)
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent)
+        ).toEqual(['Accepted 0', 'Offer 4', 'Declined 0', 'Interview 0', 'Applied 4', 'Ghosted 0', 'Rejected 0']);
+    });
+
+    test.each([
+        [
+            'list',
+            { archived_application_view_mode: 'list', archived_application_list_sort_order: 'company_name_asc' },
+            ['Alpha Applied', 'Beta Offer', 'Yankee Offer', 'Zulu Applied'],
+        ],
+        [
+            'board',
+            { archived_application_view_mode: 'board', archived_application_board_sort_order: 'company_name_desc' },
+            ['Yankee Offer', 'Beta Offer', 'Zulu Applied', 'Alpha Applied'],
+        ],
+    ] as const)(
+        'exports archived %s applications in their displayed order',
+        async (_mode, initialPreferences, order) => {
+            mockArchivedApplicationCollection([
+                { ...mockApplication, archived_job_id: 1, company_name: 'Alpha Applied', job_status: 'Applied' },
+                { ...mockApplication, archived_job_id: 2, company_name: 'Zulu Applied', job_status: 'Applied' },
+                { ...mockApplication, archived_job_id: 3, company_name: 'Beta Offer', job_status: 'Offer' },
+                { ...mockApplication, archived_job_id: 4, company_name: 'Yankee Offer', job_status: 'Offer' },
+            ]);
+
+            render(
+                <MemoryRouter>
+                    <ViewArchivedApplication />
+                </MemoryRouter>,
+                { initialPreferences }
+            );
+
+            await screen.findByRole('button', { name: 'Sort by' });
+            expectCsvCompanyOrder(await getExportCsvText(), [...order]);
+        }
+    );
+
+    test('shows an error and rolls back the archived list sort when saving fails', async () => {
+        mockArchivedApplicationCollection([
+            { ...mockApplication, archived_job_id: 1, company_name: 'Alpha Applied', job_status: 'Applied' },
+            { ...mockApplication, archived_job_id: 2, company_name: 'Zulu Offer', job_status: 'Offer' },
+        ]);
+        const updatePreferences = vi.fn(async (): Promise<UserPreferences> => {
+            throw new Error('Preference request failed');
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByRole('heading', { level: 2, name: '1. Zulu Offer' });
+        expect(getListCompanyHeadings()).toEqual(['1. Zulu Offer', '2. Alpha Applied']);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await userEvent.click(screen.getByRole('radio', { name: 'Company A–Z' }));
+
+        expect(
+            await screen.findByText('Unable to save the archived application sorting preference. Please try again.')
+        ).toBeInTheDocument();
+        expect(updatePreferences).toHaveBeenCalledWith({
+            archived_application_list_sort_order: 'company_name_asc',
+        });
+        expect(getListCompanyHeadings()).toEqual(['1. Zulu Offer', '2. Alpha Applied']);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        expect(screen.getByRole('radio', { name: 'Job Status' })).toBeChecked();
+        expect(screen.getByRole('radio', { name: 'Company A–Z' })).not.toBeChecked();
     });
 
     test('switches to board view with read-only archived application cards', async () => {
@@ -429,6 +837,8 @@ describe('Archived job application viewing flow', () => {
             '/application/view'
         );
         expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Display options' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeVisible();
         expect(screen.getByRole('checkbox', { name: 'Accepted' })).toBeVisible();
@@ -449,9 +859,11 @@ describe('Archived job application viewing flow', () => {
         expect(
             await screen.findByRole('heading', { name: 'No archived applications match your filters' })
         ).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
 
         expect(await screen.findByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Sort by' })).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledWith(
             `${
                 import.meta.env.VITE_API_URL
@@ -503,6 +915,7 @@ describe('Archived job application viewing flow', () => {
             'href',
             '/application/view'
         );
+        expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
         expect(screen.queryByRole('region', { name: 'Archived application board' })).not.toBeInTheDocument();
     });
 
