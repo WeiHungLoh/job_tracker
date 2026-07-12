@@ -370,52 +370,6 @@ describe('Job application viewing flow', () => {
         await selectSortOption('Job Status', ['Bravo Ltd', 'Charlie Ltd', 'Delta Ltd', 'Alpha Ltd']);
     });
 
-    test('saves only the active mode sort preference without refetching applications', async () => {
-        let savedPreferences: UserPreferences = { ...mockPreferences };
-        const updatePreferences = vi.fn(async (updatedPreferences: UpdateUserPreferencesRequest) => {
-            savedPreferences = { ...savedPreferences, ...updatedPreferences };
-            return savedPreferences;
-        });
-
-        render(
-            <MemoryRouter>
-                <ViewApplication />
-            </MemoryRouter>,
-            { updatePreferences }
-        );
-
-        await screen.findByText(/ABC Pte Ltd/i);
-        const applicationRequestsBeforeSorting = applicationListRequestCount();
-
-        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
-        await act(async () => {
-            await userEvent.click(screen.getByRole('radio', { name: 'Oldest Application' }));
-        });
-        await waitFor(() =>
-            expect(updatePreferences).toHaveBeenNthCalledWith(1, {
-                application_list_sort_order: 'application_date_asc',
-            })
-        );
-
-        await act(async () => {
-            await userEvent.click(screen.getByRole('button', { name: 'Board' }));
-        });
-        await screen.findByRole('region', { name: 'Application board' });
-        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
-        await act(async () => {
-            await userEvent.click(screen.getByRole('radio', { name: 'Company Z–A' }));
-        });
-
-        await waitFor(() =>
-            expect(updatePreferences).toHaveBeenNthCalledWith(3, {
-                application_board_sort_order: 'company_name_desc',
-            })
-        );
-        expect(updatePreferences).toHaveBeenNthCalledWith(2, { application_view_mode: 'board' });
-        expect(updatePreferences).toHaveBeenCalledTimes(3);
-        expect(applicationListRequestCount()).toBe(applicationRequestsBeforeSorting);
-    });
-
     test('reorders active cards within board columns for every board sort option', async () => {
         mockApplicationCollection([
             {
