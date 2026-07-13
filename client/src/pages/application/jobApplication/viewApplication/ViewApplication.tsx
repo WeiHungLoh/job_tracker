@@ -53,11 +53,12 @@ const ViewApplication = () => {
     const navigate = useNavigate();
     const dashboardJobStatusRef = useRef(getDashboardJobStatus(location.state));
     const [applications, setApplications] = useState<JobApplication[]>([]);
-    const [editedJobStatuses, setEditedJobStatuses] = useState<Record<number, JobStatus>>({});
+    const [editingApplicationId, setEditingApplicationId] = useState<number | null>(null);
+    const [editedJobStatus, setEditedJobStatus] = useState<JobStatus | null>(null);
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const confirm = useConfirm();
     const showNotesTimeout = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
-    const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+    const statusHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const updatingStatusApplicationIdRef = useRef<Set<number>>(new Set());
     const [notes, setNotes] = useState<Record<number, string>>({});
@@ -117,7 +118,15 @@ const ViewApplication = () => {
         return counts;
     }, [interviews]);
 
+    const closeStatusEditor = () => {
+        setEditingApplicationId(null);
+        setEditedJobStatus(null);
+    };
+
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+        if (nextViewMode === 'board') {
+            closeStatusEditor();
+        }
         void handlePreferenceUpdate({ application_view_mode: nextViewMode });
     };
 
@@ -146,6 +155,7 @@ const ViewApplication = () => {
     };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
+        closeStatusEditor();
         setIsFilteringApplications(true);
 
         try {
@@ -356,44 +366,41 @@ const ViewApplication = () => {
         }
     };
 
-    const toggleEditStatus = async (application: JobApplication) => {
-        const editStatus = application.edit_status;
-        const newStatus = editedJobStatuses[application.job_id] ?? application.job_status;
+    const handleStatusEditorToggle = async (application: JobApplication) => {
+        const isEditing = editingApplicationId === application.job_id;
+
+        if (!isEditing) {
+            setEditingApplicationId(application.job_id);
+            setEditedJobStatus(application.job_status);
+            return;
+        }
+
+        const newStatus = editedJobStatus ?? application.job_status;
         const oldStatus = application.job_status;
-        const isSaving = editStatus;
         const statusChanged = newStatus !== oldStatus;
+        const statusRemainsVisible = selectedJobStatuses.includes(newStatus);
+
+        if (!statusChanged) {
+            closeStatusEditor();
+            return;
+        }
 
         try {
             await api.application.updateStatus({
                 jobId: application.job_id,
-                editStatus: !editStatus,
-                jobStatus: isSaving ? newStatus : oldStatus,
+                jobStatus: newStatus,
             });
 
-            if (isSaving) {
-                setEditedJobStatuses((currentStatuses) => {
-                    const updatedStatuses = { ...currentStatuses };
-                    delete updatedStatuses[application.job_id];
-                    return updatedStatuses;
-                });
+            closeStatusEditor();
+            setApplications((current) =>
+                current
+                    .map((item) => (item.job_id === application.job_id ? { ...item, job_status: newStatus } : item))
+                    .filter((item) => selectedJobStatuses.includes(item.job_status))
+            );
 
-                if (!selectedJobStatuses.includes(newStatus)) {
-                    setApplications((current) => current.filter((item) => item.job_id !== application.job_id));
-                    return;
-                }
-            }
-
-            setApplications((current) => {
-                return current.map((item) =>
-                    item.job_id === application.job_id
-                        ? { ...item, edit_status: !editStatus, job_status: isSaving ? newStatus : oldStatus }
-                        : item
-                );
-            });
-
-            if (isSaving && statusChanged && enableScroll) {
+            if (enableScroll && statusRemainsVisible) {
                 setTimeout(() => {
-                    scrollAndHighlight(String(application.job_id), styles.highlighted, showEditStatusTimeout.current);
+                    scrollAndHighlight(String(application.job_id), styles.highlighted, statusHighlightTimeout.current);
                 }, 100);
             }
         } catch (error) {
@@ -405,7 +412,6 @@ const ViewApplication = () => {
 
     const updateApplicationStatusFromBoard = async (application: JobApplication, newStatus: JobStatus) => {
         const oldStatus = application.job_status;
-        const previousEditedJobStatus = editedJobStatuses[application.job_id];
 
         if (newStatus === oldStatus || updatingStatusApplicationIdRef.current.has(application.job_id)) {
             return;
@@ -415,21 +421,13 @@ const ViewApplication = () => {
         startUpdatingApplicationStatus(application.job_id);
         setApplications((current) =>
             current
-                .map((item) =>
-                    item.job_id === application.job_id ? { ...item, edit_status: false, job_status: newStatus } : item
-                )
+                .map((item) => (item.job_id === application.job_id ? { ...item, job_status: newStatus } : item))
                 .filter((item) => selectedJobStatuses.includes(item.job_status))
         );
-        setEditedJobStatuses((currentStatuses) => {
-            const updatedStatuses = { ...currentStatuses };
-            delete updatedStatuses[application.job_id];
-            return updatedStatuses;
-        });
 
         try {
             await api.application.updateStatus({
                 jobId: application.job_id,
-                editStatus: false,
                 jobStatus: newStatus,
             });
         } catch (error) {
@@ -441,12 +439,6 @@ const ViewApplication = () => {
 
                 return restoredApplications;
             });
-            if (previousEditedJobStatus !== undefined) {
-                setEditedJobStatuses((currentStatuses) => ({
-                    ...currentStatuses,
-                    [application.job_id]: previousEditedJobStatus,
-                }));
-            }
             showErrorToast(
                 getErrorToastMessage(error, 'Unable to update the job application status. Please try again.')
             );
@@ -602,23 +594,23 @@ const ViewApplication = () => {
                         displayedApplications.map((application, index) => (
                             <ApplicationCard
                                 application={application}
-                                editedJobStatus={editedJobStatuses[application.job_id] ?? application.job_status}
+                                editedJobStatus={
+                                    editingApplicationId === application.job_id && editedJobStatus
+                                        ? editedJobStatus
+                                        : application.job_status
+                                }
                                 hasInterview={interviewJobIdSet.has(application.job_id)}
                                 index={index}
                                 isArchiving={archivingApplicationIds.has(application.job_id)}
                                 isDeleting={deletingApplicationIds.has(application.job_id)}
+                                isEditingStatus={editingApplicationId === application.job_id}
                                 key={application.job_id}
                                 note={notes[application.job_id] ?? application.notes}
                                 onArchive={handleArchive}
                                 onDelete={handleDelete}
                                 onEditNotes={handleEditNotes}
-                                onJobStatusChange={(jobId, jobStatus) =>
-                                    setEditedJobStatuses((currentStatuses) => ({
-                                        ...currentStatuses,
-                                        [jobId]: jobStatus,
-                                    }))
-                                }
-                                onToggleEditStatus={toggleEditStatus}
+                                onJobStatusChange={setEditedJobStatus}
+                                onToggleStatusEditor={handleStatusEditorToggle}
                                 showArchive={showArchive}
                                 showNotes={showNotes}
                                 upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}

@@ -64,7 +64,6 @@ export type JobApplication = {
     job_title: string;
     application_date: string;
     job_status: JobStatus;
-    edit_status: boolean;
     job_location: string;
     job_posting_url: string;
     notes: string;
@@ -125,7 +124,6 @@ export type UpdateNotesResponse = null;
 
 export type UpdateApplicationStatusRequest = {
     jobId: number;
-    editStatus: boolean;
     jobStatus: JobStatus;
 };
 export type UpdateApplicationStatusResponse = null;

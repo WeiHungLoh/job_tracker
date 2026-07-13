@@ -9,7 +9,7 @@ export const archiveJobApplication = async (jobId: number, userId: number): Prom
         await client.query('BEGIN');
         const applicationResult = await client.query(
             `UPDATE job_applications
-             SET is_archived = true, edit_status = false
+             SET is_archived = true
              WHERE job_id = $1 AND user_id = $2 AND is_archived = false`,
             [jobId, userId]
         );
@@ -73,7 +73,7 @@ export const archiveAllJobApplications = async (userId: number): Promise<void> =
         await client.query(
             `WITH archived_applications AS (
                 UPDATE job_applications
-                SET is_archived = true, edit_status = false
+                SET is_archived = true
                 WHERE user_id = $1 AND is_archived = false
                 RETURNING job_id
             )

@@ -33,7 +33,7 @@ test('Archive All uses one user-scoped set update and commits application/interv
 
     assert.equal(calls[0].sql, 'BEGIN');
     assert.match(calls[1].sql, /WITH archived_applications AS/);
-    assert.match(calls[1].sql, /SET is_archived = true, edit_status = false/);
+    assert.match(calls[1].sql, /SET is_archived = true/);
     assert.match(calls[1].sql, /WHERE user_id = \$1 AND is_archived = false/);
     assert.match(calls[1].sql, /interviews\.user_id = \$1/);
     assert.deepEqual(calls[1].values, [42]);

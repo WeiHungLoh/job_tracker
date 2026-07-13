@@ -51,9 +51,10 @@ const DemoViewApplication = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const dashboardJobStatusRef = useRef(getDashboardJobStatus(location.state));
-    const [editedJobStatuses, setEditedJobStatuses] = useState<Record<number, JobStatus>>({});
+    const [editingApplicationId, setEditingApplicationId] = useState<number | null>(null);
+    const [editedJobStatus, setEditedJobStatus] = useState<JobStatus | null>(null);
     const confirm = useConfirm();
-    const showEditStatusTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+    const statusHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const { showErrorToast } = useToast();
     const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
@@ -94,11 +95,20 @@ const DemoViewApplication = () => {
         navigate(location.pathname, { replace: true, state: null });
     }, [location.pathname, navigate, selectedJobStatuses, updatePreferences]);
 
+    const closeStatusEditor = () => {
+        setEditingApplicationId(null);
+        setEditedJobStatus(null);
+    };
+
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+        if (nextViewMode === 'board') {
+            closeStatusEditor();
+        }
         void updatePreferences({ application_view_mode: nextViewMode });
     };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
+        closeStatusEditor();
         await updatePreferences({ application_job_statuses: jobStatuses });
         return true;
     };
@@ -164,32 +174,34 @@ const DemoViewApplication = () => {
         }
     };
 
-    const toggleEditStatus = (application: JobApplication) => {
-        const editStatus = application.edit_status;
-        const newStatus = editedJobStatuses[application.job_id] ?? application.job_status;
-        const isSaving = editStatus;
+    const handleStatusEditorToggle = (application: JobApplication) => {
+        const isEditing = editingApplicationId === application.job_id;
+
+        if (!isEditing) {
+            setEditingApplicationId(application.job_id);
+            setEditedJobStatus(application.job_status);
+            return;
+        }
+
+        const newStatus = editedJobStatus ?? application.job_status;
         const statusChanged = newStatus !== application.job_status;
 
-        if (isSaving) {
-            setEditedJobStatuses((currentStatuses) => {
-                const updatedStatuses = { ...currentStatuses };
-                delete updatedStatuses[application.job_id];
-                return updatedStatuses;
-            });
+        closeStatusEditor();
+        if (!statusChanged) {
+            return;
         }
 
         dispatch({
             type: 'UPDATE_APPLICATION_STATUS',
             payload: {
                 jobId: application.job_id,
-                editStatus: !editStatus,
-                jobStatus: isSaving ? newStatus : application.job_status,
+                jobStatus: newStatus,
             },
         });
 
-        if (isSaving && statusChanged && enableScroll) {
+        if (enableScroll) {
             setTimeout(() => {
-                scrollAndHighlight(String(application.job_id), styles.highlighted, showEditStatusTimeout.current);
+                scrollAndHighlight(String(application.job_id), styles.highlighted, statusHighlightTimeout.current);
             }, 100);
         }
     };
@@ -201,7 +213,7 @@ const DemoViewApplication = () => {
 
         dispatch({
             type: 'UPDATE_APPLICATION_STATUS',
-            payload: { jobId: application.job_id, editStatus: false, jobStatus: newStatus },
+            payload: { jobId: application.job_id, jobStatus: newStatus },
         });
     };
 
@@ -326,23 +338,23 @@ const DemoViewApplication = () => {
                 applications.map((application, index) => (
                     <DemoApplicationCard
                         application={application}
-                        editedJobStatus={editedJobStatuses[application.job_id] ?? application.job_status}
+                        editedJobStatus={
+                            editingApplicationId === application.job_id && editedJobStatus
+                                ? editedJobStatus
+                                : application.job_status
+                        }
                         hasInterview={interviewJobIdSet.has(application.job_id)}
                         index={index}
                         isArchiving={false}
                         isDeleting={false}
+                        isEditingStatus={editingApplicationId === application.job_id}
                         key={application.job_id}
                         note={application.notes}
                         onArchive={handleArchive}
                         onDelete={handleDelete}
                         onEditNotes={handleEditNotes}
-                        onJobStatusChange={(jobId, jobStatus) =>
-                            setEditedJobStatuses((currentStatuses) => ({
-                                ...currentStatuses,
-                                [jobId]: jobStatus,
-                            }))
-                        }
-                        onToggleEditStatus={toggleEditStatus}
+                        onJobStatusChange={setEditedJobStatus}
+                        onToggleStatusEditor={handleStatusEditorToggle}
                         showArchive={showArchive}
                         showNotes={showNotes}
                         upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}

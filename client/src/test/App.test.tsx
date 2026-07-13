@@ -172,7 +172,6 @@ describe('App routing and authentication behavior', () => {
             {
                 application_date: '2025-06-20T00:00:00Z',
                 company_name: 'Alpha Applied',
-                edit_status: false,
                 job_id: 1,
                 job_location: '',
                 job_posting_url: '',
@@ -183,7 +182,6 @@ describe('App routing and authentication behavior', () => {
             {
                 application_date: '2025-06-19T00:00:00Z',
                 company_name: 'Zulu Offer',
-                edit_status: false,
                 job_id: 2,
                 job_location: '',
                 job_posting_url: '',

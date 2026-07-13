@@ -35,7 +35,6 @@ export type JobApplication = {
     job_title: string;
     application_date: Date;
     job_status: JobStatus;
-    edit_status: boolean;
     job_location: string;
     job_posting_url: string;
     notes: string;

@@ -47,7 +47,6 @@ const createApplication = (seed: ApplicationSeed, now: Date): JobApplication => 
     job_title: seed.jobTitle,
     application_date: toDateString(daysAgo(now, seed.daysAgo)),
     job_status: seed.jobStatus,
-    edit_status: false,
     job_location: seed.jobLocation,
     job_posting_url: '',
     notes: seed.notes,

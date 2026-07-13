@@ -223,18 +223,13 @@ router.patch(
             sendError(res, 422, 'Job application ID must be a positive integer.');
             return;
         }
-        if (typeof req.body.editStatus !== 'boolean' || !isJobStatus(req.body.jobStatus)) {
-            sendError(res, 422, 'Edit status and a supported job status are required.');
+        if (!isJobStatus(req.body.jobStatus)) {
+            sendError(res, 422, 'A supported job status is required.');
             return;
         }
 
         try {
-            const updateResult = await updateApplicationStatus(
-                req.body.editStatus,
-                req.body.jobStatus,
-                jobId,
-                req.user.id
-            );
+            const updateResult = await updateApplicationStatus(req.body.jobStatus, jobId, req.user.id);
             if (updateResult === 'active-interview') {
                 sendError(res, 409, 'A job application with an active interview cannot be moved to Applied.');
                 return;

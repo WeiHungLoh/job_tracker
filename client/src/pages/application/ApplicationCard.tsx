@@ -62,13 +62,11 @@ const ApplicationCard = (props: ApplicationCardProps) => {
                             )}
                         </div>
 
-                        {application.edit_status && (
+                        {props.isEditingStatus && (
                             <select
                                 role='listbox'
                                 value={props.editedJobStatus}
-                                onChange={(event) =>
-                                    props.onJobStatusChange(application.job_id, event.target.value as JobStatus)
-                                }
+                                onChange={(event) => props.onJobStatusChange(event.target.value as JobStatus)}
                             >
                                 {JOB_STATUSES.map((status) => (
                                     <option
@@ -107,8 +105,8 @@ const ApplicationCard = (props: ApplicationCardProps) => {
             <div className={styles.buttonGroup}>
                 {variant === 'job' ? (
                     <>
-                        <PrimaryButton variant='secondary' onClick={() => props.onToggleEditStatus(application)}>
-                            {application.edit_status ? 'Save Changes' : 'Edit Status'}
+                        <PrimaryButton variant='secondary' onClick={() => props.onToggleStatusEditor(application)}>
+                            {props.isEditingStatus ? 'Save Changes' : 'Edit Status'}
                         </PrimaryButton>
                         <PrimaryButton
                             isLoading={isDeleting}

@@ -23,7 +23,7 @@ type CreateInterviewPayload = {
 
 export type DemoAction =
     | { type: 'CREATE_APPLICATION'; payload: CreateApplicationPayload }
-    | { type: 'UPDATE_APPLICATION_STATUS'; payload: { editStatus?: boolean; jobId: number; jobStatus: JobStatus } }
+    | { type: 'UPDATE_APPLICATION_STATUS'; payload: { jobId: number; jobStatus: JobStatus } }
     | { type: 'UPDATE_APPLICATION_NOTES'; payload: { jobId: number; notes: string } }
     | { type: 'DELETE_APPLICATION'; payload: { jobId: number } }
     | { type: 'DELETE_ALL_APPLICATIONS' }
@@ -58,7 +58,6 @@ const toActiveApplication = (application: ArchivedJobApplication): JobApplicatio
     job_title: application.job_title,
     application_date: application.application_date,
     job_status: application.job_status,
-    edit_status: false,
     job_location: application.job_location,
     job_posting_url: application.job_posting_url,
     notes: application.notes,
@@ -107,7 +106,6 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 job_title: jobTitle,
                 application_date: applicationDate.toISOString(),
                 job_status: jobStatus,
-                edit_status: false,
                 job_location: jobLocation,
                 job_posting_url: jobURL,
                 notes: '',
@@ -127,7 +125,6 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                     application.job_id === action.payload.jobId
                         ? {
                               ...application,
-                              edit_status: action.payload.editStatus ?? application.edit_status,
                               job_status: action.payload.jobStatus,
                           }
                         : application

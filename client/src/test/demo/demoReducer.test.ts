@@ -158,7 +158,7 @@ describe('demo reducer state', () => {
         const state = createDemoInitialState(fixedNow);
         const statusUpdated = demoReducer(state, {
             type: 'UPDATE_APPLICATION_STATUS',
-            payload: { jobId: 101, editStatus: false, jobStatus: 'Offer' },
+            payload: { jobId: 101, jobStatus: 'Offer' },
         });
         const notesUpdated = demoReducer(statusUpdated, {
             type: 'UPDATE_APPLICATION_NOTES',
@@ -212,7 +212,6 @@ describe('demo reducer state', () => {
         expect(unarchived.archivedInterviews).toHaveLength(0);
         expect(unarchived.applications).toHaveLength(originalArchivedApplicationCount + state.applications.length);
         expect(unarchived.interviews).toHaveLength(originalArchivedInterviewCount + state.interviews.length);
-        expect(unarchived.applications.every((application) => application.edit_status === false)).toBe(true);
         expect(sortInterviews(unarchived.interviews, fixedNowMs).map((interview) => interview.interview_id)).toEqual([
             401, 402, 403, 404, 407, 408, 409, 504, 503, 502, 501, 406, 405,
         ]);

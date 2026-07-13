@@ -28,7 +28,6 @@ export const getJobApplications = async (userId: number, jobStatuses: JobStatus[
             job_title,
             application_date,
             job_status,
-            edit_status,
             job_location,
             job_posting_url,
             notes
@@ -106,7 +105,6 @@ export const editNotes = async (jobId: number, userId: number, notes: string): P
 };
 
 export const updateApplicationStatus = async (
-    editStatus: boolean,
     jobStatus: JobStatus,
     jobId: number,
     userId: number
@@ -115,21 +113,21 @@ export const updateApplicationStatus = async (
         `WITH application AS (
             SELECT job_id
             FROM job_applications
-            WHERE job_id = $3 AND user_id = $4 AND is_archived = false
+            WHERE job_id = $2 AND user_id = $3 AND is_archived = false
         ),
         updated_application AS (
             UPDATE job_applications
-            SET edit_status = $1, job_status = $2
+            SET job_status = $1
             FROM application
             WHERE job_applications.job_id = application.job_id
                 AND (
-                    $2::text <> 'Applied'
+                    $1::text <> 'Applied'
                     OR job_applications.job_status = 'Applied'
                     OR NOT EXISTS (
                         SELECT 1
                         FROM interviews
                         WHERE interviews.job_id = job_applications.job_id
-                            AND interviews.user_id = $4
+                            AND interviews.user_id = $3
                             AND interviews.is_archived = false
                     )
                 )
@@ -138,7 +136,7 @@ export const updateApplicationStatus = async (
         SELECT
             EXISTS(SELECT 1 FROM application) AS application_exists,
             EXISTS(SELECT 1 FROM updated_application) AS application_updated`,
-        [editStatus, jobStatus, jobId, userId]
+        [jobStatus, jobId, userId]
     );
 
     if (result.rows[0]?.application_updated) {

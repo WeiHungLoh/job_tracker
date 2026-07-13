@@ -32,7 +32,6 @@ const createTables = async (): Promise<void> => {
             application_date TIMESTAMPTZ NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             job_status TEXT NOT NULL CHECK (job_status IN (${JOB_STATUS_SQL_VALUES})),
-            edit_status BOOLEAN NOT NULL DEFAULT false,
             job_location TEXT NOT NULL DEFAULT '',
             job_posting_url TEXT NOT NULL DEFAULT '',
             notes TEXT NOT NULL DEFAULT '',

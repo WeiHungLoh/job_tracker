@@ -30,7 +30,6 @@ export type UpdateNotesRequest = {
 };
 
 export type UpdateApplicationStatusRequest = {
-    editStatus: boolean;
     jobStatus: JobStatus;
 };
 

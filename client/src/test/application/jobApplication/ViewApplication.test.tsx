@@ -17,7 +17,6 @@ const mockApplication = {
     job_location: 'Remote',
     application_date: '2025-06-20T00:00:00Z',
     job_status: 'Applied',
-    edit_status: false,
     job_posting_url: 'https://jobstreet.com',
     notes: '',
 };
@@ -705,7 +704,7 @@ describe('Job application viewing flow', () => {
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ editStatus: false, jobStatus: 'Interview' }),
+                body: JSON.stringify({ jobStatus: 'Interview' }),
             })
         );
         expect(screen.getByRole('heading', { name: 'Applied 0' })).toBeInTheDocument();
@@ -735,7 +734,7 @@ describe('Job application viewing flow', () => {
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ editStatus: false, jobStatus: 'Interview' }),
+                body: JSON.stringify({ jobStatus: 'Interview' }),
             })
         );
         expect(screen.getByRole('heading', { name: 'Interview 1' })).toBeInTheDocument();
@@ -1153,7 +1152,7 @@ describe('Job application viewing flow', () => {
         expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked();
     });
 
-    test('button should switch to Save Changes button after toggle', async () => {
+    test('opens the status editor locally without calling the update endpoint', async () => {
         render(
             <MemoryRouter>
                 <ViewApplication />
@@ -1161,24 +1160,53 @@ describe('Job application viewing flow', () => {
         );
 
         await screen.findByText(/ABC Pte Ltd/i);
+        const statusUpdatesBeforeEditing = statusUpdateRequestCount(1);
 
-        userEvent.click(screen.getByRole('button', { name: /edit status/i }));
+        await userEvent.click(screen.getByRole('button', { name: /edit status/i }));
 
-        await waitFor(() => {
-            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ editStatus: true, jobStatus: 'Applied' }),
-            });
+        expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+        expect(statusUpdateRequestCount(1)).toBe(statusUpdatesBeforeEditing);
+
+        await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+        expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument();
+        expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(statusUpdateRequestCount(1)).toBe(statusUpdatesBeforeEditing);
+    });
+
+    test('keeps the local status editor open and shows the backend message when saving fails', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/status') && init?.method === 'PATCH') {
+                return response({ message: 'Status update is temporarily unavailable.' }, 503);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
         });
 
-        await waitFor(() => {
-            expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
-        });
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
 
-        await waitFor(() => {
-            expect(screen.getByRole('listbox')).toBeInTheDocument();
-        });
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: /edit status/i }));
+        await userEvent.selectOptions(screen.getByRole('listbox'), 'Interview');
+        await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+        expect(await screen.findByText('Status update is temporarily unavailable.')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+        expect(screen.getByRole('listbox')).toHaveValue('Interview');
+        expect(screen.getByText(/^Job Status: Applied$/)).toBeInTheDocument();
     });
 
     test('does not scroll when a status change removes the application from the selected filter', async () => {
@@ -1261,9 +1289,9 @@ describe('Job application viewing flow', () => {
             ([url, init]: [string, RequestInit?]) =>
                 url.endsWith('/job-applications/2/status') && init?.method === 'PATCH'
         );
-        expect(statusUpdateCalls).toHaveLength(2);
-        expect(statusUpdateCalls[1][1]).toMatchObject({
-            body: JSON.stringify({ editStatus: false, jobStatus: 'Offer' }),
+        expect(statusUpdateCalls).toHaveLength(1);
+        expect(statusUpdateCalls[0][1]).toMatchObject({
+            body: JSON.stringify({ jobStatus: 'Offer' }),
         });
     });
 
