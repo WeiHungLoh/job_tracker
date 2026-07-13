@@ -30,12 +30,14 @@ const formatLocalDate = (date: Date): string =>
         year: 'numeric',
     });
 
-const formatLocalTime = (date: Date): string =>
-    date.toLocaleString('en-GB', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-    });
+const formatLocalTime = (date: Date): string => {
+    const hours = date.getHours();
+    const twelveHour = hours % 12 || 12;
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const period = hours >= 12 ? 'pm' : 'am';
+
+    return `${twelveHour}:${minutes} ${period}`;
+};
 
 const isSameLocalDate = (firstDate: Date, secondDate: Date): boolean =>
     firstDate.getFullYear() === secondDate.getFullYear() &&
