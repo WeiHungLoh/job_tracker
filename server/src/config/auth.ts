@@ -14,7 +14,7 @@ export const ACCESS_TOKEN_COOKIE_OPTIONS: CookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    path: '/',
+    path: '/api',
     maxAge: ACCESS_TOKEN_DURATION_SECONDS * 1000,
 };
 

@@ -98,6 +98,8 @@ test('returns 204 with no body when logging out', async () => {
     assert.equal(await response.text(), '');
     assert.match(setCookieHeader, /access_token=;/);
     assert.match(setCookieHeader, /refresh_token=;/);
+    assert.match(setCookieHeader, /access_token=; Path=\/api;/);
+    assert.match(setCookieHeader, /refresh_token=; Path=\/api\/authentication;/);
     assert.match(setCookieHeader, /SameSite=Strict/);
 });
 
@@ -113,6 +115,7 @@ test('creates access and refresh tokens with the configured expiration times', (
     assert.equal(REFRESH_TOKEN_COOKIE_OPTIONS.maxAge, 3 * 24 * 60 * 60 * 1000);
     assert.equal(ACCESS_TOKEN_COOKIE_OPTIONS.sameSite, 'strict');
     assert.equal(REFRESH_TOKEN_COOKIE_OPTIONS.sameSite, 'strict');
+    assert.equal(ACCESS_TOKEN_COOKIE_OPTIONS.path, '/api');
     assert.equal(REFRESH_TOKEN_COOKIE_OPTIONS.path, '/api/authentication');
 });
 
