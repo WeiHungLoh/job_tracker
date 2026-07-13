@@ -1,10 +1,11 @@
 import Icon from '../../components/icon/Icon';
 import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
 import styles from './DashboardStats.module.css';
 import type { DashboardStatsProps } from './models';
 import type { JobStatus } from '../application/models';
 import { getStatusCountMap, getTotalStatusCount, getUpcomingInterviews } from './dashboardData';
-import { useState } from 'react';
 
 const INTERVIEW_PLUS_STATUSES: readonly JobStatus[] = ['Interview', 'Offer', 'Accepted', 'Declined'];
 const OFFER_PLUS_STATUSES: readonly JobStatus[] = ['Offer', 'Accepted', 'Declined'];
@@ -54,21 +55,18 @@ const DashboardStats = ({
         <div className={styles.statsRow}>
             {cards.map((card) => {
                 const isRevealed = revealedRate === card.label;
-                const content = (
+                const renderContent = (children: ReactNode) => (
                     <>
                         <div className={styles.icon}>
                             <Icon name={card.icon} size={24} />
                         </div>
-                        <div className={styles.statContent}>
-                            {card.explanation && isRevealed ? (
-                                <p className={styles.explanation}>{card.explanation}</p>
-                            ) : (
-                                <>
-                                    <div className={styles.value}>{card.value}</div>
-                                    <div className={styles.label}>{card.label}</div>
-                                </>
-                            )}
-                        </div>
+                        <div className={styles.statContent}>{children}</div>
+                    </>
+                );
+                const frontContent = renderContent(
+                    <>
+                        <div className={styles.value}>{card.value}</div>
+                        <div className={styles.label}>{card.label}</div>
                     </>
                 );
 
@@ -81,11 +79,18 @@ const DashboardStats = ({
                         onClick={() => setRevealedRate((current) => (current === card.label ? null : card.label))}
                         type='button'
                     >
-                        {content}
+                        <div className={`${styles.flipInner} ${isRevealed ? styles.flipped : ''}`}>
+                            <div aria-hidden={isRevealed} className={styles.flipFace}>
+                                {frontContent}
+                            </div>
+                            <div aria-hidden={!isRevealed} className={`${styles.flipFace} ${styles.flipBack}`}>
+                                {renderContent(<p className={styles.explanation}>{card.explanation}</p>)}
+                            </div>
+                        </div>
                     </button>
                 ) : (
                     <div className={styles.card} key={card.label}>
-                        {content}
+                        {frontContent}
                     </div>
                 );
             })}

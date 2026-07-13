@@ -116,9 +116,7 @@ describe('AddInterview page', () => {
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() =>
-            expect(
-                screen.getByText('Please enter a date and location before adding an interview.')
-            ).toBeInTheDocument()
+            expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument()
         );
         expect(fetch).not.toHaveBeenCalled();
     });

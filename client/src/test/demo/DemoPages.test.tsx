@@ -355,9 +355,7 @@ describe('demo page interactions', () => {
         expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
 
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
-        expect(
-            screen.getByText('Please enter a date and location before adding an interview.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument();
 
         fireEvent.change(screen.getByLabelText(/interview date/i), {
             target: { value: toDateTimeString(daysFromNow(new Date(), 4, 10)) },

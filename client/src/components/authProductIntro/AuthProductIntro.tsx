@@ -9,15 +9,11 @@ import ProductPreviewCarousel from './ProductPreviewCarousel';
 const productBenefits = [
     {
         icon: 'activeApplications',
-        text: 'Record each application and update its status',
+        text: 'Add jobs as you apply and update them when things change',
     },
     {
         icon: 'interview',
-        text: 'Link interviews to the relevant job',
-    },
-    {
-        icon: 'dashboard',
-        text: 'Review your applications and upcoming interviews at a glance',
+        text: 'Keep interview details attached to the right application',
     },
 ] as const;
 
@@ -105,10 +101,10 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
                 inert={isFocusedMode ? true : undefined}
             >
                 <div className={styles.productCopy}>
-                    <h1 id='auth-product-heading'>Keep your job search organised</h1>
+                    <h1 id='auth-product-heading'>Your job search, without the spreadsheet mess</h1>
                     <p className={styles.description}>
-                        Save your applications, interview details and status updates in one place, so you always know
-                        what you have applied for and what comes next.
+                        Keep your applications, interviews and status updates together, so you can quickly see what is
+                        moving and what needs your attention.
                     </p>
                     <ul className={styles.benefitList}>
                         {productBenefits.map((benefit) => (

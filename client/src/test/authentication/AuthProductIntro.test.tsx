@@ -49,15 +49,19 @@ describe('AuthProductIntro demo action', () => {
         expect(demoLinks[0]).toHaveAttribute('href', routes.demoViewApplications);
         expect(demoLinks[0]).toHaveAttribute('target', '_blank');
         expect(demoLinks[0]).toHaveAttribute('rel', 'noreferrer');
-        expect(screen.getByRole('heading', { name: 'Keep your job search organised' })).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Your job search, without the spreadsheet mess' })
+        ).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Save your applications, interview details and status updates in one place, so you always know what you have applied for and what comes next.'
+                'Keep your applications, interviews and status updates together, so you can quickly see what is moving and what needs your attention.'
             )
         ).toBeInTheDocument();
-        expect(screen.getByText('Record each application and update its status')).toBeInTheDocument();
-        expect(screen.getByText('Link interviews to the relevant job')).toBeInTheDocument();
-        expect(screen.getByText('Review your applications and upcoming interviews at a glance')).toBeInTheDocument();
+        expect(screen.getByText('Add jobs as you apply and update them when things change')).toBeInTheDocument();
+        expect(screen.getByText('Keep interview details attached to the right application')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Review your applications and upcoming interviews at a glance')
+        ).not.toBeInTheDocument();
         expect(
             screen.getByText('No account needed. The demo uses sample data and resets when the page is refreshed.')
         ).toBeInTheDocument();
@@ -87,9 +91,9 @@ describe('AuthProductIntro demo action', () => {
         await userEvent.click(screen.getByLabelText('Email', { exact: true }));
 
         expect(screen.queryByRole('link', { name: /explore demo/i })).not.toBeInTheDocument();
-        expect(screen.getByLabelText('Keep your job search organised', { selector: 'section' })).toHaveAttribute(
-            'inert'
-        );
+        expect(
+            screen.getByLabelText('Your job search, without the spreadsheet mess', { selector: 'section' })
+        ).toHaveAttribute('inert');
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
 
         await userEvent.click(screen.getByRole('button', { name: /why use job tracker/i }));

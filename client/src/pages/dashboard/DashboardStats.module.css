@@ -26,6 +26,8 @@
 
 .interactiveCard {
     cursor: pointer;
+    padding: 0;
+    perspective: 800px;
 }
 
 .interactiveCard:hover {
@@ -35,6 +37,36 @@
 .interactiveCard:focus-visible {
     outline: 3px solid var(--colorPrimaryFocusOutline);
     outline-offset: 3px;
+}
+
+.flipInner {
+    position: relative;
+    width: 100%;
+    min-height: 144px;
+    transform-style: preserve-3d;
+    transition: transform 400ms ease;
+}
+
+.flipped {
+    transform: rotateY(180deg);
+}
+
+.flipFace {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 12px;
+    box-sizing: border-box;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.flipBack {
+    transform: rotateY(180deg);
 }
 
 .icon {
@@ -118,6 +150,10 @@
         gap: 6px;
     }
 
+    .flipInner {
+        min-height: 120px;
+    }
+
     .explanation {
         font-size: 0.6875rem;
     }
@@ -126,5 +162,11 @@
         font-size: 0.6875rem;
         letter-spacing: 0.35px;
         line-height: 1.35;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .flipInner {
+        transition: none;
     }
 }
