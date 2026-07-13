@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import PrimaryButton from '../../../../../components/button/PrimaryButton';
+import Icon from '../../../../../components/icon/Icon';
 import formatDate from '../../../../../helper/dateFormatter';
 import { FIELD_MAX_LENGTHS } from '../../../../../helper/formValidation';
 import { JOB_STATUS_SORT_ORDER, type JobApplication, type JobStatus } from '../../../../application/models';
@@ -31,7 +32,7 @@ const DemoApplicationBoardCard = ({
     onStatusChange,
     upcomingInterviewCount,
 }: DemoApplicationBoardCardProps) => {
-    const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    const { attributes, isDragging, listeners, setActivatorNodeRef, setNodeRef, transform } = useDraggable({
         data: { jobId: application.job_id },
         id: String(application.job_id),
     });
@@ -55,14 +56,28 @@ const DemoApplicationBoardCard = ({
             id={String(application.job_id)}
             ref={setNodeRef}
             style={cardStyle}
-            {...listeners}
-            {...attributes}
         >
             <div className={styles.cardHeader}>
                 <h3>{application.company_name}</h3>
-                <span className={`${styles.statusBadge} ${getApplicationBoardStatusClassName(application.job_status)}`}>
-                    {application.job_status}
-                </span>
+                <div className={styles.cardHeaderControls}>
+                    <span
+                        className={`${styles.statusBadge} ${getApplicationBoardStatusClassName(
+                            application.job_status
+                        )}`}
+                    >
+                        {application.job_status}
+                    </span>
+                    <button
+                        aria-label={`Drag ${application.company_name} ${application.job_title} application`}
+                        className={styles.dragHandle}
+                        ref={setActivatorNodeRef}
+                        type='button'
+                        {...listeners}
+                        {...attributes}
+                    >
+                        <Icon name='dragHandle' />
+                    </button>
+                </div>
             </div>
 
             <p className={styles.jobTitle}>{application.job_title}</p>

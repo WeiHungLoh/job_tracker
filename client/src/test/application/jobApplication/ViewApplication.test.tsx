@@ -103,8 +103,9 @@ vi.mock('@dnd-kit/core', () => ({
     KeyboardSensor: vi.fn(),
     PointerSensor: vi.fn(),
     useDraggable: () => ({
-        attributes: {},
+        attributes: { role: 'button', tabIndex: 0 },
         listeners: {},
+        setActivatorNodeRef: vi.fn(),
         setNodeRef: vi.fn(),
         transform: null,
     }),
@@ -826,6 +827,7 @@ describe('Job application viewing flow', () => {
         await screen.findByText(/ABC Pte Ltd/i);
         await userEvent.click(screen.getByRole('button', { name: 'Board' }));
         fireEvent.click(screen.getByTestId('mock-drag-application-1-to-interview'));
+        expect(screen.getByRole('button', { name: 'Drag ABC Pte Ltd Software Engineer application' })).toBeDisabled();
         fireEvent.click(screen.getByTestId('mock-drag-application-1-to-interview'));
 
         expect(statusUpdateRequestCount(1)).toBe(1);
@@ -878,6 +880,10 @@ describe('Job application viewing flow', () => {
         await screen.findByText(/ABC Pte Ltd/i);
         await userEvent.click(screen.getByRole('button', { name: 'Board' }));
 
+        const card = screen.getByRole('article', { name: 'ABC Pte Ltd Software Engineer' });
+        expect(
+            within(card).getByRole('button', { name: 'Drag ABC Pte Ltd Software Engineer application' })
+        ).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Add your notes here')).not.toBeVisible();
         await userEvent.click(screen.getByText('Actions'));
 

@@ -50,6 +50,14 @@
     composes: cardHeader from '../../../application/applicationBoard/ApplicationBoard.module.css';
 }
 
+.cardHeaderControls {
+    composes: cardHeaderControls from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
+.dragHandle {
+    composes: dragHandle from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
 .jobTitle {
     composes: jobTitle from '../../../application/applicationBoard/ApplicationBoard.module.css';
 }

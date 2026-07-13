@@ -1,12 +1,13 @@
 import { useDraggable } from '@dnd-kit/core';
+import BoardCardActions from '../../../../components/boardCardActions/BoardCardActions';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
+import Icon from '../../../../components/icon/Icon';
 import formatDate from '../../../../helper/dateFormatter';
 import { FIELD_MAX_LENGTHS } from '../../../../helper/formValidation';
 import { JOB_STATUS_SORT_ORDER, type JobStatus } from '../../models';
 import { getApplicationBoardStatusClassName } from '../../applicationBoard/statusClassNames';
 import type { ApplicationBoardCardProps } from './models';
 import styles from '../../applicationBoard/ApplicationBoard.module.css';
-import BoardCardActions from '../../../../components/boardCardActions/BoardCardActions';
 
 const ApplicationBoardCard = ({
     application,
@@ -21,7 +22,7 @@ const ApplicationBoardCard = ({
     onStatusChange,
     upcomingInterviewCount,
 }: ApplicationBoardCardProps) => {
-    const { attributes, isDragging, listeners, setNodeRef, transform } = useDraggable({
+    const { attributes, isDragging, listeners, setActivatorNodeRef, setNodeRef, transform } = useDraggable({
         data: { jobId: application.job_id },
         disabled: isUpdatingStatus,
         id: String(application.job_id),
@@ -52,14 +53,29 @@ const ApplicationBoardCard = ({
             id={String(application.job_id)}
             ref={setNodeRef}
             style={cardStyle}
-            {...listeners}
-            {...attributes}
         >
             <div className={styles.cardHeader}>
                 <h3>{application.company_name}</h3>
-                <span className={`${styles.statusBadge} ${getApplicationBoardStatusClassName(application.job_status)}`}>
-                    {application.job_status}
-                </span>
+                <div className={styles.cardHeaderControls}>
+                    <span
+                        className={`${styles.statusBadge} ${getApplicationBoardStatusClassName(
+                            application.job_status
+                        )}`}
+                    >
+                        {application.job_status}
+                    </span>
+                    <button
+                        aria-label={`Drag ${application.company_name} ${application.job_title} application`}
+                        className={styles.dragHandle}
+                        disabled={isUpdatingStatus}
+                        ref={setActivatorNodeRef}
+                        type='button'
+                        {...listeners}
+                        {...attributes}
+                    >
+                        <Icon name='dragHandle' />
+                    </button>
+                </div>
             </div>
 
             <p className={styles.jobTitle}>{application.job_title}</p>

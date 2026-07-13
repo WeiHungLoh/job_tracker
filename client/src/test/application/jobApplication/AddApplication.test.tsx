@@ -30,8 +30,44 @@ describe('User add application flow', () => {
         userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
-        await waitFor(() => expect(fetch).toHaveBeenCalled());
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
         await waitFor(() => expect(screen.getByTestId('toast')).toBeInTheDocument());
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+    });
+
+    test('submits once when Enter is pressed in a form field', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added a job application!',
+        });
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner{enter}');
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    });
+
+    test('View Job Applications does not submit the form', () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        const viewApplicationsButton = screen.getByRole('button', { name: 'View Job Applications' });
+        expect(viewApplicationsButton).toHaveAttribute('type', 'button');
+        userEvent.click(viewApplicationsButton);
+
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     test('shows an error toast when company name is not filled in', async () => {

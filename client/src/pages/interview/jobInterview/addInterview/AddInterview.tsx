@@ -1,7 +1,7 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../../application/models';
 import type { Location } from 'react-router-dom';
-import type { MouseEvent } from 'react';
+import type { FormEvent } from 'react';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../helper/dateFormatter';
 import { routes } from '../../../../routes';
@@ -36,7 +36,7 @@ const AddInterview = () => {
         setNotes('');
     };
 
-    const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+    const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const validation = validateInterviewForm({
@@ -73,7 +73,7 @@ const AddInterview = () => {
     };
 
     return (
-        <div className={styles.addInterview}>
+        <form className={styles.addInterview} noValidate onSubmit={handleAdd}>
             <div className={styles.context}>
                 <h2>You are adding an interview for:</h2>
                 <p>
@@ -123,17 +123,21 @@ const AddInterview = () => {
             />
 
             <div className={styles.submitButton}>
-                <PrimaryButton isLoading={isLoading} variant='compact' data-testid='add-interview' onClick={handleAdd}>
+                <PrimaryButton isLoading={isLoading} type='submit' variant='compact' data-testid='add-interview'>
                     Add Interview
                 </PrimaryButton>
-                <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewInterviews)}>
+                <PrimaryButton type='button' variant='secondary' onClick={() => navigate(routes.viewInterviews)}>
                     View Interviews
                 </PrimaryButton>
-                <PrimaryButton variant='secondary' onClick={() => navigate(`${routes.viewApplications}#${app.job_id}`)}>
+                <PrimaryButton
+                    type='button'
+                    variant='secondary'
+                    onClick={() => navigate(`${routes.viewApplications}#${app.job_id}`)}
+                >
                     Back
                 </PrimaryButton>
             </div>
-        </div>
+        </form>
     );
 };
 

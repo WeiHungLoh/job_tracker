@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react';
+import type { FormEvent } from 'react';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../helper/dateFormatter';
 import { routes } from '../../../../routes';
@@ -33,7 +33,7 @@ const AddApplication = () => {
         setJobURL('');
     };
 
-    const handleAdd = async (event: MouseEvent<HTMLButtonElement>) => {
+    const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const validation = validateApplicationForm({
@@ -71,7 +71,7 @@ const AddApplication = () => {
     };
 
     return (
-        <div className={styles.addApplication}>
+        <form className={styles.addApplication} noValidate onSubmit={handleAdd}>
             <label htmlFor='company-name'>Company Name</label>
             <input
                 id='company-name'
@@ -127,14 +127,14 @@ const AddApplication = () => {
             />
 
             <div className={styles.submitButton}>
-                <PrimaryButton isLoading={isLoading} variant='compact' onClick={handleAdd}>
+                <PrimaryButton isLoading={isLoading} type='submit' variant='compact'>
                     Add Job Application
                 </PrimaryButton>
-                <PrimaryButton variant='secondary' onClick={() => navigate(routes.viewApplications)}>
+                <PrimaryButton type='button' variant='secondary' onClick={() => navigate(routes.viewApplications)}>
                     View Job Applications
                 </PrimaryButton>
             </div>
-        </div>
+        </form>
     );
 };
 

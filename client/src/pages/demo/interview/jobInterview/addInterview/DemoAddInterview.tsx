@@ -1,7 +1,7 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../../../application/models';
 import type { Location } from 'react-router-dom';
-import type { MouseEvent } from 'react';
+import type { FormEvent } from 'react';
 import PrimaryButton from '../../../../../components/button/PrimaryButton';
 import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../../helper/dateFormatter';
 import { DEMO_INTERVIEW_CREATED_MESSAGE } from '../../../state/demoMessages';
@@ -35,7 +35,7 @@ const DemoAddInterview = () => {
         setNotes('');
     };
 
-    const handleAdd = (event: MouseEvent<HTMLButtonElement>) => {
+    const handleAdd = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const validation = validateInterviewForm({
@@ -68,7 +68,7 @@ const DemoAddInterview = () => {
     };
 
     return (
-        <div className={styles.addInterview}>
+        <form className={styles.addInterview} noValidate onSubmit={handleAdd}>
             <div className={styles.context}>
                 <h2>You are adding an interview for:</h2>
                 <p>
@@ -118,20 +118,21 @@ const DemoAddInterview = () => {
             />
 
             <div className={styles.submitButton}>
-                <PrimaryButton variant='compact' data-testid='add-interview' onClick={handleAdd}>
+                <PrimaryButton type='submit' variant='compact' data-testid='add-interview'>
                     Add Interview
                 </PrimaryButton>
-                <PrimaryButton variant='secondary' onClick={() => navigate(routes.demoViewInterviews)}>
+                <PrimaryButton type='button' variant='secondary' onClick={() => navigate(routes.demoViewInterviews)}>
                     View Interviews
                 </PrimaryButton>
                 <PrimaryButton
+                    type='button'
                     variant='secondary'
                     onClick={() => navigate(`${routes.demoViewApplications}#${app.job_id}`)}
                 >
                     Back
                 </PrimaryButton>
             </div>
-        </div>
+        </form>
     );
 };
 

@@ -11,6 +11,7 @@ export type IconName =
     | 'error'
     | 'dashboard'
     | 'delete'
+    | 'dragHandle'
     | 'email'
     | 'export'
     | 'guide'

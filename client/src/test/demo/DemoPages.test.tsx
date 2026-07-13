@@ -41,12 +41,23 @@ const DemoPreferenceBridge = ({ children }: { children: ReactNode }) => {
 type DemoInitialEntry = string | { pathname: string; state?: unknown };
 
 const renderDemo = (children: ReactNode, initialEntries: DemoInitialEntry[] = [routes.demoViewApplications]) => {
-    render(
+    return render(
         <MemoryRouter initialEntries={initialEntries}>
             <DemoProvider>
                 <DemoPreferenceBridge>{children}</DemoPreferenceBridge>
             </DemoProvider>
         </MemoryRouter>
+    );
+};
+
+const DemoRecordCounts = () => {
+    const { state } = useDemo();
+
+    return (
+        <>
+            <output data-testid='demo-application-count'>{state.applications.length}</output>
+            <output data-testid='demo-interview-count'>{state.interviews.length}</output>
+        </>
     );
 };
 
@@ -131,7 +142,14 @@ describe('demo page interactions', () => {
         renderDemo(<DemoViewApplication />);
 
         await userEvent.click(screen.getByRole('button', { name: 'Board' }));
-        expect(screen.getByRole('region', { name: 'Application board' })).toBeInTheDocument();
+        const board = screen.getByRole('region', { name: 'Application board' });
+        const statusSelect = within(board).getByRole('combobox', { name: /Move HorizonAI Labs to status/i });
+        const card = statusSelect.closest('article');
+        if (!card) {
+            throw new Error('Expected HorizonAI Labs board card.');
+        }
+        expect(within(card).getByRole('button', { name: /Drag HorizonAI Labs .+ application/ })).toBeInTheDocument();
+        expect(statusSelect).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText(/Move HorizonAI Labs to status/i), {
             target: { value: 'Rejected' },
         });
@@ -204,7 +222,14 @@ describe('demo page interactions', () => {
     });
 
     test('validates and creates demo applications', async () => {
-        renderDemo(<DemoAddApplication />, [routes.demoAddApplication]);
+        renderDemo(
+            <>
+                <DemoAddApplication />
+                <DemoRecordCounts />
+            </>,
+            [routes.demoAddApplication]
+        );
+        const initialApplicationCount = Number(screen.getByTestId('demo-application-count').textContent);
 
         expect(screen.queryByRole('heading', { name: 'Add Job Application' })).not.toBeInTheDocument();
         await userEvent.type(screen.getByLabelText(/company name/i), 'Demo Form Company');
@@ -216,10 +241,28 @@ describe('demo page interactions', () => {
         fireEvent.change(screen.getByLabelText(/job posting url/i), {
             target: { value: 'https://jobs.example.com/demo-form-engineer' },
         });
-        await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
+        await userEvent.type(screen.getByLabelText(/job title/i), '{enter}');
         expect(screen.getByText('Successfully added a job application!')).toBeInTheDocument();
+        expect(screen.getByTestId('demo-application-count')).toHaveTextContent(String(initialApplicationCount + 1));
         expect(screen.getByLabelText(/company name/i)).toHaveValue('');
         expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+    });
+
+    test('demo application navigation does not create a record', async () => {
+        renderDemo(
+            <>
+                <DemoAddApplication />
+                <DemoRecordCounts />
+            </>,
+            [routes.demoAddApplication]
+        );
+        const initialApplicationCount = screen.getByTestId('demo-application-count').textContent;
+        const viewApplicationsButton = screen.getByRole('button', { name: 'View Job Applications' });
+
+        expect(viewApplicationsButton).toHaveAttribute('type', 'button');
+        await userEvent.click(viewApplicationsButton);
+
+        expect(screen.getByTestId('demo-application-count')).toHaveTextContent(initialApplicationCount || '');
     });
 
     test('validates and creates demo interviews', async () => {
@@ -228,7 +271,14 @@ describe('demo page interactions', () => {
             throw new Error('Expected demo application fixture.');
         }
 
-        renderDemo(<DemoAddInterview />, [{ pathname: routes.demoAddInterview, state: { app } }]);
+        renderDemo(
+            <>
+                <DemoAddInterview />
+                <DemoRecordCounts />
+            </>,
+            [{ pathname: routes.demoAddInterview, state: { app } }]
+        );
+        const initialInterviewCount = Number(screen.getByTestId('demo-interview-count').textContent);
 
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
         expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument();
@@ -238,11 +288,43 @@ describe('demo page interactions', () => {
         });
         await userEvent.type(screen.getByLabelText(/interview location/i), 'Zoom');
         await userEvent.type(screen.getByLabelText(/interview type/i), 'Technical interview');
-        await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
+        await userEvent.type(screen.getByLabelText(/interview location/i), '{enter}');
 
         expect(screen.getByText('Successfully added an interview!')).toBeInTheDocument();
+        expect(screen.getByTestId('demo-interview-count')).toHaveTextContent(String(initialInterviewCount + 1));
         expect(screen.getByLabelText(/interview location/i)).toHaveValue('');
         expect(screen.getByLabelText(/interview type/i)).toHaveValue('');
+    });
+
+    test('demo interview navigation does not create a record', async () => {
+        const app = createDemoInitialState().applications.find((application) => application.job_id === 107);
+        if (!app) {
+            throw new Error('Expected demo application fixture.');
+        }
+
+        const renderInterviewForm = () =>
+            renderDemo(
+                <>
+                    <DemoAddInterview />
+                    <DemoRecordCounts />
+                </>,
+                [{ pathname: routes.demoAddInterview, state: { app } }]
+            );
+
+        const firstRender = renderInterviewForm();
+        const initialInterviewCount = screen.getByTestId('demo-interview-count').textContent;
+        const viewInterviewsButton = screen.getByRole('button', { name: 'View Interviews' });
+        const backButton = screen.getByRole('button', { name: 'Back' });
+
+        expect(viewInterviewsButton).toHaveAttribute('type', 'button');
+        expect(backButton).toHaveAttribute('type', 'button');
+        await userEvent.click(viewInterviewsButton);
+        expect(screen.getByTestId('demo-interview-count')).toHaveTextContent(initialInterviewCount || '');
+
+        firstRender.unmount();
+        renderInterviewForm();
+        await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+        expect(screen.getByTestId('demo-interview-count')).toHaveTextContent(initialInterviewCount || '');
     });
 
     test('deletes interviews without success toasts', async () => {

@@ -45,7 +45,54 @@ describe('AddInterview page', () => {
         userEvent.type(screen.getByLabelText('Additional Notes (optional)'), '2nd round');
         userEvent.click(screen.getByTestId('add-interview'));
 
-        await waitFor(() => expect(fetch).toHaveBeenCalled());
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        await waitFor(() => {
+            expect(screen.getByLabelText('Interview Date')).toHaveValue('');
+            expect(screen.getByLabelText('Interview Location')).toHaveValue('');
+            expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('');
+            expect(screen.getByLabelText('Additional Notes (optional)')).toHaveValue('');
+        });
+    });
+
+    test('submits once when Enter is pressed in a form field', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 201,
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            text: async () => 'Successfully added an interview!',
+        });
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom{enter}');
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    });
+
+    test('View Interviews and Back do not submit the form', () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                    <Route path='/interview/view' element={<p>Interviews</p>} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        const viewInterviewsButton = screen.getByRole('button', { name: 'View Interviews' });
+        const backButton = screen.getByRole('button', { name: 'Back' });
+        expect(viewInterviewsButton).toHaveAttribute('type', 'button');
+        expect(backButton).toHaveAttribute('type', 'button');
+        userEvent.click(viewInterviewsButton);
+
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     test('rejects a whitespace-only interview location', async () => {
