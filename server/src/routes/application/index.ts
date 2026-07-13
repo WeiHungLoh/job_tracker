@@ -229,13 +229,17 @@ router.patch(
         }
 
         try {
-            const statusUpdated = await updateApplicationStatus(
+            const updateResult = await updateApplicationStatus(
                 req.body.editStatus,
                 req.body.jobStatus,
                 jobId,
                 req.user.id
             );
-            if (!statusUpdated) {
+            if (updateResult === 'active-interview') {
+                sendError(res, 409, 'A job application with an active interview cannot be moved to Applied.');
+                return;
+            }
+            if (updateResult === 'not-found') {
                 sendError(res, 404, 'Job application not found.');
                 return;
             }

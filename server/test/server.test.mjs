@@ -380,6 +380,63 @@ test('requires edit mode and job status in the atomic status update', async () =
     });
 });
 
+test('returns 409 when moving an application with an active interview to Applied', async () => {
+    const originalQuery = pool.query;
+    let query;
+    pool.query = async (sql, values) => {
+        query = { sql: String(sql), values };
+        return {
+            rows: [{ application_exists: true, application_updated: false }],
+        };
+    };
+
+    try {
+        const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+        const response = await fetch(`${baseUrl}/job-applications/1/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Cookie: `access_token=${token}`,
+            },
+            body: JSON.stringify({ editStatus: false, jobStatus: 'Applied' }),
+        });
+
+        assert.equal(response.status, 409);
+        assert.deepEqual(await response.json(), {
+            message: 'A job application with an active interview cannot be moved to Applied.',
+        });
+        assert.deepEqual(query.values, [false, 'Applied', 1, TEST_USER.id]);
+        assert.match(query.sql, /\$2::text <> 'Applied'/);
+        assert.match(query.sql, /job_applications\.job_status = 'Applied'/);
+        assert.match(query.sql, /interviews\.is_archived = false/);
+    } finally {
+        pool.query = originalQuery;
+    }
+});
+
+test('updates an application status when there is no active interview conflict', async () => {
+    const originalQuery = pool.query;
+    pool.query = async () => ({
+        rows: [{ application_exists: true, application_updated: true }],
+    });
+
+    try {
+        const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+        const response = await fetch(`${baseUrl}/job-applications/1/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Cookie: `access_token=${token}`,
+            },
+            body: JSON.stringify({ editStatus: false, jobStatus: 'Interview' }),
+        });
+
+        assert.equal(response.status, 204);
+    } finally {
+        pool.query = originalQuery;
+    }
+});
+
 test('rejects future application dates before accessing the database', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/job-applications`, {

@@ -2,6 +2,8 @@ import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount 
 import { pool } from '../connectDB.js';
 import { hasAffectedRows, JOB_STATUS_SORT_ORDER } from './shared.js';
 
+export type UpdateApplicationStatusResult = 'active-interview' | 'not-found' | 'updated';
+
 export const insertJobApplication = async (
     userId: number,
     companyName: string,
@@ -108,12 +110,39 @@ export const updateApplicationStatus = async (
     jobStatus: JobStatus,
     jobId: number,
     userId: number
-): Promise<boolean> => {
-    const result = await pool.query(
-        `UPDATE job_applications
-         SET edit_status = $1, job_status = $2
-         WHERE job_id = $3 AND user_id = $4 AND is_archived = false`,
+): Promise<UpdateApplicationStatusResult> => {
+    const result = await pool.query<{ application_exists: boolean; application_updated: boolean }>(
+        `WITH application AS (
+            SELECT job_id
+            FROM job_applications
+            WHERE job_id = $3 AND user_id = $4 AND is_archived = false
+        ),
+        updated_application AS (
+            UPDATE job_applications
+            SET edit_status = $1, job_status = $2
+            FROM application
+            WHERE job_applications.job_id = application.job_id
+                AND (
+                    $2::text <> 'Applied'
+                    OR job_applications.job_status = 'Applied'
+                    OR NOT EXISTS (
+                        SELECT 1
+                        FROM interviews
+                        WHERE interviews.job_id = job_applications.job_id
+                            AND interviews.user_id = $4
+                            AND interviews.is_archived = false
+                    )
+                )
+            RETURNING 1
+        )
+        SELECT
+            EXISTS(SELECT 1 FROM application) AS application_exists,
+            EXISTS(SELECT 1 FROM updated_application) AS application_updated`,
         [editStatus, jobStatus, jobId, userId]
     );
-    return hasAffectedRows(result);
+
+    if (result.rows[0]?.application_updated) {
+        return 'updated';
+    }
+    return result.rows[0]?.application_exists ? 'active-interview' : 'not-found';
 };
