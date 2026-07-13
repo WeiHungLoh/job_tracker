@@ -1,3 +1,4 @@
+import BoardCardActions from '../../../../../components/boardCardActions/BoardCardActions';
 import PrimaryButton from '../../../../../components/button/PrimaryButton';
 import formatDate from '../../../../../helper/dateFormatter';
 import type { ArchivedJobApplication } from '../../../../application/models';
@@ -43,25 +44,9 @@ const DemoArchivedApplicationBoardCard = ({
             <p className={styles.jobTitle}>{application.job_title}</p>
             <p className={styles.meta}>{formattedApplicationDate.formattedDay}</p>
 
-            <details className={styles.actions}>
-                <summary>Actions</summary>
-                <div className={styles.actionPanel}>
-                    {hasActions && (
-                        <>
-                            {application.job_posting_url !== '' && (
-                                <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
-                                    Open job posting
-                                </a>
-                            )}
-                            {showNotes && (
-                                <label className={`${styles.notesField} ${styles.readOnlyNotes}`}>
-                                    <span>Notes</span>
-                                    <textarea disabled readOnly value={notesValue} />
-                                </label>
-                            )}
-                        </>
-                    )}
-                    <div className={styles.actionButtons}>
+            <BoardCardActions
+                actions={
+                    <>
                         <PrimaryButton
                             isLoading={isRestoring}
                             onClick={() => onRestore(application.archived_job_id)}
@@ -78,9 +63,25 @@ const DemoArchivedApplicationBoardCard = ({
                         >
                             Delete
                         </PrimaryButton>
-                    </div>
-                </div>
-            </details>
+                    </>
+                }
+            >
+                {hasActions && (
+                    <>
+                        {application.job_posting_url !== '' && (
+                            <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
+                                Open job posting
+                            </a>
+                        )}
+                        {showNotes && (
+                            <label className={`${styles.notesField} ${styles.readOnlyNotes}`}>
+                                <span>Notes</span>
+                                <textarea disabled readOnly value={notesValue} />
+                            </label>
+                        )}
+                    </>
+                )}
+            </BoardCardActions>
         </article>
     );
 };

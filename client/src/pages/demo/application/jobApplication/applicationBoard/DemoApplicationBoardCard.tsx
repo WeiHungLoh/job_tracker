@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+import BoardCardActions from '../../../../../components/boardCardActions/BoardCardActions';
 import PrimaryButton from '../../../../../components/button/PrimaryButton';
 import Icon from '../../../../../components/icon/Icon';
 import formatDate from '../../../../../helper/dateFormatter';
@@ -104,24 +105,9 @@ const DemoApplicationBoardCard = ({
                 </select>
             </label>
 
-            <details className={styles.actions}>
-                <summary>Actions</summary>
-                <div className={styles.actionPanel}>
-                    {application.job_posting_url !== '' && (
-                        <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
-                            Open job posting
-                        </a>
-                    )}
-                    <label className={styles.notesField}>
-                        <span>Edit notes</span>
-                        <textarea
-                            maxLength={FIELD_MAX_LENGTHS.notes}
-                            onChange={(event) => onEditNotes(application.job_id, event.target.value)}
-                            placeholder='Add your notes here'
-                            value={note}
-                        />
-                    </label>
-                    <div className={styles.actionButtons}>
+            <BoardCardActions
+                actions={
+                    <>
                         <PrimaryButton
                             isLoading={isArchiving}
                             onClick={() => onArchive(application.job_id)}
@@ -138,9 +124,24 @@ const DemoApplicationBoardCard = ({
                         >
                             Delete
                         </PrimaryButton>
-                    </div>
-                </div>
-            </details>
+                    </>
+                }
+            >
+                {application.job_posting_url !== '' && (
+                    <a href={application.job_posting_url} rel='noreferrer noopener' target='_blank'>
+                        Open job posting
+                    </a>
+                )}
+                <label className={styles.notesField}>
+                    <span>Edit notes</span>
+                    <textarea
+                        maxLength={FIELD_MAX_LENGTHS.notes}
+                        onChange={(event) => onEditNotes(application.job_id, event.target.value)}
+                        placeholder='Add your notes here'
+                        value={note}
+                    />
+                </label>
+            </BoardCardActions>
         </article>
     );
 };
