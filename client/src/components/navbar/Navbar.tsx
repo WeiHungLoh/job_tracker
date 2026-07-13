@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import Icon from '../icon/Icon';
 import PrimaryButton from '../button/PrimaryButton';
 import { routes } from '../../routes';
@@ -27,19 +27,19 @@ const Navbar = () => {
     const location = useLocation();
     const currentLocation = location.pathname;
     const navigate = useNavigate();
-    const [archived, setArchived] = useState<boolean>(() => ARCHIVED_LOCATIONS.includes(currentLocation));
+    const archived = ARCHIVED_LOCATIONS.includes(currentLocation);
     const activeLinkRef = useRef<HTMLAnchorElement>(null);
     const api = useJobTrackerAPI();
     const { showErrorToast } = useToast();
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
-        setArchived(ARCHIVED_LOCATIONS.includes(currentLocation));
-    }, [currentLocation]);
-
-    useEffect(() => {
         activeLinkRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     }, [archived, currentLocation]);
+
+    const handleArchiveStatusToggle = () => {
+        navigate(archived ? routes.viewApplications : routes.archivedApplications);
+    };
 
     const handleSignOut = async () => {
         try {
@@ -79,7 +79,7 @@ const Navbar = () => {
                     <PrimaryButton
                         aria-label={archived ? 'Show Active' : 'Show Archived'}
                         className={styles.archiveStatus}
-                        onClick={() => setArchived((isArchived) => !isArchived)}
+                        onClick={handleArchiveStatusToggle}
                         type='button'
                         variant='navigation'
                     >

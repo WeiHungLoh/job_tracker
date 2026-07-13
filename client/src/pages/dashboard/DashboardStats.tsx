@@ -28,7 +28,7 @@ const DashboardStats = ({ statusCounts, interviews, weeklyApplications, isLoadin
     const upcomingInterviews = getUpcomingInterviews(interviews).length;
 
     const cards = [
-        { icon: 'briefcase' as const, label: 'Total Applications', value: total },
+        { icon: 'briefcase' as const, label: 'Total Active Applications', value: total },
         { icon: 'activeApplications' as const, label: 'Applied This Week', value: applicationsThisWeek },
         { icon: 'interview' as const, label: 'Upcoming Interviews', value: upcomingInterviews },
         { icon: 'highlight' as const, label: 'Interview Rate', value: interviewRate },

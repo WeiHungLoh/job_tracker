@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { type MouseEvent, useEffect, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useRef } from 'react';
 import Icon from '../../../../components/icon/Icon';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
 import { routes } from '../../../../routes';
@@ -24,17 +24,17 @@ const DemoNavbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const currentLocation = location.pathname;
-    const [archived, setArchived] = useState<boolean>(() => ARCHIVED_LOCATIONS.includes(currentLocation));
+    const archived = ARCHIVED_LOCATIONS.includes(currentLocation);
     const activeLinkRef = useRef<HTMLAnchorElement>(null);
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
-        setArchived(ARCHIVED_LOCATIONS.includes(currentLocation));
-    }, [currentLocation]);
-
-    useEffect(() => {
         activeLinkRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     }, [archived, currentLocation]);
+
+    const handleArchiveStatusToggle = () => {
+        navigate(archived ? routes.demoViewApplications : routes.demoArchivedApplications);
+    };
 
     const handleExitDemo = (event: MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
@@ -73,7 +73,7 @@ const DemoNavbar = () => {
                     <PrimaryButton
                         aria-label={archived ? 'Show Active' : 'Show Archived'}
                         className={styles.archiveStatus}
-                        onClick={() => setArchived((isArchived) => !isArchived)}
+                        onClick={handleArchiveStatusToggle}
                         type='button'
                         variant='navigation'
                     >

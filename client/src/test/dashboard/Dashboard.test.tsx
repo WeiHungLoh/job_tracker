@@ -97,7 +97,7 @@ describe('Dashboard V2', () => {
             />
         );
 
-        expect(screen.getByText('Total Applications')).toBeInTheDocument();
+        expect(screen.getByText('Total Active Applications')).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Application Trend' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Upcoming Interviews' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Application Pipeline' })).toBeInTheDocument();

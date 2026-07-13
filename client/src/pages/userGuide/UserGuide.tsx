@@ -110,8 +110,9 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <h3>Navigation and reset</h3>
                 <p>
-                    Use <code>Show Archived</code> to switch the demo navigation between active and archived records.
-                    Use <code>Exit Demo</code> to return to sign in without logging out or verifying authentication.
+                    Use <code>Show Archived</code> to open archived applications and switch the demo navigation to
+                    archived records. Use <code>Show Active</code> to return to active applications. Use{' '}
+                    <code>Exit Demo</code> to return to sign in without logging out or verifying authentication.
                 </p>
             </>
         ),
@@ -248,8 +249,9 @@ const guideSections: readonly UserGuideSection[] = [
         content: (
             <>
                 <p>
-                    Select <code>Show Archived</code> to replace the active navigation links with archived applications
-                    and archived interviews. Select <code>Show Active</code> to return.
+                    Select <code>Show Archived</code> to open archived applications and replace the active navigation
+                    links with archived applications and archived interviews. Select <code>Show Active</code> to return
+                    to active job applications.
                 </p>
                 <ul>
                     <li>

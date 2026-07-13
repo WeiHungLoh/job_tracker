@@ -226,7 +226,7 @@ describe('App routing and authentication behavior', () => {
         });
     });
 
-    test('exposes the active page and keeps archive navigation separate from utility actions', async () => {
+    test('navigates between active and archived applications from the navbar toggle', async () => {
         renderRoute(routes.addApplication);
 
         await screen.findByLabelText(/company name/i);
@@ -234,11 +234,17 @@ describe('App routing and authentication behavior', () => {
         expect(screen.getByRole('link', { name: 'Add Job Application' })).toHaveAttribute('aria-current', 'page');
 
         await userEvent.click(screen.getByRole('button', { name: 'Show Archived' }));
-        expect(screen.getByRole('link', { name: 'View Archived Applications' })).toBeInTheDocument();
+        expect(await screen.findByRole('link', { name: 'View Archived Applications' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
         expect(screen.queryByRole('link', { name: 'Add Job Application' })).not.toBeInTheDocument();
 
         await userEvent.click(screen.getByRole('button', { name: 'Show Active' }));
-        expect(screen.getByRole('link', { name: 'Add Job Application' })).toHaveAttribute('aria-current', 'page');
+        expect(await screen.findByRole('link', { name: 'View Job Applications' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
     });
 
     test('labels the production theme action with the theme it will switch to', async () => {
@@ -398,6 +404,25 @@ describe('App routing and authentication behavior', () => {
 
         expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
         expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeInTheDocument();
+    });
+
+    test('navigates between active and archived demo applications from the navbar toggle', async () => {
+        renderRoute(routes.demoViewApplications);
+
+        expect(await screen.findByText(/HorizonAI Labs/i)).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Show Archived' }));
+
+        expect(await screen.findByRole('link', { name: 'View Archived Applications' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Show Active' }));
+        expect(await screen.findByRole('link', { name: 'View Job Applications' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     test('displays page 404 not found on unknown routes without checking authentication', () => {
