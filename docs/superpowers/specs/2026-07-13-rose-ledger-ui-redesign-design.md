@@ -22,14 +22,14 @@ The redesign should make the product feel:
 
 ### Rose Ledger
 
-Rose Ledger uses warm paper-like surfaces, dark editorial ink, restrained rose accents, soft tonal layering, and compact status markers. It retains the existing Quicksand typeface to avoid font-metric layout shifts and network changes. Typography improvements come from weight, spacing, hierarchy, and contrast rather than a font replacement.
+Rose Ledger uses warm paper-like surfaces, dark editorial ink, restrained rose accents, solid tonal layering, and compact status markers. It retains the existing Quicksand typeface to avoid font-metric layout shifts and network changes. Typography improvements come from weight, spacing, hierarchy, and contrast rather than a font replacement.
 
 The memorable visual signature is a paired palette:
 
--   **Porcelain Light:** warm off-white page atmosphere, near-white cards, charcoal text, deep rose actions, and restrained soft shadows.
--   **Warm Graphite Dark:** warm charcoal page atmosphere, graphite cards, pale text, luminous rose actions, and low-glare shadows.
+-   **Porcelain Light:** warm off-white page atmosphere, near-white cards, charcoal text, deep rose actions, and border-defined depth.
+-   **Warm Graphite Dark:** warm charcoal page atmosphere, graphite cards, pale text, luminous rose actions, and low-glare tonal separation.
 
-The interface may use subtle radial tonal gradients in page backgrounds, but it must not use purple gradients, glass-heavy effects, animated background decoration, or layout-breaking ornament.
+New backgrounds use solid colors only. The redesign must not add `linear-gradient()` or any other new background gradient. The existing public-page radial gradient remains unchanged to avoid unrelated behavior or flash-of-theme drift. The interface must not use purple gradients, glass-heavy effects, animated background decoration, or layout-breaking ornament.
 
 ### Core palette
 
@@ -77,18 +77,28 @@ The implementation must not:
 -   restructure pages or replace the established responsive layouts;
 -   change the order of product carousel slides or their theme-specific mapping.
 
+## Hard Visual Constraints
+
+-   Do not add any `linear-gradient()` declaration.
+-   Do not add any new background gradient. Preserve the existing public-page radial gradient exactly.
+-   Do not add any `box-shadow` declaration, shadow token, or shadow-based hover state.
+-   Preserve existing `box-shadow` declarations and existing shadow-token values exactly; this redesign neither expands nor removes unrelated current shadows.
+-   Keep `Quicksand` as the only application font and keep the existing loaded weights.
+-   Use the existing computed font sizes as the starting scale. Equivalent roles must share the same size and weight through their shared owner; intentionally smaller mobile variants remain at their established breakpoints.
+-   Keep existing layout-affecting gaps and margins unless two instances of the same shared component have drifted. Consistency changes belong in the shared component and must preserve its computed dimensions at every current breakpoint.
+-   Use solid surface colors, border contrast, font weight, and existing radii to create hierarchy.
+
 ## Implementation Architecture
 
 ### 1. Theme-token layer
 
 `client/src/index.css` remains the visual source of truth. Existing light and dark tokens will be refined, and a small number of semantic tokens will be added for:
 
--   atmospheric page backgrounds;
--   card and elevated-surface shadows;
+-   solid page backgrounds;
 -   strong and subtle borders;
 -   filled-control foregrounds;
 -   per-status foregrounds;
--   hover/elevation states;
+-   hover and selected surface states;
 -   note surfaces and scrollbar cues.
 
 Every new semantic token must be defined in both `[data-theme='light']` and `[data-theme='dark']`. Native browser controls will receive the matching `color-scheme`. The existing hard-coded WebKit autofill handling must remain valid in both themes.
@@ -254,15 +264,15 @@ Preserve the auth focused-mode transforms, fixed-page handling, carousel dimensi
 
 ### Navigation
 
-Use a warm translucent-looking surface without relying on backdrop-filter for correctness. Strengthen active-route contrast, keep the brand mark recognizable, and use subtle elevation on utility controls. Do not make the navbar sticky or change its grid.
+Use a warm solid surface with clear border separation. Strengthen active-route contrast, keep the brand mark recognizable, and use tonal changes on utility controls. Do not add shadows, make the navbar sticky, or change its grid.
 
 ### Cards and panels
 
-Unify flat List cards, dashboard cards, Board cards, auth cards, and guide panels through shared border/shadow relationships. Preserve their existing padding and dimensions. Use status-color accents as meaning, not decoration.
+Unify flat List cards, dashboard cards, Board cards, auth cards, and guide panels through shared solid-surface and border relationships. Preserve their existing padding, dimensions, and existing shadows exactly. Do not add shadows. Use status-color accents as meaning, not decoration.
 
 ### Buttons and controls
 
-Complete the shared button visual contract with consistent weight, line height, focus, disabled treatment, and hover elevation. Preserve every variant and size. Destructive filled buttons and destructive menu text keep separate contrast tokens.
+Complete the shared button visual contract with consistent weight, line height, focus, disabled treatment, and hover fill/border treatment. Preserve every variant and size. Do not add shadows. Destructive filled buttons and destructive menu text keep separate contrast tokens.
 
 ### Forms
 
@@ -274,7 +284,7 @@ Move toward compact pill geometry while preserving text, status mapping, and lay
 
 ### Motion
 
-Use short CSS transitions for hover elevation, active fills, and caret rotation. Do not add page-load choreography or looping motion. Every new transition must be disabled under `prefers-reduced-motion`.
+Use short CSS transitions for hover fills, border colors, active fills, and caret rotation. Do not add shadow animation, page-load choreography, or looping motion. Every new transition must be disabled under `prefers-reduced-motion`.
 
 ## Data Flow, Errors, and State
 
@@ -325,6 +335,8 @@ git status --short --branch
 
 Add a narrow CSS contract test for new paired-theme semantic tokens and the visual invariants that cannot be allowed to disappear accidentally. Existing behavior tests remain the primary guard for controls, routing, demo state, DnD, filters, sorting, notes, carousel behavior, and dashboard navigation.
 
+The CSS contract test must also fail if the redesign introduces `linear-gradient(` or a new `box-shadow:` declaration in any touched stylesheet. The pre-change inventory of existing `box-shadow:` declarations is the allowlist; their declaration text and shadow-token values remain unchanged.
+
 ### Manual browser matrix
 
 Verify both Porcelain Light and Warm Graphite Dark across:
@@ -339,6 +351,13 @@ Verify both Porcelain Light and Warm Graphite Dark across:
 -   representative widths of 1600px, 1470px, 1422px, 804px, 803px, 600px, 430px, 360px, and 320px;
 -   keyboard navigation, visible focus, Escape close, theme switching, carousel fullscreen, Board drag/auto-scroll, and mobile horizontal note reveal.
 
+Run this matrix in both installed browser engines:
+
+-   Safari 26.3.1 through the system Safari application or `safaridriver` without installing a dependency;
+-   Google Chrome through the installed Chrome application or the Chromium-based in-app browser.
+
+Browser verification must inspect the rendered UI, not only the build output. Any Safari remote-automation permission required by `safaridriver` must be enabled before the implementation is called complete.
+
 ## Acceptance Criteria
 
 The redesign is complete only when:
@@ -351,5 +370,7 @@ The redesign is complete only when:
 6. All three application-note responsive layouts match the existing geometry and behavior.
 7. Dashboard, List/Board, DnD, demo, auth, carousel, and user-guide layout contracts remain intact.
 8. Status and action contrast is improved in both themes.
-9. Automated verification passes from a fresh run.
-10. Manual responsive and interaction checks show no clipping, overlap, lost content, inaccessible controls, or unexpected reflow.
+9. No new `linear-gradient`, background gradient, or `box-shadow` declaration exists in the redesign diff.
+10. Quicksand, font sizes, weights, shared gaps, margins, radii, and control styling are consistent without changing established responsive geometry.
+11. Automated verification passes from a fresh run.
+12. Safari and Chromium responsive and interaction checks show no clipping, overlap, lost content, inaccessible controls, unexpected reflow, or browser-specific rendering defect.
