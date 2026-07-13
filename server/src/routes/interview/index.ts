@@ -7,7 +7,11 @@ import type {
     ListInterviewsResponse,
 } from './models.js';
 import type { Request, Response } from 'express';
-import { FIELD_MAX_LENGTHS } from '../../config/validation.js';
+import {
+    FIELD_MAX_LENGTHS,
+    INTERVIEW_DURATION_MINUTES_MAX,
+    INTERVIEW_DURATION_MINUTES_MIN,
+} from '../../config/validation.js';
 import {
     deleteAllJobInterviews,
     deleteJobInterview,
@@ -15,7 +19,7 @@ import {
     insertInterview,
 } from '../../db/queries/interviews.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isValidDate, toPositiveInteger, toTrimmedString } from '../../http/validation.js';
+import { isValidDate, toIntegerInRange, toPositiveInteger, toTrimmedString } from '../../http/validation.js';
 import express from 'express';
 import { getInterviewCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
@@ -30,12 +34,18 @@ router.post(
         const applicationId = toPositiveInteger(req.body.jobId);
         const interviewLocation = toTrimmedString(req.body.interviewLocation, FIELD_MAX_LENGTHS.location);
         const interviewType = toTrimmedString(req.body.interviewType, FIELD_MAX_LENGTHS.interviewType, true);
+        const interviewDurationMinutes = toIntegerInRange(
+            req.body.interviewDurationMinutes,
+            INTERVIEW_DURATION_MINUTES_MIN,
+            INTERVIEW_DURATION_MINUTES_MAX
+        );
         const notes = toTrimmedString(req.body.notes, FIELD_MAX_LENGTHS.notes, true);
         const { interviewDate } = req.body;
 
         if (
             applicationId === undefined ||
             !isValidDate(interviewDate) ||
+            interviewDurationMinutes === undefined ||
             interviewLocation === undefined ||
             interviewType === undefined ||
             notes === undefined
@@ -49,6 +59,7 @@ router.post(
                 applicationId,
                 req.user.id,
                 new Date(interviewDate).toISOString(),
+                interviewDurationMinutes,
                 interviewLocation,
                 interviewType,
                 notes

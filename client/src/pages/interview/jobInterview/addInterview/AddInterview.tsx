@@ -11,13 +11,22 @@ import { useRef, useState } from 'react';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
 import { FIELD_MAX_LENGTHS, validateInterviewForm } from '../../../../helper/formValidation';
+import {
+    DEFAULT_INTERVIEW_DURATION_MINUTES,
+    INTERVIEW_DURATION_MINUTES_MAX,
+    INTERVIEW_DURATION_MINUTES_MIN,
+} from '../../../../helper/interviewTiming';
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState<string>('');
+    const [interviewDurationMinutes, setInterviewDurationMinutes] = useState<string>(
+        String(DEFAULT_INTERVIEW_DURATION_MINUTES)
+    );
     const [interviewLocation, setInterviewLocation] = useState<string>('');
     const [interviewType, setInterviewType] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const interviewDateInputRef = useRef<HTMLInputElement>(null);
+    const interviewDurationInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const location = useLocation() as Location<{ app?: JobApplication }>;
     const app = location.state?.app;
@@ -31,6 +40,7 @@ const AddInterview = () => {
 
     const resetForm = () => {
         setInterviewDate('');
+        setInterviewDurationMinutes(String(DEFAULT_INTERVIEW_DURATION_MINUTES));
         setInterviewLocation('');
         setInterviewType('');
         setNotes('');
@@ -43,6 +53,8 @@ const AddInterview = () => {
             applicationDate: app.application_date,
             interviewDate,
             interviewDateValidity: interviewDateInputRef.current?.validity,
+            interviewDurationMinutes,
+            interviewDurationValidity: interviewDurationInputRef.current?.validity,
             interviewLocation,
             interviewType,
             notes,
@@ -59,6 +71,7 @@ const AddInterview = () => {
             const message = await api.interview.createInterview({
                 jobId: app.job_id,
                 interviewDate: values.interviewDate,
+                interviewDurationMinutes: values.interviewDurationMinutes,
                 interviewLocation: values.interviewLocation,
                 interviewType: values.interviewType,
                 notes: values.notes,
@@ -104,6 +117,19 @@ const AddInterview = () => {
                 onChange={(e) => setInterviewLocation(e.target.value)}
                 required
                 placeholder='E.g. Zoom'
+            />
+
+            <label htmlFor='duration'>Duration (minutes)</label>
+            <input
+                ref={interviewDurationInputRef}
+                id='duration'
+                max={INTERVIEW_DURATION_MINUTES_MAX}
+                min={INTERVIEW_DURATION_MINUTES_MIN}
+                step='1'
+                type='number'
+                value={interviewDurationMinutes}
+                onChange={(event) => setInterviewDurationMinutes(event.target.value)}
+                required
             />
 
             <label htmlFor='type'>Interview Type (optional)</label>

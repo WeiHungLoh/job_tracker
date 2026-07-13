@@ -24,7 +24,9 @@ export type DashboardNavigationProps = {
 };
 
 export type DashboardContentProps = DashboardDataProps & DashboardNavigationProps;
-export type DashboardStatsProps = DashboardDataProps;
+export type DashboardStatsProps = DashboardDataProps & {
+    currentTime?: Date;
+};
 
 export type ApplicationsLineChartProps = {
     weeklyApplications: WeeklyApplicationCount[];
@@ -37,6 +39,7 @@ export type StatusChartProps = Pick<DashboardNavigationProps, 'onStatusSelect'> 
 };
 
 export type UpcomingInterviewsProps = Pick<DashboardNavigationProps, 'onInterviewSelect'> & {
+    currentTime?: Date;
     interviews: JobInterview[];
     isLoading: boolean;
 };

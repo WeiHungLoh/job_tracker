@@ -8,6 +8,7 @@ import { getUserPreferences, updateUserPreferences } from '../../db/queries/user
 import { handleRouteError, sendError } from '../../http/responses.js';
 import {
     isJobStatusArray,
+    isInterviewTimeFilterArray,
     isOptionalApplicationBoardSortOrder,
     isOptionalApplicationListSortOrder,
     isOptionalApplicationViewMode,
@@ -58,6 +59,8 @@ router.patch(
             archived_application_board_sort_order,
             interview_view_mode,
             archived_interview_view_mode,
+            interview_time_filters,
+            archived_interview_time_filters,
         } = req.body;
 
         if (application_job_statuses !== undefined && !isJobStatusArray(application_job_statuses)) {
@@ -70,6 +73,17 @@ router.patch(
                 422,
                 'Archived application job status preferences must contain only supported job statuses.'
             );
+            return;
+        }
+        if (interview_time_filters !== undefined && !isInterviewTimeFilterArray(interview_time_filters)) {
+            sendError(res, 422, 'Interview time filter preferences must contain only supported values.');
+            return;
+        }
+        if (
+            archived_interview_time_filters !== undefined &&
+            !isInterviewTimeFilterArray(archived_interview_time_filters)
+        ) {
+            sendError(res, 422, 'Archived interview time filter preferences must contain only supported values.');
             return;
         }
         if (

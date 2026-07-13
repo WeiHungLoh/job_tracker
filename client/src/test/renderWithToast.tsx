@@ -24,6 +24,8 @@ const testPreferences: UserPreferences = {
     archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
+    interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+    archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
 };
 
 type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & {

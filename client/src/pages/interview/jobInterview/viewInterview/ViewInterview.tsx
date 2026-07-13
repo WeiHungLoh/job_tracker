@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { type MouseEvent, useEffect, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createInterviewCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
 import { createDeleteAllInterviewsConfirmation } from '../../../../helper/bulkConfirmation';
@@ -28,9 +28,14 @@ import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skelet
 import InterviewGrid from '../../interviewGrid/InterviewGrid';
 import { getDashboardInterviewId } from '../../../../helper/dashboardNavigation';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
+import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
+import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../helper/interviewTiming';
+import { useBulkInterviewCalendarExport } from '../../calendarOptions/useBulkInterviewCalendarExport';
+import useCurrentTime from '../../../../hooks/useCurrentTime';
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
+    const currentTime = useCurrentTime();
     const { preferences, updatePreferences } = useUserPreferences();
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -49,13 +54,33 @@ const ViewInterview = () => {
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
     const viewMode = preferences.interview_view_mode;
+    const selectedTimeFilters = preferences.interview_time_filters;
     const isBoardView = viewMode === 'board';
+    const displayedInterviews = useMemo(
+        () => filterAndSortInterviews(interviews, selectedTimeFilters, currentTime),
+        [currentTime, interviews, selectedTimeFilters]
+    );
+    const csvData = useMemo(() => createInterviewCsvData(displayedInterviews), [displayedInterviews]);
+    const { exportUpcomingInterviews, upcomingInterviewCount } = useBulkInterviewCalendarExport(
+        interviews,
+        currentTime
+    );
 
     const handleViewModeChange = async (nextViewMode: ApplicationViewMode) => {
         try {
             await updatePreferences({ interview_view_mode: nextViewMode });
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
+        }
+    };
+
+    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+        try {
+            await updatePreferences({ interview_time_filters: timeFilters });
+            return true;
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to save interview filters. Please try again.'));
+            return false;
         }
     };
 
@@ -85,14 +110,23 @@ const ViewInterview = () => {
 
     useEffect(() => {
         const interviewId = dashboardInterviewIdRef.current;
-        if (!interviewId || viewMode === 'list' || dashboardViewUpdatePendingRef.current) {
+        const hidesUpcomingInterviews =
+            selectedTimeFilters.length === 1 && selectedTimeFilters[0] === 'Past Interviews';
+        if (
+            !interviewId ||
+            (viewMode === 'list' && !hidesUpcomingInterviews) ||
+            dashboardViewUpdatePendingRef.current
+        ) {
             return;
         }
 
         dashboardViewUpdatePendingRef.current = true;
         const switchToListView = async () => {
             try {
-                await updatePreferences({ interview_view_mode: 'list' });
+                await updatePreferences({
+                    ...(viewMode === 'list' ? {} : { interview_view_mode: 'list' }),
+                    ...(hidesUpcomingInterviews ? { interview_time_filters: [...INTERVIEW_TIME_FILTERS] } : {}),
+                });
             } catch (error) {
                 showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
                 dashboardInterviewIdRef.current = null;
@@ -103,11 +137,13 @@ const ViewInterview = () => {
         };
 
         void switchToListView();
-    }, [location.pathname, navigate, showErrorToast, updatePreferences, viewMode]);
+    }, [location.pathname, navigate, selectedTimeFilters, showErrorToast, updatePreferences, viewMode]);
 
     useEffect(() => {
         const interviewId = dashboardInterviewIdRef.current;
-        if (!interviewId || isLoading || viewMode !== 'list') {
+        const hidesUpcomingInterviews =
+            selectedTimeFilters.length === 1 && selectedTimeFilters[0] === 'Past Interviews';
+        if (!interviewId || isLoading || viewMode !== 'list' || hidesUpcomingInterviews) {
             return;
         }
 
@@ -118,7 +154,7 @@ const ViewInterview = () => {
 
         dashboardInterviewIdRef.current = null;
         navigate(location.pathname, { replace: true, state: null });
-    }, [interviews, isLoading, location.pathname, navigate, viewMode]);
+    }, [interviews, isLoading, location.pathname, navigate, selectedTimeFilters, viewMode]);
 
     useEffect(() => {
         const highlightTimeouts = dashboardHighlightTimeout.current;
@@ -126,8 +162,6 @@ const ViewInterview = () => {
             Object.values(highlightTimeouts).forEach(clearTimeout);
         };
     }, []);
-
-    const csvData = createInterviewCsvData(interviews);
 
     const handleDelete = async (interviewId: number) => {
         try {
@@ -193,8 +227,12 @@ const ViewInterview = () => {
     };
 
     const hasInterviews = interviews.length > 0;
+    const hasDisplayedInterviews = displayedInterviews.length > 0;
+    const filtersAreActive = hasInterviews && selectedTimeFilters.length !== INTERVIEW_TIME_FILTERS.length;
     const emptyState = createInterviewEmptyState({
         applicationsRoute: routes.viewApplications,
+        filtersAreActive,
+        onClearFilters: () => void handleTimeFilterChange([...INTERVIEW_TIME_FILTERS]),
         variant: 'active',
     });
 
@@ -244,6 +282,12 @@ const ViewInterview = () => {
                                 deleteLabel='Delete all interviews'
                                 id='interview-more-options'
                                 isDeleting={isDeletingAll}
+                                middleAction={{
+                                    disabled: upcomingInterviewCount === 0,
+                                    icon: 'calendar',
+                                    label: 'Export upcoming interviews (.ics)',
+                                    onClick: () => void exportUpcomingInterviews(),
+                                }}
                                 onDelete={() => void handleDeleteAll()}
                             />
                         ) : undefined
@@ -255,6 +299,14 @@ const ViewInterview = () => {
                         ariaLabel='Interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}
+                    />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        disabled={isLoading}
+                        id='interview-time-filter'
+                        onSelectionChange={handleTimeFilterChange}
+                        options={INTERVIEW_TIME_FILTERS}
+                        selectedOptions={selectedTimeFilters}
                     />
                 </ActivityControls>
             </div>
@@ -269,13 +321,14 @@ const ViewInterview = () => {
                     </>
                 ))}
 
-            {!isLoading && !hasInterviews && <EmptyState {...emptyState} />}
+            {!isLoading && !hasDisplayedInterviews && <EmptyState {...emptyState} />}
 
-            {!isLoading && hasInterviews && (
+            {!isLoading && hasDisplayedInterviews && (
                 <InterviewGrid ariaLabel='Active interviews' layout={viewMode}>
-                    {interviews.map((interview, index) => (
+                    {displayedInterviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.viewApplications}
+                            currentTime={currentTime}
                             index={index}
                             interview={interview}
                             isDeleting={deletingInterviewIds.has(interview.interview_id)}

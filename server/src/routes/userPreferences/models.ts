@@ -3,6 +3,7 @@ import type {
     ApplicationListSortOrder,
     ApplicationViewMode,
     JobStatus,
+    InterviewTimeFilter,
     UserPreferences,
 } from '../../db/models.js';
 import type { ErrorResponse } from '../../http/models.js';
@@ -22,6 +23,8 @@ export type UpdateUserPreferencesRequest = {
     archived_application_board_sort_order?: ApplicationBoardSortOrder;
     interview_view_mode?: ApplicationViewMode;
     archived_interview_view_mode?: ApplicationViewMode;
+    interview_time_filters?: InterviewTimeFilter[];
+    archived_interview_time_filters?: InterviewTimeFilter[];
 };
 
 export type GetUserPreferencesResponse = UserPreferences | ErrorResponse;

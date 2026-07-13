@@ -10,6 +10,8 @@ import jwt from 'jsonwebtoken';
 import { AUTH_EMAIL_IP_LIMIT, REQUEST_LIMIT } from '../dist/config/server.js';
 import {
     FIELD_MAX_LENGTHS,
+    INTERVIEW_DURATION_MINUTES_MAX,
+    INTERVIEW_DURATION_MINUTES_MIN,
     PASSWORD_MAX_BYTES,
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
@@ -77,6 +79,35 @@ test('creates new user preference rows with enabled display defaults', async () 
     assert.match(userPreferencesTable, /archived_interview_view_mode TEXT NOT NULL DEFAULT 'list'/);
     assert.match(userPreferencesTable, /user_preferences_interview_view_mode_check/);
     assert.match(userPreferencesTable, /user_preferences_archived_interview_view_mode_check/);
+    assert.match(
+        userPreferencesTable,
+        /interview_time_filters TEXT\[\] NOT NULL DEFAULT \$\{INTERVIEW_TIME_FILTER_SQL_ARRAY\}/
+    );
+    assert.match(
+        userPreferencesTable,
+        /archived_interview_time_filters TEXT\[\] NOT NULL DEFAULT \$\{INTERVIEW_TIME_FILTER_SQL_ARRAY\}/
+    );
+    assert.match(userPreferencesTable, /user_preferences_interview_time_filters_check/);
+    assert.match(userPreferencesTable, /user_preferences_archived_interview_time_filters_check/);
+});
+
+test('creates fresh interview duration and time-filter columns without adding startup migration SQL', async () => {
+    const createTablesSource = await readFile(new URL('../src/db/queries/createTables.ts', import.meta.url), 'utf8');
+    const interviewsTable = createTablesSource.match(/CREATE TABLE IF NOT EXISTS interviews \([\s\S]*?\n\s*\)`/)?.[0];
+
+    assert.ok(interviewsTable);
+    assert.match(
+        interviewsTable,
+        /interview_duration_minutes INTEGER NOT NULL DEFAULT \$\{DEFAULT_INTERVIEW_DURATION_MINUTES\}/
+    );
+    assert.match(interviewsTable, /interviews_duration_minutes_check/);
+    assert.match(
+        interviewsTable,
+        /interview_duration_minutes BETWEEN \$\{INTERVIEW_DURATION_MINUTES_MIN\} AND \$\{INTERVIEW_DURATION_MINUTES_MAX\}/
+    );
+    assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS interview_duration_minutes/);
+    assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS interview_time_filters/);
+    assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS archived_interview_time_filters/);
 });
 
 test('adds interview view preferences to existing user preference tables idempotently', async () => {
@@ -237,6 +268,30 @@ test('returns 422 for unsupported interview view modes', async () => {
     assert.deepEqual(await response.json(), { message: 'View mode preferences must be list or board.' });
 });
 
+test('returns 422 for unsupported active and archived interview time filters', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+
+    for (const [field, message] of [
+        ['interview_time_filters', 'Interview time filter preferences must contain only supported values.'],
+        [
+            'archived_interview_time_filters',
+            'Archived interview time filter preferences must contain only supported values.',
+        ],
+    ]) {
+        const response = await fetch(`${baseUrl}/user-preferences`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Cookie: `access_token=${token}`,
+            },
+            body: JSON.stringify({ [field]: ['Unknown'] }),
+        });
+
+        assert.equal(response.status, 422);
+        assert.deepEqual(await response.json(), { message });
+    }
+});
+
 test('returns 422 for unsupported application list sort preferences', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/user-preferences`, {
@@ -288,6 +343,8 @@ test('saves a supported application sort preference and returns the complete pre
         archived_application_board_sort_order: 'company_name_desc',
         interview_view_mode: 'list',
         archived_interview_view_mode: 'board',
+        interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+        archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
     };
     let queryValues;
     pool.query = async (_sql, values) => {
@@ -308,7 +365,7 @@ test('saves a supported application sort preference and returns the complete pre
 
         assert.equal(response.status, 200);
         assert.deepEqual(await response.json(), storedPreferences);
-        assert.equal(queryValues.length, 15);
+        assert.equal(queryValues.length, 17);
         assert.equal(queryValues[0], TEST_USER.id);
         assert.equal(queryValues[12], 'company_name_desc');
     } finally {
@@ -412,6 +469,7 @@ test('returns 409 when moving an application with an active interview to Applied
         assert.match(query.sql, /\$1::text <> 'Applied'/);
         assert.match(query.sql, /job_applications\.job_status = 'Applied'/);
         assert.match(query.sql, /interviews\.is_archived = false/);
+        assert.doesNotMatch(query.sql, /interview_duration_minutes|NOW\(\)/);
         assert.doesNotMatch(query.sql, /edit_status/);
     } finally {
         pool.query = originalQuery;
@@ -524,6 +582,7 @@ test('rejects impossible interview dates before accessing the database', async (
         body: JSON.stringify({
             jobId: 1,
             interviewDate: '2025-04-31T10:00:00.000Z',
+            interviewDurationMinutes: 60,
             interviewLocation: 'Remote',
             interviewType: '',
             notes: '',
@@ -547,6 +606,7 @@ test('rejects interview dates with an invalid hour before accessing the database
         body: JSON.stringify({
             jobId: 1,
             interviewDate: '2025-01-01T24:00:00.000Z',
+            interviewDurationMinutes: 60,
             interviewLocation: 'Remote',
             interviewType: '',
             notes: '',
@@ -557,6 +617,79 @@ test('rejects interview dates with an invalid hour before accessing the database
     assert.deepEqual(await response.json(), {
         message: 'Interview fields are missing, invalid, or too long.',
     });
+});
+
+test('rejects missing, non-integer, and out-of-range interview durations before accessing the database', async () => {
+    const originalQuery = pool.query;
+    let queryCount = 0;
+    pool.query = async () => {
+        queryCount += 1;
+        throw new Error('The database should not be accessed for an invalid duration.');
+    };
+
+    try {
+        const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+        for (const interviewDurationMinutes of [undefined, 0, -1, 1441, 60.5, '60']) {
+            const response = await fetch(`${baseUrl}/job-interviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Cookie: `access_token=${token}`,
+                },
+                body: JSON.stringify({
+                    jobId: 1,
+                    interviewDate: '2027-01-02T00:00:00.000Z',
+                    interviewDurationMinutes,
+                    interviewLocation: 'Remote',
+                    interviewType: '',
+                    notes: '',
+                }),
+            });
+
+            assert.equal(response.status, 422);
+            assert.deepEqual(await response.json(), {
+                message: 'Interview fields are missing, invalid, or too long.',
+            });
+        }
+        assert.equal(queryCount, 0);
+    } finally {
+        pool.query = originalQuery;
+    }
+});
+
+test('accepts the minimum and maximum interview durations and forwards them to the insert query', async () => {
+    const originalQuery = pool.query;
+    const insertedDurations = [];
+    pool.query = async (_sql, values) => {
+        insertedDurations.push(values[3]);
+        return { rows: [{ application_exists: true, interview_created: true }] };
+    };
+
+    try {
+        const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+        for (const interviewDurationMinutes of [INTERVIEW_DURATION_MINUTES_MIN, INTERVIEW_DURATION_MINUTES_MAX]) {
+            const response = await fetch(`${baseUrl}/job-interviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Cookie: `access_token=${token}`,
+                },
+                body: JSON.stringify({
+                    jobId: 1,
+                    interviewDate: '2027-01-02T00:00:00.000Z',
+                    interviewDurationMinutes,
+                    interviewLocation: 'Remote',
+                    interviewType: '',
+                    notes: '',
+                }),
+            });
+
+            assert.equal(response.status, 201);
+        }
+        assert.deepEqual(insertedDurations, [INTERVIEW_DURATION_MINUTES_MIN, INTERVIEW_DURATION_MINUTES_MAX]);
+    } finally {
+        pool.query = originalQuery;
+    }
 });
 
 test('rejects non-http application URLs before accessing the database', async () => {
@@ -618,6 +751,7 @@ test('rejects interview fields over their maximum length before accessing the da
         body: JSON.stringify({
             jobId: 1,
             interviewDate: '2025-01-02T00:00:00.000Z',
+            interviewDurationMinutes: 60,
             interviewLocation: 'Remote',
             interviewType: '',
             notes: 'x'.repeat(FIELD_MAX_LENGTHS.notes + 1),

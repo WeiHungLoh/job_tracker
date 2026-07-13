@@ -5,7 +5,13 @@ import {
     DEFAULT_APPLICATION_BOARD_SORT_ORDER,
     DEFAULT_APPLICATION_LIST_SORT_ORDER,
     JOB_STATUSES,
+    INTERVIEW_TIME_FILTERS,
 } from '../models.js';
+import {
+    DEFAULT_INTERVIEW_DURATION_MINUTES,
+    INTERVIEW_DURATION_MINUTES_MAX,
+    INTERVIEW_DURATION_MINUTES_MIN,
+} from '../../config/validation.js';
 
 const toSQLTextValues = (values: readonly string[]): string => values.map((value) => `'${value}'`).join(', ');
 
@@ -14,6 +20,8 @@ const JOB_STATUS_SQL_ARRAY = `ARRAY[${JOB_STATUS_SQL_VALUES}]::TEXT[]`;
 const APPLICATION_VIEW_MODE_SQL_VALUES = "'list', 'board'";
 const APPLICATION_LIST_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_LIST_SORT_ORDERS);
 const APPLICATION_BOARD_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_BOARD_SORT_ORDERS);
+const INTERVIEW_TIME_FILTER_SQL_VALUES = toSQLTextValues(INTERVIEW_TIME_FILTERS);
+const INTERVIEW_TIME_FILTER_SQL_ARRAY = `ARRAY[${INTERVIEW_TIME_FILTER_SQL_VALUES}]::TEXT[]`;
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -45,6 +53,9 @@ const createTables = async (): Promise<void> => {
             job_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
             interview_date TIMESTAMPTZ NOT NULL,
+            interview_duration_minutes INTEGER NOT NULL DEFAULT ${DEFAULT_INTERVIEW_DURATION_MINUTES}
+                CONSTRAINT interviews_duration_minutes_check
+                CHECK (interview_duration_minutes BETWEEN ${INTERVIEW_DURATION_MINUTES_MIN} AND ${INTERVIEW_DURATION_MINUTES_MAX}),
             interview_location TEXT NOT NULL,
             interview_type TEXT NOT NULL DEFAULT '',
             interview_notes TEXT NOT NULL DEFAULT '',
@@ -89,7 +100,13 @@ const createTables = async (): Promise<void> => {
                 CHECK (interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
             archived_interview_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_archived_interview_view_mode_check
-                CHECK (archived_interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES}))
+                CHECK (archived_interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+            interview_time_filters TEXT[] NOT NULL DEFAULT ${INTERVIEW_TIME_FILTER_SQL_ARRAY}
+                CONSTRAINT user_preferences_interview_time_filters_check
+                CHECK (interview_time_filters <@ ${INTERVIEW_TIME_FILTER_SQL_ARRAY}),
+            archived_interview_time_filters TEXT[] NOT NULL DEFAULT ${INTERVIEW_TIME_FILTER_SQL_ARRAY}
+                CONSTRAINT user_preferences_archived_interview_time_filters_check
+                CHECK (archived_interview_time_filters <@ ${INTERVIEW_TIME_FILTER_SQL_ARRAY})
         )`;
 
     const addInterviewViewModePreferences = `

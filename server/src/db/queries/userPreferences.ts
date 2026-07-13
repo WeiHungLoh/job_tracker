@@ -18,7 +18,9 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
             archived_application_list_sort_order,
             archived_application_board_sort_order,
             interview_view_mode,
-            archived_interview_view_mode
+            archived_interview_view_mode,
+            interview_time_filters,
+            archived_interview_time_filters
          FROM user_preferences
          WHERE user_id = $1`,
         [userId]
@@ -47,7 +49,9 @@ export const updateUserPreferences = async (
             archived_application_list_sort_order = COALESCE($12, archived_application_list_sort_order),
             archived_application_board_sort_order = COALESCE($13, archived_application_board_sort_order),
             interview_view_mode = COALESCE($14, interview_view_mode),
-            archived_interview_view_mode = COALESCE($15, archived_interview_view_mode)
+            archived_interview_view_mode = COALESCE($15, archived_interview_view_mode),
+            interview_time_filters = COALESCE($16, interview_time_filters),
+            archived_interview_time_filters = COALESCE($17, archived_interview_time_filters)
          WHERE user_id = $1
          RETURNING
             application_job_statuses,
@@ -63,7 +67,9 @@ export const updateUserPreferences = async (
             archived_application_list_sort_order,
             archived_application_board_sort_order,
             interview_view_mode,
-            archived_interview_view_mode`,
+            archived_interview_view_mode,
+            interview_time_filters,
+            archived_interview_time_filters`,
         [
             userId,
             preferences.application_job_statuses,
@@ -80,6 +86,8 @@ export const updateUserPreferences = async (
             preferences.archived_application_board_sort_order,
             preferences.interview_view_mode,
             preferences.archived_interview_view_mode,
+            preferences.interview_time_filters,
+            preferences.archived_interview_time_filters,
         ]
     );
 

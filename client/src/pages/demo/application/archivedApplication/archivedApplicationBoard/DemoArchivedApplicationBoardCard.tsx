@@ -45,6 +45,7 @@ const DemoArchivedApplicationBoardCard = ({
             <p className={styles.meta}>{formattedApplicationDate.formattedDay}</p>
 
             <BoardCardActions
+                compactPanelSpacing
                 actions={
                     <>
                         <PrimaryButton

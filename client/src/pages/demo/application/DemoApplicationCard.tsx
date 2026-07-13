@@ -41,7 +41,7 @@ const DemoApplicationCard = (props: DemoApplicationCardProps) => {
                 <h2>
                     {index + 1}. {application.company_name}
                 </h2>
-                <p>Job Title: {application.job_title}</p>
+                <p className={styles.jobTitle}>Job Title: {application.job_title}</p>
                 {application.job_location !== '' && (
                     <p className={styles.location}>Location: {application.job_location}</p>
                 )}

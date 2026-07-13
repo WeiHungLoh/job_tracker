@@ -74,3 +74,13 @@ export const createDeleteAllInterviewsConfirmation = (
         'Delete All'
     );
 };
+
+export const createBulkCalendarExportConfirmation = (interviewCount: number): ConfirmOptions => {
+    const interviewLabel = countLabel(interviewCount, 'upcoming interview');
+
+    return bulkOptions(
+        'Export all upcoming interviews?',
+        `This will download one .ics file containing all ${interviewLabel}, including interviews you may already have added to your calendar. Importing the file again may create duplicate calendar events.`,
+        'Export All'
+    );
+};

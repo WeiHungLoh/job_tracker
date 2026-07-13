@@ -27,6 +27,7 @@ const mockInterview = {
     company_name: 'ABC Pte Ltd',
     job_title: 'Software Engineer',
     interview_date: '2025-07-20T00:00:00Z',
+    interview_duration_minutes: 60,
     interview_location: 'Zoom',
     interview_type: 'Technical',
     interview_notes: '',
@@ -47,6 +48,8 @@ const mockPreferences: UserPreferences = {
     archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
+    interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+    archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -531,6 +534,26 @@ describe('Job application viewing flow', () => {
 
         await screen.findByRole('button', { name: 'Sort by' });
         expectCsvCompanyOrder(await getExportCsvText(), [...order]);
+    });
+
+    test('exports only the active applications returned for the saved status filter with the stable filename', async () => {
+        mockApplicationCollection([{ ...mockApplication, company_name: 'Filtered Offer', job_status: 'Offer' }]);
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_job_statuses: ['Offer'] } }
+        );
+
+        await screen.findByRole('heading', { level: 2, name: '1. Filtered Offer' });
+        const csv = await getExportCsvText();
+        expect(csv).toContain('Filtered Offer');
+        expect(csv).not.toContain('ABC Pte Ltd');
+        expect(screen.getByRole('link', { name: 'Export as CSV' })).toHaveAttribute('download', 'job_applications.csv');
+        expect(fetch.mock.calls.some(([url]) => String(url).includes('/job-applications?jobStatuses=Offer'))).toBe(
+            true
+        );
     });
 
     test('shows an error and rolls back the active list sort when saving fails', async () => {

@@ -1,4 +1,4 @@
-import { type MouseEvent, useRef, useState } from 'react';
+import { type MouseEvent, useMemo, useRef, useState } from 'react';
 import { createInterviewCsvData } from '../../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
 import { createDeleteAllInterviewsConfirmation } from '../../../../../helper/bulkConfirmation';
@@ -21,21 +21,32 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
-import { sortInterviews } from '../../../state/demoSelectors';
+import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
+import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../../helper/interviewTiming';
+import useCurrentTime from '../../../../../hooks/useCurrentTime';
 
 const DemoViewArchivedInterview = () => {
     const { dispatch, state, updatePreferences } = useDemo();
+    const currentTime = useCurrentTime();
     const { preferences } = useUserPreferences();
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
-    const sortedArchivedInterviews = sortInterviews(state.archivedInterviews);
-    const csvData = createInterviewCsvData(sortedArchivedInterviews);
-    const hasInterviews = sortedArchivedInterviews.length > 0;
+    const selectedTimeFilters = preferences.archived_interview_time_filters;
+    const displayedInterviews = useMemo(
+        () => filterAndSortInterviews(state.archivedInterviews, selectedTimeFilters, currentTime),
+        [currentTime, selectedTimeFilters, state.archivedInterviews]
+    );
+    const csvData = useMemo(() => createInterviewCsvData(displayedInterviews), [displayedInterviews]);
+    const hasInterviews = state.archivedInterviews.length > 0;
+    const hasDisplayedInterviews = displayedInterviews.length > 0;
+    const filtersAreActive = hasInterviews && selectedTimeFilters.length !== INTERVIEW_TIME_FILTERS.length;
     const emptyState = createInterviewEmptyState({
         activeInterviewsRoute: routes.demoViewInterviews,
+        filtersAreActive,
+        onClearFilters: () => void updatePreferences({ archived_interview_time_filters: [...INTERVIEW_TIME_FILTERS] }),
         variant: 'archived',
     });
     const viewMode = preferences.archived_interview_view_mode;
@@ -60,12 +71,12 @@ const DemoViewArchivedInterview = () => {
         setIsDeletingAll(true);
 
         try {
-            if (sortedArchivedInterviews.length === 0) {
+            if (state.archivedInterviews.length === 0) {
                 return;
             }
 
             const { confirmed } = await confirm(
-                createDeleteAllInterviewsConfirmation(sortedArchivedInterviews.length, 'archived')
+                createDeleteAllInterviewsConfirmation(state.archivedInterviews.length, 'archived')
             );
 
             if (!confirmed) {
@@ -77,6 +88,11 @@ const DemoViewArchivedInterview = () => {
             deleteAllPendingRef.current = false;
             setIsDeletingAll(false);
         }
+    };
+
+    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+        await updatePreferences({ archived_interview_time_filters: timeFilters });
+        return true;
     };
 
     const handleViewApplicationClick = (event: MouseEvent<HTMLAnchorElement>, interview: ArchivedJobInterview) => {
@@ -134,15 +150,23 @@ const DemoViewArchivedInterview = () => {
                             void updatePreferences({ archived_interview_view_mode: nextViewMode })
                         }
                     />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        id='demo-archived-interview-time-filter'
+                        onSelectionChange={handleTimeFilterChange}
+                        options={INTERVIEW_TIME_FILTERS}
+                        selectedOptions={selectedTimeFilters}
+                    />
                 </ActivityControls>
             </div>
-            {!hasInterviews && <EmptyState {...emptyState} />}
+            {!hasDisplayedInterviews && <EmptyState {...emptyState} />}
 
-            {hasInterviews && (
+            {hasDisplayedInterviews && (
                 <InterviewGrid ariaLabel='Archived interviews' layout={viewMode}>
-                    {sortedArchivedInterviews.map((interview, index) => (
+                    {displayedInterviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.demoArchivedApplications}
+                            currentTime={currentTime}
                             index={index}
                             interview={interview}
                             isDeleting={false}

@@ -70,6 +70,7 @@ describe('job tracker form validation', () => {
             validateInterviewForm({
                 applicationDate: '2026-07-08T10:00',
                 interviewDate: '2026-07-08T09:00',
+                interviewDurationMinutes: '60',
                 interviewLocation: 'Zoom',
                 interviewType: '',
                 notes: '',
@@ -77,6 +78,54 @@ describe('job tracker form validation', () => {
         ).toEqual({
             error: 'Interview date must be after the job application date.',
             isValid: false,
+        });
+    });
+
+    test.each(['', '0', '-1', '1441', '1.5'])('rejects invalid interview duration %s', (duration) => {
+        expect(
+            validateInterviewForm({
+                applicationDate: '2026-07-08T10:00',
+                interviewDate: '2026-07-09T10:00',
+                interviewDurationMinutes: duration,
+                interviewLocation: 'Zoom',
+                interviewType: '',
+                notes: '',
+            })
+        ).toEqual({
+            error: 'Please enter a duration between 1 and 1440 minutes',
+            isValid: false,
+        });
+    });
+
+    test('uses the date and location message when those required fields are missing', () => {
+        expect(
+            validateInterviewForm({
+                applicationDate: '2026-07-08T10:00',
+                interviewDate: '',
+                interviewDurationMinutes: '60',
+                interviewLocation: '',
+                interviewType: '',
+                notes: '',
+            })
+        ).toEqual({
+            error: 'Please enter a date and location before adding an interview.',
+            isValid: false,
+        });
+    });
+
+    test.each(['1', '60', '1440'])('accepts valid interview duration %s', (duration) => {
+        const result = validateInterviewForm({
+            applicationDate: '2026-07-08T10:00',
+            interviewDate: '2026-07-09T10:00',
+            interviewDurationMinutes: duration,
+            interviewLocation: 'Zoom',
+            interviewType: '',
+            notes: '',
+        });
+
+        expect(result).toMatchObject({
+            isValid: true,
+            values: { interviewDurationMinutes: Number(duration) },
         });
     });
 });

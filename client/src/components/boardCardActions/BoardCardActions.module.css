@@ -24,6 +24,10 @@
     padding-top: 8px;
 }
 
+.compactPanelSpacing .actionPanel {
+    padding-top: 0;
+}
+
 .actionButtons {
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -7,6 +7,7 @@ export type JobInterview = {
     job_title: string;
     job_status?: JobStatus;
     interview_date: string;
+    interview_duration_minutes: number;
     interview_location: string;
     interview_type: string;
     interview_notes: string;
@@ -19,6 +20,7 @@ export type ArchivedJobInterview = {
     job_title: string;
     job_status?: JobStatus;
     interview_date: string;
+    interview_duration_minutes: number;
     interview_location: string;
     interview_type: string;
     interview_notes: string;
@@ -34,6 +36,7 @@ export type GetInterviewCollectionSummaryResponse = InterviewCollectionSummary;
 export type CreateInterviewRequest = {
     jobId: number;
     interviewDate: Date;
+    interviewDurationMinutes: number;
     interviewLocation: string;
     interviewType: string;
     notes: string;
@@ -69,6 +72,7 @@ export const INTERVIEW_CSV_HEADERS: InterviewCsvHeader[] = [
     { label: 'Job Title', key: 'job_title' },
     { label: 'Location', key: 'interview_location' },
     { label: 'Interview Date', key: 'interview_date' },
+    { label: 'Duration (minutes)', key: 'interview_duration_minutes' },
     { label: 'Interview Type', key: 'interview_type' },
     { label: 'Additional Notes', key: 'notes' },
 ];

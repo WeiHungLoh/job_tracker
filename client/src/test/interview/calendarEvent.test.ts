@@ -3,12 +3,14 @@ import {
     buildGoogleCalendarUrl,
     buildIcsContent,
     formatGoogleCalendarTimestamp,
-    isOverdueInterviewDate,
+    buildBulkIcsContent,
+    downloadBulkIcsEvents,
 } from '../../pages/interview/calendarOptions/calendarEvent';
 
 const interview = {
     company_name: 'Acme, Inc.',
     interview_date: '2026-08-15T09:30:00+08:00',
+    interview_duration_minutes: 90,
     interview_id: 42,
     interview_location: 'Room 5, HQ; Singapore',
     interview_notes: 'Review C:\\projects\\demo\nBring examples, questions; and notes.',
@@ -17,7 +19,7 @@ const interview = {
 };
 
 describe('calendar event helpers', () => {
-    test('builds an encoded Google Calendar URL with a one-hour UTC event', () => {
+    test('builds an encoded Google Calendar URL using the stored duration', () => {
         const calendarUrl = buildGoogleCalendarUrl(buildCalendarEventDetails(interview));
         const url = new URL(calendarUrl);
 
@@ -25,7 +27,7 @@ describe('calendar event helpers', () => {
         expect(calendarUrl).toContain('text=Acme%2C+Inc.+%E2%80%94+Technical+Interview');
         expect(url.searchParams.get('action')).toBe('TEMPLATE');
         expect(url.searchParams.get('text')).toBe('Acme, Inc. — Technical Interview');
-        expect(url.searchParams.get('dates')).toBe('20260815T013000Z/20260815T023000Z');
+        expect(url.searchParams.get('dates')).toBe('20260815T013000Z/20260815T030000Z');
         expect(url.searchParams.get('location')).toBe('Room 5, HQ; Singapore');
         expect(url.searchParams.get('details')).toBe(
             'Job title: Software Engineer\nInterview type: Technical Interview\n\nNotes:\n' +
@@ -41,7 +43,7 @@ describe('calendar event helpers', () => {
         expect(content).toContain('UID:42@jobtracker.weihungloh.com\r\n');
         expect(content).toContain('DTSTAMP:20260704T000000Z\r\n');
         expect(content).toContain('DTSTART:20260815T013000Z\r\n');
-        expect(content).toContain('DTEND:20260815T023000Z\r\n');
+        expect(content).toContain('DTEND:20260815T030000Z\r\n');
         expect(content).toContain('SUMMARY:Acme\\, Inc. — Technical Interview\r\n');
         expect(content).toContain(
             'DESCRIPTION:Job title: Software Engineer\\nInterview type: Technical Interview\\n\\nNotes:\\n' +
@@ -56,12 +58,36 @@ describe('calendar event helpers', () => {
         expect(formatGoogleCalendarTimestamp(new Date('2026-08-15T01:30:45.123Z'))).toBe('20260815T013045Z');
     });
 
-    test('identifies only valid past interview dates as overdue', () => {
-        const now = new Date('2026-07-11T00:00:00Z');
+    test('builds one calendar containing one event per interview', () => {
+        const firstEvent = buildCalendarEventDetails(interview);
+        const secondEvent = buildCalendarEventDetails({ ...interview, interview_id: 43 });
+        const content = buildBulkIcsContent([firstEvent, secondEvent], new Date('2026-07-04T00:00:00Z'));
 
-        expect(isOverdueInterviewDate('2026-07-10T23:59:59Z', now)).toBe(true);
-        expect(isOverdueInterviewDate('2026-07-11T00:00:01Z', now)).toBe(false);
-        expect(isOverdueInterviewDate('not-a-date', now)).toBe(false);
+        expect(content.match(/BEGIN:VCALENDAR/g)).toHaveLength(1);
+        expect(content.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+        expect(content).toContain('UID:42@jobtracker.weihungloh.com');
+        expect(content).toContain('UID:43@jobtracker.weihungloh.com');
+    });
+
+    test('refuses to build an empty bulk calendar', () => {
+        expect(() => buildBulkIcsContent([])).toThrow('Cannot create an empty calendar');
+    });
+
+    test('downloads the bulk calendar with the stable filename and revokes its object URL', () => {
+        const createObjectURL = vi.fn(() => 'blob:bulk-calendar');
+        const revokeObjectURL = vi.fn();
+        let downloadedFilename = '';
+        Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: createObjectURL });
+        Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: revokeObjectURL });
+        vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+            downloadedFilename = this.download;
+        });
+
+        downloadBulkIcsEvents([buildCalendarEventDetails(interview)]);
+
+        expect(downloadedFilename).toBe('job-tracker-upcoming-interviews.ics');
+        expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+        expect(revokeObjectURL).toHaveBeenCalledWith('blob:bulk-calendar');
     });
 
     test('uses the fallback title and omits empty optional values', () => {

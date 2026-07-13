@@ -2,14 +2,17 @@ import ControlDropdown from '../../../components/activityControls/ControlDropdow
 import Icon from '../../../components/icon/Icon';
 import { useToast } from '../../../components/toast/ToastProvider';
 import type { JobInterview } from '../models';
-import { buildCalendarEventDetails, buildGoogleCalendarUrl, downloadIcsEvent } from './calendarEvent';
+import {
+    buildCalendarEventDetails,
+    buildGoogleCalendarUrl,
+    CALENDAR_ERROR_MESSAGE,
+    downloadIcsEvent,
+} from './calendarEvent';
 import styles from './CalendarOptions.module.css';
 
 type CalendarOptionsProps = {
     interview: JobInterview;
 };
-
-const CALENDAR_ERROR_MESSAGE = 'Unable to create the calendar event. Please try again.';
 
 const CalendarOptions = ({ interview }: CalendarOptionsProps) => {
     const { showErrorToast } = useToast();

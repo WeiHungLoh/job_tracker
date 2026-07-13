@@ -4,6 +4,7 @@ import type { ApplicationViewMode } from '../../components/activityControls/appl
 
 type InterviewCardBaseProps = {
     applicationRoute: string;
+    currentTime?: Date;
     index: number;
     isDeleting: boolean;
     layout?: ApplicationViewMode;

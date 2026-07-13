@@ -64,20 +64,36 @@ describe('demo reducer state', () => {
     test('sorts active and archived interviews like production without mutating the input', () => {
         const day = 24 * 60 * 60 * 1000;
         const interviews = [
-            { id: 'later future', interview_date: new Date(fixedNowMs + 4 * day).toISOString() },
-            { id: 'recent past', interview_date: new Date(fixedNowMs - day).toISOString() },
-            { id: 'nearest future', interview_date: new Date(fixedNowMs + day).toISOString() },
-            { id: 'oldest past', interview_date: new Date(fixedNowMs - 3 * day).toISOString() },
-            { id: 'due now', interview_date: fixedNow.toISOString() },
+            {
+                id: 'later future',
+                interview_date: new Date(fixedNowMs + 4 * day).toISOString(),
+                interview_duration_minutes: 60,
+            },
+            {
+                id: 'recent past',
+                interview_date: new Date(fixedNowMs - day).toISOString(),
+                interview_duration_minutes: 60,
+            },
+            {
+                id: 'nearest future',
+                interview_date: new Date(fixedNowMs + day).toISOString(),
+                interview_duration_minutes: 60,
+            },
+            {
+                id: 'oldest past',
+                interview_date: new Date(fixedNowMs - 3 * day).toISOString(),
+                interview_duration_minutes: 60,
+            },
+            { id: 'due now', interview_date: fixedNow.toISOString(), interview_duration_minutes: 60 },
         ];
         const originalOrder = [...interviews];
 
         expect(sortInterviews(interviews, fixedNowMs).map((interview) => interview.id)).toEqual([
+            'due now',
             'nearest future',
             'later future',
             'oldest past',
             'recent past',
-            'due now',
         ]);
         expect(interviews).toEqual(originalOrder);
         expect(sortInterviews(interviews, fixedNowMs)).not.toBe(interviews);
@@ -85,10 +101,11 @@ describe('demo reducer state', () => {
         const archivedInterviews = interviews.map((interview, index) => ({
             archived_interview_id: index + 1,
             interview_date: interview.interview_date,
+            interview_duration_minutes: interview.interview_duration_minutes,
         }));
         expect(
             sortInterviews(archivedInterviews, fixedNowMs).map((interview) => interview.archived_interview_id)
-        ).toEqual([3, 1, 4, 2, 5]);
+        ).toEqual([5, 3, 1, 4, 2]);
     });
 
     test('uses independent list and board sorting preferences for demo applications', () => {
@@ -240,6 +257,7 @@ describe('demo reducer state', () => {
             payload: {
                 jobId: 101,
                 interviewDate: new Date(2026, 6, 12, 10, 0, 0, 0),
+                interviewDurationMinutes: 60,
                 interviewLocation: 'Zoom',
                 interviewType: 'Technical interview',
                 notes: 'Bring examples',
@@ -268,6 +286,7 @@ describe('demo reducer state', () => {
                 application_job_statuses: ['Offer'],
                 application_show_notes: false,
                 application_view_mode: 'board',
+                interview_time_filters: ['Past Interviews'],
             },
         });
         const reset = demoReducer(updatedPreferences, { type: 'RESET_DEMO', payload: { now: fixedNow } });
@@ -275,6 +294,11 @@ describe('demo reducer state', () => {
         expect(updatedPreferences.preferences.application_job_statuses).toEqual(['Offer']);
         expect(updatedPreferences.preferences.application_show_notes).toBe(false);
         expect(updatedPreferences.preferences.application_view_mode).toBe('board');
+        expect(updatedPreferences.preferences.interview_time_filters).toEqual(['Past Interviews']);
+        expect(updatedPreferences.preferences.archived_interview_time_filters).toEqual([
+            'Upcoming Interviews',
+            'Past Interviews',
+        ]);
         expect(reset.applications).toHaveLength(20);
         expect(reset.preferences.application_job_statuses).toEqual([...JOB_STATUSES]);
         expect(reset.preferences.application_show_notes).toBe(true);
@@ -288,6 +312,8 @@ describe('demo reducer state', () => {
         expect(reset.preferences.archived_application_board_sort_order).toBe('application_date_desc');
         expect(reset.preferences.interview_view_mode).toBe('list');
         expect(reset.preferences.archived_interview_view_mode).toBe('list');
+        expect(reset.preferences.interview_time_filters).toEqual(['Upcoming Interviews', 'Past Interviews']);
+        expect(reset.preferences.archived_interview_time_filters).toEqual(['Upcoming Interviews', 'Past Interviews']);
         expect(reset.applications).not.toBe(state.applications);
         expect(sortInterviews(reset.interviews, fixedNowMs).map((interview) => interview.interview_id)).toEqual([
             401, 402, 403, 404, 407, 408, 409, 406, 405,

@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom';
 import PrimaryButton from '../../components/button/PrimaryButton';
-import formatDate from '../../helper/dateFormatter';
+import applicationStyles from '../application/ApplicationCard.module.css';
 import type { InterviewCardProps } from './InterviewCard.models';
 import CalendarOptions from './calendarOptions/CalendarOptions';
-import { isFutureInterviewDate, isOverdueInterviewDate } from './calendarOptions/calendarEvent';
 import styles from './InterviewCard.module.css';
 import BoardCardActions from '../../components/boardCardActions/BoardCardActions';
+import { formatInterviewCountdown, getInterviewTiming } from '../../helper/interviewTiming';
 
 const InterviewCard = ({
     applicationRoute,
+    currentTime = new Date(),
     index,
     interview,
     isDeleting,
@@ -18,10 +19,18 @@ const InterviewCard = ({
     variant,
 }: InterviewCardProps) => {
     const applicationId = variant === 'job' ? interview.job_id : interview.archived_job_id;
-    const formattedInterviewDate = formatDate(interview.interview_date);
-    const showCalendarOptions = variant === 'job' && isFutureInterviewDate(interview.interview_date);
-    const isOverdue = isOverdueInterviewDate(interview.interview_date);
+    const timing = getInterviewTiming(interview, currentTime);
+    const showCalendarOptions = variant === 'job' && timing.isValid && !timing.hasStarted;
+    const isOverdue = timing.hasEnded;
     const isBoardLayout = layout === 'board';
+    const timingStatus = !timing.isValid
+        ? { className: styles.timeLeft, label: 'Status unavailable' }
+        : timing.hasEnded
+        ? { className: applicationStyles.accepted, label: 'Completed' }
+        : {
+              className: timing.isInProgress ? applicationStyles.rejected : applicationStyles.upcomingBadge,
+              label: `Time left: ${formatInterviewCountdown(timing, currentTime)}`,
+          };
     const cardClasses = [
         styles.interview,
         variant === 'archived' ? styles.archived : '',
@@ -41,18 +50,26 @@ const InterviewCard = ({
                 <h2>
                     {index + 1}. {interview.company_name}
                 </h2>
-                <p>Job Title: {interview.job_title}</p>
-                <p className={styles.location}>Location: {interview.interview_location}</p>
-                {interview.interview_type !== '' && (
-                    <p className={styles.type}>Interview Type: {interview.interview_type}</p>
+                <p className={styles.jobTitle}>
+                    {isBoardLayout ? interview.job_title : `Job Title: ${interview.job_title}`}
+                </p>
+                {isBoardLayout ? (
+                    <p className={styles.date}>{timing.formattedRange}</p>
+                ) : (
+                    <>
+                        <p className={styles.location}>Location: {interview.interview_location}</p>
+                        {interview.interview_type !== '' && (
+                            <p className={styles.type}>Interview Type: {interview.interview_type}</p>
+                        )}
+                        <p className={styles.date}>Interview Date: {timing.formattedRange}</p>
+                    </>
                 )}
-                {!isBoardLayout && interview.interview_notes !== '' && (
-                    <p className={styles.notes}>Notes: {interview.interview_notes}</p>
-                )}
-                <p className={styles.date}>Interview Date: {formattedInterviewDate.formattedDate}</p>
                 {!isBoardLayout && (
                     <>
-                        <p className={styles.timeLeft}>Time left: {formattedInterviewDate.timeBeforeInterview}</p>
+                        {interview.interview_notes !== '' && (
+                            <p className={styles.notes}>Notes: {interview.interview_notes}</p>
+                        )}
+                        <p className={`${timingStatus.className} ${styles.timingBadge}`}>{timingStatus.label}</p>
                         <Link to={`${applicationRoute}#${applicationId}`} onClick={onViewApplicationClick}>
                             Click here to review corresponding job application
                         </Link>

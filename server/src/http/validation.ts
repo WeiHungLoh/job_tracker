@@ -2,10 +2,12 @@ import {
     APPLICATION_BOARD_SORT_ORDERS,
     APPLICATION_LIST_SORT_ORDERS,
     JOB_STATUSES,
+    INTERVIEW_TIME_FILTERS,
     type ApplicationBoardSortOrder,
     type ApplicationListSortOrder,
     type ApplicationViewMode,
     type JobStatus,
+    type InterviewTimeFilter,
 } from '../db/models.js';
 import { PASSWORD_MAX_BYTES, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../config/validation.js';
 
@@ -89,6 +91,12 @@ export const toPositiveInteger = (value: unknown): number | undefined => {
     return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : undefined;
 };
 
+export const toIntegerInRange = (value: unknown, minimum: number, maximum: number): number | undefined => {
+    return typeof value === 'number' && Number.isInteger(value) && value >= minimum && value <= maximum
+        ? value
+        : undefined;
+};
+
 export const isValidDate = (value: unknown): value is string => {
     if (typeof value !== 'string') {
         return false;
@@ -120,6 +128,13 @@ export const isJobStatus = (value: unknown): value is JobStatus =>
 
 export const isJobStatusArray = (value: unknown): value is JobStatus[] => {
     return Array.isArray(value) && value.every(isJobStatus);
+};
+
+const isInterviewTimeFilter = (value: unknown): value is InterviewTimeFilter =>
+    typeof value === 'string' && INTERVIEW_TIME_FILTERS.includes(value as InterviewTimeFilter);
+
+export const isInterviewTimeFilterArray = (value: unknown): value is InterviewTimeFilter[] => {
+    return Array.isArray(value) && value.every(isInterviewTimeFilter) && new Set(value).size === value.length;
 };
 
 export const toJobStatusQueryValues = (value: unknown): JobStatus[] | undefined => {

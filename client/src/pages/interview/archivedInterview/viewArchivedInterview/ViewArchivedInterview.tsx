@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import type { ArchivedJobInterview } from '../../models';
 import { createInterviewCsvData } from '../../../../helper/csvData';
 import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
@@ -27,9 +27,13 @@ import ApplicationViewToggle from '../../../../components/activityControls/appli
 import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
 import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skeletonInterviewBoard/SkeletonInterviewBoard';
 import InterviewGrid from '../../interviewGrid/InterviewGrid';
+import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
+import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../helper/interviewTiming';
+import useCurrentTime from '../../../../hooks/useCurrentTime';
 
 const ViewArchivedInterview = () => {
     const api = useJobTrackerAPI();
+    const currentTime = useCurrentTime();
     const { preferences, updatePreferences } = useUserPreferences();
     const [archivedInterviews, setArchivedInterviews] = useState<ArchivedJobInterview[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -44,13 +48,29 @@ const ViewArchivedInterview = () => {
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
     const viewMode = preferences.archived_interview_view_mode;
+    const selectedTimeFilters = preferences.archived_interview_time_filters;
     const isBoardView = viewMode === 'board';
+    const displayedInterviews = useMemo(
+        () => filterAndSortInterviews(archivedInterviews, selectedTimeFilters, currentTime),
+        [archivedInterviews, currentTime, selectedTimeFilters]
+    );
+    const csvData = useMemo(() => createInterviewCsvData(displayedInterviews), [displayedInterviews]);
 
     const handleViewModeChange = async (nextViewMode: ApplicationViewMode) => {
         try {
             await updatePreferences({ archived_interview_view_mode: nextViewMode });
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
+        }
+    };
+
+    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+        try {
+            await updatePreferences({ archived_interview_time_filters: timeFilters });
+            return true;
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to save archived interview filters. Please try again.'));
+            return false;
         }
     };
 
@@ -77,8 +97,6 @@ const ViewArchivedInterview = () => {
             isActive = false;
         };
     }, []);
-
-    const csvData = createInterviewCsvData(archivedInterviews);
 
     const handleDelete = async (archivedInterviewId: number) => {
         try {
@@ -146,8 +164,12 @@ const ViewArchivedInterview = () => {
     };
 
     const hasInterviews = archivedInterviews.length > 0;
+    const hasDisplayedInterviews = displayedInterviews.length > 0;
+    const filtersAreActive = hasInterviews && selectedTimeFilters.length !== INTERVIEW_TIME_FILTERS.length;
     const emptyState = createInterviewEmptyState({
         activeInterviewsRoute: routes.viewInterviews,
+        filtersAreActive,
+        onClearFilters: () => void handleTimeFilterChange([...INTERVIEW_TIME_FILTERS]),
         variant: 'archived',
     });
 
@@ -221,6 +243,14 @@ const ViewArchivedInterview = () => {
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}
                     />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        disabled={isLoading}
+                        id='archived-interview-time-filter'
+                        onSelectionChange={handleTimeFilterChange}
+                        options={INTERVIEW_TIME_FILTERS}
+                        selectedOptions={selectedTimeFilters}
+                    />
                 </ActivityControls>
             </div>
 
@@ -234,13 +264,14 @@ const ViewArchivedInterview = () => {
                     </>
                 ))}
 
-            {!isLoading && !hasInterviews && <EmptyState {...emptyState} />}
+            {!isLoading && !hasDisplayedInterviews && <EmptyState {...emptyState} />}
 
-            {!isLoading && hasInterviews && (
+            {!isLoading && hasDisplayedInterviews && (
                 <InterviewGrid ariaLabel='Archived interviews' layout={viewMode}>
-                    {archivedInterviews.map((interview, index) => (
+                    {displayedInterviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.archivedApplications}
+                            currentTime={currentTime}
                             index={index}
                             interview={interview}
                             isDeleting={deletingInterviewIds.has(interview.archived_interview_id)}

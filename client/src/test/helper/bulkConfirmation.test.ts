@@ -1,5 +1,6 @@
 import {
     createArchiveAllConfirmation,
+    createBulkCalendarExportConfirmation,
     createDeleteAllApplicationsConfirmation,
     createDeleteAllInterviewsConfirmation,
     createUnarchiveAllConfirmation,
@@ -43,7 +44,7 @@ describe('bulk confirmations', () => {
     });
 
     test('prevents Enter confirmation without changing explicit click behavior', () => {
-        const options = createArchiveAllConfirmation(2, 0);
+        const options = createBulkCalendarExportConfirmation(2);
         const preventDefault = vi.fn();
         const stopPropagation = vi.fn();
         const onKeyDown = options.confirmationButtonProps?.onKeyDown;
@@ -56,5 +57,15 @@ describe('bulk confirmations', () => {
         preventDefault.mockClear();
         onKeyDown?.({ key: ' ', preventDefault, stopPropagation } as never);
         expect(preventDefault).not.toHaveBeenCalled();
+    });
+
+    test('uses exact bulk calendar wording and singular grammar', () => {
+        expect(createBulkCalendarExportConfirmation(1)).toMatchObject({
+            title: 'Export all upcoming interviews?',
+            description:
+                'This will download one .ics file containing all 1 upcoming interview, including interviews you may already have added to your calendar. Importing the file again may create duplicate calendar events.',
+            confirmationText: 'Export All',
+            cancellationText: 'Cancel',
+        });
     });
 });

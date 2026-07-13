@@ -5,37 +5,51 @@ import formatDate from '../../helper/dateFormatter';
 import type { UpcomingInterviewsProps } from './models';
 import { getUpcomingInterviews } from './dashboardData';
 import styles from './UpcomingInterviews.module.css';
+import { getInterviewTiming } from '../../helper/interviewTiming';
 
 const MAX_UPCOMING_INTERVIEWS = 3;
 
 const InterviewPreview = ({
+    currentTime,
     interview,
     index,
 }: {
+    currentTime: Date;
     interview: UpcomingInterviewsProps['interviews'][number];
     index: number;
-}) => (
-    <>
-        <span className={styles.index} aria-hidden='true'>
-            {index + 1}
-        </span>
-        <div className={styles.interviewDetails}>
-            <h3>{interview.company_name}</h3>
-            <p className={styles.jobTitle}>{interview.job_title}</p>
-            <time dateTime={interview.interview_date}>{formatDate(interview.interview_date).formattedDate}</time>
-            {(interview.interview_type || interview.interview_location) && (
-                <p className={styles.details}>
-                    {[interview.interview_type, interview.interview_location].filter(Boolean).join(' · ')}
-                </p>
-            )}
-        </div>
-    </>
-);
+}) => {
+    const timing = getInterviewTiming(interview, currentTime);
 
-const UpcomingInterviews = ({ interviews, isLoading, onInterviewSelect }: UpcomingInterviewsProps) => {
+    return (
+        <>
+            <span className={styles.index} aria-hidden='true'>
+                {index + 1}
+            </span>
+            <div className={styles.interviewDetails}>
+                <h3>{interview.company_name}</h3>
+                <p className={styles.jobTitle}>{interview.job_title}</p>
+                <time dateTime={interview.interview_date}>
+                    {timing.isValid ? timing.formattedRange : formatDate(interview.interview_date).formattedDate}
+                </time>
+                {(interview.interview_type || interview.interview_location) && (
+                    <p className={styles.details}>
+                        {[interview.interview_type, interview.interview_location].filter(Boolean).join(' · ')}
+                    </p>
+                )}
+            </div>
+        </>
+    );
+};
+
+const UpcomingInterviews = ({
+    currentTime = new Date(),
+    interviews,
+    isLoading,
+    onInterviewSelect,
+}: UpcomingInterviewsProps) => {
     const upcomingInterviews = useMemo(
-        () => getUpcomingInterviews(interviews).slice(0, MAX_UPCOMING_INTERVIEWS),
-        [interviews]
+        () => getUpcomingInterviews(interviews, currentTime).slice(0, MAX_UPCOMING_INTERVIEWS),
+        [currentTime, interviews]
     );
 
     return (
@@ -62,10 +76,10 @@ const UpcomingInterviews = ({ interviews, isLoading, onInterviewSelect }: Upcomi
                                     onClick={() => onInterviewSelect(interview.interview_id)}
                                     type='button'
                                 >
-                                    <InterviewPreview index={index} interview={interview} />
+                                    <InterviewPreview currentTime={currentTime} index={index} interview={interview} />
                                 </button>
                             ) : (
-                                <InterviewPreview index={index} interview={interview} />
+                                <InterviewPreview currentTime={currentTime} index={index} interview={interview} />
                             )}
                         </li>
                     ))}

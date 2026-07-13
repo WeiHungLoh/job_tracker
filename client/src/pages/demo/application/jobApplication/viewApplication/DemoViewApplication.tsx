@@ -44,8 +44,10 @@ import { routes } from '../../../../../routes';
 import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
 import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
 import { getDashboardJobStatus } from '../../../../../helper/dashboardNavigation';
+import useCurrentTime from '../../../../../hooks/useCurrentTime';
 
 const DemoViewApplication = () => {
+    const currentTime = useCurrentTime();
     const { dispatch, state } = useDemo();
     const { preferences, updatePreferences } = useUserPreferences();
     const location = useLocation();
@@ -61,7 +63,10 @@ const DemoViewApplication = () => {
     const bulkActionPendingRef = useRef(false);
     const applications = useMemo(() => selectApplications(state), [state]);
     const interviewJobIdSet = useMemo(() => selectInterviewJobIdSet(state), [state]);
-    const upcomingInterviewCountByJob = useMemo(() => selectUpcomingInterviewCountByJob(state), [state]);
+    const upcomingInterviewCountByJob = useMemo(
+        () => selectUpcomingInterviewCountByJob(state, currentTime),
+        [currentTime, state]
+    );
     const selectedJobStatuses = preferences.application_job_statuses;
     const showArchive = preferences.application_show_archive;
     const showNotes = preferences.application_show_notes;

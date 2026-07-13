@@ -1,4 +1,5 @@
 import { isInvalidDatetimeLocalInput, parseDatetimeLocal } from './dateFormatter';
+import { INTERVIEW_DURATION_MINUTES_MAX, INTERVIEW_DURATION_MINUTES_MIN } from './interviewTiming';
 
 export const FIELD_MAX_LENGTHS = {
     companyName: 150,
@@ -48,6 +49,8 @@ type InterviewFormInput = {
     applicationDate: string;
     interviewDate: string;
     interviewDateValidity?: ValidityState;
+    interviewDurationMinutes: string;
+    interviewDurationValidity?: ValidityState;
     interviewLocation: string;
     interviewType: string;
     notes: string;
@@ -55,6 +58,7 @@ type InterviewFormInput = {
 
 type ValidInterviewFormValues = {
     interviewDate: Date;
+    interviewDurationMinutes: number;
     interviewLocation: string;
     interviewType: string;
     notes: string;
@@ -149,6 +153,8 @@ export const validateInterviewForm = ({
     applicationDate,
     interviewDate,
     interviewDateValidity,
+    interviewDurationMinutes,
+    interviewDurationValidity,
     interviewLocation,
     interviewType,
     notes,
@@ -156,6 +162,7 @@ export const validateInterviewForm = ({
     const trimmedInterviewLocation = interviewLocation.trim();
     const trimmedInterviewType = interviewType.trim();
     const trimmedNotes = notes.trim();
+    const parsedDuration = Number(interviewDurationMinutes);
 
     if (isInvalidDatetimeLocalInput(interviewDate, interviewDateValidity)) {
         return invalidForm('Please enter a valid interview date.');
@@ -163,6 +170,21 @@ export const validateInterviewForm = ({
 
     if (!interviewDate || !trimmedInterviewLocation) {
         return invalidForm('Please enter a date and location before adding an interview.');
+    }
+
+    if (
+        !interviewDurationMinutes.trim() ||
+        interviewDurationValidity?.badInput ||
+        interviewDurationValidity?.rangeUnderflow ||
+        interviewDurationValidity?.rangeOverflow ||
+        interviewDurationValidity?.stepMismatch ||
+        !Number.isInteger(parsedDuration) ||
+        parsedDuration < INTERVIEW_DURATION_MINUTES_MIN ||
+        parsedDuration > INTERVIEW_DURATION_MINUTES_MAX
+    ) {
+        return invalidForm(
+            `Please enter a duration between ${INTERVIEW_DURATION_MINUTES_MIN} and ${INTERVIEW_DURATION_MINUTES_MAX} minutes`
+        );
     }
 
     if (trimmedInterviewLocation.length > FIELD_MAX_LENGTHS.location) {
@@ -186,6 +208,7 @@ export const validateInterviewForm = ({
         isValid: true,
         values: {
             interviewDate: parsedInterviewDate,
+            interviewDurationMinutes: parsedDuration,
             interviewLocation: trimmedInterviewLocation,
             interviewType: trimmedInterviewType,
             notes: trimmedNotes,

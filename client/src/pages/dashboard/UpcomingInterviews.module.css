@@ -82,8 +82,8 @@
 
 .interviewList time {
     display: block;
-    color: var(--colorPrimary);
-    font-weight: 600;
+    color: var(--colorText);
+    font-weight: 700;
 }
 
 .details {

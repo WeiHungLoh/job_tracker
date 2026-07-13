@@ -1,5 +1,6 @@
 import type { JobStatus } from '../application/models';
 import type { JobInterview } from '../interview/models';
+import { getUpcomingInterviews as getUpcomingInterviewsByTiming } from '../../helper/interviewTiming';
 import type { JobStatusCount } from './models';
 
 export type StatusCountMap = Partial<Record<JobStatus, number>>;
@@ -20,12 +21,5 @@ export const getTotalStatusCount = (countByStatus: StatusCountMap): number => {
 };
 
 export const getUpcomingInterviews = (interviews: JobInterview[], now = new Date()): JobInterview[] => {
-    const nowTime = now.getTime();
-
-    return interviews
-        .filter((interview) => new Date(interview.interview_date).getTime() > nowTime)
-        .sort(
-            (firstInterview, secondInterview) =>
-                new Date(firstInterview.interview_date).getTime() - new Date(secondInterview.interview_date).getTime()
-        );
+    return getUpcomingInterviewsByTiming(interviews, now);
 };

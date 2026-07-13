@@ -16,6 +16,7 @@ const mockInterview = {
     interview_type: 'HR',
     interview_notes: 'Bring resume',
     interview_date: '2025-06-20T00:00:00Z',
+    interview_duration_minutes: 60,
 };
 
 const response = (data?: unknown, status = 200) => ({
@@ -37,6 +38,12 @@ const clickConfirmedAction = async (button: HTMLElement) => {
     await act(async () => {
         await userEvent.click(button);
     });
+};
+
+const getExportCsvText = (): string => {
+    const href = screen.getByRole('link', { name: 'Export as CSV' }).getAttribute('href') ?? '';
+    const csvStart = href.indexOf(',');
+    return decodeURIComponent(csvStart === -1 ? href : href.slice(csvStart + 1)).replace(/^\uFEFF/, '');
 };
 
 describe('Archived job interview viewer flow', () => {
@@ -260,5 +267,49 @@ describe('Archived job interview viewer flow', () => {
             )
         ).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('filters archived Board display and exports CSV from the same collection', async () => {
+        const now = Date.now();
+        const interviews = [
+            {
+                ...mockInterview,
+                archived_interview_id: 1,
+                company_name: 'Future Archived Company',
+                interview_date: new Date(now + 60 * 60 * 1000).toISOString(),
+            },
+            {
+                ...mockInterview,
+                archived_interview_id: 2,
+                company_name: 'Ended Archived Company',
+                interview_date: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+            },
+        ];
+        fetch.mockResolvedValue(response(interviews));
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            {
+                initialPreferences: {
+                    archived_interview_time_filters: ['Past Interviews'],
+                    archived_interview_view_mode: 'board',
+                },
+            }
+        );
+
+        const board = await screen.findByRole('region', { name: 'Archived interviews' });
+        expect(board).toHaveAttribute('data-layout', 'board');
+        expect(within(board).getByRole('article', { name: 'Ended Archived Company interview' })).toBeInTheDocument();
+        expect(
+            within(board).queryByRole('article', { name: 'Future Archived Company interview' })
+        ).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        const csv = getExportCsvText();
+        expect(csv).toContain('Ended Archived Company');
+        expect(csv).not.toContain('Future Archived Company');
+        expect(screen.queryByRole('button', { name: 'Export upcoming interviews (.ics)' })).not.toBeInTheDocument();
     });
 });

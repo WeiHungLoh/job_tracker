@@ -1,6 +1,9 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
 export type ApplicationViewMode = 'list' | 'board';
 
+export const INTERVIEW_TIME_FILTERS = ['Upcoming Interviews', 'Past Interviews'] as const;
+export type InterviewTimeFilter = (typeof INTERVIEW_TIME_FILTERS)[number];
+
 export const APPLICATION_LIST_SORT_ORDERS = [
     'job_status',
     'application_date_desc',
@@ -55,6 +58,7 @@ export type JobInterview = {
     interview_id: number;
     job_id: number;
     interview_date: Date;
+    interview_duration_minutes: number;
     interview_location: string;
     interview_type: string;
     interview_notes: string;
@@ -67,6 +71,7 @@ export type ArchivedJobInterview = {
     archived_interview_id: number;
     archived_job_id: number;
     interview_date: Date;
+    interview_duration_minutes: number;
     interview_location: string;
     interview_type: string;
     interview_notes: string;
@@ -115,4 +120,6 @@ export type UserPreferences = {
     archived_application_board_sort_order: ApplicationBoardSortOrder;
     interview_view_mode: ApplicationViewMode;
     archived_interview_view_mode: ApplicationViewMode;
+    interview_time_filters: InterviewTimeFilter[];
+    archived_interview_time_filters: InterviewTimeFilter[];
 };

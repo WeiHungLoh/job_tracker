@@ -15,6 +15,7 @@ type CreateApplicationPayload = {
 
 type CreateInterviewPayload = {
     interviewDate: Date;
+    interviewDurationMinutes: number;
     interviewLocation: string;
     interviewType: string;
     jobId: number;
@@ -70,6 +71,7 @@ const toArchivedInterview = (interview: JobInterview, application: JobApplicatio
     job_title: application.job_title,
     job_status: application.job_status,
     interview_date: interview.interview_date,
+    interview_duration_minutes: interview.interview_duration_minutes,
     interview_location: interview.interview_location,
     interview_type: interview.interview_type,
     interview_notes: interview.interview_notes,
@@ -82,6 +84,7 @@ const toActiveInterview = (interview: ArchivedJobInterview, application: Archive
     job_title: application.job_title,
     job_status: application.job_status,
     interview_date: interview.interview_date,
+    interview_duration_minutes: interview.interview_duration_minutes,
     interview_location: interview.interview_location,
     interview_type: interview.interview_type,
     interview_notes: interview.interview_notes,
@@ -266,6 +269,7 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 job_title: application.job_title,
                 job_status: application.job_status,
                 interview_date: action.payload.interviewDate.toISOString(),
+                interview_duration_minutes: action.payload.interviewDurationMinutes,
                 interview_location: action.payload.interviewLocation,
                 interview_type: action.payload.interviewType,
                 interview_notes: action.payload.notes,

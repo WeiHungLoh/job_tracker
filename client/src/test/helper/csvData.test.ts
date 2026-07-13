@@ -52,6 +52,7 @@ describe('CSV export data', () => {
             {
                 company_name: '=SUM(1,1)',
                 interview_date: '2025-06-20T00:00:00Z',
+                interview_duration_minutes: 60,
                 interview_location: '\t=LOCATION()',
                 interview_notes: '\r=NOTES()',
                 interview_type: '+TECHNICAL()',
@@ -63,6 +64,7 @@ describe('CSV export data', () => {
         expect(interview).toMatchObject({
             company_name: "'=SUM(1,1)",
             interview_date: expect.stringMatching(/20 June 2025/),
+            interview_duration_minutes: 60,
             interview_location: "'\t=LOCATION()",
             interview_notes: "'\r=NOTES()",
             interview_type: "'+TECHNICAL()",
@@ -75,6 +77,7 @@ describe('CSV export data', () => {
             {
                 company_name: 'Normal Company',
                 interview_date: '2025-06-20T00:00:00Z',
+                interview_duration_minutes: 60,
                 interview_location: '',
                 interview_notes: '',
                 interview_type: '',

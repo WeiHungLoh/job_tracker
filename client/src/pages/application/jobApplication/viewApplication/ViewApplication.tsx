@@ -19,6 +19,7 @@ import {
     type JobStatus,
 } from '../../models';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
+import { getInterviewTiming } from '../../../../helper/interviewTiming';
 import styles from './ViewApplication.module.css';
 import ToggleButton from '../../../../components/toggleButton/ToggleButton';
 import { useConfirm } from 'material-ui-confirm';
@@ -45,8 +46,10 @@ import SortOptions from '../../../../components/activityControls/sortOptions/Sor
 import { sortApplications } from '../../applicationSorting';
 import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
 import { getDashboardJobStatus } from '../../../../helper/dashboardNavigation';
+import useCurrentTime from '../../../../hooks/useCurrentTime';
 
 const ViewApplication = () => {
+    const currentTime = useCurrentTime();
     const api = useJobTrackerAPI();
     const { preferences, updatePreferences } = useUserPreferences();
     const location = useLocation();
@@ -108,15 +111,14 @@ const ViewApplication = () => {
     const interviewJobIdSet = useMemo(() => new Set(interviews.map((interview) => interview.job_id)), [interviews]);
 
     const upcomingInterviewCountByJob = useMemo(() => {
-        const now = new Date();
         const counts: Record<number, number> = {};
         interviews.forEach((interview) => {
-            if (new Date(interview.interview_date) > now) {
+            if (getInterviewTiming(interview, currentTime).hasNotEnded) {
                 counts[interview.job_id] = (counts[interview.job_id] || 0) + 1;
             }
         });
         return counts;
-    }, [interviews]);
+    }, [currentTime, interviews]);
 
     const closeStatusEditor = () => {
         setEditingApplicationId(null);

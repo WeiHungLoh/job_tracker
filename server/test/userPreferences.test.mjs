@@ -11,9 +11,19 @@ import { getUserPreferences, updateUserPreferences } from '../dist/db/queries/us
 import {
     isApplicationBoardSortOrder,
     isApplicationListSortOrder,
+    isInterviewTimeFilterArray,
     isOptionalApplicationBoardSortOrder,
     isOptionalApplicationListSortOrder,
 } from '../dist/http/validation.js';
+
+test('interview time filter validator accepts only supported arrays', () => {
+    assert.equal(isInterviewTimeFilterArray(['Upcoming Interviews', 'Past Interviews']), true);
+    assert.equal(isInterviewTimeFilterArray(['Upcoming Interviews']), true);
+    assert.equal(isInterviewTimeFilterArray([]), true);
+    assert.equal(isInterviewTimeFilterArray(['Upcoming Interviews', 'Upcoming Interviews']), false);
+    assert.equal(isInterviewTimeFilterArray(['Unknown']), false);
+    assert.equal(isInterviewTimeFilterArray('Upcoming Interviews'), false);
+});
 
 test('application sort order constants, defaults, and validators agree', () => {
     assert.deepEqual(APPLICATION_LIST_SORT_ORDERS, [
@@ -66,6 +76,8 @@ test('user preference queries read and update all sort fields with independent p
         archived_application_board_sort_order: 'company_name_desc',
         interview_view_mode: 'list',
         archived_interview_view_mode: 'board',
+        interview_time_filters: ['Upcoming Interviews'],
+        archived_interview_time_filters: ['Past Interviews'],
     };
 
     pool.query = async (sql, values) => {
@@ -100,6 +112,8 @@ test('user preference queries read and update all sort fields with independent p
         calls[1].sql,
         /archived_application_board_sort_order = COALESCE\(\$13, archived_application_board_sort_order\)/
     );
+    assert.match(calls[1].sql, /interview_time_filters = COALESCE\(\$16, interview_time_filters\)/);
+    assert.match(calls[1].sql, /archived_interview_time_filters = COALESCE\(\$17, archived_interview_time_filters\)/);
     assert.deepEqual(calls[1].values, [
         42,
         ['Applied'],
@@ -116,6 +130,8 @@ test('user preference queries read and update all sort fields with independent p
         'company_name_desc',
         'list',
         'board',
+        ['Upcoming Interviews'],
+        ['Past Interviews'],
     ]);
 });
 
@@ -133,7 +149,7 @@ test('omitted sort preferences remain undefined for SQL COALESCE preservation', 
         pool.query = originalQuery;
     }
 
-    assert.equal(values.length, 15);
+    assert.equal(values.length, 17);
     assert.equal(values[0], 9);
     assert.equal(values[12], 'company_name_asc');
     assert.equal(

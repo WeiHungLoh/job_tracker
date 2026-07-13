@@ -49,7 +49,18 @@ describe('AuthProductIntro demo action', () => {
         expect(demoLinks[0]).toHaveAttribute('href', routes.demoViewApplications);
         expect(demoLinks[0]).toHaveAttribute('target', '_blank');
         expect(demoLinks[0]).toHaveAttribute('rel', 'noreferrer');
-        expect(screen.getByText(/no account required/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Keep your job search organised' })).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Save your applications, interview details and status updates in one place, so you always know what you have applied for and what comes next.'
+            )
+        ).toBeInTheDocument();
+        expect(screen.getByText('Record each application and update its status')).toBeInTheDocument();
+        expect(screen.getByText('Link interviews to the relevant job')).toBeInTheDocument();
+        expect(screen.getByText('Review your applications and upcoming interviews at a glance')).toBeInTheDocument();
+        expect(
+            screen.getByText('No account needed. The demo uses sample data and resets when the page is refreshed.')
+        ).toBeInTheDocument();
 
         await userEvent.click(demoLinks[0]);
 
@@ -76,7 +87,7 @@ describe('AuthProductIntro demo action', () => {
         await userEvent.click(screen.getByLabelText('Email', { exact: true }));
 
         expect(screen.queryByRole('link', { name: /explore demo/i })).not.toBeInTheDocument();
-        expect(screen.getByLabelText('Organise your job search in one place', { selector: 'section' })).toHaveAttribute(
+        expect(screen.getByLabelText('Keep your job search organised', { selector: 'section' })).toHaveAttribute(
             'inert'
         );
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');

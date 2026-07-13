@@ -8,6 +8,7 @@ export const insertInterview = async (
     jobId: number,
     userId: number,
     interviewDate: string,
+    interviewDurationMinutes: number,
     location: string,
     interviewType: string,
     notes: string
@@ -23,11 +24,12 @@ export const insertInterview = async (
                 job_id,
                 user_id,
                 interview_date,
+                interview_duration_minutes,
                 interview_location,
                 interview_type,
                 interview_notes
             )
-            SELECT $1, $2, $3, $4, $5, $6
+            SELECT $1, $2, $3, $4, $5, $6, $7
             FROM application
             WHERE application_date IS NOT NULL AND $3::timestamptz > application_date
             RETURNING 1
@@ -35,7 +37,7 @@ export const insertInterview = async (
         SELECT
             EXISTS(SELECT 1 FROM application) AS application_exists,
             EXISTS(SELECT 1 FROM inserted_interview) AS interview_created`,
-        [jobId, userId, interviewDate, location, interviewType, notes]
+        [jobId, userId, interviewDate, interviewDurationMinutes, location, interviewType, notes]
     );
 
     if (result.rows[0]?.interview_created) {
@@ -50,6 +52,7 @@ export const getInterviews = async (userId: number): Promise<JobInterview[]> => 
             interviews.interview_id,
             interviews.job_id,
             interviews.interview_date,
+            interviews.interview_duration_minutes,
             interviews.interview_location,
             interviews.interview_type,
             interviews.interview_notes,
@@ -62,7 +65,7 @@ export const getInterviews = async (userId: number): Promise<JobInterview[]> => 
             AND interviews.is_archived = false
             AND job_applications.is_archived = false
          ORDER BY
-             interviews.interview_date > NOW() DESC,
+             interviews.interview_date + interviews.interview_duration_minutes * INTERVAL '1 minute' > NOW() DESC,
              interviews.interview_date ASC`,
         [userId]
     );

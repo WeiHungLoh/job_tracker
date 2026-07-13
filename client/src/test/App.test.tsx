@@ -59,6 +59,8 @@ const mockPreferences = {
     archived_application_board_sort_order: 'application_date_desc',
     interview_view_mode: 'list',
     archived_interview_view_mode: 'list',
+    interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+    archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
 };
 
 const renderRoute = (path: string) => {
@@ -278,9 +280,7 @@ describe('App routing and authentication behavior', () => {
 
         expect(await screen.findByRole('heading', { name: /start organising your job search/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
-        expect(
-            screen.queryByRole('heading', { name: /organise your job search in one place/i })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: /keep your job search organised/i })).not.toBeInTheDocument();
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
     });
 
@@ -298,9 +298,7 @@ describe('App routing and authentication behavior', () => {
 
         expect(await screen.findByRole('heading', { name: /sign in to job tracker/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /why use job tracker/i })).toBeInTheDocument();
-        expect(
-            screen.queryByRole('heading', { name: /organise your job search in one place/i })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: /keep your job search organised/i })).not.toBeInTheDocument();
         expect(localStorage.getItem(AUTH_FOCUSED_MODE_STORAGE_KEY)).toBe('true');
     });
 

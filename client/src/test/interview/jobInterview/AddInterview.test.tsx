@@ -38,19 +38,26 @@ describe('AddInterview page', () => {
         expect(screen.getByText(/you are adding an interview for/i)).toBeInTheDocument();
         expect(screen.getByText(/iras/i)).toBeInTheDocument();
         expect(screen.getByText(/data engineer/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveAttribute('min', '1');
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveAttribute('max', '1440');
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveAttribute('step', '1');
 
         fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '90' } });
         userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
         userEvent.type(screen.getByLabelText('Interview Type (optional)'), 'HR');
         userEvent.type(screen.getByLabelText('Additional Notes (optional)'), '2nd round');
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toMatchObject({ interviewDurationMinutes: 90 });
         await waitFor(() => {
             expect(screen.getByLabelText('Interview Date')).toHaveValue('');
             expect(screen.getByLabelText('Interview Location')).toHaveValue('');
             expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('');
             expect(screen.getByLabelText('Additional Notes (optional)')).toHaveValue('');
+            expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
         });
     });
 
@@ -109,7 +116,29 @@ describe('AddInterview page', () => {
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() =>
-            expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument()
+            expect(
+                screen.getByText('Please enter a date and location before adding an interview.')
+            ).toBeInTheDocument()
+        );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('shows the duration range error for an invalid duration', async () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '1441' } });
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        await waitFor(() =>
+            expect(screen.getByText('Please enter a duration between 1 and 1440 minutes')).toBeInTheDocument()
         );
         expect(fetch).not.toHaveBeenCalled();
     });

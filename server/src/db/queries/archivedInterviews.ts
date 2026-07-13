@@ -8,6 +8,7 @@ export const getArchivedJobInterviews = async (userId: number): Promise<Archived
             interviews.interview_id AS archived_interview_id,
             interviews.job_id AS archived_job_id,
             interviews.interview_date,
+            interviews.interview_duration_minutes,
             interviews.interview_location,
             interviews.interview_type,
             interviews.interview_notes,
@@ -20,7 +21,7 @@ export const getArchivedJobInterviews = async (userId: number): Promise<Archived
             AND interviews.is_archived = true
             AND job_applications.is_archived = true
          ORDER BY
-            interviews.interview_date > NOW() DESC,
+            interviews.interview_date + interviews.interview_duration_minutes * INTERVAL '1 minute' > NOW() DESC,
             interviews.interview_date ASC`,
         [userId]
     );

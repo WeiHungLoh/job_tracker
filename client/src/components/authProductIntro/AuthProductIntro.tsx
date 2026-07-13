@@ -9,15 +9,15 @@ import ProductPreviewCarousel from './ProductPreviewCarousel';
 const productBenefits = [
     {
         icon: 'activeApplications',
-        text: 'Track every application and its current status',
+        text: 'Record each application and update its status',
     },
     {
         icon: 'interview',
-        text: 'Keep interviews connected to the right application',
+        text: 'Link interviews to the relevant job',
     },
     {
         icon: 'dashboard',
-        text: 'View your job-search progress from one dashboard',
+        text: 'Review your applications and upcoming interviews at a glance',
     },
 ] as const;
 
@@ -105,10 +105,10 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
                 inert={isFocusedMode ? true : undefined}
             >
                 <div className={styles.productCopy}>
-                    <h1 id='auth-product-heading'>Organise your job search in one place</h1>
+                    <h1 id='auth-product-heading'>Keep your job search organised</h1>
                     <p className={styles.description}>
-                        Track applications, manage interviews and monitor your progress without relying on scattered
-                        spreadsheets or notes.
+                        Save your applications, interview details and status updates in one place, so you always know
+                        what you have applied for and what comes next.
                     </p>
                     <ul className={styles.benefitList}>
                         {productBenefits.map((benefit) => (
@@ -137,7 +137,9 @@ const AuthProductIntro = ({ children }: AuthProductIntroProps) => {
                             See how it works <span aria-hidden='true'>→</span>
                         </Link>
                     </div>
-                    <p className={styles.demoCopy}>No account required. Sample data resets on refresh.</p>
+                    <p className={styles.demoCopy}>
+                        No account needed. The demo uses sample data and resets when the page is refreshed.
+                    </p>
                 </div>
 
                 <ProductPreviewCarousel />

@@ -1,5 +1,6 @@
 import type { ApplicationBoardSortOrder, ApplicationListSortOrder, JobStatus } from '../../pages/application/models';
 import type { ApplicationViewMode } from '../activityControls/applicationViewToggle/models';
+import type { InterviewTimeFilter } from '../../helper/interviewTiming';
 
 export type UserPreferences = {
     application_job_statuses: JobStatus[];
@@ -16,6 +17,8 @@ export type UserPreferences = {
     archived_application_board_sort_order: ApplicationBoardSortOrder;
     interview_view_mode: ApplicationViewMode;
     archived_interview_view_mode: ApplicationViewMode;
+    interview_time_filters: InterviewTimeFilter[];
+    archived_interview_time_filters: InterviewTimeFilter[];
 };
 
 export type GetUserPreferencesRequest = null;
@@ -36,6 +39,8 @@ export type UpdateUserPreferencesRequest = {
     archived_application_board_sort_order?: ApplicationBoardSortOrder;
     interview_view_mode?: ApplicationViewMode;
     archived_interview_view_mode?: ApplicationViewMode;
+    interview_time_filters?: InterviewTimeFilter[];
+    archived_interview_time_filters?: InterviewTimeFilter[];
 };
 export type UpdateUserPreferencesResponse = UserPreferences;
 

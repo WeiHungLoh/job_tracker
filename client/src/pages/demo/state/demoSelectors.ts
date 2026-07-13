@@ -4,28 +4,17 @@ import { sortApplications } from '../../application/applicationSorting';
 import type { DemoState } from '../models';
 import type { JobStatusCount, WeeklyApplicationCount } from '../../dashboard/models';
 import { startOfLocalWeek, toDateString } from './demoDateHelpers';
+import { filterAndSortInterviews, getInterviewTiming } from '../../../helper/interviewTiming';
 
 type InterviewWithDate = {
     interview_date: string;
+    interview_duration_minutes: number;
 };
 
 export const sortInterviews = <Interview extends InterviewWithDate>(
     interviews: readonly Interview[],
     now = Date.now()
-): Interview[] => {
-    return [...interviews].sort((firstInterview, secondInterview) => {
-        const firstTime = Date.parse(firstInterview.interview_date);
-        const secondTime = Date.parse(secondInterview.interview_date);
-        const firstIsFuture = firstTime > now;
-        const secondIsFuture = secondTime > now;
-
-        if (firstIsFuture !== secondIsFuture) {
-            return firstIsFuture ? -1 : 1;
-        }
-
-        return firstTime - secondTime;
-    });
-};
+): Interview[] => filterAndSortInterviews(interviews, [], new Date(now));
 
 export const selectApplications = (state: DemoState): JobApplication[] => {
     const selectedStatuses = state.preferences.application_job_statuses;
@@ -72,7 +61,7 @@ export const selectUpcomingInterviewCountByJob = (state: DemoState, now = new Da
     const counts: Record<number, number> = {};
 
     state.interviews.forEach((interview) => {
-        if (new Date(interview.interview_date) > now) {
+        if (getInterviewTiming(interview, now).hasNotEnded) {
             counts[interview.job_id] = (counts[interview.job_id] || 0) + 1;
         }
     });

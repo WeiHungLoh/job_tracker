@@ -106,6 +106,7 @@ const DemoApplicationBoardCard = ({
             </label>
 
             <BoardCardActions
+                compactPanelSpacing
                 actions={
                     <>
                         <PrimaryButton

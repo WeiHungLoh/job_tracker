@@ -21,12 +21,16 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
-import { sortInterviews } from '../../../state/demoSelectors';
 import { getDashboardInterviewId } from '../../../../../helper/dashboardNavigation';
 import { scrollAndHighlight } from '../../../../../helper/highlightElement';
+import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
+import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../../helper/interviewTiming';
+import { useBulkInterviewCalendarExport } from '../../../../interview/calendarOptions/useBulkInterviewCalendarExport';
+import useCurrentTime from '../../../../../hooks/useCurrentTime';
 
 const DemoViewInterview = () => {
     const { dispatch, state, updatePreferences } = useDemo();
+    const currentTime = useCurrentTime();
     const { preferences } = useUserPreferences();
     const confirm = useConfirm();
     const navigate = useNavigate();
@@ -36,35 +40,54 @@ const DemoViewInterview = () => {
     const { showErrorToast } = useToast();
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
-    const sortedInterviews = useMemo(() => sortInterviews(state.interviews), [state.interviews]);
-    const csvData = createInterviewCsvData(sortedInterviews);
-    const hasInterviews = sortedInterviews.length > 0;
+    const selectedTimeFilters = preferences.interview_time_filters;
+    const displayedInterviews = useMemo(
+        () => filterAndSortInterviews(state.interviews, selectedTimeFilters, currentTime),
+        [currentTime, selectedTimeFilters, state.interviews]
+    );
+    const csvData = useMemo(() => createInterviewCsvData(displayedInterviews), [displayedInterviews]);
+    const hasInterviews = state.interviews.length > 0;
+    const hasDisplayedInterviews = displayedInterviews.length > 0;
+    const filtersAreActive = hasInterviews && selectedTimeFilters.length !== INTERVIEW_TIME_FILTERS.length;
+    const { exportUpcomingInterviews, upcomingInterviewCount } = useBulkInterviewCalendarExport(
+        state.interviews,
+        currentTime
+    );
     const emptyState = createInterviewEmptyState({
         applicationsRoute: routes.demoViewApplications,
+        filtersAreActive,
+        onClearFilters: () => void updatePreferences({ interview_time_filters: [...INTERVIEW_TIME_FILTERS] }),
         variant: 'active',
     });
     const viewMode = preferences.interview_view_mode;
     const isBoardView = viewMode === 'board';
 
     useEffect(() => {
-        if (dashboardInterviewIdRef.current && viewMode !== 'list') {
-            void updatePreferences({ interview_view_mode: 'list' });
+        const hidesUpcomingInterviews =
+            selectedTimeFilters.length === 1 && selectedTimeFilters[0] === 'Past Interviews';
+        if (dashboardInterviewIdRef.current && (viewMode !== 'list' || hidesUpcomingInterviews)) {
+            void updatePreferences({
+                ...(viewMode === 'list' ? {} : { interview_view_mode: 'list' }),
+                ...(hidesUpcomingInterviews ? { interview_time_filters: [...INTERVIEW_TIME_FILTERS] } : {}),
+            });
         }
-    }, [updatePreferences, viewMode]);
+    }, [selectedTimeFilters, updatePreferences, viewMode]);
 
     useEffect(() => {
         const interviewId = dashboardInterviewIdRef.current;
-        if (!interviewId || viewMode !== 'list') {
+        const hidesUpcomingInterviews =
+            selectedTimeFilters.length === 1 && selectedTimeFilters[0] === 'Past Interviews';
+        if (!interviewId || viewMode !== 'list' || hidesUpcomingInterviews) {
             return;
         }
 
-        if (sortedInterviews.some((interview) => interview.interview_id === interviewId)) {
+        if (displayedInterviews.some((interview) => interview.interview_id === interviewId)) {
             scrollAndHighlight(String(interviewId), styles.highlighted, dashboardHighlightTimeout.current);
         }
 
         dashboardInterviewIdRef.current = null;
         navigate(location.pathname, { replace: true, state: null });
-    }, [location.pathname, navigate, sortedInterviews, viewMode]);
+    }, [displayedInterviews, location.pathname, navigate, selectedTimeFilters, viewMode]);
 
     useEffect(() => {
         const highlightTimeouts = dashboardHighlightTimeout.current;
@@ -92,12 +115,12 @@ const DemoViewInterview = () => {
         setIsDeletingAll(true);
 
         try {
-            if (sortedInterviews.length === 0) {
+            if (state.interviews.length === 0) {
                 return;
             }
 
             const { confirmed } = await confirm(
-                createDeleteAllInterviewsConfirmation(sortedInterviews.length, 'active')
+                createDeleteAllInterviewsConfirmation(state.interviews.length, 'active')
             );
 
             if (!confirmed) {
@@ -109,6 +132,11 @@ const DemoViewInterview = () => {
             deleteAllPendingRef.current = false;
             setIsDeletingAll(false);
         }
+    };
+
+    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+        await updatePreferences({ interview_time_filters: timeFilters });
+        return true;
     };
 
     const handleViewApplicationClick = (event: MouseEvent<HTMLAnchorElement>, interview: JobInterview) => {
@@ -152,6 +180,12 @@ const DemoViewInterview = () => {
                                 deleteLabel='Delete all interviews'
                                 id='demo-interview-more-options'
                                 isDeleting={isDeletingAll}
+                                middleAction={{
+                                    disabled: upcomingInterviewCount === 0,
+                                    icon: 'calendar',
+                                    label: 'Export upcoming interviews (.ics)',
+                                    onClick: () => void exportUpcomingInterviews(),
+                                }}
                                 onDelete={() => void handleDeleteAll()}
                             />
                         ) : undefined
@@ -164,15 +198,23 @@ const DemoViewInterview = () => {
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void updatePreferences({ interview_view_mode: nextViewMode })}
                     />
+                    <CheckboxFilter
+                        buttonLabel='Filter by'
+                        id='demo-interview-time-filter'
+                        onSelectionChange={handleTimeFilterChange}
+                        options={INTERVIEW_TIME_FILTERS}
+                        selectedOptions={selectedTimeFilters}
+                    />
                 </ActivityControls>
             </div>
-            {!hasInterviews && <EmptyState {...emptyState} />}
+            {!hasDisplayedInterviews && <EmptyState {...emptyState} />}
 
-            {hasInterviews && (
+            {hasDisplayedInterviews && (
                 <InterviewGrid ariaLabel='Active interviews' layout={viewMode}>
-                    {sortedInterviews.map((interview, index) => (
+                    {displayedInterviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.demoViewApplications}
+                            currentTime={currentTime}
                             index={index}
                             interview={interview}
                             isDeleting={false}

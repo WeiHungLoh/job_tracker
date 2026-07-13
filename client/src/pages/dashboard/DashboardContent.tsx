@@ -5,6 +5,7 @@ import DashboardStats from './DashboardStats';
 import UpcomingInterviews from './UpcomingInterviews';
 import type { DashboardContentProps } from './models';
 import styles from './Dashboard.module.css';
+import useCurrentTime from '../../hooks/useCurrentTime';
 
 const DashboardContent = ({
     statusCounts,
@@ -14,10 +15,13 @@ const DashboardContent = ({
     onInterviewSelect,
     onStatusSelect,
 }: DashboardContentProps) => {
+    const currentTime = useCurrentTime();
+
     return (
         <div className={styles.dashboard}>
             <section className={styles.statsSection} aria-label='Dashboard statistics'>
                 <DashboardStats
+                    currentTime={currentTime}
                     statusCounts={statusCounts}
                     interviews={interviews}
                     weeklyApplications={weeklyApplications}
@@ -29,6 +33,7 @@ const DashboardContent = ({
             </section>
             <section className={styles.interviewsSection}>
                 <UpcomingInterviews
+                    currentTime={currentTime}
                     interviews={interviews}
                     isLoading={isLoading}
                     onInterviewSelect={onInterviewSelect}

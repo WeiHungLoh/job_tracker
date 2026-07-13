@@ -2,12 +2,15 @@ import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import InterviewCard from '../../pages/interview/InterviewCard';
+import applicationStyles from '../../pages/application/ApplicationCard.module.css';
+import interviewStyles from '../../pages/interview/InterviewCard.module.css';
 import type { ArchivedJobInterview, JobInterview } from '../../pages/interview/models';
 import { render } from '../renderWithToast';
 
 const futureInterview: JobInterview = {
     company_name: 'Acme',
     interview_date: '2099-08-15T09:30:00Z',
+    interview_duration_minutes: 60,
     interview_id: 42,
     interview_location: 'Singapore',
     interview_notes: 'Bring examples',
@@ -53,7 +56,47 @@ describe('InterviewCard calendar options', () => {
         renderJobCard({ ...futureInterview, interview_date: '2020-01-01T00:00:00Z' });
 
         expect(queryCalendarTrigger()).not.toBeInTheDocument();
+        expect(screen.getByText('Completed')).toHaveClass(applicationStyles.accepted);
         expect(screen.getByRole('article', { name: 'Acme interview' }).className).toContain('overdue');
+    });
+
+    test('uses the Upcoming Interview pill for the countdown until an interview starts', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-07-13T12:00:00Z'));
+
+        try {
+            renderJobCard({
+                ...futureInterview,
+                interview_date: '2026-07-13T12:30:00Z',
+                interview_duration_minutes: 60,
+            });
+
+            expect(screen.getByText('Time left: 0 days 0 hours 30 minutes')).toHaveClass(
+                applicationStyles.upcomingBadge,
+                interviewStyles.timingBadge
+            );
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test('keeps an in-progress interview upcoming, hides calendar controls, and delays overdue styling', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-07-13T12:00:00Z'));
+
+        try {
+            renderJobCard({
+                ...futureInterview,
+                interview_date: '2026-07-13T11:30:00Z',
+                interview_duration_minutes: 60,
+            });
+
+            expect(queryCalendarTrigger()).not.toBeInTheDocument();
+            expect(screen.getByText('Time left: 0 days 0 hours 30 minutes')).toHaveClass(applicationStyles.rejected);
+            expect(screen.getByRole('article', { name: 'Acme interview' }).className).not.toContain('overdue');
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     test('does not show Add to calendar for an invalid active interview date', () => {
@@ -196,6 +239,17 @@ describe('InterviewCard calendar options', () => {
         expect(onDelete).toHaveBeenCalledOnce();
     });
 
+    test('places List notes between the interview date and timing status', () => {
+        renderJobCard();
+
+        const date = screen.getByText(/Interview Date:/);
+        const timeLeft = screen.getByText(/Time left:/);
+        const notes = screen.getByText('Notes: Bring examples');
+
+        expect(date.compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(notes.compareDocumentPosition(timeLeft) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
     test('uses shared Board actions and hides List-only interview details', async () => {
         const open = vi.spyOn(window, 'open').mockReturnValue(null);
         render(
@@ -214,6 +268,15 @@ describe('InterviewCard calendar options', () => {
         );
 
         expect(screen.getByRole('article', { name: 'Acme interview' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: '1. Acme' })).toBeInTheDocument();
+        expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Software Engineer' })).not.toBeInTheDocument();
+        expect(screen.queryByText('Singapore')).not.toBeInTheDocument();
+        expect(screen.queryByText('Technical Interview')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Job Title:/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Location:/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Interview Type:/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Interview Date:/)).not.toBeInTheDocument();
         expect(screen.queryByText('Notes: Bring examples')).not.toBeInTheDocument();
         expect(screen.queryByText(/time left/i)).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: /review corresponding job application/i })).not.toBeInTheDocument();

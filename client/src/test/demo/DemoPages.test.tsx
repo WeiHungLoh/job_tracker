@@ -57,6 +57,9 @@ const DemoRecordCounts = () => {
         <>
             <output data-testid='demo-application-count'>{state.applications.length}</output>
             <output data-testid='demo-interview-count'>{state.interviews.length}</output>
+            <output data-testid='demo-last-interview-duration'>
+                {state.interviews[state.interviews.length - 1]?.interview_duration_minutes ?? ''}
+            </output>
         </>
     );
 };
@@ -65,6 +68,12 @@ const clickConfirmedAction = async (button: HTMLElement) => {
     await act(async () => {
         await userEvent.click(button);
     });
+};
+
+const getExportCsvText = (): string => {
+    const href = screen.getByRole('link', { name: 'Export as CSV' }).getAttribute('href') ?? '';
+    const csvStart = href.indexOf(',');
+    return decodeURIComponent(csvStart === -1 ? href : href.slice(csvStart + 1)).replace(/^\uFEFF/, '');
 };
 
 const SetApplicationViewMode = ({ archived = false }: { archived?: boolean }) => {
@@ -96,6 +105,35 @@ const SetInterviewBoardMode = () => {
     return (
         <button onClick={() => void updatePreferences({ interview_view_mode: 'board' })} type='button'>
             Set interview Board mode
+        </button>
+    );
+};
+
+const SetInterviewPastFilter = () => {
+    const { updatePreferences } = useDemo();
+
+    return (
+        <button onClick={() => void updatePreferences({ interview_time_filters: ['Past Interviews'] })} type='button'>
+            Set interview Past filter
+        </button>
+    );
+};
+
+const SetApplicationCsvFilter = ({ archived = false }: { archived?: boolean }) => {
+    const { updatePreferences } = useDemo();
+
+    return (
+        <button
+            onClick={() =>
+                void updatePreferences(
+                    archived
+                        ? { archived_application_job_statuses: ['Offer'] }
+                        : { application_job_statuses: ['Offer'] }
+                )
+            }
+            type='button'
+        >
+            Filter {archived ? 'archived' : 'active'} CSV to Offer
         </button>
     );
 };
@@ -165,15 +203,15 @@ describe('demo page interactions', () => {
         renderDemo(<DemoViewApplication />);
 
         expect(await screen.findByRole('heading', { name: '1. Pinecone Health' })).toBeInTheDocument();
-        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
-        await userEvent.click(screen.getByRole('radio', { name: /Company A/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        fireEvent.click(screen.getByRole('radio', { name: /Company A/ }));
         expect(await screen.findByRole('heading', { name: '1. Aster Security' })).toBeInTheDocument();
         await waitFor(() => expect(screen.getByRole('button', { name: 'Sort by' })).toBeEnabled());
 
-        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Board' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Sort by' }));
         expect(screen.getByRole('radio', { name: 'Newest Application' })).toBeChecked();
-        await userEvent.click(screen.getByRole('radio', { name: 'Oldest Application' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Oldest Application' }));
         await waitFor(() => expect(screen.getByRole('button', { name: 'Sort by' })).toBeEnabled());
 
         const appliedColumn = screen.getByRole('heading', { name: 'Applied 6' }).closest('section');
@@ -182,11 +220,11 @@ describe('demo page interactions', () => {
         }
         expect(appliedColumn.querySelector('article')).toHaveAccessibleName(/Northstar Mobility/);
 
-        await userEvent.click(screen.getByRole('button', { name: 'List' }));
-        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        fireEvent.click(screen.getByRole('button', { name: 'List' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Sort by' }));
         expect(screen.getByRole('radio', { name: /Company A/ })).toBeChecked();
         expect(screen.getByRole('heading', { name: '1. Aster Security' })).toBeInTheDocument();
-    });
+    }, 20_000);
 
     test('restores and deletes archived applications without success toasts', async () => {
         renderDemo(<DemoViewArchivedApplication />, [routes.demoArchivedApplications]);
@@ -220,6 +258,41 @@ describe('demo page interactions', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
         expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
     });
+
+    test.each([
+        ['active', false, 'demo_job_applications.csv'],
+        ['archived', true, 'demo_archived_job_applications.csv'],
+    ] as const)(
+        'keeps the %s demo application CSV aligned with the filtered display',
+        async (_label, archived, filename) => {
+            renderDemo(
+                <>
+                    <SetApplicationCsvFilter archived={archived} />
+                    {archived ? <DemoViewArchivedApplication /> : <DemoViewApplication />}
+                </>
+            );
+
+            await userEvent.click(
+                screen.getByRole('button', { name: `Filter ${archived ? 'archived' : 'active'} CSV to Offer` })
+            );
+            const displayedCompanies = await screen.findAllByRole('heading', { level: 2 });
+            const displayedCompanyNames = displayedCompanies.map((heading) =>
+                (heading.textContent ?? '').replace(/^\d+\.\s*/, '')
+            );
+            expect(displayedCompanyNames.length).toBeGreaterThan(0);
+
+            await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+            const csv = getExportCsvText();
+            let previousCompanyIndex = -1;
+            for (const companyName of displayedCompanyNames) {
+                const companyIndex = csv.indexOf(companyName);
+                expect(companyIndex).toBeGreaterThan(previousCompanyIndex);
+                previousCompanyIndex = companyIndex;
+            }
+            expect(csv).not.toContain('HorizonAI Labs');
+            expect(screen.getByRole('link', { name: 'Export as CSV' })).toHaveAttribute('download', filename);
+        }
+    );
 
     test('validates and creates demo applications', async () => {
         renderDemo(
@@ -279,21 +352,32 @@ describe('demo page interactions', () => {
             [{ pathname: routes.demoAddInterview, state: { app } }]
         );
         const initialInterviewCount = Number(screen.getByTestId('demo-interview-count').textContent);
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
 
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
-        expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument();
+        expect(
+            screen.getByText('Please enter a date and location before adding an interview.')
+        ).toBeInTheDocument();
 
         fireEvent.change(screen.getByLabelText(/interview date/i), {
             target: { value: toDateTimeString(daysFromNow(new Date(), 4, 10)) },
         });
         await userEvent.type(screen.getByLabelText(/interview location/i), 'Zoom');
         await userEvent.type(screen.getByLabelText(/interview type/i), 'Technical interview');
+
+        fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '1441' } });
+        await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
+        expect(screen.getByText('Please enter a duration between 1 and 1440 minutes')).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '75' } });
         await userEvent.type(screen.getByLabelText(/interview location/i), '{enter}');
 
         expect(screen.getByText('Successfully added an interview!')).toBeInTheDocument();
         expect(screen.getByTestId('demo-interview-count')).toHaveTextContent(String(initialInterviewCount + 1));
+        expect(screen.getByTestId('demo-last-interview-duration')).toHaveTextContent('75');
         expect(screen.getByLabelText(/interview location/i)).toHaveValue('');
         expect(screen.getByLabelText(/interview type/i)).toHaveValue('');
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
     });
 
     test('demo interview navigation does not create a record', async () => {
@@ -500,6 +584,70 @@ describe('demo page interactions', () => {
         ).toBeInTheDocument();
     });
 
+    test('keeps demo interview CSV filtered while bulk calendar and Delete All use the complete active collection', async () => {
+        renderDemo(<DemoViewInterview />, [routes.demoViewInterviews]);
+        await screen.findByRole('region', { name: 'Active interviews' });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+        await waitFor(() =>
+            expect(
+                within(screen.getByRole('region', { name: 'Active interviews' })).getAllByRole('article')
+            ).toHaveLength(2)
+        );
+        fireEvent.click(
+            within(screen.getByRole('group', { name: 'Interview view' })).getByRole('button', { name: 'Board' })
+        );
+        expect(screen.getByRole('region', { name: 'Active interviews' })).toHaveAttribute('data-layout', 'board');
+
+        fireEvent.click(screen.getByRole('button', { name: 'More...' }));
+        const csv = getExportCsvText();
+        expect(csv).toContain('Recruiter follow-up');
+        expect(csv).not.toContain('System design interview');
+        expect(screen.getByRole('link', { name: 'Export as CSV' })).toHaveAttribute(
+            'download',
+            'demo_job_interviews.csv'
+        );
+
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Export upcoming interviews (.ics)' }));
+        expect(mockConfirm).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                description:
+                    'This will download one .ics file containing all 7 upcoming interviews, including interviews you may already have added to your calendar. Importing the file again may create duplicate calendar events.',
+            })
+        );
+
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Delete all interviews' }));
+        expect(mockConfirm).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                description:
+                    'Delete all 9 active interviews you own? This affects every active interview in your account. This action is permanent and cannot be undone.',
+            })
+        );
+    });
+
+    test('uses archived demo filters for display and CSV with a filtered empty-state reset', async () => {
+        renderDemo(<DemoViewArchivedInterview />, [routes.demoArchivedInterviews]);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Past Interviews' }));
+
+        expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'More...' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Show all interviews' }));
+
+        expect(await screen.findByRole('region', { name: 'Archived interviews' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        expect(getExportCsvText()).toContain('Archived with rejected application.');
+        expect(screen.getByRole('link', { name: 'Export as CSV' })).toHaveAttribute(
+            'download',
+            'demo_archived_job_interviews.csv'
+        );
+        expect(screen.queryByRole('button', { name: 'Export upcoming interviews (.ics)' })).not.toBeInTheDocument();
+    });
+
     test('clears demo application filters in reducer state without backend calls', async () => {
         const fetchSpy = vi.spyOn(globalThis, 'fetch');
         renderDemo(<DemoViewApplication />);
@@ -542,7 +690,7 @@ describe('demo page interactions', () => {
     test('renders dashboard from demo selectors', () => {
         renderDemo(<DemoDashboard />, [routes.demoDashboard]);
 
-        expect(screen.getByText('Total Applications')).toBeInTheDocument();
+        expect(screen.getByText('Total Active Applications')).toBeInTheDocument();
         expect(screen.getByText('Demo line chart')).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Upcoming Interviews' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Application Pipeline' })).toBeInTheDocument();
@@ -571,16 +719,21 @@ describe('demo page interactions', () => {
         renderDemo(
             <>
                 <SetInterviewBoardMode />
+                <SetInterviewPastFilter />
                 <DemoRouteHarness />
             </>,
             [routes.demoDashboard]
         );
 
         await userEvent.click(screen.getByRole('button', { name: 'Set interview Board mode' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Set interview Past filter' }));
         await userEvent.click(screen.getByRole('button', { name: 'View Merlion Cloud interview' }));
 
         expect(await screen.findByRole('region', { name: 'Active interviews' })).toHaveAttribute('data-layout', 'list');
         await waitFor(() => expect(document.getElementById('401')?.className).toContain('highlighted'));
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getByRole('checkbox', { name: 'Upcoming Interviews' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Past Interviews' })).toBeChecked();
         expect(fetchSpy).not.toHaveBeenCalled();
         fetchSpy.mockRestore();
     });

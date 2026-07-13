@@ -18,6 +18,7 @@ import {
 } from '../../../../application/applicationBoard/applicationBoardUtils';
 import type { JobApplication, JobStatus } from '../../../../application/models';
 import styles from '../../applicationBoard/DemoApplicationBoard.module.css';
+import applicationBoardStyles from '../../../../application/applicationBoard/ApplicationBoard.module.css';
 
 const SCROLL_BOUNDARY_TOLERANCE = 1;
 
@@ -35,7 +36,7 @@ type DemoApplicationBoardProps = {
     upcomingInterviewCountByJob: Record<number, number>;
 };
 
-const isApplicationBoardElement = (element: Element) => element.classList.contains(styles.board);
+const isApplicationBoardElement = (element: Element) => element.classList.contains(applicationBoardStyles.board);
 
 const getMaxBoardScrollLeft = (board: Element) => Math.max(0, board.scrollWidth - board.clientWidth);
 

@@ -9,6 +9,7 @@ export type InterviewIdParams = {
 export type CreateInterviewRequest = {
     jobId: number;
     interviewDate: string;
+    interviewDurationMinutes: number;
     interviewLocation: string;
     interviewType: string;
     notes: string;

@@ -1,13 +1,16 @@
 import type { JobInterview } from '../models';
+import { getInterviewTiming } from '../../../helper/interviewTiming';
 
 const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/render';
-const INTERVIEW_DURATION_MS = 60 * 60 * 1000;
 const UID_DOMAIN = 'jobtracker.weihungloh.com';
+export const BULK_INTERVIEW_ICS_FILENAME = 'job-tracker-upcoming-interviews.ics';
+export const CALENDAR_ERROR_MESSAGE = 'Unable to create the calendar event. Please try again.';
 
 type CalendarInterview = Pick<
     JobInterview,
     | 'company_name'
     | 'interview_date'
+    | 'interview_duration_minutes'
     | 'interview_id'
     | 'interview_location'
     | 'interview_notes'
@@ -26,16 +29,6 @@ export type CalendarEventDetails = {
 
 const populated = (value: string | null | undefined): string => value?.trim() ?? '';
 
-export const isFutureInterviewDate = (interviewDate: string, now = new Date()): boolean => {
-    const date = new Date(interviewDate);
-    return !Number.isNaN(date.getTime()) && date.getTime() > now.getTime();
-};
-
-export const isOverdueInterviewDate = (interviewDate: string, now = new Date()): boolean => {
-    const date = new Date(interviewDate);
-    return !Number.isNaN(date.getTime()) && date.getTime() < now.getTime();
-};
-
 export const formatGoogleCalendarTimestamp = (date: Date): string => {
     if (Number.isNaN(date.getTime())) {
         throw new Error('Invalid calendar date');
@@ -48,9 +41,9 @@ export const formatGoogleCalendarTimestamp = (date: Date): string => {
 };
 
 export const buildCalendarEventDetails = (interview: CalendarInterview): CalendarEventDetails => {
-    const start = new Date(interview.interview_date);
+    const timing = getInterviewTiming(interview);
 
-    if (Number.isNaN(start.getTime())) {
+    if (!timing.isValid) {
         throw new Error('Invalid interview date');
     }
 
@@ -75,10 +68,10 @@ export const buildCalendarEventDetails = (interview: CalendarInterview): Calenda
 
     return {
         description: descriptionLines.join('\n'),
-        end: new Date(start.getTime() + INTERVIEW_DURATION_MS),
+        end: timing.end,
         interviewId: interview.interview_id,
         location: populated(interview.interview_location),
-        start,
+        start: timing.start,
         title: `${companyName} — ${interviewType || 'Job Interview'}`,
     };
 };
@@ -102,23 +95,34 @@ const escapeIcsText = (value: string): string =>
         .replace(/,/g, '\\,')
         .replace(/;/g, '\\;');
 
-export const buildIcsContent = (event: CalendarEventDetails, createdAt = new Date()): string => {
+const buildIcsEventLines = (event: CalendarEventDetails, createdAt: Date): string[] => [
+    'BEGIN:VEVENT',
+    `UID:${event.interviewId}@${UID_DOMAIN}`,
+    `DTSTAMP:${formatGoogleCalendarTimestamp(createdAt)}`,
+    `DTSTART:${formatGoogleCalendarTimestamp(event.start)}`,
+    `DTEND:${formatGoogleCalendarTimestamp(event.end)}`,
+    `SUMMARY:${escapeIcsText(event.title)}`,
+    `DESCRIPTION:${escapeIcsText(event.description)}`,
+    `LOCATION:${escapeIcsText(event.location)}`,
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+];
+
+export const buildIcsContent = (event: CalendarEventDetails, createdAt = new Date()): string =>
+    buildBulkIcsContent([event], createdAt);
+
+export const buildBulkIcsContent = (events: readonly CalendarEventDetails[], createdAt = new Date()): string => {
+    if (events.length === 0) {
+        throw new Error('Cannot create an empty calendar');
+    }
+
     const lines = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
         'PRODID:-//Job Tracker//Interview Calendar//EN',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
-        'BEGIN:VEVENT',
-        `UID:${event.interviewId}@${UID_DOMAIN}`,
-        `DTSTAMP:${formatGoogleCalendarTimestamp(createdAt)}`,
-        `DTSTART:${formatGoogleCalendarTimestamp(event.start)}`,
-        `DTEND:${formatGoogleCalendarTimestamp(event.end)}`,
-        `SUMMARY:${escapeIcsText(event.title)}`,
-        `DESCRIPTION:${escapeIcsText(event.description)}`,
-        `LOCATION:${escapeIcsText(event.location)}`,
-        'STATUS:CONFIRMED',
-        'END:VEVENT',
+        ...events.flatMap((calendarEvent) => buildIcsEventLines(calendarEvent, createdAt)),
         'END:VCALENDAR',
     ];
 
@@ -136,18 +140,26 @@ const buildIcsFilename = (event: CalendarEventDetails): string => {
     return `${safeTitle || 'job-interview'}.ics`;
 };
 
-export const downloadIcsEvent = (event: CalendarEventDetails): void => {
-    const blob = new Blob([buildIcsContent(event)], { type: 'text/calendar;charset=utf-8' });
+const downloadIcsContent = (content: string, filename: string): void => {
+    const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
     const objectUrl = URL.createObjectURL(blob);
     const downloadLink = document.createElement('a');
 
     try {
         downloadLink.href = objectUrl;
-        downloadLink.download = buildIcsFilename(event);
+        downloadLink.download = filename;
         document.body.appendChild(downloadLink);
         downloadLink.click();
     } finally {
         downloadLink.remove();
         URL.revokeObjectURL(objectUrl);
     }
+};
+
+export const downloadIcsEvent = (event: CalendarEventDetails): void => {
+    downloadIcsContent(buildIcsContent(event), buildIcsFilename(event));
+};
+
+export const downloadBulkIcsEvents = (events: readonly CalendarEventDetails[]): void => {
+    downloadIcsContent(buildBulkIcsContent(events), BULK_INTERVIEW_ICS_FILENAME);
 };

@@ -236,14 +236,17 @@
 
 .jobTitle {
     margin: 10px 0 6px;
-    color: var(--colorText);
-    font-weight: 600;
+    color: var(--colorTextSecondary);
+    font-size: 0.875rem;
+    font-weight: normal;
     overflow-wrap: anywhere;
 }
 
 .meta {
     margin: 4px 0;
+    color: var(--colorText);
     font-size: 0.8125rem;
+    font-weight: 700;
 }
 
 .statusBadge,
@@ -308,21 +311,28 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-top: 10px;
     color: var(--colorText);
     font-size: 0.8125rem;
+    font-weight: 400;
+}
+
+.statusSelectLabel {
+    margin-top: 10px;
+}
+
+.notesField {
     font-weight: 600;
 }
 
 .statusSelectLabel select {
     width: 100%;
-    min-height: 34px;
-    padding: 7px 9px;
+    min-height: 28px;
+    padding: 3px 7px;
     border: 1px solid var(--colorInputBorder);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--colorInputBg);
     color: var(--colorInputText);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 

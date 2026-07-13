@@ -54,6 +54,10 @@
     composes: location from '../../application/ApplicationCard.module.css';
 }
 
+.jobTitle {
+    composes: jobTitle from '../../application/ApplicationCard.module.css';
+}
+
 .badgeGroup {
     composes: badgeGroup from '../../application/ApplicationCard.module.css';
 }

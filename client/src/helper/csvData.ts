@@ -28,6 +28,7 @@ type ApplicationCsvSource = {
 type InterviewCsvSource = {
     company_name: string;
     interview_date: string;
+    interview_duration_minutes: number;
     interview_location: string;
     interview_type: string;
     interview_notes: string;

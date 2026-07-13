@@ -4,11 +4,21 @@ import styles from './DashboardStats.module.css';
 import type { DashboardStatsProps } from './models';
 import type { JobStatus } from '../application/models';
 import { getStatusCountMap, getTotalStatusCount, getUpcomingInterviews } from './dashboardData';
+import { useState } from 'react';
 
 const INTERVIEW_PLUS_STATUSES: readonly JobStatus[] = ['Interview', 'Offer', 'Accepted', 'Declined'];
 const OFFER_PLUS_STATUSES: readonly JobStatus[] = ['Offer', 'Accepted', 'Declined'];
+const INTERVIEW_RATE_EXPLANATION = 'Interview, Offer, Accepted or Declined applications ÷ total active applications.';
+const OFFER_RATE_EXPLANATION = 'Offer, Accepted or Declined applications ÷ total active applications.';
 
-const DashboardStats = ({ statusCounts, interviews, weeklyApplications, isLoading }: DashboardStatsProps) => {
+const DashboardStats = ({
+    currentTime = new Date(),
+    statusCounts,
+    interviews,
+    weeklyApplications,
+    isLoading,
+}: DashboardStatsProps) => {
+    const [revealedRate, setRevealedRate] = useState<string | null>(null);
     if (isLoading) {
         return (
             <div className={styles.loading}>
@@ -25,27 +35,60 @@ const DashboardStats = ({ statusCounts, interviews, weeklyApplications, isLoadin
     const offerRate = total > 0 ? `${Math.round((offerPlus / total) * 100)}%` : '—';
     const latestApplicationCount = Number(weeklyApplications[weeklyApplications.length - 1]?.applications_count ?? 0);
     const applicationsThisWeek = Number.isFinite(latestApplicationCount) ? latestApplicationCount : 0;
-    const upcomingInterviews = getUpcomingInterviews(interviews).length;
+    const upcomingInterviews = getUpcomingInterviews(interviews, currentTime).length;
 
     const cards = [
         { icon: 'briefcase' as const, label: 'Total Active Applications', value: total },
         { icon: 'activeApplications' as const, label: 'Applied This Week', value: applicationsThisWeek },
         { icon: 'interview' as const, label: 'Upcoming Interviews', value: upcomingInterviews },
-        { icon: 'highlight' as const, label: 'Interview Rate', value: interviewRate },
-        { icon: 'success' as const, label: 'Offer Rate', value: offerRate },
+        {
+            explanation: INTERVIEW_RATE_EXPLANATION,
+            icon: 'highlight' as const,
+            label: 'Interview Rate',
+            value: interviewRate,
+        },
+        { explanation: OFFER_RATE_EXPLANATION, icon: 'success' as const, label: 'Offer Rate', value: offerRate },
     ];
 
     return (
         <div className={styles.statsRow}>
-            {cards.map((card) => (
-                <div className={styles.card} key={card.label}>
-                    <div className={styles.icon}>
-                        <Icon name={card.icon} size={24} />
+            {cards.map((card) => {
+                const isRevealed = revealedRate === card.label;
+                const content = (
+                    <>
+                        <div className={styles.icon}>
+                            <Icon name={card.icon} size={24} />
+                        </div>
+                        <div className={styles.statContent}>
+                            {card.explanation && isRevealed ? (
+                                <p className={styles.explanation}>{card.explanation}</p>
+                            ) : (
+                                <>
+                                    <div className={styles.value}>{card.value}</div>
+                                    <div className={styles.label}>{card.label}</div>
+                                </>
+                            )}
+                        </div>
+                    </>
+                );
+
+                return card.explanation ? (
+                    <button
+                        aria-label={`${card.label}: ${isRevealed ? card.explanation : card.value}`}
+                        aria-pressed={isRevealed}
+                        className={`${styles.card} ${styles.interactiveCard}`}
+                        key={card.label}
+                        onClick={() => setRevealedRate((current) => (current === card.label ? null : card.label))}
+                        type='button'
+                    >
+                        {content}
+                    </button>
+                ) : (
+                    <div className={styles.card} key={card.label}>
+                        {content}
                     </div>
-                    <div className={styles.value}>{card.value}</div>
-                    <div className={styles.label}>{card.label}</div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 };

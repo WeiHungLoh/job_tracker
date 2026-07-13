@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ChartOptions, Plugin } from 'chart.js';
 import ApplicationPipelineChart from '../../pages/dashboard/ApplicationPipelineChart';
@@ -58,6 +58,7 @@ const createInterview = (interviewId: number, interviewDate: string, companyName
     company_name: companyName,
     job_title: `Role ${interviewId}`,
     interview_date: interviewDate,
+    interview_duration_minutes: 60,
     interview_location: interviewId % 2 === 0 ? 'Video call' : '',
     interview_type: interviewId % 2 === 0 ? 'Technical interview' : '',
     interview_notes: '',
@@ -438,6 +439,49 @@ describe('Dashboard V2', () => {
         expect(screen.queryByText('Fourth Company')).not.toBeInTheDocument();
     });
 
+    test('includes an in-progress interview in the dashboard upcoming collection', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(fixedNow);
+
+        render(
+            <UpcomingInterviews
+                interviews={[createInterview(1, '2026-07-10T11:30:00.000Z', 'In Progress Company')]}
+                isLoading={false}
+            />
+        );
+
+        expect(screen.getByRole('heading', { name: 'In Progress Company' })).toBeInTheDocument();
+    });
+
+    test('refreshes upcoming interview content when an interview ends while the dashboard remains open', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(fixedNow);
+        const endingInterview = {
+            ...createInterview(1, '2026-07-10T11:30:00.000Z', 'Ending Company'),
+            interview_duration_minutes: 31,
+        };
+
+        render(
+            <DashboardContent
+                statusCounts={[]}
+                interviews={[endingInterview]}
+                weeklyApplications={[]}
+                isLoading={false}
+            />
+        );
+
+        const dashboardStatistics = within(screen.getByRole('region', { name: 'Dashboard statistics' }));
+        expect(screen.getByRole('heading', { name: 'Ending Company' })).toBeInTheDocument();
+        expect(dashboardStatistics.getByText('Upcoming Interviews').parentElement).toHaveTextContent('1');
+
+        act(() => {
+            vi.advanceTimersByTime(60 * 1000);
+        });
+
+        expect(screen.queryByRole('heading', { name: 'Ending Company' })).not.toBeInTheDocument();
+        expect(dashboardStatistics.getByText('Upcoming Interviews').parentElement).toHaveTextContent('0');
+    });
+
     test('selects the exact upcoming interview from its accessible preview', async () => {
         vi.useFakeTimers();
         vi.setSystemTime(fixedNow);
@@ -487,11 +531,47 @@ describe('Dashboard V2', () => {
             />
         );
 
-        expect(screen.getByText('Total Applications').parentElement).toHaveTextContent('10');
+        expect(screen.getByText('Total Active Applications').parentElement).toHaveTextContent('10');
         expect(screen.getByText('Applied This Week').parentElement).toHaveTextContent('4');
         expect(screen.getByText('Upcoming Interviews').parentElement).toHaveTextContent('1');
         expect(screen.getByText('Interview Rate').parentElement).toHaveTextContent('60%');
         expect(screen.getByText('Offer Rate').parentElement).toHaveTextContent('40%');
+    });
+
+    test('reveals and restores only the Interview Rate and Offer Rate calculations', async () => {
+        render(
+            <DashboardStats
+                statusCounts={[statusCount('Applied', 2), statusCount('Interview', 1), statusCount('Offer', 1)]}
+                interviews={[]}
+                weeklyApplications={[]}
+                isLoading={false}
+            />
+        );
+
+        const interviewRate = screen.getByRole('button', { name: /Interview Rate/i });
+        const offerRate = screen.getByRole('button', { name: /Offer Rate/i });
+
+        expect(interviewRate).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.queryByRole('button', { name: /Total Active Applications/i })).not.toBeInTheDocument();
+
+        interviewRate.focus();
+        await userEvent.keyboard('{Enter}');
+        expect(
+            screen.getByText('Interview, Offer, Accepted or Declined applications ÷ total active applications.')
+        ).toBeInTheDocument();
+        expect(interviewRate).toHaveAttribute('aria-pressed', 'true');
+
+        await userEvent.keyboard(' ');
+        expect(screen.getByText('Interview Rate')).toBeInTheDocument();
+        expect(interviewRate).toHaveAttribute('aria-pressed', 'false');
+
+        offerRate.focus();
+        await userEvent.keyboard('{Enter}');
+        expect(
+            screen.getByText('Offer, Accepted or Declined applications ÷ total active applications.')
+        ).toBeInTheDocument();
+        await userEvent.click(offerRate);
+        expect(screen.getByText('Offer Rate')).toBeInTheDocument();
     });
 
     test('shows unavailable rates when there are no applications', () => {
