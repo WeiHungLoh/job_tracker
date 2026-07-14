@@ -6,7 +6,7 @@ export const createMuiTheme = (theme: Theme) => {
         palette: {
             mode: theme,
             primary: {
-                main: theme === 'dark' ? '#f4507e' : '#f1356d',
+                main: theme === 'dark' ? '#ff779b' : '#a81f4c',
             },
         },
         typography: {
@@ -42,8 +42,8 @@ export const createMuiTheme = (theme: Theme) => {
             MuiButton: {
                 styleOverrides: {
                     root: {
-                        padding: '8px 10px',
-                        borderRadius: '10px',
+                        padding: 'var(--spaceControl) var(--spaceCompact)',
+                        borderRadius: 'var(--radiusControl)',
                         boxShadow: 'none',
                         textTransform: 'none',
                     },

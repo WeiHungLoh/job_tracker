@@ -10,9 +10,29 @@
     --applicationListWidth: clamp(750px, 51.0204%, 1000px);
     --interviewListWidth: clamp(710px, 48.2993%, 1000px);
     --applicationBoardWidth: clamp(1180px, 80.2721%, 1573.3333px);
+
+    --fontSizeBody: 1rem;
+    --fontSizeControl: 0.875rem;
+    --fontSizeCompactControl: 0.8125rem;
+    --fontSizeMetadata: 0.75rem;
+
+    --radiusControl: 10px;
+    --radiusMenuItem: 8px;
+    --radiusToolbar: 14px;
+    --radiusPanel: 15px;
+    --radiusCard: 16px;
+    --radiusPill: 999px;
+
+    --spaceControl: 8px;
+    --spaceCompact: 10px;
+    --spaceCard: 16px;
+    --spaceSection: 20px;
+    --spacePageGrid: 24px;
 }
 
 [data-theme='light'] {
+    color-scheme: light;
+
     /* Status badges */
     --colorStatusApplied: #17a2b8;
     --colorStatusInterview: #0d6efd;
@@ -20,52 +40,62 @@
     --colorStatusAccepted: #198754;
     --colorStatusRejected: #dc3545;
     --colorStatusGhosted: #6c757d;
-    --colorStatusDeclined: rebeccapurple;
+    --colorStatusDeclined: #663399;
+    --colorStatusAppliedText: #062f35;
+    --colorStatusInterviewText: #ffffff;
+    --colorStatusOfferText: #3b2c00;
+    --colorStatusAcceptedText: #ffffff;
+    --colorStatusRejectedText: #ffffff;
+    --colorStatusGhostedText: #ffffff;
+    --colorStatusDeclinedText: #ffffff;
     --colorBadgeText: white;
 
     /* Primary accent */
-    --colorPrimary: #f1356d;
-    --colorPrimaryHover: #d12b5a;
+    --colorPrimary: #a81f4c;
+    --colorPrimaryHover: #8f1b43;
     --colorPrimaryFocusShadow: rgb(241 53 109 / 12%);
-    --colorPrimaryFocusOutline: rgb(241 53 109 / 28%);
+    --colorPrimaryFocusOutline: #8f1b43;
 
     /* Backgrounds */
-    --colorPageBg: #fff;
-    --colorCardBg: #fff;
-    --colorCardBorder: #f0d8e0;
-    --colorOverlayBg: #f4f3f8;
+    --colorPageBg: #f8f4f1;
+    --colorCardBg: #fffdfb;
+    --colorCardBorder: #dfcfd1;
+    --colorOverlayBg: #f4eae9;
     --colorPublicPageBg: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%),
         var(--colorPageBg);
     --colorControlSurface: #fffafb;
-    --colorControlMutedSurface: #f8f3f5;
+    --colorControlMutedSurface: #f4eae9;
     --colorControlBorder: #ead7de;
+    --colorInteractiveBorder: #987f84;
     --colorControlShadow: rgb(74 40 54 / 10%);
-    --colorControlFocusRing: #c82457;
-    --colorSelectedControlBg: #d12b5a;
-    --colorSelectedControlText: #fff;
+    --colorControlFocusRing: #8f1b43;
+    --colorSelectedControlBg: #a81f4c;
+    --colorSelectedControlText: #ffffff;
+    --colorScrollbarTrack: #f4eae9;
+    --colorScrollbarThumb: #a81f4c;
 
     /* Text */
-    --colorText: #343a40;
-    --colorTextSecondary: #666;
+    --colorText: #2b2529;
+    --colorTextSecondary: #71666b;
 
     /* Links */
     --colorLinkBg: #e0f0ff;
-    --colorLinkText: #0d6efd;
+    --colorLinkText: #0b57d0;
     --colorLinkHoverBg: #d0e8ff;
 
     /* Inputs */
-    --colorInputBg: #fff;
-    --colorInputText: black;
-    --colorInputBorder: #d9dde3;
-    --colorLabel: #343a40;
-    --colorInputIcon: #8a8f98;
-    --colorVisibilityIcon: #6c757d;
+    --colorInputBg: #fffdfb;
+    --colorInputText: #2b2529;
+    --colorInputBorder: #987f84;
+    --colorLabel: #2b2529;
+    --colorInputIcon: #82747a;
+    --colorVisibilityIcon: #71666b;
 
     /* Auth page */
-    --colorAuthCardBg: #fff;
-    --colorAuthCardBorder: #f0e7eb;
+    --colorAuthCardBg: #fffdfb;
+    --colorAuthCardBorder: #dfcfd1;
     --colorAuthCardShadow: rgb(64 32 48 / 10%);
-    --colorAuthLink: #0d6efd;
+    --colorAuthLink: #0b57d0;
     --colorAuthLinkHover: #084298;
     --colorNoticeBg: #e6f4ff;
     --colorNoticeText: #084298;
@@ -75,39 +105,40 @@
     --colorGuideLinkHover: #084298;
 
     /* Nav */
-    --colorNavHoverBg: rgb(241 53 109 / 8%);
-    --colorNavBorder: #ead7de;
-    --colorNavActiveBg: rgb(241 53 109 / 10%);
-    --colorNavActiveText: #c82457;
-    --colorNavInactiveText: #514850;
+    --colorNavHoverBg: rgb(168 31 76 / 8%);
+    --colorNavBorder: #dfcfd1;
+    --colorNavActiveBg: rgb(168 31 76 / 10%);
+    --colorNavActiveText: #8f1b43;
+    --colorNavInactiveText: #5a4e53;
 
     /* Buttons */
-    --colorBtnPrimaryText: #fff;
-    --colorBtnCompactText: #fff;
-    --colorBtnSecondaryHoverBg: rgb(241 53 109 / 8%);
+    --colorBtnPrimaryText: #ffffff;
+    --colorBtnCompactText: #ffffff;
+    --colorBtnDestructiveFilledText: #ffffff;
+    --colorBtnSecondaryHoverBg: rgb(168 31 76 / 8%);
     --colorBtnDestructiveBg: #dc3545;
     --colorBtnDestructiveHoverBg: #c82333;
-    --colorBtnDestructiveText: #dc3545;
+    --colorBtnDestructiveText: #b02a37;
 
     /* Notes */
-    --colorNotesBg: #fff9c4;
-    --colorNotesBorder: #fbc02d;
-    --colorNotesText: #495057;
+    --colorNotesBg: #fff7c8;
+    --colorNotesBorder: #d5a82f;
+    --colorNotesText: #4f4527;
     --colorNotesShadow: rgba(0, 0, 0, 0.1);
 
     /* Misc accents */
-    --colorLocationText: #2a9d8f;
+    --colorLocationText: #1f756a;
     --colorInterviewType: #5e60ce;
-    --colorTimeLeft: red;
+    --colorTimeLeft: #c6283d;
     --colorUpcomingBadge: #f57c00;
-    --colorUpcomingBadgeText: #fff;
+    --colorUpcomingBadgeText: #3a1b00;
     --colorHighlightAnim: #dfffd9;
 
     /* Toast */
     --colorToastBorder: #eadfe4;
     --colorToastMuted: #766b71;
     --colorToastErrorBg: #ffdddc;
-    --colorToastErrorText: #ee443f;
+    --colorToastErrorText: #a52a2f;
     --colorToastErrorAccent: #cf3f62;
     --colorToastErrorSoft: #fff0f4;
     --colorToastSuccessBg: #d4edda;
@@ -140,9 +171,9 @@
     --colorSkeletonHighlight: #fff8fa;
 
     /* Toggle switch */
-    --colorSwitchOff: #b7b9ba;
-    --colorSwitchOffBorder: #aaa;
-    --colorSwitchThumb: #ffff;
+    --colorSwitchOff: #987f84;
+    --colorSwitchOffBorder: #71666b;
+    --colorSwitchThumb: #ffffff;
     --colorSwitchHoverBorder: #6f6f6f;
 
     /* Filter select */
@@ -150,18 +181,18 @@
     --colorFilterSelectText: #003366;
 
     /* User guide */
-    --colorGuideText: #342d40;
-    --colorGuideMuted: #6b6474;
-    --colorGuideBorder: #f0d8e0;
-    --colorGuideAccentSoft: #fff0f5;
-    --colorGuideAccentDark: #c82457;
-    --colorGuideHover: #fff8fa;
-    --colorGuideChevron: #766c80;
-    --colorGuidePanelText: #55505c;
-    --colorGuideAccentBorder: #f2a8be;
-    --colorGuideHeaderBg: #fff;
+    --colorGuideText: #2b2529;
+    --colorGuideMuted: #71666b;
+    --colorGuideBorder: #dfcfd1;
+    --colorGuideAccentSoft: #f8dfe7;
+    --colorGuideAccentDark: #8f1b43;
+    --colorGuideHover: #fffaf8;
+    --colorGuideChevron: #82747a;
+    --colorGuidePanelText: #5a4e53;
+    --colorGuideAccentBorder: #e9aabc;
+    --colorGuideHeaderBg: #fffdfb;
     --colorGuideHeaderShadow: rgb(91 42 59 / 8%);
-    --colorGuideTipBg: #fff;
+    --colorGuideTipBg: #fffdfb;
     --colorGuideTipShadow: rgb(91 42 59 / 6%);
 
     /* Dashboard stats */
@@ -169,30 +200,35 @@
 }
 
 [data-theme='dark'] {
+    color-scheme: dark;
+
     /* Primary accent */
-    --colorPrimary: #f4507e;
-    --colorPrimaryHover: #e87090;
+    --colorPrimary: #ff779b;
+    --colorPrimaryHover: #ff91ad;
     --colorPrimaryFocusShadow: rgb(244 80 126 / 16%);
-    --colorPrimaryFocusOutline: rgb(244 80 126 / 32%);
+    --colorPrimaryFocusOutline: #ff91ad;
 
     /* Backgrounds — neutral grays, no purple */
-    --colorPageBg: #121212;
-    --colorCardBg: #1e1e26;
-    --colorCardBorder: #333344;
-    --colorOverlayBg: #16161c;
+    --colorPageBg: #171517;
+    --colorCardBg: #211e22;
+    --colorCardBorder: #423840;
+    --colorOverlayBg: #2a252a;
     --colorPublicPageBg: radial-gradient(circle at top left, var(--colorStatIconBg), transparent 45%),
         var(--colorPageBg);
     --colorControlSurface: #191920;
-    --colorControlMutedSurface: #25252f;
+    --colorControlMutedSurface: #2a252a;
     --colorControlBorder: #3a3a48;
+    --colorInteractiveBorder: #7a6c74;
     --colorControlShadow: rgb(0 0 0 / 30%);
-    --colorControlFocusRing: #ff86a6;
-    --colorSelectedControlBg: #b92f58;
-    --colorSelectedControlText: #fff;
+    --colorControlFocusRing: #ff91ad;
+    --colorSelectedControlBg: #ff779b;
+    --colorSelectedControlText: #261019;
+    --colorScrollbarTrack: #2a252a;
+    --colorScrollbarThumb: #ff779b;
 
     /* Text */
-    --colorText: #dee2e6;
-    --colorTextSecondary: #adb5bd;
+    --colorText: #f4edf0;
+    --colorTextSecondary: #c1b4ba;
 
     /* Links */
     --colorLinkBg: #1c3048;
@@ -200,16 +236,16 @@
     --colorLinkHoverBg: #223a58;
 
     /* Inputs */
-    --colorInputBg: #2a2a36;
-    --colorInputText: #f0f0f0;
-    --colorInputBorder: #444455;
-    --colorLabel: #f0f0f0;
-    --colorInputIcon: #c0c0c8;
-    --colorVisibilityIcon: #c0c0c8;
+    --colorInputBg: #211e22;
+    --colorInputText: #f4edf0;
+    --colorInputBorder: #7a6c74;
+    --colorLabel: #f4edf0;
+    --colorInputIcon: #c1b4ba;
+    --colorVisibilityIcon: #c1b4ba;
 
     /* Auth page */
-    --colorAuthCardBg: #1e1e26;
-    --colorAuthCardBorder: #333344;
+    --colorAuthCardBg: #211e22;
+    --colorAuthCardBorder: #423840;
     --colorAuthCardShadow: rgb(0 0 0 / 30%);
     --colorAuthLink: #6ea8fe;
     --colorAuthLinkHover: #8bb9fe;
@@ -221,24 +257,25 @@
     --colorGuideLinkHover: #8bb9fe;
 
     /* Nav */
-    --colorNavHoverBg: rgb(244 80 126 / 12%);
-    --colorNavBorder: #3a3a48;
-    --colorNavActiveBg: rgb(244 80 126 / 16%);
-    --colorNavActiveText: #ff86a6;
-    --colorNavInactiveText: #d0cbd2;
+    --colorNavHoverBg: rgb(255 119 155 / 9%);
+    --colorNavBorder: #423840;
+    --colorNavActiveBg: rgb(255 119 155 / 13%);
+    --colorNavActiveText: #ff91ad;
+    --colorNavInactiveText: #c1b4ba;
 
     /* Buttons */
-    --colorBtnPrimaryText: #fff;
-    --colorBtnCompactText: #fff;
-    --colorBtnSecondaryHoverBg: rgb(244 80 126 / 12%);
+    --colorBtnPrimaryText: #261019;
+    --colorBtnCompactText: #261019;
+    --colorBtnDestructiveFilledText: #ffffff;
+    --colorBtnSecondaryHoverBg: rgb(255 119 155 / 9%);
     --colorBtnDestructiveBg: #c43d4b;
     --colorBtnDestructiveHoverBg: #ca414f;
     --colorBtnDestructiveText: #ff7b86;
 
     /* Notes */
-    --colorNotesBg: #3d3520;
-    --colorNotesBorder: #b8960c;
-    --colorNotesText: #f0f0f0;
+    --colorNotesBg: #3b331d;
+    --colorNotesBorder: #d1a93e;
+    --colorNotesText: #f4e7bd;
     --colorNotesShadow: rgba(0, 0, 0, 0.3);
 
     /* Status badges — slightly darker for dark backgrounds */
@@ -249,6 +286,13 @@
     --colorStatusRejected: #b02a37;
     --colorStatusGhosted: #5c636a;
     --colorStatusDeclined: #663399;
+    --colorStatusAppliedText: #041a1d;
+    --colorStatusInterviewText: #ffffff;
+    --colorStatusOfferText: #2c2100;
+    --colorStatusAcceptedText: #ffffff;
+    --colorStatusRejectedText: #ffffff;
+    --colorStatusGhostedText: #ffffff;
+    --colorStatusDeclinedText: #ffffff;
     --colorBadgeText: white;
 
     /* Misc accents */
@@ -256,14 +300,14 @@
     --colorInterviewType: #8b8dd4;
     --colorTimeLeft: #e35d6e;
     --colorUpcomingBadge: #f57c00;
-    --colorUpcomingBadgeText: #fff;
+    --colorUpcomingBadgeText: #2a1400;
     --colorHighlightAnim: #1a3d2a;
 
     /* Toast */
     --colorToastBorder: #3b3b49;
     --colorToastMuted: #b8b0b5;
     --colorToastErrorBg: #3d1a1a;
-    --colorToastErrorText: #e35d6e;
+    --colorToastErrorText: #e86677;
     --colorToastErrorAccent: #ff7696;
     --colorToastErrorSoft: #40222d;
     --colorToastSuccessBg: #0d3320;
@@ -306,18 +350,18 @@
     --colorFilterSelectText: #6ea8fe;
 
     /* User guide */
-    --colorGuideText: #dee2e6;
-    --colorGuideMuted: #adb5bd;
-    --colorGuideBorder: #333344;
-    --colorGuideAccentSoft: #2a1a25;
-    --colorGuideAccentDark: #e87090;
-    --colorGuideHover: #22222e;
-    --colorGuideChevron: #adb5bd;
-    --colorGuidePanelText: #dee2e6;
-    --colorGuideAccentBorder: #6d3050;
-    --colorGuideHeaderBg: #1e1e26;
+    --colorGuideText: #f4edf0;
+    --colorGuideMuted: #c1b4ba;
+    --colorGuideBorder: #423840;
+    --colorGuideAccentSoft: #452633;
+    --colorGuideAccentDark: #ff91ad;
+    --colorGuideHover: #2a252a;
+    --colorGuideChevron: #c1b4ba;
+    --colorGuidePanelText: #d8cdd2;
+    --colorGuideAccentBorder: #744054;
+    --colorGuideHeaderBg: #211e22;
     --colorGuideHeaderShadow: rgb(0 0 0 / 20%);
-    --colorGuideTipBg: #1e1e26;
+    --colorGuideTipBg: #211e22;
     --colorGuideTipShadow: rgb(0 0 0 / 20%);
 
     /* Dashboard stats */
@@ -345,7 +389,7 @@ body:has(.MuiModal-root) {
 
 body {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--fontSizeBody);
     background-color: var(--colorPageBg);
     color: var(--colorText);
 }
