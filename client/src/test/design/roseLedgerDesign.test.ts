@@ -456,7 +456,7 @@ describe('Rose Ledger visual contract', () => {
         expect(authProductIntro).toContain('.carouselDot:focus-visible {\n    outline-offset: 2px;\n}');
     });
 
-    it('uses audited status foregrounds, pill badges, and solid scrollbar cues', () => {
+    it('keeps application actions single-line and the card scrollbar native', () => {
         const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
         const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
 
@@ -464,8 +464,12 @@ describe('Rose Ledger visual contract', () => {
             expect(`${applicationCard}\n${applicationBoard}`).toContain(`var(--colorStatus${status}Text)`)
         );
         expect(applicationCard).toContain('border-radius: var(--radiusPill);');
-        expect(applicationCard).toContain('scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);');
-        expect(applicationCard).toContain('.application::-webkit-scrollbar-thumb');
+        expect(applicationCard).toMatch(/\.buttonGroup button\s*\{[^}]*white-space: nowrap;/s);
+        expect(applicationCard).not.toContain(
+            'scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);'
+        );
+        expect(applicationCard).not.toContain('.application::-webkit-scrollbar-track');
+        expect(applicationCard).not.toContain('.application::-webkit-scrollbar-thumb');
         expect(applicationBoard).toContain('border-radius: var(--radiusPill);');
         expect(applicationBoard).toContain('scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);');
         expect(applicationBoard).toContain('.board::-webkit-scrollbar-thumb');

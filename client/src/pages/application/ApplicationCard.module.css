@@ -50,6 +50,10 @@
     width: 190px;
 }
 
+.buttonGroup button {
+    white-space: nowrap;
+}
+
 .archiveButton {
     grid-column: 1 / -1;
 }
@@ -237,16 +241,6 @@
         -webkit-overflow-scrolling: touch;
         gap: 8px;
         padding-right: 0;
-        scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);
-    }
-
-    .application::-webkit-scrollbar-track {
-        background: var(--colorScrollbarTrack);
-    }
-
-    .application::-webkit-scrollbar-thumb {
-        border-radius: var(--radiusPill);
-        background: var(--colorScrollbarThumb);
     }
 
     .applicationContent {
