@@ -215,6 +215,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorSwitchThumb: #ffffff;',
             '--colorSelectedControlText: #ffffff;',
             '--colorBtnDestructiveFilledText: #ffffff;',
+            '--colorStatusApplied: #17a2b8;',
+            '--colorStatusOffer: #ffc107;',
             '--colorStatusOfferText: #ffffff;',
             '--colorStatusAppliedText: #ffffff;',
             '--colorStatusInterviewText: #ffffff;',
@@ -238,6 +240,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorInteractiveBorder: #7a6c74;',
             '--colorSelectedControlText: #261019;',
             '--colorBtnDestructiveFilledText: #ffffff;',
+            '--colorStatusApplied: #148f9e;',
+            '--colorStatusOffer: #d39e00;',
             '--colorStatusOfferText: #ffffff;',
             '--colorStatusAppliedText: #ffffff;',
             '--colorStatusInterviewText: #ffffff;',
@@ -361,6 +365,7 @@ describe('Rose Ledger visual contract', () => {
         expect(desktopRules).toContain('height: 89%;');
         expect(desktopRules).toContain('width: 500px;');
         expect(desktopRules).toContain('width: 190px;');
+        expect(desktopRules).toContain('grid-template-columns: 1fr 1fr;');
         expect(desktopRules).toContain('top: 15px;');
         expect(mediumRules).toContain('flex-wrap: wrap;');
         expect(mediumRules).toContain('flex: 1 1 500px;');
