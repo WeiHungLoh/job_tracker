@@ -15,6 +15,7 @@
 
 .productPanel {
     display: grid;
+    justify-items: start;
     min-width: 0;
     gap: 16px;
     opacity: 1;
@@ -123,6 +124,8 @@
 }
 
 .productCopy {
+    width: 100%;
+    min-width: 0;
     color: var(--colorText);
 }
 
@@ -141,6 +144,7 @@
     color: var(--colorTextSecondary);
     font-size: 1.05rem;
     line-height: 1.65;
+    text-align: left;
 }
 
 .benefitList {
@@ -177,6 +181,7 @@
     display: grid;
     justify-items: start;
     gap: 8px;
+    margin-top: 6px;
 }
 
 .productActionRow {
@@ -242,6 +247,7 @@
 .preview {
     width: 100%;
     max-width: 700px;
+    box-sizing: border-box;
 }
 
 .carouselRegion:focus-visible {
@@ -525,8 +531,8 @@
     }
 
     .description {
-        margin-right: auto;
-        margin-left: auto;
+        margin-right: 0;
+        margin-left: 0;
         text-align: left;
     }
 
@@ -535,6 +541,7 @@
         justify-self: start;
         justify-content: start;
         justify-items: start;
+        margin-top: 0;
     }
 
     .productActionRow {
@@ -548,7 +555,7 @@
 
     .preview {
         max-width: 640px;
-        justify-self: center;
+        justify-self: start;
     }
 
     .fullscreenPreview {
