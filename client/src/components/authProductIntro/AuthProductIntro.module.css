@@ -16,7 +16,7 @@
 .productPanel {
     display: grid;
     min-width: 0;
-    gap: 22px;
+    gap: 16px;
     opacity: 1;
     transform: translateX(0);
     visibility: visible;
@@ -183,7 +183,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px 18px;
+    gap: 12px;
 }
 
 .demoLink {
@@ -521,29 +521,29 @@
     .productCopy h1 {
         max-width: 680px;
         font-size: clamp(2rem, 7vw, 3rem);
-        text-align: center;
+        text-align: left;
     }
 
     .description {
         margin-right: auto;
         margin-left: auto;
-        text-align: center;
+        text-align: left;
     }
 
     .productActions {
         width: 100%;
-        justify-self: center;
-        justify-content: center;
-        justify-items: center;
+        justify-self: start;
+        justify-content: start;
+        justify-items: start;
     }
 
     .productActionRow {
         width: 100%;
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .demoCopy {
-        text-align: center;
+        text-align: left;
     }
 
     .preview {
