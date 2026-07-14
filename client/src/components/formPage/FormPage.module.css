@@ -45,10 +45,6 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.formPage select {
-    appearance: auto;
-}
-
 .formPage input:focus,
 .formPage select:focus {
     border-color: var(--colorPrimary);

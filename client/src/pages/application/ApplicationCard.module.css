@@ -83,6 +83,8 @@
     color: var(--colorTextSecondary);
     overflow-wrap: anywhere;
     width: 500px;
+    padding-right: 60px;
+    box-sizing: border-box;
 }
 
 .location {
@@ -245,6 +247,7 @@
 
     .applicationContent {
         font-size: 0.9rem;
+        padding-right: 0;
     }
 
     .applicationContent h2 {

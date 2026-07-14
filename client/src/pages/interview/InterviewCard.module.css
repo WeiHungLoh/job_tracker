@@ -20,11 +20,13 @@
     display: grid;
     margin-left: auto;
     grid-auto-flow: column;
+    grid-template-columns: 1fr 1fr;
     justify-content: end;
     align-items: center;
     color: var(--colorBadgeText);
     gap: var(--spaceCompact);
     width: 190px;
+    flex-shrink: 0;
 }
 
 .interviewContent {
@@ -115,6 +117,12 @@
     outline-offset: 2px;
 }
 
+@media (min-width: 804px) {
+    .buttonGroup > :only-child {
+        grid-column: 2;
+    }
+}
+
 .board {
     width: 100%;
     max-width: 420px;
@@ -175,6 +183,7 @@
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         gap: 8px;
+        padding-right: 0;
     }
 
     .interviewContent {

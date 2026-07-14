@@ -465,6 +465,8 @@ describe('Rose Ledger visual contract', () => {
 
     it('keeps application actions single-line and every scrollbar color native', () => {
         const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
+        const interviewCard = readSource('src/pages/interview/InterviewCard.module.css');
+        const calendarOptions = readSource('src/pages/interview/calendarOptions/CalendarOptions.module.css');
         const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
         const allCss = collectCssFiles(sourceRoot)
             .map((path) => readFileSync(path, 'utf8'))
@@ -473,8 +475,18 @@ describe('Rose Ledger visual contract', () => {
         ['Applied', 'Interview', 'Offer', 'Accepted', 'Rejected', 'Ghosted', 'Declined'].forEach((status) =>
             expect(`${applicationCard}\n${applicationBoard}`).toContain(`var(--colorStatus${status}Text)`)
         );
+        expect(applicationCard).toMatch(/\.application\s*\{[^}]*gap:\s*0;/s);
+        expect(applicationCard).toMatch(/\.applicationContent\s*\{[^}]*padding-right:\s*60px;/s);
         expect(applicationCard).toContain('border-radius: var(--radiusPill);');
         expect(applicationCard).toMatch(/\.buttonGroup button\s*\{[^}]*white-space: nowrap;/s);
+        expect(interviewCard).toMatch(/\.buttonGroup\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr;/s);
+        expect(interviewCard).toMatch(/\.buttonGroup\s*\{[^}]*flex-shrink:\s*0;/s);
+        expect(interviewCard).toContain('@media (min-width: 804px)');
+        expect(interviewCard).toMatch(/\.buttonGroup\s*>\s*:only-child\s*\{[^}]*grid-column:\s*2;/s);
+        expect(interviewCard).toMatch(
+            /@media \(max-width: 803px\)\s*\{\s*\.interview\s*\{[^}]*padding-right:\s*0;/s
+        );
+        expect(calendarOptions).toMatch(/\.trigger\s*\{[^}]*width:\s*100%;/s);
         expect(applicationBoard).toContain('border-radius: var(--radiusPill);');
         [
             'scrollbar-color',
@@ -563,7 +575,7 @@ describe('Rose Ledger visual contract', () => {
         expect(button).toContain('--colorSpinnerLight: var(--colorBtnDestructiveFilledText);');
         expect(button).toContain('line-height: normal;');
         expect(form).toContain('font-weight: 600;');
-        expect(form).toContain('appearance: auto;');
+        expect(form).not.toContain('appearance: auto;');
         [activityControls, controlDropdown, viewToggle, navbar].forEach((source) =>
             expect(source).toContain('var(--colorInteractiveBorder)')
         );
