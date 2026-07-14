@@ -1,14 +1,14 @@
 .application {
     width: 100%;
-    padding: 16px;
+    padding: var(--spaceCard);
     background: var(--colorCardBg);
     border: 1px solid var(--colorCardBorder);
     border-left: 5px solid var(--applicationStatusAccent);
-    border-radius: 16px;
+    border-radius: var(--radiusCard);
     display: flex;
     gap: 0;
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: var(--spaceSection);
     box-sizing: border-box;
     overflow-anchor: none;
 }
@@ -98,7 +98,7 @@
 .upcomingBadge {
     color: var(--colorUpcomingBadgeText);
     padding: 4px 20px;
-    border-radius: 5px;
+    border-radius: var(--radiusPill);
     font-weight: 600;
     font-size: 0.8125rem;
     display: inline-flex;
@@ -162,9 +162,8 @@
 .rejected,
 .ghosted,
 .declined {
-    color: var(--colorBadgeText);
     padding: 4px 20px;
-    border-radius: 5px;
+    border-radius: var(--radiusPill);
     font-weight: 600;
     font-size: 0.8125rem;
     display: inline-flex;
@@ -174,30 +173,37 @@
 
 .applied {
     background-color: var(--colorStatusApplied);
+    color: var(--colorStatusAppliedText);
 }
 
 .interview {
     background-color: var(--colorStatusInterview);
+    color: var(--colorStatusInterviewText);
 }
 
 .offer {
     background-color: var(--colorStatusOffer);
+    color: var(--colorStatusOfferText);
 }
 
 .accepted {
     background-color: var(--colorStatusAccepted);
+    color: var(--colorStatusAcceptedText);
 }
 
 .rejected {
     background-color: var(--colorStatusRejected);
+    color: var(--colorStatusRejectedText);
 }
 
 .ghosted {
     background-color: var(--colorStatusGhosted);
+    color: var(--colorStatusGhostedText);
 }
 
 .declined {
     background-color: var(--colorStatusDeclined);
+    color: var(--colorStatusDeclinedText);
 }
 
 @media (min-width: 804px) and (max-width: 1422px) {
@@ -231,6 +237,16 @@
         -webkit-overflow-scrolling: touch;
         gap: 8px;
         padding-right: 0;
+        scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);
+    }
+
+    .application::-webkit-scrollbar-track {
+        background: var(--colorScrollbarTrack);
+    }
+
+    .application::-webkit-scrollbar-thumb {
+        border-radius: var(--radiusPill);
+        background: var(--colorScrollbarThumb);
     }
 
     .applicationContent {

@@ -1,13 +1,13 @@
 .interview {
     width: 100%;
-    padding: 16px;
+    padding: var(--spaceCard);
     background: var(--colorCardBg);
     border: 1px solid var(--colorCardBorder);
     border-left: 5px solid var(--colorStatusInterview);
-    border-radius: 16px;
+    border-radius: var(--radiusCard);
     display: flex;
     gap: 60px;
-    margin-bottom: 20px;
+    margin-bottom: var(--spaceSection);
     box-sizing: border-box;
     min-width: 0;
 }
@@ -23,7 +23,7 @@
     justify-content: end;
     align-items: center;
     color: var(--colorBadgeText);
-    gap: 10px;
+    gap: var(--spaceCompact);
     width: 190px;
 }
 
@@ -96,8 +96,8 @@
     padding: 4px 20px;
     border-radius: 5px;
     font-weight: bolder;
-    font-size: 0.8125rem;
-    margin-top: 10px;
+    font-size: var(--fontSizeCompactControl);
+    margin-top: var(--spaceCompact);
     letter-spacing: 0.5px;
     border: none;
     display: flex;

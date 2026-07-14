@@ -3,7 +3,7 @@
     min-width: 0;
     flex: 1;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--spaceCompact);
     margin: 12px 0 0;
     padding: 0;
     list-style: none;
@@ -12,9 +12,9 @@
 .interviewList li {
     display: grid;
     grid-template-columns: 30px minmax(0, 1fr);
-    gap: 10px;
+    gap: var(--spaceCompact);
     min-width: 0;
-    padding: 10px;
+    padding: var(--spaceCompact);
     border: 1px solid var(--colorCardBorder);
     border-radius: 12px;
     background: var(--colorOverlayBg);
@@ -25,7 +25,7 @@
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: 30px minmax(0, 1fr);
-    gap: 10px;
+    gap: var(--spaceCompact);
     width: 100%;
     border: 0;
     padding: 0;

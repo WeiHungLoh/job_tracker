@@ -7,7 +7,7 @@
     padding: 4px 2px 14px;
     grid-auto-columns: var(--applicationBoardColumnWidth);
     grid-auto-flow: column;
-    gap: 16px;
+    gap: var(--spaceCard);
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-x: contain;
@@ -15,6 +15,16 @@
     box-sizing: border-box;
     isolation: isolate;
     scrollbar-width: thin;
+    scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);
+}
+
+.board::-webkit-scrollbar-track {
+    background: var(--colorScrollbarTrack);
+}
+
+.board::-webkit-scrollbar-thumb {
+    border-radius: var(--radiusPill);
+    background: var(--colorScrollbarThumb);
 }
 
 .column {
@@ -24,7 +34,7 @@
     min-height: 320px;
     padding: 12px;
     border: 1px solid var(--colorCardBorder);
-    border-radius: 16px;
+    border-radius: var(--radiusCard);
     background: var(--colorCardBg);
     background: var(--boardColumnAccent),
         linear-gradient(180deg, color-mix(in srgb, var(--boardStatusColor) 9%, transparent), transparent 120px),
@@ -254,8 +264,7 @@
     display: inline-flex;
     width: fit-content;
     padding: 4px 9px;
-    border-radius: 999px;
-    color: var(--colorBadgeText);
+    border-radius: var(--radiusPill);
     font-size: 0.6875rem;
     font-weight: 600;
     line-height: 1.2;
@@ -274,36 +283,43 @@
 .applied {
     --boardStatusColor: var(--colorStatusApplied);
     background-color: var(--colorStatusApplied);
+    color: var(--colorStatusAppliedText);
 }
 
 .interview {
     --boardStatusColor: var(--colorStatusInterview);
     background-color: var(--colorStatusInterview);
+    color: var(--colorStatusInterviewText);
 }
 
 .offer {
     --boardStatusColor: var(--colorStatusOffer);
     background-color: var(--colorStatusOffer);
+    color: var(--colorStatusOfferText);
 }
 
 .accepted {
     --boardStatusColor: var(--colorStatusAccepted);
     background-color: var(--colorStatusAccepted);
+    color: var(--colorStatusAcceptedText);
 }
 
 .rejected {
     --boardStatusColor: var(--colorStatusRejected);
     background-color: var(--colorStatusRejected);
+    color: var(--colorStatusRejectedText);
 }
 
 .ghosted {
     --boardStatusColor: var(--colorStatusGhosted);
     background-color: var(--colorStatusGhosted);
+    color: var(--colorStatusGhostedText);
 }
 
 .declined {
     --boardStatusColor: var(--colorStatusDeclined);
     background-color: var(--colorStatusDeclined);
+    color: var(--colorStatusDeclinedText);
 }
 
 .statusSelectLabel,

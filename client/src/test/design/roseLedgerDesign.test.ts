@@ -438,6 +438,21 @@ describe('Rose Ledger visual contract', () => {
         ].forEach((declaration) => expect(authProductIntro).toContain(declaration));
     });
 
+    it('uses audited status foregrounds, pill badges, and solid scrollbar cues', () => {
+        const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
+        const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
+
+        ['Applied', 'Interview', 'Offer', 'Accepted', 'Rejected', 'Ghosted', 'Declined'].forEach((status) =>
+            expect(`${applicationCard}\n${applicationBoard}`).toContain(`var(--colorStatus${status}Text)`)
+        );
+        expect(applicationCard).toContain('border-radius: var(--radiusPill);');
+        expect(applicationCard).toContain('scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);');
+        expect(applicationCard).toContain('.application::-webkit-scrollbar-thumb');
+        expect(applicationBoard).toContain('border-radius: var(--radiusPill);');
+        expect(applicationBoard).toContain('scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);');
+        expect(applicationBoard).toContain('.board::-webkit-scrollbar-thumb');
+    });
+
     it('does not expand the existing linear-gradient inventory', () => {
         expect(countsByFile(/linear-gradient\(/g)).toEqual(expectedLinearGradientCounts);
     });
