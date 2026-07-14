@@ -255,7 +255,7 @@ const PreviewFrame = memo(
                         />
                         {isNavigationLoading ? (
                             <span className={styles.previewLoadingOverlay}>
-                                <LoadingSpinner size={32} title='Loading preview' />
+                                <LoadingSpinner size={32} title='Loading preview' variant='light' />
                             </span>
                         ) : null}
                     </button>
