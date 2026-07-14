@@ -4,7 +4,7 @@
     margin: 16px auto 30px;
     padding: 18px clamp(18px, 2.2vw, 28px);
     border: 1px solid var(--colorCardBorder);
-    border-radius: 15px;
+    border-radius: var(--radiusPanel);
     background: var(--colorCardBg);
     color: var(--colorText);
     text-align: left;
@@ -23,16 +23,17 @@
 .formPage label {
     display: flex;
     color: var(--colorLabel);
+    font-weight: 600;
 }
 
 .formPage input,
 .formPage select {
     width: 100%;
     min-height: 40px;
-    margin: 10px 0;
-    padding: 8px 10px;
+    margin: var(--spaceCompact) 0;
+    padding: var(--spaceControl) var(--spaceCompact);
     border: 1px solid var(--colorInputBorder);
-    border-radius: 10px;
+    border-radius: var(--radiusControl);
     outline: none;
     background: var(--colorInputBg);
     color: var(--colorInputText);
@@ -42,6 +43,10 @@
     box-sizing: border-box;
     appearance: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formPage select {
+    appearance: auto;
 }
 
 .formPage input:focus,
@@ -102,7 +107,7 @@
     }
 
     .actions {
-        gap: 8px;
+        gap: var(--spaceControl);
     }
 
     .actions button {

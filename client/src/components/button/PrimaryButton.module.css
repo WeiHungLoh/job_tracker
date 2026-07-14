@@ -7,6 +7,15 @@
     cursor: not-allowed;
 }
 
+.button:disabled:not(.loading) {
+    opacity: 0.58;
+}
+
+.button:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 2px;
+}
+
 .loading {
     position: relative;
 }
@@ -28,26 +37,31 @@
 }
 
 .primary {
-    padding: 8px 10px;
-    border-radius: 10px;
+    --colorSpinnerLight: var(--colorBtnPrimaryText);
+    --colorSpinnerLightTrack: color-mix(in srgb, var(--colorBtnPrimaryText) 35%, transparent);
+
+    padding: var(--spaceControl) var(--spaceCompact);
+    border-radius: var(--radiusControl);
     background-color: var(--colorPrimary);
     color: var(--colorBtnPrimaryText);
+    font-weight: 600;
+    line-height: normal;
+}
+
+.primary:not(:disabled):hover {
+    background-color: var(--colorPrimaryHover);
 }
 
 .compact {
     color: var(--colorBtnCompactText);
-    font-size: 0.875rem;
+    font-size: var(--fontSizeControl);
 }
 
 .form {
     width: 100%;
-    padding: 10px;
+    padding: var(--spaceCompact);
     font-size: 1rem;
     transition: background-color 0.3s ease;
-}
-
-.form:hover {
-    background-color: var(--colorPrimaryHover);
 }
 
 .navigation {
@@ -58,27 +72,34 @@
 }
 
 .secondary {
-    padding: 8px 10px;
+    padding: var(--spaceControl) var(--spaceCompact);
     border: 1.5px solid var(--colorPrimary);
-    border-radius: 10px;
+    border-radius: var(--radiusControl);
     background: transparent;
     color: var(--colorPrimary);
+    font-weight: 600;
+    line-height: normal;
     transition: background-color 0.2s ease;
 }
 
-.secondary:hover {
+.secondary:not(:disabled):hover {
     background-color: var(--colorBtnSecondaryHoverBg);
 }
 
 .destructive {
-    padding: 8px 10px;
-    border-radius: 10px;
+    --colorSpinnerLight: var(--colorBtnDestructiveFilledText);
+    --colorSpinnerLightTrack: color-mix(in srgb, var(--colorBtnDestructiveFilledText) 35%, transparent);
+
+    padding: var(--spaceControl) var(--spaceCompact);
+    border-radius: var(--radiusControl);
     background-color: var(--colorBtnDestructiveBg);
-    color: var(--colorBtnPrimaryText);
+    color: var(--colorBtnDestructiveFilledText);
+    font-weight: 600;
+    line-height: normal;
     transition: background-color 0.2s ease;
 }
 
-.destructive:hover {
+.destructive:not(:disabled):hover {
     background-color: var(--colorBtnDestructiveHoverBg);
 }
 

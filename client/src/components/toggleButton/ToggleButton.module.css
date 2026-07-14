@@ -15,7 +15,7 @@
     background: transparent;
     color: var(--colorText);
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: var(--fontSizeControl);
     text-align: left;
     box-sizing: border-box;
 }

@@ -4,12 +4,12 @@
     width: fit-content;
     max-width: 100%;
     margin: 20px 0;
-    padding: 8px;
+    padding: var(--spaceControl);
     align-items: center;
-    gap: 8px;
+    gap: var(--spaceControl);
     overflow: visible;
-    border: 1px solid var(--colorControlBorder);
-    border-radius: 14px;
+    border: 1px solid var(--colorInteractiveBorder);
+    border-radius: var(--radiusToolbar);
     box-sizing: border-box;
 }
 
@@ -18,12 +18,12 @@
     display: flex;
     min-width: 0;
     align-items: center;
-    gap: 8px;
+    gap: var(--spaceControl);
 }
 
 .actions {
     padding-left: 9px;
-    border-left: 1px solid var(--colorControlBorder);
+    border-left: 1px solid var(--colorInteractiveBorder);
 }
 
 .applicationWithDisplay .primaryControls > *,
@@ -42,9 +42,9 @@
 @media (max-width: 600px) {
     .controls {
         width: fit-content;
-        padding: 8px;
+        padding: var(--spaceControl);
         justify-content: center;
-        gap: 8px;
+        gap: var(--spaceControl);
     }
 }
 
@@ -103,7 +103,7 @@
         grid-column: 3;
         justify-self: start;
         padding-left: 9px;
-        border-left: 1px solid var(--colorControlBorder);
+        border-left: 1px solid var(--colorInteractiveBorder);
     }
 }
 
@@ -126,7 +126,7 @@
 
     .applicationCompact.hasActions .actions > * {
         padding-left: 9px;
-        border-left: 1px solid var(--colorControlBorder);
+        border-left: 1px solid var(--colorInteractiveBorder);
     }
 }
 

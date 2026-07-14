@@ -20,11 +20,11 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    border: 1px solid var(--colorControlBorder);
-    border-radius: 10px;
+    border: 1px solid var(--colorInteractiveBorder);
+    border-radius: var(--radiusControl);
     background: var(--colorControlMutedSurface);
     color: var(--colorText);
-    font-size: 0.8125rem;
+    font-size: var(--fontSizeCompactControl);
     font-weight: 600;
     line-height: 1;
     white-space: nowrap;
@@ -82,7 +82,7 @@
     padding: 12px;
     overflow-y: auto;
     border: 1px solid var(--colorCardBorder);
-    border-radius: 10px;
+    border-radius: var(--radiusControl);
     background: var(--colorCardBg);
     box-shadow: 0 6px 18px var(--colorAuthCardShadow);
     box-sizing: border-box;
@@ -96,9 +96,9 @@
 .activityDropdown {
     top: calc(100% + 8px);
     max-height: min(360px, var(--dropdown-max-height, calc(100vh - 96px)));
-    padding: 8px;
+    padding: var(--spaceControl);
     overflow-y: auto;
-    border-color: var(--colorControlBorder);
+    border-color: var(--colorInteractiveBorder);
     border-radius: 12px;
     box-shadow: 0 14px 32px var(--colorControlShadow);
 }

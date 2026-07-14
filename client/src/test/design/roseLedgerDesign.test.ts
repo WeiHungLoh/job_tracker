@@ -492,4 +492,36 @@ describe('Rose Ledger visual contract', () => {
 
         expect(declarationsByFile(/^\s*(?:-webkit-)?box-shadow\s*:[^;]+;/gm)).toEqual(expectedBoxShadowDeclarations);
     });
+
+    it('completes the shared button, form, and menu visual contracts', () => {
+        const button = readSource('src/components/button/PrimaryButton.module.css');
+        const form = readSource('src/components/formPage/FormPage.module.css');
+        const activityControls = readSource('src/components/activityControls/ActivityControls.module.css');
+        const controlDropdown = readSource('src/components/activityControls/ControlDropdown.module.css');
+        const viewToggle = readSource(
+            'src/components/activityControls/applicationViewToggle/ApplicationViewToggle.module.css'
+        );
+        const navbar = readSource('src/components/navbar/Navbar.module.css');
+        const sortOptions = readSource('src/components/activityControls/sortOptions/SortOptions.module.css');
+        const moreOptions = readSource('src/components/activityControls/moreOptions/MoreOptions.module.css');
+
+        expect(button).toContain('.button:focus-visible');
+        expect(button).toContain('.button:disabled:not(.loading)');
+        expect(button).toContain('opacity: 0.58;');
+        expect(button).toContain('.primary:not(:disabled):hover');
+        expect(button).toContain('.secondary:not(:disabled):hover');
+        expect(button).toContain('.destructive:not(:disabled):hover');
+        expect(button).not.toContain('.form:hover');
+        expect(button).toContain('--colorSpinnerLight: var(--colorBtnPrimaryText);');
+        expect(button).toContain('--colorSpinnerLight: var(--colorBtnDestructiveFilledText);');
+        expect(button).toContain('line-height: normal;');
+        expect(form).toContain('font-weight: 600;');
+        expect(form).toContain('appearance: auto;');
+        [activityControls, controlDropdown, viewToggle, navbar].forEach((source) =>
+            expect(source).toContain('var(--colorInteractiveBorder)')
+        );
+        expect(navbar).toContain('box-shadow: inset 0 0 0 1px var(--colorControlBorder);');
+        expect(sortOptions).toContain('border-radius: var(--radiusMenuItem);');
+        expect(moreOptions).toContain('border-radius: var(--radiusMenuItem);');
+    });
 });
