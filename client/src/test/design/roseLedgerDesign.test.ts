@@ -224,8 +224,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorStatusRejectedText: #ffffff;',
             '--colorStatusGhostedText: #ffffff;',
             '--colorStatusDeclinedText: #ffffff;',
-            '--colorLocationText: #0f5f55;',
-            '--colorInterviewType: #4546a8;',
+            '--colorLocationText: #00796b;',
+            '--colorInterviewType: #5e35b1;',
             '--colorUpcomingBadge: #f57c00;',
             '--colorUpcomingBadgeText: #ffffff;',
         ].forEach((declaration) => expect(lightCss).toContain(declaration));
@@ -288,7 +288,9 @@ describe('Rose Ledger visual contract', () => {
             ['StatusDeclinedText', 'StatusDeclined', 4.5],
         ];
 
-        if (theme === 'light') pairs.push(['SwitchOff', 'CardBg', 3]);
+        if (theme === 'light') {
+            pairs.push(['SwitchOff', 'CardBg', 3], ['LocationText', 'PageBg', 4.5], ['InterviewType', 'PageBg', 4.5]);
+        }
 
         pairs.forEach(([foreground, background, minimum]) =>
             expect(
