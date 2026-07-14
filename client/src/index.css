@@ -127,11 +127,11 @@
     --colorNotesShadow: rgba(0, 0, 0, 0.1);
 
     /* Misc accents */
-    --colorLocationText: #1f756a;
-    --colorInterviewType: #5e60ce;
+    --colorLocationText: #0f5f55;
+    --colorInterviewType: #4546a8;
     --colorTimeLeft: #c6283d;
     --colorUpcomingBadge: #f57c00;
-    --colorUpcomingBadgeText: #3a1b00;
+    --colorUpcomingBadgeText: #ffffff;
     --colorHighlightAnim: #dfffd9;
 
     /* Toast */
@@ -300,7 +300,7 @@
     --colorInterviewType: #8b8dd4;
     --colorTimeLeft: #e35d6e;
     --colorUpcomingBadge: #f57c00;
-    --colorUpcomingBadgeText: #2a1400;
+    --colorUpcomingBadgeText: #ffffff;
     --colorHighlightAnim: #1a3d2a;
 
     /* Toast */

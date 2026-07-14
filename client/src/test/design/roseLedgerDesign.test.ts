@@ -222,7 +222,9 @@ describe('Rose Ledger visual contract', () => {
             '--colorStatusRejectedText: #ffffff;',
             '--colorStatusGhostedText: #ffffff;',
             '--colorStatusDeclinedText: #ffffff;',
-            '--colorUpcomingBadgeText: #3a1b00;',
+            '--colorLocationText: #0f5f55;',
+            '--colorInterviewType: #4546a8;',
+            '--colorUpcomingBadgeText: #ffffff;',
             '--colorScrollbarTrack: #f4eae9;',
             '--colorScrollbarThumb: #a81f4c;',
         ].forEach((declaration) => expect(lightCss).toContain(declaration));
@@ -244,7 +246,9 @@ describe('Rose Ledger visual contract', () => {
             '--colorStatusRejectedText: #ffffff;',
             '--colorStatusGhostedText: #ffffff;',
             '--colorStatusDeclinedText: #ffffff;',
-            '--colorUpcomingBadgeText: #2a1400;',
+            '--colorLocationText: #40c9b8;',
+            '--colorInterviewType: #8b8dd4;',
+            '--colorUpcomingBadgeText: #ffffff;',
             '--colorScrollbarTrack: #2a252a;',
             '--colorScrollbarThumb: #ff779b;',
         ].forEach((declaration) => expect(darkCss).toContain(declaration));
@@ -272,6 +276,7 @@ describe('Rose Ledger visual contract', () => {
             ['PrimaryFocusOutline', 'PageBg', 3],
             ['PrimaryFocusOutline', 'OverlayBg', 3],
             ['LocationText', 'CardBg', 4.5],
+            ['InterviewType', 'CardBg', 4.5],
             ['TimeLeft', 'CardBg', 4.5],
             ['ToastErrorText', 'ToastErrorBg', 4.5],
             ['StatusAppliedText', 'StatusApplied', 4.5],
@@ -281,7 +286,6 @@ describe('Rose Ledger visual contract', () => {
             ['StatusRejectedText', 'StatusRejected', 4.5],
             ['StatusGhostedText', 'StatusGhosted', 4.5],
             ['StatusDeclinedText', 'StatusDeclined', 4.5],
-            ['UpcomingBadgeText', 'UpcomingBadge', 4.5],
         ];
 
         if (theme === 'light') pairs.push(['SwitchOff', 'CardBg', 3]);
