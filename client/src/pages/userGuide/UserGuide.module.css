@@ -59,7 +59,7 @@
     place-items: center;
     border-radius: 16px;
     background-color: var(--guideAccent);
-    color: var(--colorBadgeText);
+    color: var(--colorBtnPrimaryText);
     font-size: 1.75rem;
 }
 
@@ -84,7 +84,7 @@
 .accordionItem {
     overflow: hidden;
     border: 1px solid var(--guideBorder);
-    border-radius: 15px;
+    border-radius: var(--radiusPanel);
     background-color: var(--colorCardBg);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }

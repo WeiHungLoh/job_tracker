@@ -55,7 +55,7 @@
     display: inline-flex;
     min-height: 40px;
     align-items: center;
-    gap: 10px;
+    gap: var(--spaceCompact);
     padding: 6px 14px 6px 8px;
     border: 1px solid var(--colorPrimary);
     border-radius: 12px;
@@ -63,7 +63,7 @@
     color: var(--colorPrimary);
     cursor: pointer;
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--fontSizeControl);
     font-weight: 700;
     transition: background-color 180ms ease, color 180ms ease, transform 220ms var(--auth-motion-easing);
 }
@@ -80,7 +80,7 @@
 
 .restoreOverviewButton:hover {
     background-color: var(--colorPrimary);
-    color: var(--colorAuthCardBg);
+    color: var(--colorBtnPrimaryText);
     transform: translateY(-1px);
 }
 
@@ -195,7 +195,7 @@
     justify-content: center;
     padding: 0 18px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radiusPill);
     background-color: var(--colorPrimary);
     color: var(--colorBtnPrimaryText);
     font-size: 0.95rem;
@@ -281,7 +281,7 @@
     padding: 3px 14px;
     margin: 0 auto;
     overflow: hidden;
-    border-radius: 999px;
+    border-radius: var(--radiusPill);
     background-color: var(--colorInputBg);
     color: var(--colorTextSecondary);
     font-size: 0.625rem;
@@ -396,6 +396,10 @@
     outline-offset: -3px;
 }
 
+.carouselDot:focus-visible {
+    outline-offset: 2px;
+}
+
 .carouselControls {
     display: grid;
     grid-template-columns: 36px 1fr 36px;
@@ -451,7 +455,6 @@
     border-radius: 50%;
     background-color: var(--colorTextSecondary);
     cursor: pointer;
-    opacity: 0.45;
 }
 
 .activeCarouselDot {

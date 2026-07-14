@@ -6,7 +6,7 @@
     box-sizing: border-box;
     background-color: var(--colorAuthCardBg);
     border: 1px solid var(--colorAuthCardBorder);
-    border-radius: 16px;
+    border-radius: var(--radiusCard);
     box-shadow: 0 20px 48px var(--colorAuthCardShadow);
     animation: fadeIn 0.4s ease-out;
 }
@@ -71,13 +71,13 @@
 
 .inputBox,
 .passwordWrapper {
-    margin: 8px 0 20px;
+    margin: var(--spaceControl) 0 var(--spaceSection);
     padding: 0 12px;
     display: flex;
     align-items: center;
     background: var(--colorInputBg);
     border: 1px solid var(--colorInputBorder);
-    border-radius: 10px;
+    border-radius: var(--radiusControl);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -115,15 +115,15 @@
 .passwordRequirements {
     margin: -10px 0 14px;
     color: var(--colorTextSecondary);
-    font-size: 0.75rem;
+    font-size: var(--fontSizeMetadata);
     line-height: 1.4;
 }
 
 .authLink {
     display: block;
-    margin-top: 20px;
+    margin-top: var(--spaceSection);
     color: var(--colorAuthLink);
-    font-size: 0.875rem;
+    font-size: var(--fontSizeControl);
     font-weight: 600;
     text-align: center;
     text-decoration: none;

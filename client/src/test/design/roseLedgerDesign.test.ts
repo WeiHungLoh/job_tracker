@@ -438,6 +438,24 @@ describe('Rose Ledger visual contract', () => {
         ].forEach((declaration) => expect(authProductIntro).toContain(declaration));
     });
 
+    it('keeps carousel dots and their focus indicator visible', () => {
+        const authProductIntro = readSource('src/components/authProductIntro/AuthProductIntro.module.css');
+        const inactiveDotStart = authProductIntro.indexOf('.carouselDot {');
+        const activeDotStart = authProductIntro.indexOf('.activeCarouselDot {');
+        const activeDotEnd = authProductIntro.indexOf('.visuallyHidden {', activeDotStart);
+        const inactiveDotRules = authProductIntro.slice(inactiveDotStart, activeDotStart);
+        const activeDotRules = authProductIntro.slice(activeDotStart, activeDotEnd);
+
+        expect(inactiveDotStart).toBeGreaterThan(0);
+        expect(activeDotStart).toBeGreaterThan(inactiveDotStart);
+        expect(activeDotEnd).toBeGreaterThan(activeDotStart);
+        expect(inactiveDotRules).toContain('background-color: var(--colorTextSecondary);');
+        expect(inactiveDotRules).not.toContain('opacity: 0.45;');
+        expect(activeDotRules).toContain('background-color: var(--colorPrimary);');
+        expect(activeDotRules).toContain('opacity: 1;');
+        expect(authProductIntro).toContain('.carouselDot:focus-visible {\n    outline-offset: 2px;\n}');
+    });
+
     it('uses audited status foregrounds, pill badges, and solid scrollbar cues', () => {
         const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
         const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');

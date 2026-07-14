@@ -10,7 +10,7 @@
     gap: 9px;
     margin: 0;
     color: var(--colorTextSecondary);
-    font-size: 0.8125rem;
+    font-size: var(--fontSizeCompactControl);
     line-height: 1.5;
 }
 
@@ -23,14 +23,14 @@
 .notice {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--spaceCompact);
     padding: 11px 12px;
     border: 1px solid var(--colorNoticeBorder);
-    border-radius: 10px;
+    border-radius: var(--radiusControl);
     margin: 16px 0 0;
     background-color: var(--colorNoticeBg);
     color: var(--colorNoticeText);
-    font-size: 0.75rem;
+    font-size: var(--fontSizeMetadata);
     line-height: 1.45;
 }
 
@@ -45,5 +45,5 @@
 }
 
 .noticeIcon svg {
-    font-size: 0.75rem;
+    font-size: var(--fontSizeMetadata);
 }
