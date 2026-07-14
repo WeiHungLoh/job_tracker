@@ -15,16 +15,6 @@
     box-sizing: border-box;
     isolation: isolate;
     scrollbar-width: thin;
-    scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);
-}
-
-.board::-webkit-scrollbar-track {
-    background: var(--colorScrollbarTrack);
-}
-
-.board::-webkit-scrollbar-thumb {
-    border-radius: var(--radiusPill);
-    background: var(--colorScrollbarThumb);
 }
 
 .column {

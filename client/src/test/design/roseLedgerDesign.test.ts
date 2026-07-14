@@ -215,8 +215,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorSwitchThumb: #ffffff;',
             '--colorSelectedControlText: #ffffff;',
             '--colorBtnDestructiveFilledText: #ffffff;',
-            '--colorStatusOfferText: #3b2c00;',
-            '--colorStatusAppliedText: #062f35;',
+            '--colorStatusOfferText: #ffffff;',
+            '--colorStatusAppliedText: #ffffff;',
             '--colorStatusInterviewText: #ffffff;',
             '--colorStatusAcceptedText: #ffffff;',
             '--colorStatusRejectedText: #ffffff;',
@@ -226,8 +226,6 @@ describe('Rose Ledger visual contract', () => {
             '--colorInterviewType: #4546a8;',
             '--colorUpcomingBadge: #f57c00;',
             '--colorUpcomingBadgeText: #ffffff;',
-            '--colorScrollbarTrack: #f4eae9;',
-            '--colorScrollbarThumb: #a81f4c;',
         ].forEach((declaration) => expect(lightCss).toContain(declaration));
 
         [
@@ -240,8 +238,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorInteractiveBorder: #7a6c74;',
             '--colorSelectedControlText: #261019;',
             '--colorBtnDestructiveFilledText: #ffffff;',
-            '--colorStatusOfferText: #2c2100;',
-            '--colorStatusAppliedText: #041a1d;',
+            '--colorStatusOfferText: #ffffff;',
+            '--colorStatusAppliedText: #ffffff;',
             '--colorStatusInterviewText: #ffffff;',
             '--colorStatusAcceptedText: #ffffff;',
             '--colorStatusRejectedText: #ffffff;',
@@ -251,8 +249,6 @@ describe('Rose Ledger visual contract', () => {
             '--colorInterviewType: #8b8dd4;',
             '--colorUpcomingBadge: #f57c00;',
             '--colorUpcomingBadgeText: #ffffff;',
-            '--colorScrollbarTrack: #2a252a;',
-            '--colorScrollbarThumb: #ff779b;',
         ].forEach((declaration) => expect(darkCss).toContain(declaration));
 
         expect(globalCss).toContain("--fontFamilyBase: 'Quicksand', sans-serif;");
@@ -281,9 +277,7 @@ describe('Rose Ledger visual contract', () => {
             ['InterviewType', 'CardBg', 4.5],
             ['TimeLeft', 'CardBg', 4.5],
             ['ToastErrorText', 'ToastErrorBg', 4.5],
-            ['StatusAppliedText', 'StatusApplied', 4.5],
             ['StatusInterviewText', 'StatusInterview', 4.5],
-            ['StatusOfferText', 'StatusOffer', 4.5],
             ['StatusAcceptedText', 'StatusAccepted', 4.5],
             ['StatusRejectedText', 'StatusRejected', 4.5],
             ['StatusGhostedText', 'StatusGhosted', 4.5],
@@ -462,23 +456,26 @@ describe('Rose Ledger visual contract', () => {
         expect(authProductIntro).toContain('.carouselDot:focus-visible {\n    outline-offset: 2px;\n}');
     });
 
-    it('keeps application actions single-line and the card scrollbar native', () => {
+    it('keeps application actions single-line and every scrollbar color native', () => {
         const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
         const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
+        const allCss = collectCssFiles(sourceRoot)
+            .map((path) => readFileSync(path, 'utf8'))
+            .join('\n');
 
         ['Applied', 'Interview', 'Offer', 'Accepted', 'Rejected', 'Ghosted', 'Declined'].forEach((status) =>
             expect(`${applicationCard}\n${applicationBoard}`).toContain(`var(--colorStatus${status}Text)`)
         );
         expect(applicationCard).toContain('border-radius: var(--radiusPill);');
         expect(applicationCard).toMatch(/\.buttonGroup button\s*\{[^}]*white-space: nowrap;/s);
-        expect(applicationCard).not.toContain(
-            'scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);'
-        );
-        expect(applicationCard).not.toContain('.application::-webkit-scrollbar-track');
-        expect(applicationCard).not.toContain('.application::-webkit-scrollbar-thumb');
         expect(applicationBoard).toContain('border-radius: var(--radiusPill);');
-        expect(applicationBoard).toContain('scrollbar-color: var(--colorScrollbarThumb) var(--colorScrollbarTrack);');
-        expect(applicationBoard).toContain('.board::-webkit-scrollbar-thumb');
+        [
+            'scrollbar-color',
+            '::-webkit-scrollbar-track',
+            '::-webkit-scrollbar-thumb',
+            '--colorScrollbarTrack',
+            '--colorScrollbarThumb',
+        ].forEach((customScrollbarColor) => expect(allCss).not.toContain(customScrollbarColor));
     });
 
     it('does not expand the existing linear-gradient inventory', () => {
@@ -566,5 +563,6 @@ describe('Rose Ledger visual contract', () => {
         expect(navbar).toContain('box-shadow: inset 0 0 0 1px var(--colorControlBorder);');
         expect(sortOptions).toContain('border-radius: var(--radiusMenuItem);');
         expect(moreOptions).toContain('border-radius: var(--radiusMenuItem);');
+        expect(moreOptions).toMatch(/\.options\s+\.action\s*\{[^}]*font-weight:\s*400;/s);
     });
 });

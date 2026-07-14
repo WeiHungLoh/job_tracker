@@ -4,7 +4,7 @@
     flex-direction: column;
 }
 
-.action {
+.options .action {
     display: flex;
     width: 100%;
     min-height: 38px;
@@ -17,6 +17,7 @@
     background: transparent;
     color: var(--colorText);
     font-size: var(--fontSizeControl);
+    font-weight: 400;
     text-align: left;
     text-decoration: none;
     box-sizing: border-box;

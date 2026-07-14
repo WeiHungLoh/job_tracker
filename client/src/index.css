@@ -41,9 +41,9 @@
     --colorStatusRejected: #dc3545;
     --colorStatusGhosted: #6c757d;
     --colorStatusDeclined: #663399;
-    --colorStatusAppliedText: #062f35;
+    --colorStatusAppliedText: #ffffff;
     --colorStatusInterviewText: #ffffff;
-    --colorStatusOfferText: #3b2c00;
+    --colorStatusOfferText: #ffffff;
     --colorStatusAcceptedText: #ffffff;
     --colorStatusRejectedText: #ffffff;
     --colorStatusGhostedText: #ffffff;
@@ -71,8 +71,6 @@
     --colorControlFocusRing: #8f1b43;
     --colorSelectedControlBg: #a81f4c;
     --colorSelectedControlText: #ffffff;
-    --colorScrollbarTrack: #f4eae9;
-    --colorScrollbarThumb: #a81f4c;
 
     /* Text */
     --colorText: #2b2529;
@@ -223,8 +221,6 @@
     --colorControlFocusRing: #ff91ad;
     --colorSelectedControlBg: #ff779b;
     --colorSelectedControlText: #261019;
-    --colorScrollbarTrack: #2a252a;
-    --colorScrollbarThumb: #ff779b;
 
     /* Text */
     --colorText: #f4edf0;
@@ -286,9 +282,9 @@
     --colorStatusRejected: #b02a37;
     --colorStatusGhosted: #5c636a;
     --colorStatusDeclined: #663399;
-    --colorStatusAppliedText: #041a1d;
+    --colorStatusAppliedText: #ffffff;
     --colorStatusInterviewText: #ffffff;
-    --colorStatusOfferText: #2c2100;
+    --colorStatusOfferText: #ffffff;
     --colorStatusAcceptedText: #ffffff;
     --colorStatusRejectedText: #ffffff;
     --colorStatusGhostedText: #ffffff;
