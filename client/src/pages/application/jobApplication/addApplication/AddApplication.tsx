@@ -1,5 +1,8 @@
 import type { FormEvent } from 'react';
+import FormFieldError from '../../../../components/formPage/FormFieldError';
 import PrimaryButton from '../../../../components/button/PrimaryButton';
+import { focusFirstInvalidField } from '../../../../components/formPage/focusFirstInvalidField';
+import { useFormErrors } from '../../../../components/formPage/useFormErrors';
 import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../helper/dateFormatter';
 import { routes } from '../../../../routes';
 import styles from './AddApplication.module.css';
@@ -9,7 +12,11 @@ import { useRef, useState } from 'react';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type JobStatus } from '../../models';
 import { getErrorToastMessage } from '../../../../helper/getErrorToastMessage';
-import { FIELD_MAX_LENGTHS, validateApplicationForm } from '../../../../helper/formValidation';
+import {
+    FIELD_MAX_LENGTHS,
+    type ApplicationFormField,
+    validateApplicationForm,
+} from '../../../../helper/formValidation';
 
 const AddApplication = () => {
     const [companyName, setCompanyName] = useState<string>('');
@@ -18,7 +25,12 @@ const AddApplication = () => {
     const [applicationDate, setApplicationDate] = useState<string>('');
     const [jobLocation, setJobLocation] = useState<string>('');
     const [jobURL, setJobURL] = useState<string>('');
+    const { clearFieldError, errors, setErrors } = useFormErrors<ApplicationFormField>();
+    const companyNameInputRef = useRef<HTMLInputElement>(null);
+    const jobTitleInputRef = useRef<HTMLInputElement>(null);
     const applicationDateInputRef = useRef<HTMLInputElement>(null);
+    const jobLocationInputRef = useRef<HTMLInputElement>(null);
+    const jobURLInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const api = useJobTrackerAPI();
@@ -31,6 +43,7 @@ const AddApplication = () => {
         setApplicationDate('');
         setJobLocation('');
         setJobURL('');
+        setErrors({});
     };
 
     const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
@@ -46,10 +59,18 @@ const AddApplication = () => {
         });
 
         if (!validation.isValid) {
-            showErrorToast(validation.error);
+            setErrors(validation.errors);
+            focusFirstInvalidField<ApplicationFormField>(validation.errors, [
+                ['companyName', companyNameInputRef],
+                ['jobTitle', jobTitleInputRef],
+                ['applicationDate', applicationDateInputRef],
+                ['jobLocation', jobLocationInputRef],
+                ['jobURL', jobURLInputRef],
+            ]);
             return;
         }
 
+        setErrors({});
         setIsLoading(true);
         try {
             const values = validation.values;
@@ -74,21 +95,35 @@ const AddApplication = () => {
         <form className={styles.addApplication} noValidate onSubmit={handleAdd}>
             <label htmlFor='company-name'>Company Name</label>
             <input
+                ref={companyNameInputRef}
+                aria-describedby={errors.companyName ? 'company-name-error' : undefined}
+                aria-invalid={errors.companyName ? true : undefined}
                 id='company-name'
                 maxLength={FIELD_MAX_LENGTHS.companyName}
                 value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
+                onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    clearFieldError('companyName');
+                }}
                 required
             />
+            <FormFieldError id='company-name-error' message={errors.companyName} />
 
             <label htmlFor='job-title'>Job Title</label>
             <input
+                ref={jobTitleInputRef}
+                aria-describedby={errors.jobTitle ? 'job-title-error' : undefined}
+                aria-invalid={errors.jobTitle ? true : undefined}
                 id='job-title'
                 maxLength={FIELD_MAX_LENGTHS.jobTitle}
                 value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
+                onChange={(e) => {
+                    setJobTitle(e.target.value);
+                    clearFieldError('jobTitle');
+                }}
                 required
             />
+            <FormFieldError id='job-title-error' message={errors.jobTitle} />
 
             <label htmlFor='job-status'>Job Status</label>
             <select id='job-status' value={jobStatus} onChange={(e) => setJobStatus(e.target.value as JobStatus)}>
@@ -102,29 +137,49 @@ const AddApplication = () => {
             <label htmlFor='app-date'>Application Date (uses current date if left blank)</label>
             <input
                 ref={applicationDateInputRef}
+                aria-describedby={errors.applicationDate ? 'app-date-error' : undefined}
+                aria-invalid={errors.applicationDate ? true : undefined}
                 id='app-date'
                 max={MAX_DATETIME_LOCAL}
                 min={MIN_DATETIME_LOCAL}
                 value={applicationDate}
-                onChange={(e) => setApplicationDate(e.target.value)}
+                onChange={(e) => {
+                    setApplicationDate(e.target.value);
+                    clearFieldError('applicationDate');
+                }}
                 type='datetime-local'
             />
+            <FormFieldError id='app-date-error' message={errors.applicationDate} />
 
             <label htmlFor='job-location'>Job Location (optional)</label>
             <input
+                ref={jobLocationInputRef}
+                aria-describedby={errors.jobLocation ? 'job-location-error' : undefined}
+                aria-invalid={errors.jobLocation ? true : undefined}
                 id='job-location'
                 maxLength={FIELD_MAX_LENGTHS.location}
                 value={jobLocation}
-                onChange={(e) => setJobLocation(e.target.value)}
+                onChange={(e) => {
+                    setJobLocation(e.target.value);
+                    clearFieldError('jobLocation');
+                }}
             />
+            <FormFieldError id='job-location-error' message={errors.jobLocation} />
 
             <label htmlFor='job-url'>Job Posting URL (optional)</label>
             <input
+                ref={jobURLInputRef}
+                aria-describedby={errors.jobURL ? 'job-url-error' : undefined}
+                aria-invalid={errors.jobURL ? true : undefined}
                 id='job-url'
                 maxLength={FIELD_MAX_LENGTHS.jobURL}
                 value={jobURL}
-                onChange={(e) => setJobURL(e.target.value)}
+                onChange={(e) => {
+                    setJobURL(e.target.value);
+                    clearFieldError('jobURL');
+                }}
             />
+            <FormFieldError id='job-url-error' message={errors.jobURL} />
 
             <div className={styles.submitButton}>
                 <PrimaryButton isLoading={isLoading} type='submit' variant='compact'>

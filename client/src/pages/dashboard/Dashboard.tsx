@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardContent from './DashboardContent';
-import type { JobStatus } from '../application/models';
+import type { JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
 import type { JobInterview } from '../interview/models';
-import type { JobStatusCount, WeeklyApplicationCount } from './models';
 import type {
     DashboardApplicationNavigationState,
     DashboardInterviewNavigationState,

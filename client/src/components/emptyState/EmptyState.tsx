@@ -1,23 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useId } from 'react';
-import type { IconName } from '../icon/models';
 import Icon from '../icon/Icon';
+import type { EmptyStateAction, EmptyStateProps } from './models';
 import styles from './EmptyState.module.css';
-
-export type EmptyStateAction = {
-    label: string;
-    onClick?: () => void;
-    to?: string;
-};
-
-export type EmptyStateProps = {
-    description?: string;
-    followsControls?: boolean;
-    icon?: IconName;
-    primaryAction?: EmptyStateAction;
-    secondaryAction?: EmptyStateAction;
-    title: string;
-};
 
 const Action = ({ action, variant }: { action: EmptyStateAction; variant: 'primary' | 'secondary' }) => {
     const className = `${styles.action} ${styles[variant]}`;

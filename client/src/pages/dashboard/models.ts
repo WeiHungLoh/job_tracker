@@ -1,15 +1,9 @@
-import type { JobStatus } from '../application/models';
+import type { JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
 import type { JobInterview } from '../interview/models';
 
-export type WeeklyApplicationCount = {
-    start_of_week: string;
-    applications_count: string;
-};
-
-export type JobStatusCount = {
-    job_status: JobStatus;
-    count: string;
-};
+export type DashboardInterviewSelectHandler = (interviewId: number) => void;
+export type DashboardStatusSelectHandler = (status: JobStatus) => void;
+export type StatusCountMap = Partial<Record<JobStatus, number>>;
 
 export type DashboardDataProps = {
     statusCounts: JobStatusCount[];
@@ -19,8 +13,8 @@ export type DashboardDataProps = {
 };
 
 export type DashboardNavigationProps = {
-    onInterviewSelect?: (interviewId: number) => void;
-    onStatusSelect?: (status: JobStatus) => void;
+    onInterviewSelect?: DashboardInterviewSelectHandler;
+    onStatusSelect?: DashboardStatusSelectHandler;
 };
 
 export type DashboardContentProps = DashboardDataProps & DashboardNavigationProps;
@@ -33,13 +27,15 @@ export type ApplicationsLineChartProps = {
     isLoading: boolean;
 };
 
-export type StatusChartProps = Pick<DashboardNavigationProps, 'onStatusSelect'> & {
+export type StatusChartProps = {
     statusCounts: JobStatusCount[];
     isLoading: boolean;
+    onStatusSelect?: DashboardStatusSelectHandler;
 };
 
-export type UpcomingInterviewsProps = Pick<DashboardNavigationProps, 'onInterviewSelect'> & {
+export type UpcomingInterviewsProps = {
     currentTime?: Date;
     interviews: JobInterview[];
     isLoading: boolean;
+    onInterviewSelect?: DashboardInterviewSelectHandler;
 };

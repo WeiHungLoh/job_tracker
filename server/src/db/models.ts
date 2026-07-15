@@ -1,19 +1,30 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
 export type ApplicationViewMode = 'list' | 'board';
 
-export const INTERVIEW_TIME_FILTERS = ['Upcoming Interviews', 'Past Interviews'] as const;
-export type InterviewTimeFilter = (typeof INTERVIEW_TIME_FILTERS)[number];
+export type InterviewTimeFilter = 'Upcoming Interviews' | 'Past Interviews';
 
-export const APPLICATION_LIST_SORT_ORDERS = [
+export const INTERVIEW_TIME_FILTERS: readonly InterviewTimeFilter[] = ['Upcoming Interviews', 'Past Interviews'];
+
+export type ApplicationListSortOrder =
+    | 'job_status'
+    | 'application_date_desc'
+    | 'application_date_asc'
+    | 'company_name_asc'
+    | 'company_name_desc';
+
+export type ApplicationBoardSortOrder =
+    | 'application_date_desc'
+    | 'application_date_asc'
+    | 'company_name_asc'
+    | 'company_name_desc';
+
+export const APPLICATION_LIST_SORT_ORDERS: readonly ApplicationListSortOrder[] = [
     'job_status',
     'application_date_desc',
     'application_date_asc',
     'company_name_asc',
     'company_name_desc',
-] as const;
-
-export type ApplicationListSortOrder = (typeof APPLICATION_LIST_SORT_ORDERS)[number];
-export type ApplicationBoardSortOrder = Exclude<ApplicationListSortOrder, 'job_status'>;
+];
 
 export const APPLICATION_BOARD_SORT_ORDERS: readonly ApplicationBoardSortOrder[] = APPLICATION_LIST_SORT_ORDERS.filter(
     (sortOrder): sortOrder is ApplicationBoardSortOrder => sortOrder !== 'job_status'

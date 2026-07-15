@@ -143,6 +143,10 @@ describe('demo page interactions', () => {
         mockConfirm.mockReset();
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     test('updates application notes and status with auto-scroll highlighting', async () => {
         renderDemo(<DemoViewApplication />);
 
@@ -294,7 +298,32 @@ describe('demo page interactions', () => {
         }
     );
 
-    test('validates and creates demo applications', async () => {
+    test('shows accessible demo application errors and clears only the edited field error without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        renderDemo(<DemoAddApplication />, [routes.demoAddApplication]);
+
+        await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
+
+        const companyNameInput = screen.getByLabelText(/company name/i);
+        const jobTitleInput = screen.getByLabelText(/job title/i);
+        const companyNameError = screen.getByText('Please enter a company name.');
+        const jobTitleError = screen.getByText('Please enter a job title.');
+        expect(companyNameInput).toHaveAttribute('aria-invalid', 'true');
+        expect(companyNameInput).toHaveAttribute('aria-describedby', companyNameError.id);
+        expect(jobTitleInput).toHaveAttribute('aria-invalid', 'true');
+        expect(jobTitleInput).toHaveAttribute('aria-describedby', jobTitleError.id);
+        expect(document.activeElement).toBe(companyNameInput);
+
+        await userEvent.type(companyNameInput, 'Demo Form Company');
+        expect(screen.queryByText('Please enter a company name.')).not.toBeInTheDocument();
+        expect(screen.getByText('Please enter a job title.')).toBeInTheDocument();
+        expect(companyNameInput).not.toHaveAttribute('aria-invalid');
+        expect(companyNameInput).toHaveValue('Demo Form Company');
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('validates and creates demo applications without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
         renderDemo(
             <>
                 <DemoAddApplication />
@@ -309,9 +338,13 @@ describe('demo page interactions', () => {
         await userEvent.type(screen.getByLabelText(/job title/i), 'Demo Form Engineer');
         await userEvent.type(screen.getByLabelText(/job posting url/i), 'not-a-url');
         await userEvent.click(screen.getByRole('button', { name: /^add job application$/i }));
-        expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument();
+        const jobURLInput = screen.getByLabelText(/job posting url/i);
+        const jobURLError = screen.getByText('URL must be in a valid format.');
+        expect(jobURLInput).toHaveAttribute('aria-invalid', 'true');
+        expect(jobURLInput).toHaveAttribute('aria-describedby', jobURLError.id);
+        expect(document.activeElement).toBe(jobURLInput);
 
-        fireEvent.change(screen.getByLabelText(/job posting url/i), {
+        fireEvent.change(jobURLInput, {
             target: { value: 'https://jobs.example.com/demo-form-engineer' },
         });
         await userEvent.type(screen.getByLabelText(/job title/i), '{enter}');
@@ -319,6 +352,7 @@ describe('demo page interactions', () => {
         expect(screen.getByTestId('demo-application-count')).toHaveTextContent(String(initialApplicationCount + 1));
         expect(screen.getByLabelText(/company name/i)).toHaveValue('');
         expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+        expect(fetchSpy).not.toHaveBeenCalled();
     });
 
     test('demo application navigation does not create a record', async () => {
@@ -338,7 +372,41 @@ describe('demo page interactions', () => {
         expect(screen.getByTestId('demo-application-count')).toHaveTextContent(initialApplicationCount || '');
     });
 
-    test('validates and creates demo interviews', async () => {
+    test('shows accessible demo interview errors and textarea notes without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        const app = createDemoInitialState().applications.find((application) => application.job_id === 107);
+        if (!app) {
+            throw new Error('Expected demo application fixture.');
+        }
+
+        renderDemo(<DemoAddInterview />, [{ pathname: routes.demoAddInterview, state: { app } }]);
+
+        const notesInput = screen.getByLabelText('Additional Notes (optional)');
+        expect(notesInput.tagName).toBe('TEXTAREA');
+        expect(notesInput).toHaveAttribute('maxlength', '3000');
+        await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
+
+        const dateInput = screen.getByLabelText('Interview Date');
+        const locationInput = screen.getByLabelText('Interview Location');
+        const dateError = screen.getByText('Please enter an interview date.');
+        const locationError = screen.getByText('Please enter an interview location.');
+        expect(dateInput).toHaveAttribute('aria-invalid', 'true');
+        expect(dateInput).toHaveAttribute('aria-describedby', dateError.id);
+        expect(locationInput).toHaveAttribute('aria-invalid', 'true');
+        expect(locationInput).toHaveAttribute('aria-describedby', locationError.id);
+        expect(document.activeElement).toBe(dateInput);
+
+        fireEvent.change(dateInput, {
+            target: { value: toDateTimeString(daysFromNow(new Date(), 4, 10)) },
+        });
+        expect(screen.queryByText('Please enter an interview date.')).not.toBeInTheDocument();
+        expect(screen.getByText('Please enter an interview location.')).toBeInTheDocument();
+        expect(dateInput).not.toHaveAttribute('aria-invalid');
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    test('validates and creates demo interviews without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
         const app = createDemoInitialState().applications.find((application) => application.job_id === 107);
         if (!app) {
             throw new Error('Expected demo application fixture.');
@@ -355,7 +423,8 @@ describe('demo page interactions', () => {
         expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
 
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
-        expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument();
+        expect(screen.getByText('Please enter an interview date.')).toBeInTheDocument();
+        expect(screen.getByText('Please enter an interview location.')).toBeInTheDocument();
 
         fireEvent.change(screen.getByLabelText(/interview date/i), {
             target: { value: toDateTimeString(daysFromNow(new Date(), 4, 10)) },
@@ -365,9 +434,13 @@ describe('demo page interactions', () => {
 
         fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '1441' } });
         await userEvent.click(screen.getByRole('button', { name: /^add interview$/i }));
-        expect(screen.getByText('Please enter a duration between 1 and 1440 minutes')).toBeInTheDocument();
+        const durationInput = screen.getByLabelText('Duration (minutes)');
+        const durationError = screen.getByText('Please enter a duration between 1 and 1440 minutes');
+        expect(durationInput).toHaveAttribute('aria-invalid', 'true');
+        expect(durationInput).toHaveAttribute('aria-describedby', durationError.id);
+        expect(document.activeElement).toBe(durationInput);
 
-        fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '75' } });
+        fireEvent.change(durationInput, { target: { value: '75' } });
         await userEvent.type(screen.getByLabelText(/interview location/i), '{enter}');
 
         expect(screen.getByText('Successfully added an interview!')).toBeInTheDocument();
@@ -376,6 +449,7 @@ describe('demo page interactions', () => {
         expect(screen.getByLabelText(/interview location/i)).toHaveValue('');
         expect(screen.getByLabelText(/interview type/i)).toHaveValue('');
         expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
+        expect(fetchSpy).not.toHaveBeenCalled();
     });
 
     test('demo interview navigation does not create a record', async () => {

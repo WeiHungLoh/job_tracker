@@ -2,8 +2,9 @@ export const INTERVIEW_DURATION_MINUTES_MIN = 1;
 export const INTERVIEW_DURATION_MINUTES_MAX = 1440;
 export const DEFAULT_INTERVIEW_DURATION_MINUTES = 60;
 
-export const INTERVIEW_TIME_FILTERS = ['Upcoming Interviews', 'Past Interviews'] as const;
-export type InterviewTimeFilter = (typeof INTERVIEW_TIME_FILTERS)[number];
+export type InterviewTimeFilter = 'Upcoming Interviews' | 'Past Interviews';
+
+export const INTERVIEW_TIME_FILTERS: readonly InterviewTimeFilter[] = ['Upcoming Interviews', 'Past Interviews'];
 
 type InterviewTimingSource = {
     interview_date: string;

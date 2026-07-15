@@ -24,7 +24,11 @@ import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
 import { getDashboardInterviewId } from '../../../../../helper/dashboardNavigation';
 import { scrollAndHighlight } from '../../../../../helper/highlightElement';
 import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
-import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../../helper/interviewTiming';
+import {
+    filterAndSortInterviews,
+    INTERVIEW_TIME_FILTERS,
+    type InterviewTimeFilter,
+} from '../../../../../helper/interviewTiming';
 import { useBulkInterviewCalendarExport } from '../../../../interview/calendarOptions/useBulkInterviewCalendarExport';
 import useCurrentTime from '../../../../../hooks/useCurrentTime';
 
@@ -134,7 +138,7 @@ const DemoViewInterview = () => {
         }
     };
 
-    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+    const handleTimeFilterChange = async (timeFilters: InterviewTimeFilter[]) => {
         await updatePreferences({ interview_time_filters: timeFilters });
         return true;
     };

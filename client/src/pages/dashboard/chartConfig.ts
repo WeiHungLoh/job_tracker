@@ -11,7 +11,7 @@ import type {
 } from 'chart.js';
 import type { Theme } from '../../components/theme/models';
 import { JOB_STATUSES, type JobStatus } from '../application/models';
-import type { StatusCountMap } from './dashboardData';
+import type { DashboardStatusSelectHandler, StatusCountMap } from './models';
 
 export const TITLE_FONT = { size: 16, weight: 'bold' } as const;
 export const TITLE_PADDING = { top: 20, bottom: 20 };
@@ -209,7 +209,7 @@ export const getClickedJobStatus = (elements: ActiveElement[], labels: unknown[]
 
 export const createInteractiveStatusBarChartOptions = (
     theme: Theme,
-    onStatusSelect: (status: JobStatus) => void
+    onStatusSelect: DashboardStatusSelectHandler
 ): ChartOptions<'bar'> => ({
     ...createStatusBarChartOptions(theme),
     onClick: (_event, elements, chart) => {

@@ -40,10 +40,6 @@ type ApplicationSeed = {
     notes: string;
 };
 
-type ArchivedApplicationSeed = Omit<ApplicationSeed, 'id'> & {
-    id: number;
-};
-
 const createApplication = (seed: ApplicationSeed, now: Date): JobApplication => ({
     job_id: seed.id,
     company_name: seed.companyName,
@@ -55,7 +51,7 @@ const createApplication = (seed: ApplicationSeed, now: Date): JobApplication => 
     notes: seed.notes,
 });
 
-const createArchivedApplication = (seed: ArchivedApplicationSeed, now: Date): ArchivedJobApplication => ({
+const createArchivedApplication = (seed: ApplicationSeed, now: Date): ArchivedJobApplication => ({
     archived_job_id: seed.id,
     company_name: seed.companyName,
     job_title: seed.jobTitle,
@@ -249,7 +245,7 @@ const applicationSeeds: ApplicationSeed[] = [
     },
 ];
 
-const archivedApplicationSeeds: ArchivedApplicationSeed[] = [
+const archivedApplicationSeeds: ApplicationSeed[] = [
     {
         id: 201,
         companyName: 'Riverlane Studio',

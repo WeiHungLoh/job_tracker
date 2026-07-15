@@ -1,9 +1,7 @@
-import type { JobStatus } from '../application/models';
+import type { JobStatusCount } from '../application/models';
 import type { JobInterview } from '../interview/models';
 import { getUpcomingInterviews as getUpcomingInterviewsByTiming } from '../../helper/interviewTiming';
-import type { JobStatusCount } from './models';
-
-export type StatusCountMap = Partial<Record<JobStatus, number>>;
+import type { StatusCountMap } from './models';
 
 export const getStatusCountMap = (statusCounts: JobStatusCount[]): StatusCountMap => {
     const countByStatus: StatusCountMap = {};

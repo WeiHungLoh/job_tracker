@@ -1,4 +1,4 @@
-import type { EmptyStateProps } from '../../components/emptyState/EmptyState';
+import type { EmptyStateProps } from '../../components/emptyState/models';
 
 type ApplicationEmptyStateOptions = {
     actionRoute: string;

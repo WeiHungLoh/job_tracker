@@ -1,6 +1,16 @@
-import type { JobStatusCount, WeeklyApplicationCount } from '../dashboard/models';
+import type { SortOption } from '../../components/activityControls/sortOptions/models';
 
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
+
+export type JobStatusCount = {
+    job_status: JobStatus;
+    count: string;
+};
+
+export type WeeklyApplicationCount = {
+    start_of_week: string;
+    applications_count: string;
+};
 
 export type ApplicationListSortOrder =
     | 'job_status'
@@ -9,28 +19,26 @@ export type ApplicationListSortOrder =
     | 'company_name_asc'
     | 'company_name_desc';
 
-export type ApplicationBoardSortOrder = Exclude<ApplicationListSortOrder, 'job_status'>;
-
-type ApplicationSortOption<SortOrder extends ApplicationListSortOrder> = {
-    readonly label: string;
-    readonly value: SortOrder;
-};
+export type ApplicationBoardSortOrder =
+    | 'application_date_desc'
+    | 'application_date_asc'
+    | 'company_name_asc'
+    | 'company_name_desc';
 
 export const DEFAULT_APPLICATION_LIST_SORT_ORDER: ApplicationListSortOrder = 'job_status';
 export const DEFAULT_APPLICATION_BOARD_SORT_ORDER: ApplicationBoardSortOrder = 'application_date_desc';
 
-export const APPLICATION_LIST_SORT_OPTIONS = [
+export const APPLICATION_LIST_SORT_OPTIONS: readonly SortOption<ApplicationListSortOrder>[] = [
     { label: 'Job Status', value: 'job_status' },
     { label: 'Newest Application', value: 'application_date_desc' },
     { label: 'Oldest Application', value: 'application_date_asc' },
     { label: 'Company A–Z', value: 'company_name_asc' },
     { label: 'Company Z–A', value: 'company_name_desc' },
-] as const satisfies readonly ApplicationSortOption<ApplicationListSortOrder>[];
+];
 
-export const APPLICATION_BOARD_SORT_OPTIONS: readonly ApplicationSortOption<ApplicationBoardSortOrder>[] =
+export const APPLICATION_BOARD_SORT_OPTIONS: readonly SortOption<ApplicationBoardSortOrder>[] =
     APPLICATION_LIST_SORT_OPTIONS.filter(
-        (option): option is Exclude<(typeof APPLICATION_LIST_SORT_OPTIONS)[number], { value: 'job_status' }> =>
-            option.value !== 'job_status'
+        (option): option is SortOption<ApplicationBoardSortOrder> => option.value !== 'job_status'
     );
 
 export const JOB_STATUSES: readonly JobStatus[] = [

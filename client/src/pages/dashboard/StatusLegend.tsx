@@ -1,10 +1,11 @@
 import type { JobStatus } from '../application/models';
+import type { DashboardStatusSelectHandler } from './models';
 import styles from './StatusLegend.module.css';
 
 type StatusLegendProps = {
     label: string;
     statuses: readonly JobStatus[];
-    onStatusSelect?: (status: JobStatus) => void;
+    onStatusSelect?: DashboardStatusSelectHandler;
 };
 
 const statusClassNames: Record<JobStatus, string> = {

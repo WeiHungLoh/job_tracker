@@ -3,6 +3,14 @@ import type { CSVLink } from 'react-csv';
 import type { PrimaryButtonVariant } from '../button/models';
 import type { IconName } from '../icon/models';
 
+type MoreOptionsMiddleAction = {
+    disabled?: boolean;
+    icon?: IconName;
+    isLoading?: boolean;
+    label: string;
+    onClick: () => void;
+};
+
 export type ActivityControlsProps = {
     actions?: ReactNode;
     ariaLabel: string;
@@ -39,12 +47,6 @@ export type MoreOptionsProps = {
     deleteDisabled?: boolean;
     id: string;
     isDeleting: boolean;
-    middleAction?: {
-        disabled?: boolean;
-        icon?: IconName;
-        isLoading?: boolean;
-        label: string;
-        onClick: () => void;
-    };
+    middleAction?: MoreOptionsMiddleAction;
     onDelete: () => void;
 };

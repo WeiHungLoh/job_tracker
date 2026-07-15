@@ -27,7 +27,8 @@
 }
 
 .formPage input,
-.formPage select {
+.formPage select,
+.formPage textarea {
     width: 100%;
     min-height: 40px;
     margin: var(--spaceCompact) 0;
@@ -46,9 +47,30 @@
 }
 
 .formPage input:focus,
-.formPage select:focus {
+.formPage select:focus,
+.formPage textarea:focus {
     border-color: var(--colorPrimary);
     box-shadow: 0 0 0 3px var(--colorPrimaryFocusShadow);
+}
+
+.formPage input[aria-invalid='true'],
+.formPage select[aria-invalid='true'],
+.formPage textarea[aria-invalid='true'] {
+    border-color: var(--colorToastErrorAccent);
+}
+
+.fieldError {
+    margin: -4px 0 var(--spaceCompact);
+    color: var(--colorToastErrorText);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 600;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.formPage textarea {
+    min-height: 112px;
+    resize: vertical;
 }
 
 .context {
@@ -80,8 +102,13 @@
     }
 
     .formPage input,
-    .formPage select {
+    .formPage select,
+    .formPage textarea {
         font-size: 0.9rem;
+    }
+
+    .fieldError {
+        font-size: 0.75rem;
     }
 
     .context p {

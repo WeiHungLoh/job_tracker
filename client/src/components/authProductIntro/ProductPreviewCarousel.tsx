@@ -28,7 +28,15 @@ import styles from './AuthProductIntro.module.css';
 
 const PRODUCT_HOST = 'jobtracker.weihungloh.com';
 
-const productPreviews = [
+type ProductPreview = {
+    readonly alt: string;
+    readonly darkImage: string;
+    readonly label: string;
+    readonly lightImage: string;
+    readonly route: string;
+};
+
+const productPreviews: readonly ProductPreview[] = [
     {
         alt: 'Job Tracker dashboard showing application and interview statistics',
         darkImage: darkDashboardPreview,
@@ -92,9 +100,7 @@ const productPreviews = [
         lightImage: lightBoardArchivedInterviewPreview,
         route: routes.archivedInterviews,
     },
-] as const;
-
-type ProductPreview = (typeof productPreviews)[number];
+];
 
 const loadedPreviewImages = new Set<string>();
 const previewImageRequests = new Map<string, Promise<void>>();

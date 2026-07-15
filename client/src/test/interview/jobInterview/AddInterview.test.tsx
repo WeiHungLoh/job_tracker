@@ -42,6 +42,8 @@ describe('AddInterview page', () => {
         expect(screen.getByLabelText('Duration (minutes)')).toHaveAttribute('min', '1');
         expect(screen.getByLabelText('Duration (minutes)')).toHaveAttribute('max', '1440');
         expect(screen.getByLabelText('Duration (minutes)')).toHaveAttribute('step', '1');
+        expect(screen.getByLabelText('Additional Notes (optional)').tagName).toBe('TEXTAREA');
+        expect(screen.getByLabelText('Additional Notes (optional)')).toHaveAttribute('maxlength', '3000');
 
         fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
         fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '90' } });
@@ -51,7 +53,14 @@ describe('AddInterview page', () => {
         userEvent.click(screen.getByTestId('add-interview'));
 
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
-        expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toMatchObject({ interviewDurationMinutes: 90 });
+        expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
+            interviewDate: new Date(2025, 7, 3, 14, 30).toISOString(),
+            interviewDurationMinutes: 90,
+            interviewLocation: 'Zoom',
+            interviewType: 'HR',
+            jobId: 1,
+            notes: '2nd round',
+        });
         await waitFor(() => {
             expect(screen.getByLabelText('Interview Date')).toHaveValue('');
             expect(screen.getByLabelText('Interview Location')).toHaveValue('');
@@ -102,6 +111,55 @@ describe('AddInterview page', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    test('shows separate accessible required errors and focuses the interview date first', async () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        const dateInput = screen.getByLabelText('Interview Date');
+        const locationInput = screen.getByLabelText('Interview Location');
+        const dateError = await screen.findByText('Please enter an interview date.');
+        const locationError = screen.getByText('Please enter an interview location.');
+        expect(dateInput).toHaveAttribute('aria-invalid', 'true');
+        expect(dateInput).toHaveAttribute('aria-describedby', dateError.id);
+        expect(dateError).toHaveAttribute('role', 'alert');
+        expect(locationInput).toHaveAttribute('aria-invalid', 'true');
+        expect(locationInput).toHaveAttribute('aria-describedby', locationError.id);
+        expect(document.activeElement).toBe(dateInput);
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('clears only the edited interview error and preserves values after client validation fails', async () => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText('Interview Type (optional)'), 'Technical');
+        userEvent.click(screen.getByTestId('add-interview'));
+        await screen.findByText('Please enter an interview date.');
+
+        const dateInput = screen.getByLabelText('Interview Date');
+        fireEvent.change(dateInput, { target: { value: '2025-08-03T14:30' } });
+
+        expect(screen.queryByText('Please enter an interview date.')).not.toBeInTheDocument();
+        expect(screen.getByText('Please enter an interview location.')).toBeInTheDocument();
+        expect(dateInput).not.toHaveAttribute('aria-invalid');
+        expect(dateInput).not.toHaveAttribute('aria-describedby');
+        expect(dateInput).toHaveValue('2025-08-03T14:30');
+        expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('Technical');
+    });
+
     test('rejects a whitespace-only interview location', async () => {
         render(
             <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
@@ -115,9 +173,10 @@ describe('AddInterview page', () => {
         userEvent.type(screen.getByLabelText('Interview Location'), '   ');
         userEvent.click(screen.getByTestId('add-interview'));
 
-        await waitFor(() =>
-            expect(screen.getByText('Please enter a date and location before adding an interview.')).toBeInTheDocument()
-        );
+        const locationError = await screen.findByText('Please enter an interview location.');
+        const locationInput = screen.getByLabelText('Interview Location');
+        expect(locationInput).toHaveAttribute('aria-describedby', locationError.id);
+        expect(document.activeElement).toBe(locationInput);
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -138,6 +197,11 @@ describe('AddInterview page', () => {
         await waitFor(() =>
             expect(screen.getByText('Please enter a duration between 1 and 1440 minutes')).toBeInTheDocument()
         );
+        const durationInput = screen.getByLabelText('Duration (minutes)');
+        const durationError = screen.getByText('Please enter a duration between 1 and 1440 minutes');
+        expect(durationInput).toHaveAttribute('aria-invalid', 'true');
+        expect(durationInput).toHaveAttribute('aria-describedby', durationError.id);
+        expect(document.activeElement).toBe(durationInput);
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -164,6 +228,7 @@ describe('AddInterview page', () => {
         await waitFor(() =>
             expect(screen.getByText('Interview date must be after the job application date.')).toBeInTheDocument()
         );
+        expect(document.activeElement).toBe(screen.getByLabelText('Interview Date'));
         expect(fetch).not.toHaveBeenCalled();
     });
 

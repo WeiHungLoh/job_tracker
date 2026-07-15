@@ -8,7 +8,7 @@ import DashboardContent from '../../pages/dashboard/DashboardContent';
 import DashboardStats from '../../pages/dashboard/DashboardStats';
 import dashboardStatsStyles from '../../pages/dashboard/DashboardStats.module.css';
 import UpcomingInterviews from '../../pages/dashboard/UpcomingInterviews';
-import type { JobStatusCount, WeeklyApplicationCount } from '../../pages/dashboard/models';
+import type { JobStatusCount, WeeklyApplicationCount } from '../../pages/application/models';
 import type { JobInterview } from '../../pages/interview/models';
 import { getStatusBarTooltipPlacement, getTrendTooltipPlacement } from '../../pages/dashboard/chartConfig';
 import { render } from '../renderWithToast';

@@ -1,8 +1,12 @@
-import type { ArchivedJobApplication, JobApplication } from '../../application/models';
+import type {
+    ArchivedJobApplication,
+    JobApplication,
+    JobStatusCount,
+    WeeklyApplicationCount,
+} from '../../application/models';
 import { JOB_STATUSES } from '../../application/models';
 import { sortApplications } from '../../application/applicationSorting';
 import type { DemoState } from '../models';
-import type { JobStatusCount, WeeklyApplicationCount } from '../../dashboard/models';
 import { startOfLocalWeek, toDateString } from './demoDateHelpers';
 import { filterAndSortInterviews, getInterviewTiming } from '../../../helper/interviewTiming';
 

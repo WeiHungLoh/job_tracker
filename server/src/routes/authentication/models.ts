@@ -7,5 +7,5 @@ export type CredentialsRequest = {
 };
 
 export type AuthenticationResponse = MessageResponse | ErrorResponse;
-export type RefreshAuthenticationResponse = MessageResponse | ErrorResponse;
+export type RefreshAuthenticationResponse = AuthenticationResponse;
 export type SignUpResponse = string | ErrorResponse;

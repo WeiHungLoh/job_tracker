@@ -434,6 +434,7 @@ describe('Rose Ledger visual contract', () => {
             'grid-column: span 4;',
         ].forEach((declaration) => expect(dashboard).toContain(declaration));
         expect(formPage).toContain('@media (max-width: 1150px) and (orientation: portrait), (max-width: 600px)');
+        expect(formPage).toContain('    .fieldError {\n        font-size: 0.75rem;\n    }');
         expect(formPage).toContain('flex-wrap: nowrap;');
         expect(formPage).toContain('flex: 1 1 0;');
         [

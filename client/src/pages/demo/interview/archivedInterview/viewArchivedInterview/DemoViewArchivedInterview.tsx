@@ -22,7 +22,11 @@ import { createInterviewEmptyState } from '../../../../interview/interviewEmptyS
 import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
 import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
-import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../../helper/interviewTiming';
+import {
+    filterAndSortInterviews,
+    INTERVIEW_TIME_FILTERS,
+    type InterviewTimeFilter,
+} from '../../../../../helper/interviewTiming';
 import useCurrentTime from '../../../../../hooks/useCurrentTime';
 
 const DemoViewArchivedInterview = () => {
@@ -90,7 +94,7 @@ const DemoViewArchivedInterview = () => {
         }
     };
 
-    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+    const handleTimeFilterChange = async (timeFilters: InterviewTimeFilter[]) => {
         await updatePreferences({ archived_interview_time_filters: timeFilters });
         return true;
     };

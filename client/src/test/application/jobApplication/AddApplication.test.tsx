@@ -28,12 +28,31 @@ describe('User add application flow', () => {
         expect(screen.queryByRole('heading', { name: 'Add Job Application' })).not.toBeInTheDocument();
         userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
         userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
+        userEvent.selectOptions(screen.getByLabelText(/job status/i), 'Interview');
+        fireEvent.change(screen.getByLabelText(/application date/i), {
+            target: { value: '2025-08-03T14:30' },
+        });
+        userEvent.type(screen.getByLabelText(/job location/i), 'Singapore');
+        userEvent.type(screen.getByLabelText(/job posting url/i), 'https://example.com/jobs/1');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        const request = fetch.mock.calls[0][1] as RequestInit;
+        expect(JSON.parse(request.body as string)).toEqual({
+            appDate: new Date(2025, 7, 3, 14, 30).toISOString(),
+            companyName: 'ABC Pte Ltd',
+            jobLocation: 'Singapore',
+            jobStatus: 'Interview',
+            jobTitle: 'Cleaner',
+            jobURL: 'https://example.com/jobs/1',
+        });
         await waitFor(() => expect(screen.getByTestId('toast')).toBeInTheDocument());
         expect(screen.getByLabelText(/company name/i)).toHaveValue('');
         expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job status/i)).toHaveValue('Applied');
+        expect(screen.getByLabelText(/application date/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job posting url/i)).toHaveValue('');
     });
 
     test('submits once when Enter is pressed in a form field', async () => {
@@ -70,21 +89,48 @@ describe('User add application flow', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    test('shows an error toast when company name is not filled in', async () => {
+    test('shows accessible inline errors for blank required fields and focuses company name first', async () => {
         render(
             <MemoryRouter>
                 <AddApplication />
             </MemoryRouter>
         );
 
-        userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
-        await waitFor(() =>
-            expect(
-                screen.getByText('Please enter company name and job title before adding a job application.')
-            ).toBeInTheDocument()
+        const companyNameInput = screen.getByLabelText(/company name/i);
+        const jobTitleInput = screen.getByLabelText(/job title/i);
+        const companyNameError = await screen.findByText('Please enter a company name.');
+        const jobTitleError = screen.getByText('Please enter a job title.');
+
+        expect(companyNameInput).toHaveAttribute('aria-invalid', 'true');
+        expect(companyNameInput).toHaveAttribute('aria-describedby', companyNameError.id);
+        expect(companyNameError).toHaveAttribute('role', 'alert');
+        expect(jobTitleInput).toHaveAttribute('aria-invalid', 'true');
+        expect(jobTitleInput).toHaveAttribute('aria-describedby', jobTitleError.id);
+        expect(document.activeElement).toBe(companyNameInput);
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('clears only the edited field error and preserves entered values after client validation fails', async () => {
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
         );
+
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+        await screen.findByText('Please enter a company name.');
+
+        const companyNameInput = screen.getByLabelText(/company name/i);
+        userEvent.type(companyNameInput, 'ABC Pte Ltd');
+
+        expect(screen.queryByText('Please enter a company name.')).not.toBeInTheDocument();
+        expect(screen.getByText('Please enter a job title.')).toBeInTheDocument();
+        expect(companyNameInput).not.toHaveAttribute('aria-invalid');
+        expect(companyNameInput).not.toHaveAttribute('aria-describedby');
+        expect(companyNameInput).toHaveValue('ABC Pte Ltd');
     });
 
     test('does not accept whitespace-only required fields', async () => {
@@ -98,11 +144,7 @@ describe('User add application flow', () => {
         userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
-        await waitFor(() =>
-            expect(
-                screen.getByText('Please enter company name and job title before adding a job application.')
-            ).toBeInTheDocument()
-        );
+        await waitFor(() => expect(screen.getByText('Please enter a company name.')).toBeInTheDocument());
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -125,6 +167,7 @@ describe('User add application flow', () => {
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('Please enter a valid application date.')).toBeInTheDocument());
+        expect(document.activeElement).toBe(applicationDateInput);
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -155,7 +198,7 @@ describe('User add application flow', () => {
         expect(JSON.parse(request.body as string).appDate).toContain('1899-12-31');
     });
 
-    test('shows an error toast and does not submit an invalid job URL', async () => {
+    test('shows an inline error and does not submit an invalid job URL', async () => {
         render(
             <MemoryRouter>
                 <AddApplication />
@@ -168,6 +211,14 @@ describe('User add application flow', () => {
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
         await waitFor(() => expect(screen.getByText('URL must be in a valid format.')).toBeInTheDocument());
+        const jobURLInput = screen.getByLabelText(/job posting url/i);
+        const jobURLError = screen.getByText('URL must be in a valid format.');
+        expect(jobURLInput).toHaveAttribute('aria-invalid', 'true');
+        expect(jobURLInput).toHaveAttribute('aria-describedby', jobURLError.id);
+        expect(document.activeElement).toBe(jobURLInput);
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('ABC Pte Ltd');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('Cleaner');
+        expect(jobURLInput).toHaveValue('not-a-valid-url');
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -220,6 +271,7 @@ describe('User add application flow', () => {
         await waitFor(() =>
             expect(screen.getByText('Application date cannot be later than the current date.')).toBeInTheDocument()
         );
+        expect(document.activeElement).toBe(screen.getByLabelText(/application date/i));
         expect(fetch).not.toHaveBeenCalled();
     });
 

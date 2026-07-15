@@ -28,7 +28,11 @@ import type { ApplicationViewMode } from '../../../../components/activityControl
 import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skeletonInterviewBoard/SkeletonInterviewBoard';
 import InterviewGrid from '../../interviewGrid/InterviewGrid';
 import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
-import { filterAndSortInterviews, INTERVIEW_TIME_FILTERS } from '../../../../helper/interviewTiming';
+import {
+    filterAndSortInterviews,
+    INTERVIEW_TIME_FILTERS,
+    type InterviewTimeFilter,
+} from '../../../../helper/interviewTiming';
 import useCurrentTime from '../../../../hooks/useCurrentTime';
 
 const ViewArchivedInterview = () => {
@@ -64,7 +68,7 @@ const ViewArchivedInterview = () => {
         }
     };
 
-    const handleTimeFilterChange = async (timeFilters: (typeof INTERVIEW_TIME_FILTERS)[number][]) => {
+    const handleTimeFilterChange = async (timeFilters: InterviewTimeFilter[]) => {
         try {
             await updatePreferences({ archived_interview_time_filters: timeFilters });
             return true;

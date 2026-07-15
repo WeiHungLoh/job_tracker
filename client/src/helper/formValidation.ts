@@ -21,12 +21,32 @@ type ValidForm<TValues> = {
     values: TValues;
 };
 
-type InvalidForm = {
-    error: string;
+type InvalidForm<TErrors> = {
+    errors: TErrors;
     isValid: false;
 };
 
-type FormValidationResult<TValues> = ValidForm<TValues> | InvalidForm;
+type FormValidationResult<TValues, TErrors> = ValidForm<TValues> | InvalidForm<TErrors>;
+
+export type ApplicationFormErrors = {
+    applicationDate?: string;
+    companyName?: string;
+    jobLocation?: string;
+    jobTitle?: string;
+    jobURL?: string;
+};
+
+export type ApplicationFormField = keyof ApplicationFormErrors;
+
+export type InterviewFormErrors = {
+    interviewDate?: string;
+    interviewDurationMinutes?: string;
+    interviewLocation?: string;
+    interviewType?: string;
+    notes?: string;
+};
+
+export type InterviewFormField = keyof InterviewFormErrors;
 
 type ApplicationFormInput = {
     applicationDate: string;
@@ -64,7 +84,7 @@ type ValidInterviewFormValues = {
     notes: string;
 };
 
-const invalidForm = (error: string): InvalidForm => ({ error, isValid: false });
+const invalidForm = <TErrors>(errors: TErrors): InvalidForm<TErrors> => ({ errors, isValid: false });
 
 export const normalizeEmail = (value: string): string => value.trim().toLowerCase();
 
@@ -97,44 +117,56 @@ export const isValidHttpURL = (value: string): boolean => {
 export const validateApplicationForm = (
     { applicationDate, applicationDateValidity, companyName, jobLocation, jobTitle, jobURL }: ApplicationFormInput,
     currentDate = new Date()
-): FormValidationResult<ValidApplicationFormValues> => {
+): FormValidationResult<ValidApplicationFormValues, ApplicationFormErrors> => {
     const trimmedCompanyName = companyName.trim();
     const trimmedJobTitle = jobTitle.trim();
     const trimmedJobLocation = jobLocation.trim();
     const trimmedJobURL = jobURL.trim();
+    const errors: ApplicationFormErrors = {};
 
-    if (!trimmedCompanyName || !trimmedJobTitle) {
-        return invalidForm('Please enter company name and job title before adding a job application.');
+    if (!trimmedCompanyName) {
+        errors.companyName = 'Please enter a company name.';
+    }
+
+    if (!trimmedJobTitle) {
+        errors.jobTitle = 'Please enter a job title.';
     }
 
     if (trimmedCompanyName.length > FIELD_MAX_LENGTHS.companyName) {
-        return invalidForm(`Company name must be ${FIELD_MAX_LENGTHS.companyName} characters or fewer.`);
+        errors.companyName = `Company name must be ${FIELD_MAX_LENGTHS.companyName} characters or fewer.`;
     }
 
     if (trimmedJobTitle.length > FIELD_MAX_LENGTHS.jobTitle) {
-        return invalidForm(`Job title must be ${FIELD_MAX_LENGTHS.jobTitle} characters or fewer.`);
+        errors.jobTitle = `Job title must be ${FIELD_MAX_LENGTHS.jobTitle} characters or fewer.`;
     }
 
     if (trimmedJobLocation.length > FIELD_MAX_LENGTHS.location) {
-        return invalidForm(`Job location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`);
+        errors.jobLocation = `Job location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`;
     }
 
     if (trimmedJobURL.length > FIELD_MAX_LENGTHS.jobURL) {
-        return invalidForm(`Job URL must be ${FIELD_MAX_LENGTHS.jobURL} characters or fewer.`);
+        errors.jobURL = `Job URL must be ${FIELD_MAX_LENGTHS.jobURL} characters or fewer.`;
     }
 
-    if (isInvalidDatetimeLocalInput(applicationDate, applicationDateValidity)) {
-        return invalidForm('Please enter a valid application date.');
+    const applicationDateIsInvalid = isInvalidDatetimeLocalInput(applicationDate, applicationDateValidity);
+    let parsedApplicationDate = currentDate;
+
+    if (applicationDateIsInvalid) {
+        errors.applicationDate = 'Please enter a valid application date.';
+    } else if (applicationDate) {
+        parsedApplicationDate = parseDatetimeLocal(applicationDate);
+
+        if (parsedApplicationDate > currentDate) {
+            errors.applicationDate = 'Application date cannot be later than the current date.';
+        }
     }
 
-    const parsedApplicationDate = applicationDate ? parseDatetimeLocal(applicationDate) : currentDate;
-
-    if (parsedApplicationDate > currentDate) {
-        return invalidForm('Application date cannot be later than the current date.');
+    if (!errors.jobURL && trimmedJobURL && !isValidHttpURL(trimmedJobURL)) {
+        errors.jobURL = 'URL must be in a valid format.';
     }
 
-    if (trimmedJobURL && !isValidHttpURL(trimmedJobURL)) {
-        return invalidForm('URL must be in a valid format.');
+    if (Object.keys(errors).length > 0) {
+        return invalidForm(errors);
     }
 
     return {
@@ -158,18 +190,30 @@ export const validateInterviewForm = ({
     interviewLocation,
     interviewType,
     notes,
-}: InterviewFormInput): FormValidationResult<ValidInterviewFormValues> => {
+}: InterviewFormInput): FormValidationResult<ValidInterviewFormValues, InterviewFormErrors> => {
     const trimmedInterviewLocation = interviewLocation.trim();
     const trimmedInterviewType = interviewType.trim();
     const trimmedNotes = notes.trim();
     const parsedDuration = Number(interviewDurationMinutes);
+    const errors: InterviewFormErrors = {};
+    const interviewDateIsInvalid = isInvalidDatetimeLocalInput(interviewDate, interviewDateValidity);
+    let parsedInterviewDate: Date | undefined;
 
-    if (isInvalidDatetimeLocalInput(interviewDate, interviewDateValidity)) {
-        return invalidForm('Please enter a valid interview date.');
+    if (interviewDateIsInvalid) {
+        errors.interviewDate = 'Please enter a valid interview date.';
+    } else if (!interviewDate) {
+        errors.interviewDate = 'Please enter an interview date.';
+    } else {
+        parsedInterviewDate = parseDatetimeLocal(interviewDate);
+        if (parsedInterviewDate <= new Date(applicationDate)) {
+            errors.interviewDate = 'Interview date must be after the job application date.';
+        }
     }
 
-    if (!interviewDate || !trimmedInterviewLocation) {
-        return invalidForm('Please enter a date and location before adding an interview.');
+    if (!trimmedInterviewLocation) {
+        errors.interviewLocation = 'Please enter an interview location.';
+    } else if (trimmedInterviewLocation.length > FIELD_MAX_LENGTHS.location) {
+        errors.interviewLocation = `Interview location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`;
     }
 
     if (
@@ -182,32 +226,25 @@ export const validateInterviewForm = ({
         parsedDuration < INTERVIEW_DURATION_MINUTES_MIN ||
         parsedDuration > INTERVIEW_DURATION_MINUTES_MAX
     ) {
-        return invalidForm(
-            `Please enter a duration between ${INTERVIEW_DURATION_MINUTES_MIN} and ${INTERVIEW_DURATION_MINUTES_MAX} minutes`
-        );
-    }
-
-    if (trimmedInterviewLocation.length > FIELD_MAX_LENGTHS.location) {
-        return invalidForm(`Interview location must be ${FIELD_MAX_LENGTHS.location} characters or fewer.`);
+        errors.interviewDurationMinutes = `Please enter a duration between ${INTERVIEW_DURATION_MINUTES_MIN} and ${INTERVIEW_DURATION_MINUTES_MAX} minutes`;
     }
 
     if (trimmedInterviewType.length > FIELD_MAX_LENGTHS.interviewType) {
-        return invalidForm(`Interview type must be ${FIELD_MAX_LENGTHS.interviewType} characters or fewer.`);
+        errors.interviewType = `Interview type must be ${FIELD_MAX_LENGTHS.interviewType} characters or fewer.`;
     }
 
     if (trimmedNotes.length > FIELD_MAX_LENGTHS.notes) {
-        return invalidForm(`Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
+        errors.notes = `Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`;
     }
 
-    const parsedInterviewDate = parseDatetimeLocal(interviewDate);
-    if (parsedInterviewDate <= new Date(applicationDate)) {
-        return invalidForm('Interview date must be after the job application date.');
+    if (Object.keys(errors).length > 0) {
+        return invalidForm(errors);
     }
 
     return {
         isValid: true,
         values: {
-            interviewDate: parsedInterviewDate,
+            interviewDate: parsedInterviewDate as Date,
             interviewDurationMinutes: parsedDuration,
             interviewLocation: trimmedInterviewLocation,
             interviewType: trimmedInterviewType,
