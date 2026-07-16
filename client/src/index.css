@@ -125,8 +125,8 @@
     --colorNotesShadow: rgba(0, 0, 0, 0.1);
 
     /* Misc accents */
-    --colorLocationText: #00796b;
-    --colorInterviewType: #5e35b1;
+    --colorLocationText: #005f56;
+    --colorInterviewType: #6d28d9;
     --colorTimeLeft: #c6283d;
     --colorUpcomingBadge: #f57c00;
     --colorUpcomingBadgeText: #ffffff;
@@ -292,8 +292,8 @@
     --colorBadgeText: white;
 
     /* Misc accents */
-    --colorLocationText: #40c9b8;
-    --colorInterviewType: #8b8dd4;
+    --colorLocationText: #5eead4;
+    --colorInterviewType: #c4b5fd;
     --colorTimeLeft: #e35d6e;
     --colorUpcomingBadge: #f57c00;
     --colorUpcomingBadgeText: #ffffff;

@@ -3,6 +3,7 @@ import type {
     ArchivedJobIdParams,
     EmptyResponse,
     GetArchivedApplicationCollectionSummaryResponse,
+    GetArchivedApplicationRelationSummaryResponse,
     ListArchivedApplicationsQuery,
     ListArchivedApplicationsResponse,
 } from './models.js';
@@ -19,7 +20,10 @@ import {
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
 import { toJobStatusQueryValues, toPositiveInteger } from '../../http/validation.js';
-import { getApplicationCollectionSummary } from '../../db/queries/collectionSummaries.js';
+import {
+    getApplicationCollectionSummary,
+    getApplicationRelationSummary,
+} from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
 
@@ -83,6 +87,31 @@ router.get(
             res.status(200).json(await getApplicationCollectionSummary(req.user.id, true));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived application counts.');
+        }
+    }
+);
+
+router.get(
+    '/:archivedJobId/relation-summary',
+    async (
+        req: Request<ArchivedJobIdParams, GetArchivedApplicationRelationSummaryResponse>,
+        res: Response<GetArchivedApplicationRelationSummaryResponse>
+    ): Promise<void> => {
+        const archivedJobId = toPositiveInteger(req.params.archivedJobId);
+        if (archivedJobId === undefined) {
+            sendError(res, 422, 'Archived job application ID must be a positive integer.');
+            return;
+        }
+
+        try {
+            const summary = await getApplicationRelationSummary(archivedJobId, req.user.id, true);
+            if (!summary) {
+                sendError(res, 404, 'Archived job application not found.');
+                return;
+            }
+            res.status(200).json(summary);
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to load the archived job application relation summary.');
         }
     }
 );

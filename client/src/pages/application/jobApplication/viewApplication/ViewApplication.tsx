@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
+import { createApplicationRelationConfirmation } from '../../../../helper/applicationRelationConfirmation';
 import {
     createArchiveAllConfirmation,
     createDeleteAllApplicationsConfirmation,
@@ -43,7 +43,7 @@ import EmptyState from '../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../routes';
 import { createApplicationEmptyState } from '../../applicationEmptyState';
 import SortOptions from '../../../../components/activityControls/sortOptions/SortOptions';
-import { sortApplications } from '../../applicationSorting';
+import { shouldAutoScrollAfterStatusChange, sortApplications } from '../../applicationSorting';
 import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
 import { getDashboardJobStatus } from '../../../../helper/dashboardNavigation';
 import useCurrentTime from '../../../../hooks/useCurrentTime';
@@ -64,10 +64,10 @@ const ViewApplication = () => {
     const statusHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const updatingStatusApplicationIdRef = useRef<Set<number>>(new Set());
+    const pendingApplicationActionIdsRef = useRef<Set<number>>(new Set());
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
-    const [applicationTotal, setApplicationTotal] = useState(0);
     const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
     const bulkActionPendingRef = useRef(false);
     const {
@@ -221,18 +221,6 @@ const ViewApplication = () => {
                     dashboardJobStatusRef.current = null;
                     navigate(location.pathname, { replace: true, state: null });
                 }
-            }
-
-            try {
-                const summary = await api.application.getSummary();
-                if (isActive) {
-                    setApplicationTotal(summary.application_count);
-                }
-            } catch (error) {
-                showErrorToast(
-                    getErrorToastMessage(error, 'Unable to load active application counts. Please try again.')
-                );
-            } finally {
                 if (isActive) {
                     setIsLoading(false);
                 }
@@ -290,27 +278,54 @@ const ViewApplication = () => {
         }, 500);
     };
 
-    const handleDelete = async (jobId: number) => {
+    const handleApplicationAction = async (action: 'archive' | 'delete', jobId: number) => {
+        if (pendingApplicationActionIdsRef.current.has(jobId)) {
+            return;
+        }
+
+        pendingApplicationActionIdsRef.current.add(jobId);
+        if (action === 'archive') {
+            startArchivingApplication(jobId);
+        } else {
+            startDeletingApplication(jobId);
+        }
+
         try {
-            const { confirmed } = await confirm(createDeleteConfirmation('job application'));
+            const summary = await api.application.getRelationSummary({ jobId });
+            const { confirmed } = await confirm(
+                createApplicationRelationConfirmation(action, 'active', summary.related_interview_count)
+            );
 
             if (!confirmed) {
                 return;
             }
 
-            startDeletingApplication(jobId);
-            try {
+            if (action === 'archive') {
+                await api.archivedApplication.archiveApplication({ jobId });
+            } else {
                 await api.application.deleteApplication({ jobId });
-                setApplications((current) => current.filter((application) => application.job_id !== jobId));
-                setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
-                setApplicationTotal((current) => Math.max(0, current - 1));
-            } finally {
+            }
+
+            setApplications((current) => current.filter((application) => application.job_id !== jobId));
+            setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
+        } catch (error) {
+            const fallback =
+                action === 'archive'
+                    ? 'Unable to archive the job application. Please try again.'
+                    : 'Unable to delete the job application. Please try again.';
+            showErrorToast(getErrorToastMessage(error, fallback));
+        } finally {
+            pendingApplicationActionIdsRef.current.delete(jobId);
+            if (action === 'archive') {
+                stopArchivingApplication(jobId);
+            } else {
                 stopDeletingApplication(jobId);
             }
-        } catch (error) {
-            showErrorToast(getErrorToastMessage(error, 'Unable to delete the job application. Please try again.'));
         }
     };
+
+    const handleDelete = (jobId: number) => handleApplicationAction('delete', jobId);
+    const handleArchive = (jobId: number) => handleApplicationAction('archive', jobId);
 
     const handleBulkAction = async (action: 'archive' | 'delete') => {
         if (bulkActionPendingRef.current) {
@@ -324,7 +339,6 @@ const ViewApplication = () => {
         try {
             const summary = await api.application.getSummary();
             countsLoaded = true;
-            setApplicationTotal(summary.application_count);
 
             if (summary.application_count === 0) {
                 setApplications([]);
@@ -354,7 +368,6 @@ const ViewApplication = () => {
 
             setApplications([]);
             setInterviews([]);
-            setApplicationTotal(0);
         } catch (error) {
             const fallback = !countsLoaded
                 ? 'Unable to load active application counts. Please try again.'
@@ -400,7 +413,10 @@ const ViewApplication = () => {
                     .filter((item) => selectedJobStatuses.includes(item.job_status))
             );
 
-            if (enableScroll && statusRemainsVisible) {
+            if (
+                shouldAutoScrollAfterStatusChange(enableScroll, preferences.application_list_sort_order) &&
+                statusRemainsVisible
+            ) {
                 setTimeout(() => {
                     scrollAndHighlight(String(application.job_id), styles.highlighted, statusHighlightTimeout.current);
                 }, 100);
@@ -450,20 +466,6 @@ const ViewApplication = () => {
         }
     };
 
-    const handleArchive = async (jobId: number) => {
-        startArchivingApplication(jobId);
-        try {
-            await api.archivedApplication.archiveApplication({ jobId });
-            setApplications((current) => current.filter((application) => application.job_id !== jobId));
-            setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
-            setApplicationTotal((current) => Math.max(0, current - 1));
-        } catch (error) {
-            showErrorToast(getErrorToastMessage(error, 'Unable to archive the job application. Please try again.'));
-        } finally {
-            stopArchivingApplication(jobId);
-        }
-    };
-
     const hasApplications = applications.length > 0;
     const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
     const emptyState = createApplicationEmptyState({
@@ -478,7 +480,7 @@ const ViewApplication = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        applicationTotal > 0 ? (
+                        !isLoading && hasApplications ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='job_applications.csv'

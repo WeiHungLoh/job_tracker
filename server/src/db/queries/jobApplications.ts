@@ -4,6 +4,12 @@ import { hasAffectedRows, JOB_STATUS_SORT_ORDER } from './shared.js';
 
 export type UpdateApplicationStatusResult = 'active-interview' | 'not-found' | 'updated';
 
+type PotentialDuplicateApplication = {
+    company_name: string;
+    job_title: string;
+    application_date: Date;
+};
+
 export const insertJobApplication = async (
     userId: number,
     companyName: string,
@@ -18,6 +24,50 @@ export const insertJobApplication = async (
         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [userId, companyName, jobTitle, applicationDate, jobStatus, jobLocation, jobURL]
     );
+};
+
+export const findPotentialDuplicateApplication = async (
+    userId: number,
+    companyName: string,
+    jobTitle: string,
+    jobURL: string
+): Promise<PotentialDuplicateApplication | undefined> => {
+    const result = await pool.query<PotentialDuplicateApplication>(
+        `SELECT
+            company_name,
+            job_title,
+            application_date
+         FROM job_applications
+         WHERE user_id = $1
+            AND (
+                (
+                    NULLIF(BTRIM($4::text), '') IS NOT NULL
+                    AND NULLIF(BTRIM(job_posting_url), '') IS NOT NULL
+                    AND BTRIM(job_posting_url) = BTRIM($4::text)
+                )
+                OR (
+                    LOWER(BTRIM(REGEXP_REPLACE(company_name, '[[:space:]]+', ' ', 'g'))) =
+                        LOWER(BTRIM(REGEXP_REPLACE($2::text, '[[:space:]]+', ' ', 'g')))
+                    AND LOWER(BTRIM(REGEXP_REPLACE(job_title, '[[:space:]]+', ' ', 'g'))) =
+                        LOWER(BTRIM(REGEXP_REPLACE($3::text, '[[:space:]]+', ' ', 'g')))
+                )
+            )
+         ORDER BY
+            CASE
+                WHEN NULLIF(BTRIM($4::text), '') IS NOT NULL
+                    AND NULLIF(BTRIM(job_posting_url), '') IS NOT NULL
+                    AND BTRIM(job_posting_url) = BTRIM($4::text)
+                THEN 0
+                ELSE 1
+            END ASC,
+            is_archived ASC,
+            application_date DESC,
+            job_id ASC
+         LIMIT 1`,
+        [userId, companyName, jobTitle, jobURL]
+    );
+
+    return result.rows[0];
 };
 
 export const getJobApplications = async (userId: number, jobStatuses: JobStatus[]): Promise<JobApplication[]> => {

@@ -42,8 +42,27 @@ export type CreateInterviewRequest = {
     interviewLocation: string;
     interviewType: string;
     notes: string;
+    allowSchedulingConflict?: boolean;
 };
 export type CreateInterviewResponse = string;
+
+export type InterviewSchedulingConflictCode = 'INTERVIEW_SCHEDULING_CONFLICT';
+
+export type InterviewSchedulingConflict = {
+    interview_id: number;
+    job_id: number;
+    company_name: string;
+    job_title: string;
+    interview_date: string;
+    interview_duration_minutes: number;
+    interview_type: string;
+};
+
+export type InterviewSchedulingConflictResponse = {
+    code: InterviewSchedulingConflictCode;
+    message: string;
+    conflicts: InterviewSchedulingConflict[];
+};
 
 export type DeleteInterviewRequest = {
     interviewId: number;

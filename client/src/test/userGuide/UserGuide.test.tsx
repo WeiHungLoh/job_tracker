@@ -78,5 +78,9 @@ describe('renders user guide properly', () => {
                 );
             })
         ).toBeVisible();
+
+        await userEvent.click(screen.getByRole('button', { name: /auto scroll and highlighting/i }));
+
+        expect(screen.getByText(/auto scroll only applies when sort by is set to job status/i)).toBeVisible();
     });
 });

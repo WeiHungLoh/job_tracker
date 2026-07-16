@@ -25,6 +25,11 @@ const compareCompanyNamesWithNewestFirst = (
     return byCompany || compareApplicationDates(secondApplication.application_date, firstApplication.application_date);
 };
 
+export const shouldAutoScrollAfterStatusChange = (
+    autoScrollEnabled: boolean,
+    sortOrder: ApplicationListSortOrder
+): boolean => autoScrollEnabled && sortOrder === 'job_status';
+
 export const sortApplications = <Application extends SortableApplication>(
     applications: readonly Application[],
     sortOrder: ApplicationListSortOrder

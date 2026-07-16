@@ -224,8 +224,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorStatusRejectedText: #ffffff;',
             '--colorStatusGhostedText: #ffffff;',
             '--colorStatusDeclinedText: #ffffff;',
-            '--colorLocationText: #00796b;',
-            '--colorInterviewType: #5e35b1;',
+            '--colorLocationText: #005f56;',
+            '--colorInterviewType: #6d28d9;',
             '--colorUpcomingBadge: #f57c00;',
             '--colorUpcomingBadgeText: #ffffff;',
         ].forEach((declaration) => expect(lightCss).toContain(declaration));
@@ -249,8 +249,8 @@ describe('Rose Ledger visual contract', () => {
             '--colorStatusRejectedText: #ffffff;',
             '--colorStatusGhostedText: #ffffff;',
             '--colorStatusDeclinedText: #ffffff;',
-            '--colorLocationText: #40c9b8;',
-            '--colorInterviewType: #8b8dd4;',
+            '--colorLocationText: #5eead4;',
+            '--colorInterviewType: #c4b5fd;',
             '--colorUpcomingBadge: #f57c00;',
             '--colorUpcomingBadgeText: #ffffff;',
         ].forEach((declaration) => expect(darkCss).toContain(declaration));
@@ -404,6 +404,7 @@ describe('Rose Ledger visual contract', () => {
 
     it('freezes the other responsive layout boundaries', () => {
         const activityControls = readSource('src/components/activityControls/ActivityControls.module.css');
+        const applicationsLineChart = readSource('src/pages/dashboard/ApplicationsLineChart.module.css');
         const navbar = readSource('src/components/navbar/Navbar.module.css');
         const dashboard = readSource('src/pages/dashboard/Dashboard.module.css');
         const formPage = readSource('src/components/formPage/FormPage.module.css');
@@ -437,6 +438,7 @@ describe('Rose Ledger visual contract', () => {
         expect(formPage).toContain('    .fieldError {\n        font-size: 0.75rem;\n    }');
         expect(formPage).toContain('flex-wrap: nowrap;');
         expect(formPage).toContain('flex: 1 1 0;');
+        expect(applicationsLineChart).toMatch(/\.summary span\s*\{[^}]*overflow-wrap:\s*anywhere;/s);
         [
             'grid-template-columns: minmax(0, 1fr) minmax(360px, 400px);',
             'left: calc(200px - 50cqw);',
@@ -466,6 +468,7 @@ describe('Rose Ledger visual contract', () => {
 
     it('keeps application actions single-line and every scrollbar color native', () => {
         const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
+        const demoApplicationCard = readSource('src/pages/demo/application/DemoApplicationCard.module.css');
         const interviewCard = readSource('src/pages/interview/InterviewCard.module.css');
         const calendarOptions = readSource('src/pages/interview/calendarOptions/CalendarOptions.module.css');
         const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
@@ -482,11 +485,16 @@ describe('Rose Ledger visual contract', () => {
         expect(applicationCard).toMatch(/\.buttonGroup button\s*\{[^}]*white-space: nowrap;/s);
         expect(interviewCard).toMatch(/\.buttonGroup\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr;/s);
         expect(interviewCard).toMatch(/\.buttonGroup\s*\{[^}]*flex-shrink:\s*0;/s);
+        expect(applicationCard).toMatch(/\.location\s*\{[^}]*color:\s*var\(--colorLocationText\);/s);
+        expect(interviewCard).toMatch(/\.location\s*\{[^}]*color:\s*var\(--colorLocationText\);/s);
+        expect(interviewCard).toMatch(/\.type\s*\{[^}]*color:\s*var\(--colorInterviewType\);/s);
+        expect(demoApplicationCard).toMatch(
+            /\.location\s*\{[^}]*composes:\s*location from '\.\.\/\.\.\/application\/ApplicationCard\.module\.css';/s
+        );
+        expect(`${applicationCard}\n${interviewCard}`).not.toMatch(/#(?:005f56|5eead4|6d28d9|c4b5fd)/i);
         expect(interviewCard).toContain('@media (min-width: 804px)');
         expect(interviewCard).toMatch(/\.buttonGroup\s*>\s*:only-child\s*\{[^}]*grid-column:\s*2;/s);
-        expect(interviewCard).toMatch(
-            /@media \(max-width: 803px\)\s*\{\s*\.interview\s*\{[^}]*padding-right:\s*0;/s
-        );
+        expect(interviewCard).toMatch(/@media \(max-width: 803px\)\s*\{\s*\.interview\s*\{[^}]*padding-right:\s*0;/s);
         expect(calendarOptions).toMatch(/\.trigger\s*\{[^}]*width:\s*100%;/s);
         expect(applicationBoard).toContain('border-radius: var(--radiusPill);');
         [

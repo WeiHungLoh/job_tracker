@@ -184,6 +184,30 @@ describe('Archived job interview viewer flow', () => {
         expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
     });
 
+    test('hides collection actions when filters hide every archived interview', async () => {
+        fetch.mockResolvedValue(
+            response([
+                {
+                    ...mockInterview,
+                    interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+                },
+            ])
+        );
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            { initialPreferences: { archived_interview_time_filters: ['Past Interviews'] } }
+        );
+
+        expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Archived interview view and management controls' }).children
+        ).toHaveLength(1);
+    });
+
     test('shows error toast when corresponding archived job application is not available', async () => {
         fetch.mockResolvedValueOnce(response([mockInterview])).mockResolvedValueOnce(response([]));
 

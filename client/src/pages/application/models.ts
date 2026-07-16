@@ -106,6 +106,32 @@ export type ApplicationCollectionSummary = {
 export type GetApplicationCollectionSummaryRequest = null;
 export type GetApplicationCollectionSummaryResponse = ApplicationCollectionSummary;
 
+export type ApplicationRelationSummary = {
+    related_interview_count: number;
+};
+export type GetApplicationRelationSummaryRequest = {
+    jobId: number;
+};
+export type GetApplicationRelationSummaryResponse = ApplicationRelationSummary;
+export type GetArchivedApplicationRelationSummaryRequest = {
+    archivedJobId: number;
+};
+export type GetArchivedApplicationRelationSummaryResponse = ApplicationRelationSummary;
+
+export type DuplicateApplicationCode = 'POSSIBLE_DUPLICATE_APPLICATION';
+
+export type DuplicateApplicationDetails = {
+    company_name: string;
+    job_title: string;
+    application_date: string;
+};
+
+export type DuplicateApplicationErrorResponse = {
+    code: DuplicateApplicationCode;
+    message: string;
+    duplicate: DuplicateApplicationDetails;
+};
+
 export type CreateApplicationRequest = {
     companyName: string;
     jobTitle: string;
@@ -113,6 +139,7 @@ export type CreateApplicationRequest = {
     jobStatus: JobStatus;
     jobLocation: string;
     jobURL: string;
+    allowDuplicate?: boolean;
 };
 export type CreateApplicationResponse = string;
 

@@ -15,6 +15,7 @@ import {
 import { getStatusCountMap } from './dashboardData';
 import styles from './ClosedOutcomesChart.module.css';
 import { useTheme } from '../../components/theme/ThemeContext';
+import useStatusChartVisibility from './useStatusChartVisibility';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
@@ -27,9 +28,10 @@ const ClosedOutcomesChart = ({ statusCounts, isLoading, onStatusSelect }: Status
         () => CLOSED_STATUSES.filter((status) => (countByStatus[status] ?? 0) > 0),
         [countByStatus]
     );
+    const { hiddenStatuses, visibleStatuses, toggleStatus } = useStatusChartVisibility(renderedStatuses);
     const data = useMemo(
-        () => createStatusBarChartData(renderedStatuses, countByStatus, theme),
-        [countByStatus, renderedStatuses, theme]
+        () => createStatusBarChartData(visibleStatuses, countByStatus, theme),
+        [countByStatus, theme, visibleStatuses]
     );
     const options = useMemo(
         () =>
@@ -38,7 +40,10 @@ const ClosedOutcomesChart = ({ statusCounts, isLoading, onStatusSelect }: Status
                 : createStatusBarChartOptions(theme),
         [onStatusSelect, theme]
     );
-    const chartLabel = renderedStatuses.map((status) => `${status}: ${countByStatus[status] ?? 0}`).join(', ');
+    const chartLabel =
+        visibleStatuses.length === 0
+            ? 'All bars hidden'
+            : visibleStatuses.map((status) => `${status}: ${countByStatus[status] ?? 0}`).join(', ');
 
     return (
         <DashboardCard title='Closed Outcomes' description='Applications that are no longer active.'>
@@ -56,7 +61,8 @@ const ClosedOutcomesChart = ({ statusCounts, isLoading, onStatusSelect }: Status
                     <StatusLegend
                         label='Closed outcomes legend'
                         statuses={renderedStatuses}
-                        onStatusSelect={onStatusSelect}
+                        hiddenStatuses={hiddenStatuses}
+                        onStatusToggle={toggleStatus}
                     />
                 </>
             )}

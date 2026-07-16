@@ -3,6 +3,7 @@ import type {
     CreateApplicationResponse,
     EmptyResponse,
     GetApplicationCollectionSummaryResponse,
+    GetApplicationRelationSummaryResponse,
     JobIdParams,
     ListApplicationsQuery,
     ListApplicationsResponse,
@@ -17,6 +18,7 @@ import {
     deleteAllJobApplications,
     deleteJobApplication,
     editNotes,
+    findPotentialDuplicateApplication,
     getApplicationsForLatestEightWeeks,
     getJobApplications,
     getJobStatusCounts,
@@ -27,6 +29,7 @@ import { handleRouteError, sendError } from '../../http/responses.js';
 import {
     isFutureDate,
     isJobStatus,
+    isOptionalBoolean,
     isValidHttpURL,
     isValidDate,
     toPositiveInteger,
@@ -34,7 +37,10 @@ import {
     toTrimmedString,
 } from '../../http/validation.js';
 import express from 'express';
-import { getApplicationCollectionSummary } from '../../db/queries/collectionSummaries.js';
+import {
+    getApplicationCollectionSummary,
+    getApplicationRelationSummary,
+} from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
 
@@ -48,7 +54,7 @@ router.post(
         const jobTitle = toTrimmedString(req.body.jobTitle, FIELD_MAX_LENGTHS.jobTitle);
         const jobLocation = toTrimmedString(req.body.jobLocation, FIELD_MAX_LENGTHS.location, true);
         const jobURL = toTrimmedString(req.body.jobURL, FIELD_MAX_LENGTHS.jobURL, true);
-        const { appDate, jobStatus } = req.body;
+        const { allowDuplicate, appDate, jobStatus } = req.body;
 
         if (
             companyName === undefined ||
@@ -69,8 +75,28 @@ router.post(
             sendError(res, 422, 'URL must be in a valid format.');
             return;
         }
+        if (!isOptionalBoolean(allowDuplicate)) {
+            sendError(res, 422, 'Job application fields are missing, invalid, or too long.');
+            return;
+        }
 
         try {
+            if (allowDuplicate !== true) {
+                const duplicate = await findPotentialDuplicateApplication(req.user.id, companyName, jobTitle, jobURL);
+                if (duplicate) {
+                    res.status(409).json({
+                        code: 'POSSIBLE_DUPLICATE_APPLICATION',
+                        message: 'A possible duplicate job application already exists.',
+                        duplicate: {
+                            company_name: duplicate.company_name,
+                            job_title: duplicate.job_title,
+                            application_date: duplicate.application_date.toISOString(),
+                        },
+                    });
+                    return;
+                }
+            }
+
             await insertJobApplication(
                 req.user.id,
                 companyName,
@@ -145,6 +171,31 @@ router.get(
             res.status(200).json(await getApplicationsForLatestEightWeeks(req.user.id));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load weekly job application counts.');
+        }
+    }
+);
+
+router.get(
+    '/:jobId/relation-summary',
+    async (
+        req: Request<JobIdParams, GetApplicationRelationSummaryResponse>,
+        res: Response<GetApplicationRelationSummaryResponse>
+    ): Promise<void> => {
+        const jobId = toPositiveInteger(req.params.jobId);
+        if (jobId === undefined) {
+            sendError(res, 422, 'Job application ID must be a positive integer.');
+            return;
+        }
+
+        try {
+            const summary = await getApplicationRelationSummary(jobId, req.user.id, false);
+            if (!summary) {
+                sendError(res, 404, 'Job application not found.');
+                return;
+            }
+            res.status(200).json(summary);
+        } catch (error: unknown) {
+            handleRouteError(res, error, 'Unable to load the job application relation summary.');
         }
     }
 );

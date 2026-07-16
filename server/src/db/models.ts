@@ -78,6 +78,16 @@ export type JobInterview = {
     job_status: JobStatus;
 };
 
+export type InterviewSchedulingConflictRecord = {
+    interview_id: number;
+    job_id: number;
+    company_name: string;
+    job_title: string;
+    interview_date: Date;
+    interview_duration_minutes: number;
+    interview_type: string;
+};
+
 export type ArchivedJobInterview = {
     archived_interview_id: number;
     archived_job_id: number;
@@ -103,6 +113,10 @@ export type WeeklyApplicationCount = {
 
 export type ApplicationCollectionSummary = {
     application_count: number;
+    related_interview_count: number;
+};
+
+export type ApplicationRelationSummary = {
     related_interview_count: number;
 };
 

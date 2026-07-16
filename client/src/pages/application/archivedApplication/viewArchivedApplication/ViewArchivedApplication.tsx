@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../../models';
 import { createApplicationCsvData } from '../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
+import { createApplicationRelationConfirmation } from '../../../../helper/applicationRelationConfirmation';
 import {
     createDeleteAllApplicationsConfirmation,
     createUnarchiveAllConfirmation,
@@ -53,9 +53,9 @@ const ViewArchivedApplication = () => {
     const confirm = useConfirm();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
-    const [applicationTotal, setApplicationTotal] = useState(0);
     const [pendingBulkAction, setPendingBulkAction] = useState<'delete' | 'unarchive' | null>(null);
     const bulkActionPendingRef = useRef(false);
+    const pendingApplicationActionIdsRef = useRef<Set<number>>(new Set());
     const {
         pendingIds: deletingApplicationIds,
         startPending: startDeletingApplication,
@@ -163,17 +163,6 @@ const ViewArchivedApplication = () => {
                 showErrorToast(
                     getErrorToastMessage(error, 'Unable to load archived job applications. Please try again.')
                 );
-            }
-
-            try {
-                const summary = await api.archivedApplication.getSummary();
-                if (isActive) {
-                    setApplicationTotal(summary.application_count);
-                }
-            } catch (error) {
-                showErrorToast(
-                    getErrorToastMessage(error, 'Unable to load archived application counts. Please try again.')
-                );
             } finally {
                 if (isActive) {
                     setIsLoading(false);
@@ -204,30 +193,55 @@ const ViewArchivedApplication = () => {
         navigate(location.pathname, { replace: true });
     }, [archivedApplications, isBoardView, isLoading, location.hash, location.pathname, navigate]);
 
-    const handleDelete = async (archivedJobId: number) => {
+    const handleApplicationAction = async (action: 'delete' | 'unarchive', archivedJobId: number) => {
+        if (pendingApplicationActionIdsRef.current.has(archivedJobId)) {
+            return;
+        }
+
+        pendingApplicationActionIdsRef.current.add(archivedJobId);
+        if (action === 'unarchive') {
+            startUnarchivingApplication(archivedJobId);
+        } else {
+            startDeletingApplication(archivedJobId);
+        }
+
         try {
-            const { confirmed } = await confirm(createDeleteConfirmation('archived job application'));
+            const summary = await api.archivedApplication.getRelationSummary({ archivedJobId });
+            const { confirmed } = await confirm(
+                createApplicationRelationConfirmation(action, 'archived', summary.related_interview_count)
+            );
 
             if (!confirmed) {
                 return;
             }
 
-            startDeletingApplication(archivedJobId);
-            try {
+            if (action === 'unarchive') {
+                await api.archivedApplication.unarchiveApplication({ archivedJobId });
+            } else {
                 await api.archivedApplication.deleteApplication({ archivedJobId });
-                setArchivedApplications((current) =>
-                    current.filter((application) => application.archived_job_id !== archivedJobId)
-                );
-                setApplicationTotal((current) => Math.max(0, current - 1));
-            } finally {
+            }
+
+            setArchivedApplications((current) =>
+                current.filter((application) => application.archived_job_id !== archivedJobId)
+            );
+        } catch (error) {
+            const fallback =
+                action === 'unarchive'
+                    ? 'Unable to unarchive the job application. Please try again.'
+                    : 'Unable to delete the archived job application. Please try again.';
+            showErrorToast(getErrorToastMessage(error, fallback));
+        } finally {
+            pendingApplicationActionIdsRef.current.delete(archivedJobId);
+            if (action === 'unarchive') {
+                stopUnarchivingApplication(archivedJobId);
+            } else {
                 stopDeletingApplication(archivedJobId);
             }
-        } catch (error) {
-            showErrorToast(
-                getErrorToastMessage(error, 'Unable to delete the archived job application. Please try again.')
-            );
         }
     };
+
+    const handleDelete = (archivedJobId: number) => handleApplicationAction('delete', archivedJobId);
+    const handleUnarchive = (archivedJobId: number) => handleApplicationAction('unarchive', archivedJobId);
 
     const handleBulkAction = async (action: 'delete' | 'unarchive') => {
         if (bulkActionPendingRef.current) {
@@ -241,7 +255,6 @@ const ViewArchivedApplication = () => {
         try {
             const summary = await api.archivedApplication.getSummary();
             countsLoaded = true;
-            setApplicationTotal(summary.application_count);
 
             if (summary.application_count === 0) {
                 setArchivedApplications([]);
@@ -269,7 +282,6 @@ const ViewArchivedApplication = () => {
             }
 
             setArchivedApplications([]);
-            setApplicationTotal(0);
         } catch (error) {
             const fallback = !countsLoaded
                 ? 'Unable to load archived application counts. Please try again.'
@@ -280,21 +292,6 @@ const ViewArchivedApplication = () => {
         } finally {
             bulkActionPendingRef.current = false;
             setPendingBulkAction(null);
-        }
-    };
-
-    const handleUnarchive = async (archivedJobId: number) => {
-        startUnarchivingApplication(archivedJobId);
-        try {
-            await api.archivedApplication.unarchiveApplication({ archivedJobId });
-            setArchivedApplications((current) =>
-                current.filter((application) => application.archived_job_id !== archivedJobId)
-            );
-            setApplicationTotal((current) => Math.max(0, current - 1));
-        } catch (error) {
-            showErrorToast(getErrorToastMessage(error, 'Unable to unarchive the job application. Please try again.'));
-        } finally {
-            stopUnarchivingApplication(archivedJobId);
         }
     };
 
@@ -312,7 +309,7 @@ const ViewArchivedApplication = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        applicationTotal > 0 ? (
+                        !isLoading && hasApplications ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='archived_job_applications.csv'

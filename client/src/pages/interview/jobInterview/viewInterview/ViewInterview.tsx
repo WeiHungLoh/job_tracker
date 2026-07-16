@@ -278,7 +278,7 @@ const ViewInterview = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        !isLoading && hasInterviews ? (
+                        !isLoading && hasDisplayedInterviews ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='job_interviews.csv'

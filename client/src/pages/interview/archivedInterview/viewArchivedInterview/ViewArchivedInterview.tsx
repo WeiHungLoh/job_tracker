@@ -227,7 +227,7 @@ const ViewArchivedInterview = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        !isLoading && hasInterviews ? (
+                        !isLoading && hasDisplayedInterviews ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='archived_job_interviews.csv'

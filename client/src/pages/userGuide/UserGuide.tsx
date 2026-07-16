@@ -351,12 +351,13 @@ const guideSections: readonly UserGuideSection[] = [
                 <p>
                     Use the <strong>Auto scroll after job status change</strong> toggle under{' '}
                     <strong>Display options</strong> in list view to control scrolling behavior. When enabled (green),
-                    changing the job status via the edit dropdown will automatically scroll the application into view.
-                    When disabled, the page stays in place after a status change.
+                    auto scroll only applies when Sort by is set to Job Status. When both conditions are met, changing
+                    the job status via the edit dropdown will automatically scroll the application into view.
                 </p>
                 <p>
-                    After a list-view status update, the application receives a green highlight for four seconds. No
-                    highlight is shown when the status did not change.
+                    After an eligible list-view status update, the application receives a green highlight for four
+                    seconds. The page stays in place when auto scroll is disabled, another sort order is selected or the
+                    status did not change.
                 </p>
                 <p>
                     The same feedback appears when navigating from an interview to its corresponding application, but

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createApplicationCsvData } from '../../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
+import { createApplicationRelationConfirmation } from '../../../../../helper/applicationRelationConfirmation';
 import {
     createArchiveAllConfirmation,
     createDeleteAllApplicationsConfirmation,
@@ -45,6 +45,8 @@ import { createApplicationEmptyState } from '../../../../application/application
 import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
 import { getDashboardJobStatus } from '../../../../../helper/dashboardNavigation';
 import useCurrentTime from '../../../../../hooks/useCurrentTime';
+import { shouldAutoScrollAfterStatusChange } from '../../../../application/applicationSorting';
+import usePendingIds from '../../../../../hooks/usePendingIds';
 
 const DemoViewApplication = () => {
     const currentTime = useCurrentTime();
@@ -61,6 +63,17 @@ const DemoViewApplication = () => {
     const { showErrorToast } = useToast();
     const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
     const bulkActionPendingRef = useRef(false);
+    const pendingApplicationActionIdsRef = useRef<Set<number>>(new Set());
+    const {
+        pendingIds: deletingApplicationIds,
+        startPending: startDeletingApplication,
+        stopPending: stopDeletingApplication,
+    } = usePendingIds();
+    const {
+        pendingIds: archivingApplicationIds,
+        startPending: startArchivingApplication,
+        stopPending: stopArchivingApplication,
+    } = usePendingIds();
     const applications = useMemo(() => selectApplications(state), [state]);
     const interviewJobIdSet = useMemo(() => selectInterviewJobIdSet(state), [state]);
     const upcomingInterviewCountByJob = useMemo(
@@ -137,15 +150,47 @@ const DemoViewApplication = () => {
         dispatch({ type: 'UPDATE_APPLICATION_NOTES', payload: { jobId, notes: editedNotes } });
     };
 
-    const handleDelete = async (jobId: number) => {
-        const { confirmed } = await confirm(createDeleteConfirmation('job application'));
-
-        if (!confirmed) {
+    const handleApplicationAction = async (action: 'archive' | 'delete', jobId: number) => {
+        if (
+            pendingApplicationActionIdsRef.current.has(jobId) ||
+            !state.applications.some((application) => application.job_id === jobId)
+        ) {
             return;
         }
 
-        dispatch({ type: 'DELETE_APPLICATION', payload: { jobId } });
+        pendingApplicationActionIdsRef.current.add(jobId);
+        if (action === 'archive') {
+            startArchivingApplication(jobId);
+        } else {
+            startDeletingApplication(jobId);
+        }
+
+        try {
+            const relatedInterviewCount = state.interviews.filter((interview) => interview.job_id === jobId).length;
+            const confirmationResult = await confirm(
+                createApplicationRelationConfirmation(action, 'active', relatedInterviewCount)
+            );
+
+            if (!confirmationResult?.confirmed) {
+                return;
+            }
+
+            dispatch({
+                type: action === 'archive' ? 'ARCHIVE_APPLICATION' : 'DELETE_APPLICATION',
+                payload: { jobId },
+            });
+        } finally {
+            pendingApplicationActionIdsRef.current.delete(jobId);
+            if (action === 'archive') {
+                stopArchivingApplication(jobId);
+            } else {
+                stopDeletingApplication(jobId);
+            }
+        }
     };
+
+    const handleDelete = (jobId: number) => handleApplicationAction('delete', jobId);
+    const handleArchive = (jobId: number) => handleApplicationAction('archive', jobId);
 
     const handleBulkAction = async (action: 'archive' | 'delete') => {
         if (bulkActionPendingRef.current) {
@@ -204,7 +249,7 @@ const DemoViewApplication = () => {
             },
         });
 
-        if (enableScroll) {
+        if (shouldAutoScrollAfterStatusChange(enableScroll, preferences.application_list_sort_order)) {
             setTimeout(() => {
                 scrollAndHighlight(String(application.job_id), styles.highlighted, statusHighlightTimeout.current);
             }, 100);
@@ -222,10 +267,6 @@ const DemoViewApplication = () => {
         });
     };
 
-    const handleArchive = async (jobId: number) => {
-        dispatch({ type: 'ARCHIVE_APPLICATION', payload: { jobId } });
-    };
-
     const hasApplications = applications.length > 0;
     const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
     const emptyState = createApplicationEmptyState({
@@ -240,7 +281,7 @@ const DemoViewApplication = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        state.applications.length > 0 ? (
+                        hasApplications ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='demo_job_applications.csv'
@@ -326,10 +367,10 @@ const DemoViewApplication = () => {
             {hasApplications && isBoardView && (
                 <DemoApplicationBoard
                     applications={applications}
-                    deletingApplicationIds={new Set<number>()}
+                    deletingApplicationIds={deletingApplicationIds}
                     editedNotes={{}}
                     hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
-                    isArchivingApplication={() => false}
+                    isArchivingApplication={(jobId) => archivingApplicationIds.has(jobId)}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
                     onEditNotes={handleEditNotes}
@@ -350,8 +391,8 @@ const DemoViewApplication = () => {
                         }
                         hasInterview={interviewJobIdSet.has(application.job_id)}
                         index={index}
-                        isArchiving={false}
-                        isDeleting={false}
+                        isArchiving={archivingApplicationIds.has(application.job_id)}
+                        isDeleting={deletingApplicationIds.has(application.job_id)}
                         isEditingStatus={editingApplicationId === application.job_id}
                         key={application.job_id}
                         note={application.notes}

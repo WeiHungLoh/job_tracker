@@ -29,7 +29,11 @@ const DashboardContent = ({
                 />
             </section>
             <section className={styles.trendSection}>
-                <ApplicationsLineChart weeklyApplications={weeklyApplications} isLoading={isLoading} />
+                <ApplicationsLineChart
+                    interviews={interviews}
+                    weeklyApplications={weeklyApplications}
+                    isLoading={isLoading}
+                />
             </section>
             <section className={styles.interviewsSection}>
                 <UpcomingInterviews

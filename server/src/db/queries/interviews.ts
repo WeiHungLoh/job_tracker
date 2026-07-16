@@ -1,8 +1,52 @@
-import type { JobInterview } from '../models.js';
+import type { InterviewSchedulingConflictRecord, JobInterview } from '../models.js';
 import { pool } from '../connectDB.js';
 import { hasAffectedRows } from './shared.js';
 
 export type InsertInterviewResult = 'created' | 'invalid-date' | 'not-found';
+
+export const getInterviewSchedulingConflicts = async (
+    jobId: number,
+    userId: number,
+    interviewDate: string,
+    interviewDurationMinutes: number
+): Promise<InterviewSchedulingConflictRecord[]> => {
+    const result = await pool.query<InterviewSchedulingConflictRecord>(
+        `WITH target_application AS (
+            SELECT 1
+            FROM job_applications
+            WHERE job_id = $1
+                AND user_id = $2
+                AND is_archived = false
+                AND application_date IS NOT NULL
+                AND $3::timestamptz > application_date
+        )
+        SELECT
+            interviews.interview_id,
+            interviews.job_id,
+            applications.company_name,
+            applications.job_title,
+            interviews.interview_date,
+            interviews.interview_duration_minutes,
+            interviews.interview_type
+        FROM interviews
+        INNER JOIN job_applications AS applications
+            ON interviews.job_id = applications.job_id
+            AND interviews.user_id = applications.user_id
+        CROSS JOIN target_application
+        WHERE interviews.user_id = $2
+            AND interviews.is_archived = false
+            AND applications.is_archived = false
+            AND $3::timestamptz >= NOW()
+            AND $3::timestamptz < interviews.interview_date
+                + interviews.interview_duration_minutes * INTERVAL '1 minute'
+            AND interviews.interview_date
+                < $3::timestamptz + $4 * INTERVAL '1 minute'
+        ORDER BY interviews.interview_date ASC, interviews.interview_id ASC`,
+        [jobId, userId, interviewDate, interviewDurationMinutes]
+    );
+
+    return result.rows;
+};
 
 export const insertInterview = async (
     jobId: number,

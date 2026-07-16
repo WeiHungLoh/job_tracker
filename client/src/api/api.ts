@@ -106,7 +106,7 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
                 message = JSON.stringify(data);
             }
         }
-        throw new JobTrackerAPIError(message, response.status);
+        throw new JobTrackerAPIError(message, response.status, data);
     }
 
     return data;

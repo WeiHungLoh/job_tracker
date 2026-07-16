@@ -1,8 +1,10 @@
 import {
     filterAndSortInterviews,
+    findInterviewSchedulingConflicts,
     formatInterviewCountdown,
     getInterviewTiming,
     getUpcomingInterviews,
+    interviewTimesOverlap,
 } from '../../helper/interviewTiming';
 
 const interview = (date: Date, duration = 60) => ({
@@ -75,5 +77,71 @@ describe('interview timing', () => {
         expect(formatInterviewCountdown(inProgress, now)).toBe('0 days 0 hours 30 minutes');
         expect(invalid.isValid).toBe(false);
         expect(invalid.formattedRange).toBe('Invalid interview date');
+    });
+
+    test.each([
+        ['same interval', 120, 60, 120, 60],
+        ['new interval contained by existing', 120, 120, 150, 30],
+        ['existing interval contained by new', 150, 30, 120, 120],
+        ['left-side overlap', 150, 30, 120, 45],
+        ['right-side overlap', 120, 60, 150, 60],
+        ['same end time', 150, 30, 170, 10],
+    ])(
+        'detects %s using half-open interview ranges',
+        (_name, existingStart, existingDuration, newStart, newDuration) => {
+            const base = new Date(2026, 6, 25, 0, 0).getTime();
+            const existing = interview(new Date(base + existingStart * 60_000), existingDuration);
+            const proposed = interview(new Date(base + newStart * 60_000), newDuration);
+
+            expect(interviewTimesOverlap(proposed, existing)).toBe(true);
+        }
+    );
+
+    test.each([
+        ['new starts when existing ends', 120, 60, 180, 60],
+        ['new ends when existing starts', 180, 60, 120, 60],
+    ])('allows boundary contact when %s', (_name, existingStart, existingDuration, newStart, newDuration) => {
+        const base = new Date(2026, 6, 25, 0, 0).getTime();
+        const existing = interview(new Date(base + existingStart * 60_000), existingDuration);
+        const proposed = interview(new Date(base + newStart * 60_000), newDuration);
+
+        expect(interviewTimesOverlap(proposed, existing)).toBe(false);
+    });
+
+    test('returns valid conflicts in chronological order without mutating the active interview input', () => {
+        const interviews = [
+            { ...interview(new Date(2026, 6, 25, 15, 0), 60), interview_id: 3 },
+            { ...interview(new Date(2026, 6, 25, 14, 30), 60), interview_id: 2 },
+            { interview_date: 'invalid', interview_duration_minutes: 60, interview_id: 1 },
+            { ...interview(new Date(2026, 6, 25, 13, 0), 60), interview_id: 4 },
+        ];
+        const originalOrder = interviews.map(({ interview_id }) => interview_id);
+
+        expect(
+            findInterviewSchedulingConflicts(interviews, interview(new Date(2026, 6, 25, 14, 45), 45)).map(
+                ({ interview_id }) => interview_id
+            )
+        ).toEqual([2, 3]);
+        expect(interviews.map(({ interview_id }) => interview_id)).toEqual(originalOrder);
+    });
+
+    test('skips scheduling conflicts when the proposed interview starts before the supplied current time', () => {
+        const currentTime = new Date(2026, 6, 25, 16, 0);
+        const interviews = [{ ...interview(new Date(2026, 6, 25, 14, 30), 60), interview_id: 1 }];
+        const proposedInterview = interview(new Date(2026, 6, 25, 14, 45), 30);
+
+        expect(findInterviewSchedulingConflicts(interviews, proposedInterview, currentTime)).toEqual([]);
+    });
+
+    test('checks scheduling conflicts when the proposed interview starts exactly at the supplied current time', () => {
+        const currentTime = new Date(2026, 6, 25, 16, 0);
+        const interviews = [{ ...interview(new Date(2026, 6, 25, 15, 30), 60), interview_id: 1 }];
+        const proposedInterview = interview(currentTime, 30);
+
+        expect(
+            findInterviewSchedulingConflicts(interviews, proposedInterview, currentTime).map(
+                ({ interview_id }) => interview_id
+            )
+        ).toEqual([1]);
     });
 });

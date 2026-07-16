@@ -9,7 +9,7 @@ import {
     type ApplicationFormField,
     validateApplicationForm,
 } from '../../../../../helper/formValidation';
-import { JOB_STATUSES, type JobStatus } from '../../../../application/models';
+import { JOB_STATUSES, type CreateApplicationRequest, type JobStatus } from '../../../../application/models';
 import { DEMO_APPLICATION_CREATED_MESSAGE } from '../../../state/demoMessages';
 import { routes } from '../../../../../routes';
 import styles from './DemoAddApplication.module.css';
@@ -17,6 +17,10 @@ import { useDemo } from '../../../context/DemoContext';
 import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../../../components/toast/ToastProvider';
+import { findPotentialDuplicateApplication } from '../../../../application/possibleDuplicateApplication';
+import { createDuplicateApplicationConfirmation } from '../../../../../helper/duplicateApplicationConfirmation';
+import { useConfirm } from 'material-ui-confirm';
+import { getErrorToastMessage } from '../../../../../helper/getErrorToastMessage';
 
 const DemoAddApplication = () => {
     const [companyName, setCompanyName] = useState<string>('');
@@ -31,9 +35,11 @@ const DemoAddApplication = () => {
     const applicationDateInputRef = useRef<HTMLInputElement>(null);
     const jobLocationInputRef = useRef<HTMLInputElement>(null);
     const jobURLInputRef = useRef<HTMLInputElement>(null);
+    const pendingSubmissionRef = useRef(false);
     const navigate = useNavigate();
-    const { dispatch } = useDemo();
-    const { showSuccessToast } = useToast();
+    const { dispatch, state } = useDemo();
+    const confirm = useConfirm();
+    const { showErrorToast, showSuccessToast } = useToast();
 
     const resetForm = () => {
         setCompanyName('');
@@ -45,8 +51,28 @@ const DemoAddApplication = () => {
         setErrors({});
     };
 
-    const handleAdd = (event: FormEvent<HTMLFormElement>) => {
+    const createApplication = (request: CreateApplicationRequest) => {
+        dispatch({
+            type: 'CREATE_APPLICATION',
+            payload: {
+                companyName: request.companyName,
+                jobTitle: request.jobTitle,
+                applicationDate: request.appDate,
+                jobStatus: request.jobStatus,
+                jobLocation: request.jobLocation,
+                jobURL: request.jobURL,
+            },
+        });
+        showSuccessToast(DEMO_APPLICATION_CREATED_MESSAGE);
+        resetForm();
+    };
+
+    const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (pendingSubmissionRef.current) {
+            return;
+        }
 
         const validation = validateApplicationForm({
             applicationDate,
@@ -69,21 +95,33 @@ const DemoAddApplication = () => {
             return;
         }
 
-        setErrors({});
         const values = validation.values;
-        dispatch({
-            type: 'CREATE_APPLICATION',
-            payload: {
-                companyName: values.companyName,
-                jobTitle: values.jobTitle,
-                applicationDate: values.applicationDate,
-                jobStatus,
-                jobLocation: values.jobLocation,
-                jobURL: values.jobURL,
-            },
-        });
-        showSuccessToast(DEMO_APPLICATION_CREATED_MESSAGE);
-        resetForm();
+        const request: CreateApplicationRequest = {
+            companyName: values.companyName,
+            jobTitle: values.jobTitle,
+            appDate: values.applicationDate,
+            jobStatus,
+            jobLocation: values.jobLocation,
+            jobURL: values.jobURL,
+        };
+        const duplicate = findPotentialDuplicateApplication(request, state.applications, state.archivedApplications);
+
+        if (!duplicate) {
+            createApplication(request);
+            return;
+        }
+
+        pendingSubmissionRef.current = true;
+        try {
+            const { confirmed } = await confirm(createDuplicateApplicationConfirmation(duplicate));
+            if (confirmed) {
+                createApplication(request);
+            }
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to add the job application. Please try again.'));
+        } finally {
+            pendingSubmissionRef.current = false;
+        }
     };
 
     return (

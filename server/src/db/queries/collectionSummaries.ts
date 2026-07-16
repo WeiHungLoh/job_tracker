@@ -1,5 +1,31 @@
-import type { ApplicationCollectionSummary, InterviewCollectionSummary } from '../models.js';
+import type {
+    ApplicationCollectionSummary,
+    ApplicationRelationSummary,
+    InterviewCollectionSummary,
+} from '../models.js';
 import { pool } from '../connectDB.js';
+
+export const getApplicationRelationSummary = async (
+    jobId: number,
+    userId: number,
+    isArchived: boolean
+): Promise<ApplicationRelationSummary | undefined> => {
+    const result = await pool.query<ApplicationRelationSummary>(
+        `SELECT COUNT(interviews.interview_id)::integer AS related_interview_count
+         FROM job_applications AS applications
+         LEFT JOIN interviews
+            ON interviews.job_id = applications.job_id
+            AND interviews.user_id = applications.user_id
+            AND interviews.is_archived = $3
+         WHERE applications.job_id = $1
+            AND applications.user_id = $2
+            AND applications.is_archived = $3
+         GROUP BY applications.job_id`,
+        [jobId, userId, isArchived]
+    );
+
+    return result.rows[0];
+};
 
 export const getApplicationCollectionSummary = async (
     userId: number,

@@ -187,6 +187,9 @@ const mockApplicationCollection = (applications: unknown[]) => {
         if (url.endsWith('/job-interviews')) {
             return response([]);
         }
+        if (/\/job-applications\/\d+\/relation-summary$/.test(url)) {
+            return response({ related_interview_count: 0 });
+        }
         if (url.endsWith('/job-applications/summary')) {
             return response({ application_count: applications.length, related_interview_count: 0 });
         }
@@ -207,6 +210,9 @@ describe('Job application viewing flow', () => {
             }
             if (init?.method !== 'GET') {
                 return response(undefined, 204);
+            }
+            if (/\/job-applications\/\d+\/relation-summary$/.test(url)) {
+                return response({ related_interview_count: 0 });
             }
             if (url.endsWith('/job-applications/summary')) {
                 return response({ application_count: 1, related_interview_count: 0 });
@@ -1232,6 +1238,43 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/^Job Status: Applied$/)).toBeInTheDocument();
     });
 
+    test.each([
+        { shouldScroll: true, sortOrder: 'job_status' },
+        { shouldScroll: false, sortOrder: 'company_name_asc' },
+    ] as const)(
+        'auto scroll after a status change is $shouldScroll when list sorting is $sortOrder',
+        async ({ shouldScroll, sortOrder }) => {
+            const scrollAndHighlight = vi.spyOn(highlightElement, 'scrollAndHighlight');
+            render(
+                <MemoryRouter>
+                    <ViewApplication />
+                </MemoryRouter>,
+                {
+                    initialPreferences: {
+                        application_enable_scroll: true,
+                        application_list_sort_order: sortOrder,
+                    },
+                }
+            );
+
+            await screen.findByText(/ABC Pte Ltd/i);
+            await userEvent.click(screen.getByRole('button', { name: /edit status/i }));
+            await userEvent.selectOptions(await screen.findByRole('listbox'), 'Interview');
+            await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+            await waitFor(() => expect(screen.getByText(/^Job Status: Interview$/)).toBeInTheDocument());
+            if (shouldScroll) {
+                await waitFor(() => expect(scrollAndHighlight).toHaveBeenCalledOnce());
+            } else {
+                await act(async () => {
+                    await new Promise((resolve) => setTimeout(resolve, 150));
+                });
+                expect(scrollAndHighlight).not.toHaveBeenCalled();
+            }
+            scrollAndHighlight.mockRestore();
+        }
+    );
+
     test('does not scroll when a status change removes the application from the selected filter', async () => {
         const scrollAndHighlight = vi.spyOn(highlightElement, 'scrollAndHighlight');
         render(
@@ -1319,6 +1362,18 @@ describe('Job application viewing flow', () => {
     });
 
     test('deletes application after user confirms', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/1/relation-summary')) {
+                return response({ related_interview_count: 2 });
+            }
+            if (url.endsWith('/job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
         render(
             <MemoryRouter>
                 <ViewApplication />
@@ -1337,12 +1392,16 @@ describe('Job application viewing flow', () => {
             expect(mockConfirm).toHaveBeenCalledWith({
                 title: 'Confirm Deletion',
                 description:
-                    'Are you sure you want to delete this job application? This action is permanent and cannot be undone.',
+                    'Delete this active job application and its 2 related active interviews? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete',
                 cancellationText: 'Cancel',
                 confirmationButtonProps: { autoFocus: true },
             })
         );
+
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/relation-summary`, {
+            method: 'GET',
+        });
 
         await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1`, {
@@ -1353,7 +1412,20 @@ describe('Job application viewing flow', () => {
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
     });
 
-    test('archives an application with PATCH', async () => {
+    test('archives an application with its exact relation confirmation', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/1/relation-summary')) {
+                return response({ related_interview_count: 1 });
+            }
+            if (url.endsWith('/job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
         render(
             <MemoryRouter>
                 <ViewApplication />
@@ -1366,6 +1438,18 @@ describe('Job application viewing flow', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
 
         await waitFor(() =>
+            expect(mockConfirm).toHaveBeenCalledWith({
+                title: 'Confirm Archive',
+                description: 'Archive this active job application and its 1 related active interview?',
+                confirmationText: 'Archive',
+                cancellationText: 'Cancel',
+                confirmationButtonProps: { autoFocus: true },
+            })
+        );
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/relation-summary`, {
+            method: 'GET',
+        });
+        await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -1373,6 +1457,89 @@ describe('Job application viewing flow', () => {
             })
         );
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+    });
+
+    test('guards a single application action synchronously while confirmation is pending', async () => {
+        let resolveConfirmation: ((result: { confirmed: boolean }) => void) | undefined;
+        mockConfirm.mockImplementationOnce(
+            () =>
+                new Promise<{ confirmed: boolean }>((resolve) => {
+                    resolveConfirmation = resolve;
+                })
+        );
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_show_archive: true } }
+        );
+        const archiveButton = await screen.findByRole('button', { name: 'Archive' });
+
+        act(() => {
+            archiveButton.click();
+            archiveButton.click();
+        });
+
+        await waitFor(() => expect(mockConfirm).toHaveBeenCalledOnce());
+        expect(
+            fetch.mock.calls.filter(([url]) => String(url).endsWith('/job-applications/1/relation-summary'))
+        ).toHaveLength(1);
+        expect(archiveButton).toBeDisabled();
+
+        await act(async () => {
+            resolveConfirmation?.({ confirmed: false });
+        });
+        await waitFor(() => expect(archiveButton).toBeEnabled());
+    });
+
+    test('shows the backend error when a relation summary cannot be loaded', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/1/relation-summary')) {
+                return response({ message: 'Unable to inspect this application.' }, 500);
+            }
+            if (url.endsWith('/job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+
+        expect(await screen.findByText('Unable to inspect this application.')).toBeInTheDocument();
+        expect(mockConfirm).not.toHaveBeenCalled();
+        expect(fetch).not.toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1`, {
+            method: 'DELETE',
+        });
+    });
+
+    test('keeps an active application when its single-action confirmation is cancelled', async () => {
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        const deleteButton = await screen.findByRole('button', { name: 'Delete' });
+        await clickConfirmedAction(deleteButton);
+
+        expect(mockConfirm).toHaveBeenCalledOnce();
+        expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/relation-summary`, {
+            method: 'GET',
+        });
+        expect(fetch).not.toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1`, {
+            method: 'DELETE',
+        });
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        await waitFor(() => expect(deleteButton).toBeEnabled());
     });
 
     test('limits application notes to 3000 characters', async () => {
@@ -1599,7 +1766,7 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
     });
 
-    test('keeps collection actions available when filters hide every owned application', async () => {
+    test('hides collection actions when filters hide every owned application', async () => {
         fetch.mockImplementation(async (url: string) => {
             if (url.endsWith('/job-applications/summary')) {
                 return response({ application_count: 3, related_interview_count: 1 });
@@ -1616,18 +1783,17 @@ describe('Job application viewing flow', () => {
 
         expect(await screen.findByRole('heading', { name: 'No applications match your filters' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Sort by' })).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'More...' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Application view and management controls' }).children).toHaveLength(
+            1
+        );
+        expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('/job-applications/summary'))).toHaveLength(0);
     });
 
     test('does not confirm or mutate when refreshed active counts fail', async () => {
-        let summaryCalls = 0;
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/job-applications/summary')) {
-                summaryCalls += 1;
-                if (summaryCalls === 2) {
-                    throw new TypeError('Failed to fetch');
-                }
-                return response({ application_count: 1, related_interview_count: 0 });
+                throw new TypeError('Failed to fetch');
             }
             if (url.endsWith('/job-interviews')) {
                 return response([]);
@@ -1654,11 +1820,9 @@ describe('Job application viewing flow', () => {
     });
 
     test('reconciles stale local applications without confirming when the current total is zero', async () => {
-        let summaryCalls = 0;
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/job-applications/summary')) {
-                summaryCalls += 1;
-                return response({ application_count: summaryCalls === 1 ? 1 : 0, related_interview_count: 0 });
+                return response({ application_count: 0, related_interview_count: 0 });
             }
             if (url.endsWith('/job-interviews')) {
                 return response([]);

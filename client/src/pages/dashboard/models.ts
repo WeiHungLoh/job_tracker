@@ -23,6 +23,7 @@ export type DashboardStatsProps = DashboardDataProps & {
 };
 
 export type ApplicationsLineChartProps = {
+    interviews: JobInterview[];
     weeklyApplications: WeeklyApplicationCount[];
     isLoading: boolean;
 };

@@ -1,9 +1,10 @@
 import type { ConfirmOptions } from 'material-ui-confirm';
+import { PERMANENT_DELETION_WARNING } from './bulkConfirmation';
 
 export const createDeleteConfirmation = (target: string): ConfirmOptions => {
     const options: ConfirmOptions = {
         title: 'Confirm Deletion',
-        description: `Are you sure you want to delete this ${target}? This action is permanent and cannot be undone.`,
+        description: `Are you sure you want to delete this ${target}? ${PERMANENT_DELETION_WARNING}`,
         confirmationText: 'Delete',
         cancellationText: 'Cancel',
         confirmationButtonProps: { autoFocus: true },

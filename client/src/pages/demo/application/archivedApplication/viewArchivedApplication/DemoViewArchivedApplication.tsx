@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
+import { createApplicationRelationConfirmation } from '../../../../../helper/applicationRelationConfirmation';
 import {
     createDeleteAllApplicationsConfirmation,
     createUnarchiveAllConfirmation,
@@ -34,6 +34,7 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../../routes';
 import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
 import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
+import usePendingIds from '../../../../../hooks/usePendingIds';
 
 const DemoViewArchivedApplication = () => {
     const { dispatch, state } = useDemo();
@@ -43,6 +44,17 @@ const DemoViewArchivedApplication = () => {
     const confirm = useConfirm();
     const [pendingBulkAction, setPendingBulkAction] = useState<'delete' | 'unarchive' | null>(null);
     const bulkActionPendingRef = useRef(false);
+    const pendingApplicationActionIdsRef = useRef<Set<number>>(new Set());
+    const {
+        pendingIds: deletingApplicationIds,
+        startPending: startDeletingApplication,
+        stopPending: stopDeletingApplication,
+    } = usePendingIds();
+    const {
+        pendingIds: restoringApplicationIds,
+        startPending: startRestoringApplication,
+        stopPending: stopRestoringApplication,
+    } = usePendingIds();
     const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;
     const viewMode = preferences.archived_application_view_mode;
@@ -82,15 +94,49 @@ const DemoViewArchivedApplication = () => {
         return true;
     };
 
-    const handleDelete = async (archivedJobId: number) => {
-        const { confirmed } = await confirm(createDeleteConfirmation('archived job application'));
-
-        if (!confirmed) {
+    const handleApplicationAction = async (action: 'delete' | 'unarchive', archivedJobId: number) => {
+        if (
+            pendingApplicationActionIdsRef.current.has(archivedJobId) ||
+            !state.archivedApplications.some((application) => application.archived_job_id === archivedJobId)
+        ) {
             return;
         }
 
-        dispatch({ type: 'DELETE_ARCHIVED_APPLICATION', payload: { archivedJobId } });
+        pendingApplicationActionIdsRef.current.add(archivedJobId);
+        if (action === 'unarchive') {
+            startRestoringApplication(archivedJobId);
+        } else {
+            startDeletingApplication(archivedJobId);
+        }
+
+        try {
+            const relatedInterviewCount = state.archivedInterviews.filter(
+                (interview) => interview.archived_job_id === archivedJobId
+            ).length;
+            const confirmationResult = await confirm(
+                createApplicationRelationConfirmation(action, 'archived', relatedInterviewCount)
+            );
+
+            if (!confirmationResult?.confirmed) {
+                return;
+            }
+
+            dispatch({
+                type: action === 'unarchive' ? 'RESTORE_APPLICATION' : 'DELETE_ARCHIVED_APPLICATION',
+                payload: { archivedJobId },
+            });
+        } finally {
+            pendingApplicationActionIdsRef.current.delete(archivedJobId);
+            if (action === 'unarchive') {
+                stopRestoringApplication(archivedJobId);
+            } else {
+                stopDeletingApplication(archivedJobId);
+            }
+        }
     };
+
+    const handleDelete = (archivedJobId: number) => handleApplicationAction('delete', archivedJobId);
+    const handleRestore = (archivedJobId: number) => handleApplicationAction('unarchive', archivedJobId);
 
     const handleBulkAction = async (action: 'delete' | 'unarchive') => {
         if (bulkActionPendingRef.current) {
@@ -132,10 +178,6 @@ const DemoViewArchivedApplication = () => {
         }
     };
 
-    const handleRestore = (archivedJobId: number) => {
-        dispatch({ type: 'RESTORE_APPLICATION', payload: { archivedJobId } });
-    };
-
     const hasApplications = archivedApplications.length > 0;
     const filtersAreActive = selectedJobStatuses.length !== JOB_STATUSES.length;
     const emptyState = createApplicationEmptyState({
@@ -150,7 +192,7 @@ const DemoViewArchivedApplication = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        state.archivedApplications.length > 0 ? (
+                        hasApplications ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='demo_archived_job_applications.csv'
@@ -218,10 +260,10 @@ const DemoViewArchivedApplication = () => {
             {hasApplications && isBoardView && (
                 <DemoArchivedApplicationBoard
                     applications={archivedApplications}
-                    deletingApplicationIds={new Set<number>()}
+                    deletingApplicationIds={deletingApplicationIds}
                     onDelete={handleDelete}
                     onRestore={handleRestore}
-                    restoringApplicationIds={new Set<number>()}
+                    restoringApplicationIds={restoringApplicationIds}
                     selectedJobStatuses={selectedJobStatuses}
                     showNotes={showNotes}
                 />
@@ -232,8 +274,8 @@ const DemoViewArchivedApplication = () => {
                     <DemoApplicationCard
                         application={application}
                         index={index}
-                        isDeleting={false}
-                        isRestoring={false}
+                        isDeleting={deletingApplicationIds.has(application.archived_job_id)}
+                        isRestoring={restoringApplicationIds.has(application.archived_job_id)}
                         key={application.archived_job_id}
                         onDelete={handleDelete}
                         onRestore={handleRestore}

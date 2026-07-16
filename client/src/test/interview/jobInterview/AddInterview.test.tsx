@@ -1,9 +1,12 @@
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import AddInterview from '../../../pages/interview/jobInterview/addInterview/AddInterview';
 import ViewApplication from '../../../pages/application/jobApplication/viewApplication/ViewApplication';
-import { render } from '../../renderWithToast';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { render as renderWithToast } from '../../renderWithToast';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ConfirmProvider } from 'material-ui-confirm';
+import { defaultConfirmOptions } from '../../../components/confirmation/defaultConfirmOptions';
 
 globalThis.fetch = vi.fn();
 
@@ -11,6 +14,56 @@ const mockApplication = {
     job_id: 1,
     company_name: 'IRAS',
     job_title: 'Data Engineer',
+};
+
+const schedulingConflict = {
+    interview_id: 51,
+    job_id: 2,
+    company_name: 'Grab',
+    job_title: 'Software Engineer',
+    interview_date: new Date(2026, 6, 25, 14, 0).toISOString(),
+    interview_duration_minutes: 60,
+    interview_type: 'Technical Interview',
+};
+
+const conflictResponse = (
+    data: unknown = {
+        code: 'INTERVIEW_SCHEDULING_CONFLICT',
+        message: 'This interview overlaps with an existing active interview.',
+        conflicts: [schedulingConflict],
+    }
+) => ({
+    ok: false,
+    status: 409,
+    statusText: 'Conflict',
+    headers: new Headers({ 'content-type': 'application/json' }),
+    json: async () => data,
+});
+
+const successResponse = () => ({
+    ok: true,
+    status: 201,
+    headers: new Headers({ 'content-type': 'text/plain' }),
+    text: async () => 'Successfully added an interview!',
+});
+
+const render = (ui: ReactNode) =>
+    renderWithToast(<ConfirmProvider defaultOptions={defaultConfirmOptions}>{ui}</ConfirmProvider>);
+
+const fillCompleteInterviewForm = () => {
+    fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2026-07-25T14:30' } });
+    fireEvent.change(screen.getByLabelText('Duration (minutes)'), { target: { value: '90' } });
+    userEvent.type(screen.getByLabelText('Interview Location'), '  Zoom  ');
+    userEvent.type(screen.getByLabelText('Interview Type (optional)'), '  Panel  ');
+    userEvent.type(screen.getByLabelText('Additional Notes (optional)'), '  Prepare examples.  ');
+};
+
+const expectCompleteInterviewFormValues = () => {
+    expect(screen.getByLabelText('Interview Date')).toHaveValue('2026-07-25T14:30');
+    expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(90);
+    expect(screen.getByLabelText('Interview Location')).toHaveValue('  Zoom  ');
+    expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('  Panel  ');
+    expect(screen.getByLabelText('Additional Notes (optional)')).toHaveValue('  Prepare examples.  ');
 };
 
 describe('AddInterview page', () => {
@@ -326,6 +379,201 @@ describe('AddInterview page', () => {
         expect(screen.getByLabelText('Interview Date')).toHaveValue('2025-08-03T14:30');
         expect(screen.getByLabelText('Interview Location')).toHaveValue('Zoom');
         expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('Technical');
+    });
+
+    test('opens the scheduling-conflict dialog without showing an error toast', async () => {
+        fetch.mockResolvedValueOnce(conflictResponse());
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fillCompleteInterviewForm();
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        const dialog = await screen.findByRole('dialog');
+        expect(within(dialog).getByRole('heading', { name: 'Possible Scheduling Conflict' })).toBeInTheDocument();
+        expect(dialog).toHaveTextContent('Technical Interview for Software Engineer at Grab');
+        expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', { name: 'Add Anyway' })).toBeInTheDocument();
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+    });
+
+    test('accepts a past interview response without opening the scheduling-conflict dialog', async () => {
+        fetch.mockResolvedValueOnce(successResponse());
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fireEvent.change(screen.getByLabelText('Interview Date'), { target: { value: '2025-08-03T14:30' } });
+        userEvent.type(screen.getByLabelText('Interview Location'), 'Zoom');
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        expect(await screen.findByText('Successfully added an interview!')).toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('cancels a conflict without retrying or changing form values', async () => {
+        fetch.mockResolvedValueOnce(conflictResponse());
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fillCompleteInterviewForm();
+        userEvent.click(screen.getByTestId('add-interview'));
+        userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expectCompleteInterviewFormValues();
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+    });
+
+    test('adds anyway with the exact normalized request, then succeeds and resets once', async () => {
+        fetch.mockResolvedValueOnce(conflictResponse()).mockResolvedValueOnce(successResponse());
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fillCompleteInterviewForm();
+        userEvent.click(screen.getByTestId('add-interview'));
+        userEvent.click(await screen.findByRole('button', { name: 'Add Anyway' }));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+        const firstRequest = JSON.parse((fetch.mock.calls[0][1] as RequestInit).body as string);
+        const confirmedRequest = JSON.parse((fetch.mock.calls[1][1] as RequestInit).body as string);
+        const { allowSchedulingConflict, ...confirmedRequestWithoutOverride } = confirmedRequest;
+        expect(firstRequest).not.toHaveProperty('allowSchedulingConflict');
+        expect(allowSchedulingConflict).toBe(true);
+        expect(confirmedRequestWithoutOverride).toEqual(firstRequest);
+        await waitFor(() => expect(screen.getByText('Successfully added an interview!')).toBeInTheDocument());
+        expect(screen.getAllByTestId('toast')).toHaveLength(1);
+        expect(screen.getByLabelText('Interview Date')).toHaveValue('');
+        expect(screen.getByLabelText('Duration (minutes)')).toHaveValue(60);
+        expect(screen.getByLabelText('Interview Location')).toHaveValue('');
+        expect(screen.getByLabelText('Interview Type (optional)')).toHaveValue('');
+        expect(screen.getByLabelText('Additional Notes (optional)')).toHaveValue('');
+    });
+
+    test('renders every conflict returned by the server', async () => {
+        fetch.mockResolvedValueOnce(
+            conflictResponse({
+                code: 'INTERVIEW_SCHEDULING_CONFLICT',
+                message: 'This interview overlaps with existing active interviews.',
+                conflicts: [
+                    schedulingConflict,
+                    {
+                        ...schedulingConflict,
+                        interview_id: 52,
+                        company_name: 'Stripe',
+                        job_title: 'Platform Engineer',
+                    },
+                ],
+            })
+        );
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fillCompleteInterviewForm();
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        const dialog = await screen.findByRole('dialog');
+        expect(within(dialog).getAllByRole('listitem')).toHaveLength(2);
+        expect(dialog).toHaveTextContent('Grab');
+        expect(dialog).toHaveTextContent('Stripe');
+    });
+
+    test('handles a malformed scheduling conflict through the normal error-toast path', async () => {
+        fetch.mockResolvedValueOnce(
+            conflictResponse({
+                code: 'INTERVIEW_SCHEDULING_CONFLICT',
+                message: 'Malformed conflict response',
+                conflicts: [{ ...schedulingConflict, interview_date: 'invalid' }],
+            })
+        );
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fillCompleteInterviewForm();
+        userEvent.click(screen.getByTestId('add-interview'));
+
+        expect(await screen.findByText('Malformed conflict response')).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expectCompleteInterviewFormValues();
+    });
+
+    test('prevents duplicate submissions while the initial request and override retry are pending', async () => {
+        let resolveInitialRequest: (response: ReturnType<typeof conflictResponse>) => void = () => undefined;
+        let resolveRetry: (response: ReturnType<typeof successResponse>) => void = () => undefined;
+        const initialRequest = new Promise<ReturnType<typeof conflictResponse>>((resolve) => {
+            resolveInitialRequest = resolve;
+        });
+        const retry = new Promise<ReturnType<typeof successResponse>>((resolve) => {
+            resolveRetry = resolve;
+        });
+        fetch.mockReturnValueOnce(initialRequest).mockReturnValueOnce(retry);
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/add', state: { app: mockApplication } }]}>
+                <Routes>
+                    <Route path='/interview/add' element={<AddInterview />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        fillCompleteInterviewForm();
+        const form = screen.getByTestId('add-interview').closest('form');
+        expect(form).not.toBeNull();
+        fireEvent.submit(form as HTMLFormElement);
+        fireEvent.submit(form as HTMLFormElement);
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        expect(screen.getByTestId('add-interview')).toBeDisabled();
+
+        resolveInitialRequest(conflictResponse());
+        fireEvent.click(await screen.findByRole('button', { name: 'Add Anyway' }));
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+        fireEvent.submit(form as HTMLFormElement);
+
+        expect(fetch).toHaveBeenCalledTimes(2);
+        expect(screen.getByTestId('add-interview')).toBeDisabled();
+
+        resolveRetry(successResponse());
+        await waitFor(() => expect(screen.getByText('Successfully added an interview!')).toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(2);
     });
 
     test('redirects to /application/view when no state is passed', async () => {

@@ -15,11 +15,18 @@ import {
 import {
     deleteAllJobInterviews,
     deleteJobInterview,
+    getInterviewSchedulingConflicts,
     getInterviews,
     insertInterview,
 } from '../../db/queries/interviews.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isValidDate, toIntegerInRange, toPositiveInteger, toTrimmedString } from '../../http/validation.js';
+import {
+    isOptionalBoolean,
+    isValidDate,
+    toIntegerInRange,
+    toPositiveInteger,
+    toTrimmedString,
+} from '../../http/validation.js';
 import express from 'express';
 import { getInterviewCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
@@ -40,7 +47,7 @@ router.post(
             INTERVIEW_DURATION_MINUTES_MAX
         );
         const notes = toTrimmedString(req.body.notes, FIELD_MAX_LENGTHS.notes, true);
-        const { interviewDate } = req.body;
+        const { allowSchedulingConflict, interviewDate } = req.body;
 
         if (
             applicationId === undefined ||
@@ -48,17 +55,44 @@ router.post(
             interviewDurationMinutes === undefined ||
             interviewLocation === undefined ||
             interviewType === undefined ||
-            notes === undefined
+            notes === undefined ||
+            !isOptionalBoolean(allowSchedulingConflict)
         ) {
             sendError(res, 422, 'Interview fields are missing, invalid, or too long.');
             return;
         }
 
         try {
+            const normalizedInterviewDate = new Date(interviewDate).toISOString();
+            if (allowSchedulingConflict !== true) {
+                const conflicts = await getInterviewSchedulingConflicts(
+                    applicationId,
+                    req.user.id,
+                    normalizedInterviewDate,
+                    interviewDurationMinutes
+                );
+                if (conflicts.length > 0) {
+                    res.status(409).json({
+                        code: 'INTERVIEW_SCHEDULING_CONFLICT',
+                        message: 'This interview overlaps with an existing active interview.',
+                        conflicts: conflicts.map((conflict) => ({
+                            interview_id: conflict.interview_id,
+                            job_id: conflict.job_id,
+                            company_name: conflict.company_name,
+                            job_title: conflict.job_title,
+                            interview_date: conflict.interview_date.toISOString(),
+                            interview_duration_minutes: conflict.interview_duration_minutes,
+                            interview_type: conflict.interview_type,
+                        })),
+                    });
+                    return;
+                }
+            }
+
             const insertResult = await insertInterview(
                 applicationId,
                 req.user.id,
-                new Date(interviewDate).toISOString(),
+                normalizedInterviewDate,
                 interviewDurationMinutes,
                 interviewLocation,
                 interviewType,

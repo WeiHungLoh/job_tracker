@@ -132,7 +132,7 @@ const DemoViewArchivedInterview = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        hasInterviews ? (
+                        hasDisplayedInterviews ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='demo_archived_job_interviews.csv'

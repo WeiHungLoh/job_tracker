@@ -659,8 +659,14 @@ test('rejects missing, non-integer, and out-of-range interview durations before 
 
 test('accepts the minimum and maximum interview durations and forwards them to the insert query', async () => {
     const originalQuery = pool.query;
+    const conflictLookupDurations = [];
     const insertedDurations = [];
-    pool.query = async (_sql, values) => {
+    pool.query = async (sql, values) => {
+        if (sql.includes('ORDER BY interviews.interview_date ASC')) {
+            conflictLookupDurations.push(values[3]);
+            return { rows: [] };
+        }
+
         insertedDurations.push(values[3]);
         return { rows: [{ application_exists: true, interview_created: true }] };
     };
@@ -686,6 +692,7 @@ test('accepts the minimum and maximum interview durations and forwards them to t
 
             assert.equal(response.status, 201);
         }
+        assert.deepEqual(conflictLookupDurations, [INTERVIEW_DURATION_MINUTES_MIN, INTERVIEW_DURATION_MINUTES_MAX]);
         assert.deepEqual(insertedDurations, [INTERVIEW_DURATION_MINUTES_MIN, INTERVIEW_DURATION_MINUTES_MAX]);
     } finally {
         pool.query = originalQuery;

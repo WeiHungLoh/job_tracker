@@ -1,11 +1,11 @@
 import type { JobStatus } from '../application/models';
-import type { DashboardStatusSelectHandler } from './models';
 import styles from './StatusLegend.module.css';
 
 type StatusLegendProps = {
     label: string;
     statuses: readonly JobStatus[];
-    onStatusSelect?: DashboardStatusSelectHandler;
+    hiddenStatuses: ReadonlySet<JobStatus>;
+    onStatusToggle: (status: JobStatus) => void;
 };
 
 const statusClassNames: Record<JobStatus, string> = {
@@ -18,29 +18,27 @@ const statusClassNames: Record<JobStatus, string> = {
     Rejected: styles.rejected,
 };
 
-const StatusLegend = ({ label, statuses, onStatusSelect }: StatusLegendProps) => {
+const StatusLegend = ({ label, statuses, hiddenStatuses, onStatusToggle }: StatusLegendProps) => {
     return (
         <ul className={styles.legend} aria-label={label}>
-            {statuses.map((status) => (
-                <li key={status}>
-                    {onStatusSelect ? (
+            {statuses.map((status) => {
+                const isHidden = hiddenStatuses.has(status);
+
+                return (
+                    <li key={status}>
                         <button
-                            aria-label={`View ${status} applications`}
+                            aria-label={`${isHidden ? 'Show' : 'Hide'} ${status} bar`}
+                            aria-pressed={isHidden}
                             className={styles.statusButton}
-                            onClick={() => onStatusSelect(status)}
+                            onClick={() => onStatusToggle(status)}
                             type='button'
                         >
                             <span className={`${styles.swatch} ${statusClassNames[status]}`} aria-hidden='true' />
-                            {status}
+                            <span className={isHidden ? styles.hidden : undefined}>{status}</span>
                         </button>
-                    ) : (
-                        <>
-                            <span className={`${styles.swatch} ${statusClassNames[status]}`} aria-hidden='true' />
-                            {status}
-                        </>
-                    )}
-                </li>
-            ))}
+                    </li>
+                );
+            })}
         </ul>
     );
 };

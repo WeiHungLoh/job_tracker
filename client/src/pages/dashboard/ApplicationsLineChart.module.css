@@ -54,6 +54,7 @@
 .summary span {
     color: var(--colorTextSecondary);
     font-size: 0.75rem;
+    overflow-wrap: anywhere;
 }
 
 .summary strong {

@@ -1,12 +1,13 @@
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ChartOptions, Plugin } from 'chart.js';
+import type { ChartData, ChartOptions, Plugin } from 'chart.js';
 import ApplicationPipelineChart from '../../pages/dashboard/ApplicationPipelineChart';
 import ApplicationsLineChart from '../../pages/dashboard/ApplicationsLineChart';
 import ClosedOutcomesChart from '../../pages/dashboard/ClosedOutcomesChart';
 import DashboardContent from '../../pages/dashboard/DashboardContent';
 import DashboardStats from '../../pages/dashboard/DashboardStats';
 import dashboardStatsStyles from '../../pages/dashboard/DashboardStats.module.css';
+import statusLegendStyles from '../../pages/dashboard/StatusLegend.module.css';
 import UpcomingInterviews from '../../pages/dashboard/UpcomingInterviews';
 import type { JobStatusCount, WeeklyApplicationCount } from '../../pages/application/models';
 import type { JobInterview } from '../../pages/interview/models';
@@ -18,6 +19,7 @@ const chartMocks = vi.hoisted(() => ({
     barPlugins: undefined as Plugin<'bar'>[] | undefined,
     lineOptions: undefined as ChartOptions<'line'> | undefined,
     linePlugins: undefined as Plugin<'line'>[] | undefined,
+    lineData: undefined as ChartData<'line'> | undefined,
 }));
 
 vi.mock('react-chartjs-2', () => ({
@@ -43,7 +45,16 @@ vi.mock('react-chartjs-2', () => ({
             </div>
         );
     },
-    Line: ({ options, plugins }: { options?: ChartOptions<'line'>; plugins?: Plugin<'line'>[] }) => {
+    Line: ({
+        data,
+        options,
+        plugins,
+    }: {
+        data: ChartData<'line'>;
+        options?: ChartOptions<'line'>;
+        plugins?: Plugin<'line'>[];
+    }) => {
+        chartMocks.lineData = data;
         chartMocks.lineOptions = options;
         chartMocks.linePlugins = plugins;
         return <div data-testid='line-chart'>Application trend line chart</div>;
@@ -81,12 +92,18 @@ const getLegendStatuses = (label: string): Array<string | null> =>
         .map((item) => item.textContent);
 
 describe('Dashboard V2', () => {
+    beforeEach(() => {
+        localStorage.removeItem('theme');
+    });
+
     afterEach(() => {
         vi.useRealTimers();
         chartMocks.barOptions = undefined;
         chartMocks.barPlugins = undefined;
         chartMocks.lineOptions = undefined;
         chartMocks.linePlugins = undefined;
+        chartMocks.lineData = undefined;
+        localStorage.removeItem('theme');
     });
 
     test('renders all dashboard sections', () => {
@@ -100,7 +117,10 @@ describe('Dashboard V2', () => {
         );
 
         expect(screen.getByText('Total Active Applications')).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Application Trend' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Job Search Activity' })).toBeInTheDocument();
+        expect(
+            screen.getByText('Applications submitted and interviews scheduled over the past eight weeks.')
+        ).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Upcoming Interviews' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Application Pipeline' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Closed Outcomes' })).toBeInTheDocument();
@@ -114,24 +134,108 @@ describe('Dashboard V2', () => {
             { start_of_week: '2026-07-06', applications_count: '5' },
         ];
 
-        render(<ApplicationsLineChart weeklyApplications={weeklyApplications} isLoading={false} />);
+        render(<ApplicationsLineChart weeklyApplications={weeklyApplications} interviews={[]} isLoading={false} />);
 
         const summary = screen.getByLabelText('Weekly application summary');
-        expect(within(summary).getByText('This week').parentElement).toHaveTextContent('5');
-        expect(within(summary).getByText('Change').parentElement).toHaveTextContent('+3 vs last week');
-        expect(within(summary).getByText('Best week').parentElement).toHaveTextContent('5');
-        expect(screen.getByText('Total applications in the past eight weeks: 7')).toBeInTheDocument();
+        expect(within(summary).getByText('Applications this week').parentElement).toHaveTextContent('5');
+        expect(within(summary).getByText('Application change').parentElement).toHaveTextContent('+3 vs last week');
+        expect(within(summary).getByText('Best application week').parentElement).toHaveTextContent('5');
+        expect(screen.getByText('8-week totals: 7 applications · 0 interviews')).toBeInTheDocument();
     });
 
     test('uses the safe trend fallback when there is no previous week', () => {
         render(
             <ApplicationsLineChart
                 weeklyApplications={[{ start_of_week: '2026-07-06', applications_count: '3' }]}
+                interviews={[]}
                 isLoading={false}
             />
         );
 
         expect(screen.getByText('No previous week data')).toBeInTheDocument();
+    });
+
+    test('keeps eight application points and adds aligned weekly interview points with the exact light colours', () => {
+        const weeklyApplications: WeeklyApplicationCount[] = Array.from({ length: 8 }, (_, index) => ({
+            start_of_week: new Date(Date.UTC(2026, 4, 18 + index * 7)).toISOString(),
+            applications_count: String(index),
+        }));
+        const interviews = [
+            createInterview(1, '2026-05-18T10:00:00.000Z', 'First Week'),
+            createInterview(2, '2026-06-01T10:00:00.000Z', 'Third Week'),
+            createInterview(3, 'invalid', 'Invalid Date'),
+            createInterview(4, '2026-07-13T00:00:00.000Z', 'Outside Range'),
+        ];
+
+        render(
+            <ApplicationsLineChart weeklyApplications={weeklyApplications} interviews={interviews} isLoading={false} />
+        );
+
+        expect(chartMocks.lineData?.datasets).toHaveLength(2);
+        expect(chartMocks.lineData?.datasets[0]).toMatchObject({
+            label: 'Applications',
+            data: [0, 1, 2, 3, 4, 5, 6, 7],
+            backgroundColor: '#17a2b8',
+            borderColor: '#17a2b8',
+            hidden: false,
+        });
+        expect(chartMocks.lineData?.datasets[1]).toMatchObject({
+            label: 'Interviews',
+            data: [1, 0, 1, 0, 0, 0, 0, 0],
+            backgroundColor: '#0d6efd',
+            borderColor: '#0d6efd',
+            hidden: false,
+        });
+        expect(chartMocks.lineOptions?.plugins?.title).toEqual(
+            expect.objectContaining({ text: 'Weekly Applications and Interviews' })
+        );
+        expect(screen.getByText('8-week totals: 28 applications · 2 interviews')).toBeInTheDocument();
+    });
+
+    test('uses the exact existing dark application and Interview status colours', () => {
+        localStorage.setItem('theme', 'dark');
+
+        render(
+            <ApplicationsLineChart
+                weeklyApplications={[{ start_of_week: '2026-07-06T00:00:00.000Z', applications_count: '1' }]}
+                interviews={[createInterview(1, '2026-07-06T10:00:00.000Z', 'Interview Company')]}
+                isLoading={false}
+            />
+        );
+
+        expect(chartMocks.lineData?.datasets[0]).toMatchObject({
+            backgroundColor: '#148f9e',
+            borderColor: '#148f9e',
+        });
+        expect(chartMocks.lineData?.datasets[1]).toMatchObject({
+            backgroundColor: '#0a58ca',
+            borderColor: '#0a58ca',
+        });
+    });
+
+    test('renders the trend chart when only interviews exist in the weekly range', () => {
+        render(
+            <ApplicationsLineChart
+                weeklyApplications={[{ start_of_week: '2026-07-06T00:00:00.000Z', applications_count: '0' }]}
+                interviews={[createInterview(1, '2026-07-06T10:00:00.000Z', 'Interview Company')]}
+                isLoading={false}
+            />
+        );
+
+        expect(screen.getByTestId('line-chart')).toBeInTheDocument();
+        expect(screen.getByText('8-week totals: 0 applications · 1 interview')).toBeInTheDocument();
+    });
+
+    test('uses singular footer wording for one application and one interview', () => {
+        render(
+            <ApplicationsLineChart
+                weeklyApplications={[{ start_of_week: '2026-07-06T00:00:00.000Z', applications_count: '1' }]}
+                interviews={[createInterview(1, '2026-07-06T10:00:00.000Z', 'Interview Company')]}
+                isLoading={false}
+            />
+        );
+
+        expect(screen.getByText('8-week totals: 1 application · 1 interview')).toBeInTheDocument();
     });
 
     test('renders only one positive pipeline status in the chart, legend, and accessible label', () => {
@@ -174,7 +278,7 @@ describe('Dashboard V2', () => {
         ).toBeInTheDocument();
     });
 
-    test('selects every pipeline status from the accessible legend and Chart.js bar handler', async () => {
+    test('toggles a pipeline bar from the accessible legend while preserving bar navigation', async () => {
         const onStatusSelect = vi.fn();
         render(
             <ApplicationPipelineChart
@@ -189,15 +293,20 @@ describe('Dashboard V2', () => {
             />
         );
 
-        for (const status of ['Applied', 'Interview', 'Offer', 'Accepted']) {
-            await userEvent.click(screen.getByRole('button', { name: `View ${status} applications` }));
-        }
-        expect(onStatusSelect.mock.calls.map(([status]) => status)).toEqual([
-            'Applied',
-            'Interview',
-            'Offer',
-            'Accepted',
-        ]);
+        const hideAppliedButton = screen.getByRole('button', { name: 'Hide Applied bar' });
+        expect(hideAppliedButton).toHaveAttribute('aria-pressed', 'false');
+        await userEvent.click(hideAppliedButton);
+
+        const showAppliedButton = screen.getByRole('button', { name: 'Show Applied bar' });
+        expect(showAppliedButton).toHaveAttribute('aria-pressed', 'true');
+        expect(within(showAppliedButton).getByText('Applied')).toHaveClass(statusLegendStyles.hidden);
+        expect(getRenderedBars()).toEqual(['Interview: 2', 'Offer: 3', 'Accepted: 4']);
+        expect(getLegendStatuses('Application pipeline legend')).toEqual(['Applied', 'Interview', 'Offer', 'Accepted']);
+        expect(onStatusSelect).not.toHaveBeenCalled();
+
+        await userEvent.click(showAppliedButton);
+        expect(screen.getByRole('button', { name: 'Hide Applied bar' })).toHaveAttribute('aria-pressed', 'false');
+        expect(getRenderedBars()).toEqual(['Applied: 1', 'Interview: 2', 'Offer: 3', 'Accepted: 4']);
 
         chartMocks.barOptions?.onClick?.(
             {} as never,
@@ -211,6 +320,24 @@ describe('Dashboard V2', () => {
             data: { labels: ['Applied', 'Interview', 'Offer', 'Accepted'] },
         } as never);
         expect(onStatusSelect).not.toHaveBeenCalled();
+    });
+
+    test('keeps the pipeline chart area and complete legend mounted when every bar is hidden', async () => {
+        render(
+            <ApplicationPipelineChart
+                statusCounts={[statusCount('Applied', 1), statusCount('Interview', 2)]}
+                isLoading={false}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Hide Applied bar' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Hide Interview bar' }));
+
+        expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
+        expect(getLegendStatuses('Application pipeline legend')).toEqual(['Applied', 'Interview']);
+        expect(screen.getByRole('button', { name: 'Show Applied bar' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Show Interview bar' })).toBeInTheDocument();
+        expect(screen.queryByText('No applications in the pipeline yet.')).not.toBeInTheDocument();
     });
 
     test('shows the pipeline empty state when every pipeline count is zero', () => {
@@ -274,7 +401,7 @@ describe('Dashboard V2', () => {
         expect(screen.getByRole('img', { name: 'Closed outcomes. Rejected: 3, Declined: 1' })).toBeInTheDocument();
     });
 
-    test('selects every closed status from the accessible legend', async () => {
+    test('toggles a closed-outcome bar without navigating and restores its original data', async () => {
         const onStatusSelect = vi.fn();
         render(
             <ClosedOutcomesChart
@@ -284,10 +411,21 @@ describe('Dashboard V2', () => {
             />
         );
 
-        for (const status of ['Rejected', 'Ghosted', 'Declined']) {
-            await userEvent.click(screen.getByRole('button', { name: `View ${status} applications` }));
-        }
-        expect(onStatusSelect.mock.calls.map(([status]) => status)).toEqual(['Rejected', 'Ghosted', 'Declined']);
+        await userEvent.click(screen.getByRole('button', { name: 'Hide Ghosted bar' }));
+        const showGhostedButton = screen.getByRole('button', { name: 'Show Ghosted bar' });
+        expect(within(showGhostedButton).getByText('Ghosted')).toHaveClass(statusLegendStyles.hidden);
+        expect(getRenderedBars()).toEqual(['Rejected: 1', 'Declined: 3']);
+        expect(onStatusSelect).not.toHaveBeenCalled();
+
+        await userEvent.click(showGhostedButton);
+        expect(getRenderedBars()).toEqual(['Rejected: 1', 'Ghosted: 2', 'Declined: 3']);
+
+        chartMocks.barOptions?.onClick?.(
+            {} as never,
+            [{ index: 1 }] as never,
+            { data: { labels: ['Rejected', 'Ghosted', 'Declined'] } } as never
+        );
+        expect(onStatusSelect).toHaveBeenCalledWith('Ghosted');
     });
 
     test('shows the closed-outcomes empty state when all closed counts are zero', () => {
@@ -357,28 +495,38 @@ describe('Dashboard V2', () => {
         });
     });
 
-    test('keeps the trend legend visible while disabling its dataset toggle', () => {
+    test('uses React state to hide and restore each trend line independently', () => {
         render(
             <ApplicationsLineChart
-                weeklyApplications={[{ start_of_week: '2026-07-06', applications_count: '3' }]}
+                weeklyApplications={[{ start_of_week: '2026-07-06T00:00:00.000Z', applications_count: '3' }]}
+                interviews={[createInterview(1, '2026-07-06T10:00:00.000Z', 'Interview Company')]}
                 isLoading={false}
             />
         );
 
         const legendOptions = chartMocks.lineOptions?.plugins?.legend;
         const onLegendClick = legendOptions && legendOptions !== false ? legendOptions.onClick : undefined;
-        const chart = { hide: vi.fn(), show: vi.fn() };
 
         expect(legendOptions).toEqual(expect.objectContaining({ display: true, onClick: expect.any(Function) }));
         expect(chartMocks.linePlugins?.map((plugin) => plugin.id)).toContain('trendTooltipPositioning');
         expect(chartMocks.lineOptions?.plugins?.tooltip).toEqual(
             expect.objectContaining({ animation: false, caretPadding: 6, caretSize: 5 })
         );
-        onLegendClick?.({} as never, { datasetIndex: 0 } as never, { chart } as never);
+        expect(screen.getByText('8-week totals: 3 applications · 1 interview')).toBeInTheDocument();
+        act(() => onLegendClick?.({} as never, { datasetIndex: 0 } as never, {} as never));
+        expect(chartMocks.lineData?.datasets[0].hidden).toBe(true);
+        expect(chartMocks.lineData?.datasets[1].hidden).toBe(false);
+        expect(screen.getByText('8-week totals: 3 applications · 1 interview')).toBeInTheDocument();
 
-        expect(chart.hide).not.toHaveBeenCalled();
-        expect(chart.show).not.toHaveBeenCalled();
+        act(() => onLegendClick?.({} as never, { datasetIndex: 1 } as never, {} as never));
+        expect(chartMocks.lineData?.datasets[0].hidden).toBe(true);
+        expect(chartMocks.lineData?.datasets[1].hidden).toBe(true);
         expect(screen.getByTestId('line-chart')).toBeInTheDocument();
+        expect(screen.getByText('8-week totals: 3 applications · 1 interview')).toBeInTheDocument();
+
+        act(() => onLegendClick?.({} as never, { datasetIndex: 0 } as never, {} as never));
+        expect(chartMocks.lineData?.datasets[0].hidden).toBe(false);
+        expect(chartMocks.lineData?.datasets[1].hidden).toBe(true);
     });
 
     test('retains the complete dashboard empty state', () => {
@@ -386,7 +534,7 @@ describe('Dashboard V2', () => {
 
         expect(
             screen.getByText(
-                'No job applications applied in the last eight weeks. Start adding some to see your progress here!'
+                'No job applications or interviews in the last eight weeks. Add some to see your progress here!'
             )
         ).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'No upcoming interviews' })).toBeInTheDocument();

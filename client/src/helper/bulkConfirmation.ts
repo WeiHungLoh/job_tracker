@@ -1,10 +1,12 @@
 import type { KeyboardEvent } from 'react';
 import type { ConfirmOptions } from 'material-ui-confirm';
 
-const countLabel = (count: number, singular: string, plural = `${singular}s`) =>
+export const formatCountLabel = (count: number, singular: string, plural = `${singular}s`) =>
     `${count} ${count === 1 ? singular : plural}`;
 
-type CollectionState = 'active' | 'archived';
+export type ApplicationCollectionState = 'active' | 'archived';
+
+export const PERMANENT_DELETION_WARNING = 'This action is permanent and cannot be undone.';
 
 const preventEnterConfirmation = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === 'Enter') {
@@ -25,12 +27,12 @@ const applicationDescription = (
     action: 'Archive' | 'Delete' | 'Unarchive',
     applicationCount: number,
     interviewCount: number,
-    state: CollectionState
+    state: ApplicationCollectionState
 ) => {
-    const applicationLabel = countLabel(applicationCount, `${state} job application`);
-    const interviewLabel = countLabel(interviewCount, `related ${state} interview`);
+    const applicationLabel = formatCountLabel(applicationCount, `${state} job application`);
+    const interviewLabel = formatCountLabel(interviewCount, `related ${state} interview`);
     const filterLabel = state === 'archived' ? 'archived job-status filters' : 'job-status filters';
-    const permanence = action === 'Delete' ? ' This action is permanent and cannot be undone.' : '';
+    const permanence = action === 'Delete' ? ` ${PERMANENT_DELETION_WARNING}` : '';
 
     return `${action} all ${applicationLabel} and ${
         applicationCount === 1 ? 'its' : 'their'
@@ -54,7 +56,7 @@ export const createUnarchiveAllConfirmation = (applicationCount: number, intervi
 export const createDeleteAllApplicationsConfirmation = (
     applicationCount: number,
     interviewCount: number,
-    state: CollectionState
+    state: ApplicationCollectionState
 ): ConfirmOptions =>
     bulkOptions(
         'Confirm Delete All',
@@ -64,19 +66,19 @@ export const createDeleteAllApplicationsConfirmation = (
 
 export const createDeleteAllInterviewsConfirmation = (
     interviewCount: number,
-    state: CollectionState
+    state: ApplicationCollectionState
 ): ConfirmOptions => {
-    const interviewLabel = countLabel(interviewCount, `${state} interview`);
+    const interviewLabel = formatCountLabel(interviewCount, `${state} interview`);
 
     return bulkOptions(
         'Confirm Delete All',
-        `Delete all ${interviewLabel} you own? This affects every ${state} interview in your account. This action is permanent and cannot be undone.`,
+        `Delete all ${interviewLabel} you own? This affects every ${state} interview in your account. ${PERMANENT_DELETION_WARNING}`,
         'Delete All'
     );
 };
 
 export const createBulkCalendarExportConfirmation = (interviewCount: number): ConfirmOptions => {
-    const interviewLabel = countLabel(interviewCount, 'upcoming interview');
+    const interviewLabel = formatCountLabel(interviewCount, 'upcoming interview');
 
     return bulkOptions(
         'Export all upcoming interviews?',

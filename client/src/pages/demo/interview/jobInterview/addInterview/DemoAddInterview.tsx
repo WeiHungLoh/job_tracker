@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../../../application/models';
+import type { CreateInterviewRequest } from '../../../../interview/models';
 import type { Location } from 'react-router-dom';
 import type { FormEvent } from 'react';
 import FormFieldError from '../../../../../components/formPage/FormFieldError';
@@ -20,9 +21,13 @@ import { useRef, useState } from 'react';
 import { useToast } from '../../../../../components/toast/ToastProvider';
 import {
     DEFAULT_INTERVIEW_DURATION_MINUTES,
+    findInterviewSchedulingConflicts,
     INTERVIEW_DURATION_MINUTES_MAX,
     INTERVIEW_DURATION_MINUTES_MIN,
 } from '../../../../../helper/interviewTiming';
+import { useConfirm } from 'material-ui-confirm';
+import { createInterviewConflictConfirmation } from '../../../../../helper/interviewConflictConfirmation';
+import { getErrorToastMessage } from '../../../../../helper/getErrorToastMessage';
 
 const DemoAddInterview = () => {
     const [interviewDate, setInterviewDate] = useState<string>('');
@@ -38,11 +43,14 @@ const DemoAddInterview = () => {
     const interviewDurationInputRef = useRef<HTMLInputElement>(null);
     const interviewTypeInputRef = useRef<HTMLInputElement>(null);
     const notesInputRef = useRef<HTMLTextAreaElement>(null);
+    const pendingSubmissionRef = useRef(false);
     const navigate = useNavigate();
     const location = useLocation() as Location<{ app?: JobApplication }>;
     const app = location.state?.app;
-    const { dispatch } = useDemo();
-    const { showSuccessToast } = useToast();
+    const { dispatch, state } = useDemo();
+    const confirm = useConfirm();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const { showErrorToast, showSuccessToast } = useToast();
 
     if (!app) {
         return <Navigate to={routes.demoViewApplications} replace />;
@@ -57,8 +65,28 @@ const DemoAddInterview = () => {
         setErrors({});
     };
 
-    const handleAdd = (event: FormEvent<HTMLFormElement>) => {
+    const createInterview = (request: CreateInterviewRequest) => {
+        dispatch({
+            type: 'CREATE_INTERVIEW',
+            payload: {
+                jobId: request.jobId,
+                interviewDate: request.interviewDate,
+                interviewDurationMinutes: request.interviewDurationMinutes,
+                interviewLocation: request.interviewLocation,
+                interviewType: request.interviewType,
+                notes: request.notes,
+            },
+        });
+        showSuccessToast(DEMO_INTERVIEW_CREATED_MESSAGE);
+        resetForm();
+    };
+
+    const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (pendingSubmissionRef.current) {
+            return;
+        }
 
         const validation = validateInterviewForm({
             applicationDate: app.application_date,
@@ -83,21 +111,44 @@ const DemoAddInterview = () => {
             return;
         }
 
-        setErrors({});
         const values = validation.values;
-        dispatch({
-            type: 'CREATE_INTERVIEW',
-            payload: {
-                jobId: app.job_id,
-                interviewDate: values.interviewDate,
-                interviewDurationMinutes: values.interviewDurationMinutes,
-                interviewLocation: values.interviewLocation,
-                interviewType: values.interviewType,
-                notes: values.notes,
+        const request: CreateInterviewRequest = {
+            jobId: app.job_id,
+            interviewDate: values.interviewDate,
+            interviewDurationMinutes: values.interviewDurationMinutes,
+            interviewLocation: values.interviewLocation,
+            interviewType: values.interviewType,
+            notes: values.notes,
+        };
+        const currentTime = new Date();
+        const conflicts = findInterviewSchedulingConflicts(
+            state.interviews,
+            {
+                interview_date: request.interviewDate.toISOString(),
+                interview_duration_minutes: request.interviewDurationMinutes,
             },
-        });
-        showSuccessToast(DEMO_INTERVIEW_CREATED_MESSAGE);
-        resetForm();
+            currentTime
+        );
+
+        setErrors({});
+        if (conflicts.length === 0) {
+            createInterview(request);
+            return;
+        }
+
+        pendingSubmissionRef.current = true;
+        setIsLoading(true);
+        try {
+            const { confirmed } = await confirm(createInterviewConflictConfirmation(conflicts));
+            if (confirmed) {
+                createInterview(request);
+            }
+        } catch (error) {
+            showErrorToast(getErrorToastMessage(error, 'Unable to add the interview. Please try again.'));
+        } finally {
+            pendingSubmissionRef.current = false;
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -197,7 +248,7 @@ const DemoAddInterview = () => {
             <FormFieldError id='interview-notes-error' message={errors.notes} />
 
             <div className={styles.submitButton}>
-                <PrimaryButton type='submit' variant='compact' data-testid='add-interview'>
+                <PrimaryButton isLoading={isLoading} type='submit' variant='compact' data-testid='add-interview'>
                     Add Interview
                 </PrimaryButton>
                 <PrimaryButton type='button' variant='secondary' onClick={() => navigate(routes.demoViewInterviews)}>

@@ -34,6 +34,10 @@
     outline-offset: 3px;
 }
 
+.hidden {
+    text-decoration: line-through;
+}
+
 .swatch {
     width: 10px;
     height: 10px;

@@ -1,4 +1,4 @@
-import { sortApplications } from '../../pages/application/applicationSorting';
+import { shouldAutoScrollAfterStatusChange, sortApplications } from '../../pages/application/applicationSorting';
 import {
     APPLICATION_BOARD_SORT_OPTIONS,
     APPLICATION_LIST_SORT_OPTIONS,
@@ -34,6 +34,15 @@ const applications = [
 ] as const;
 
 describe('application sorting', () => {
+    test('enables status-change auto scroll only for Job Status sorting when the toggle is enabled', () => {
+        expect(shouldAutoScrollAfterStatusChange(true, 'job_status')).toBe(true);
+        expect(shouldAutoScrollAfterStatusChange(false, 'job_status')).toBe(false);
+        expect(shouldAutoScrollAfterStatusChange(true, 'application_date_desc')).toBe(false);
+        expect(shouldAutoScrollAfterStatusChange(true, 'application_date_asc')).toBe(false);
+        expect(shouldAutoScrollAfterStatusChange(true, 'company_name_asc')).toBe(false);
+        expect(shouldAutoScrollAfterStatusChange(true, 'company_name_desc')).toBe(false);
+    });
+
     test('exposes the exact list and Board choices with their defaults', () => {
         expect(DEFAULT_APPLICATION_LIST_SORT_ORDER).toBe('job_status');
         expect(DEFAULT_APPLICATION_BOARD_SORT_ORDER).toBe('application_date_desc');

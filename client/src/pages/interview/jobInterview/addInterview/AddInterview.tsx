@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { JobApplication } from '../../../application/models';
+import type { CreateInterviewRequest } from '../../models';
 import type { Location } from 'react-router-dom';
 import type { FormEvent } from 'react';
 import FormFieldError from '../../../../components/formPage/FormFieldError';
@@ -19,6 +20,11 @@ import {
     INTERVIEW_DURATION_MINUTES_MAX,
     INTERVIEW_DURATION_MINUTES_MIN,
 } from '../../../../helper/interviewTiming';
+import { useConfirm } from 'material-ui-confirm';
+import {
+    createInterviewConflictConfirmation,
+    isInterviewSchedulingConflictError,
+} from '../../../../helper/interviewConflictConfirmation';
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState<string>('');
@@ -34,11 +40,13 @@ const AddInterview = () => {
     const interviewDurationInputRef = useRef<HTMLInputElement>(null);
     const interviewTypeInputRef = useRef<HTMLInputElement>(null);
     const notesInputRef = useRef<HTMLTextAreaElement>(null);
+    const pendingSubmissionRef = useRef(false);
     const navigate = useNavigate();
     const location = useLocation() as Location<{ app?: JobApplication }>;
     const app = location.state?.app;
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const api = useJobTrackerAPI();
+    const confirm = useConfirm();
     const { showErrorToast, showSuccessToast } = useToast();
 
     if (!app) {
@@ -54,8 +62,29 @@ const AddInterview = () => {
         setErrors({});
     };
 
+    const submitInterview = async (request: CreateInterviewRequest): Promise<string | undefined> => {
+        try {
+            return await api.interview.createInterview(request);
+        } catch (error) {
+            if (!isInterviewSchedulingConflictError(error)) {
+                throw error;
+            }
+
+            const { confirmed } = await confirm(createInterviewConflictConfirmation(error.data.conflicts));
+            if (!confirmed) {
+                return undefined;
+            }
+
+            return await api.interview.createInterview({ ...request, allowSchedulingConflict: true });
+        }
+    };
+
     const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (pendingSubmissionRef.current) {
+            return;
+        }
 
         const validation = validateInterviewForm({
             applicationDate: app.application_date,
@@ -80,23 +109,31 @@ const AddInterview = () => {
             return;
         }
 
+        const values = validation.values;
+        const request: CreateInterviewRequest = {
+            jobId: app.job_id,
+            interviewDate: values.interviewDate,
+            interviewDurationMinutes: values.interviewDurationMinutes,
+            interviewLocation: values.interviewLocation,
+            interviewType: values.interviewType,
+            notes: values.notes,
+        };
+
         setErrors({});
+        pendingSubmissionRef.current = true;
         setIsLoading(true);
         try {
-            const values = validation.values;
-            const message = await api.interview.createInterview({
-                jobId: app.job_id,
-                interviewDate: values.interviewDate,
-                interviewDurationMinutes: values.interviewDurationMinutes,
-                interviewLocation: values.interviewLocation,
-                interviewType: values.interviewType,
-                notes: values.notes,
-            });
+            const message = await submitInterview(request);
+            if (message === undefined) {
+                return;
+            }
+
             showSuccessToast(message);
             resetForm();
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to add the interview. Please try again.'));
         } finally {
+            pendingSubmissionRef.current = false;
             setIsLoading(false);
         }
     };

@@ -11,6 +11,8 @@ import type {
     ListArchivedApplicationsResponse,
     GetApplicationCollectionSummaryRequest,
     GetApplicationCollectionSummaryResponse,
+    GetArchivedApplicationRelationSummaryRequest,
+    GetArchivedApplicationRelationSummaryResponse,
     UnarchiveAllApplicationsRequest,
     UnarchiveAllApplicationsResponse,
     UnarchiveApplicationRequest,
@@ -29,6 +31,8 @@ import type {
     ListJobStatusCountsResponse,
     ListWeeklyApplicationsRequest,
     ListWeeklyApplicationsResponse,
+    GetApplicationRelationSummaryRequest,
+    GetApplicationRelationSummaryResponse,
     UpdateApplicationStatusRequest,
     UpdateApplicationStatusResponse,
     UpdateNotesRequest,
@@ -128,6 +132,13 @@ export const useJobTrackerAPI = () => {
                 GetApplicationCollectionSummaryRequest,
                 GetApplicationCollectionSummaryResponse
             >(null, endpointConfig.application.getSummary);
+        };
+
+        const getApplicationRelationSummary = async (req: GetApplicationRelationSummaryRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetApplicationRelationSummaryRequest,
+                GetApplicationRelationSummaryResponse
+            >(req, endpointConfig.application.getRelationSummary);
         };
 
         const createApplication = async (req: CreateApplicationRequest) => {
@@ -235,6 +246,13 @@ export const useJobTrackerAPI = () => {
             >(null, endpointConfig.archivedApplication.getSummary);
         };
 
+        const getArchivedApplicationRelationSummary = async (req: GetArchivedApplicationRelationSummaryRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetArchivedApplicationRelationSummaryRequest,
+                GetArchivedApplicationRelationSummaryResponse
+            >(req, endpointConfig.archivedApplication.getRelationSummary);
+        };
+
         const deleteArchivedApplication = async (req: DeleteArchivedApplicationRequest) => {
             return await makeAuthenticatedJobTrackerAPIRequest<
                 DeleteArchivedApplicationRequest,
@@ -305,6 +323,7 @@ export const useJobTrackerAPI = () => {
                 listWeeklyApplications,
                 listJobStatusCounts,
                 getSummary: getApplicationSummary,
+                getRelationSummary: getApplicationRelationSummary,
                 createApplication,
                 deleteApplication,
                 deleteAllApplications,
@@ -324,6 +343,7 @@ export const useJobTrackerAPI = () => {
                 archiveAllApplications,
                 unarchiveAllApplications,
                 getSummary: getArchivedApplicationSummary,
+                getRelationSummary: getArchivedApplicationRelationSummary,
                 deleteApplication: deleteArchivedApplication,
                 deleteAllApplications: deleteAllArchivedApplications,
                 unarchiveApplication,

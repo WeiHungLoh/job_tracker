@@ -15,6 +15,11 @@ export const endpointConfig = {
         listWeeklyApplications: { url: '/job-applications/weekly-counts', verb: 'GET' },
         listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET' },
         getSummary: { url: '/job-applications/summary', verb: 'GET' },
+        getRelationSummary: {
+            url: '/job-applications/:jobId/relation-summary',
+            verb: 'GET',
+            fieldMap: { jobId: 'path' },
+        },
         createApplication: { url: '/job-applications', verb: 'POST' },
         deleteApplication: {
             url: '/job-applications/:jobId',
@@ -46,6 +51,11 @@ export const endpointConfig = {
         archiveAllApplications: { url: '/archived-job-applications/archive-all', verb: 'PATCH' },
         unarchiveAllApplications: { url: '/archived-job-applications/unarchive-all', verb: 'PATCH' },
         getSummary: { url: '/archived-job-applications/summary', verb: 'GET' },
+        getRelationSummary: {
+            url: '/archived-job-applications/:archivedJobId/relation-summary',
+            verb: 'GET',
+            fieldMap: { archivedJobId: 'path' },
+        },
         deleteApplication: {
             url: '/archived-job-applications/:archivedJobId',
             verb: 'DELETE',

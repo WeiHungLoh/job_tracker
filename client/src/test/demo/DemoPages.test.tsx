@@ -16,6 +16,8 @@ import { render } from '../renderWithToast';
 import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
 import DemoRoutes from '../../pages/demo/components/demoLayout/DemoRoutes';
+import * as highlightElement from '../../helper/highlightElement';
+import type { ChartData, ChartOptions } from 'chart.js';
 
 const mockConfirm = vi.fn();
 
@@ -24,7 +26,20 @@ vi.mock('material-ui-confirm', () => ({
 }));
 
 vi.mock('react-chartjs-2', () => ({
-    Bar: () => <div>Demo bar chart</div>,
+    Bar: ({ data, options }: { data: ChartData<'bar'>; options?: ChartOptions<'bar'> }) => (
+        <div>
+            <span>Demo bar chart</span>
+            {data.labels?.map((label, index) => (
+                <button
+                    key={String(label)}
+                    onClick={() => options?.onClick?.({} as never, [{ index }] as never, { data } as never)}
+                    type='button'
+                >
+                    View {String(label)} bar
+                </button>
+            ))}
+        </div>
+    ),
     Line: () => <div>Demo line chart</div>,
 }));
 
@@ -138,6 +153,23 @@ const SetApplicationCsvFilter = ({ archived = false }: { archived?: boolean }) =
     );
 };
 
+const SetEmptyApplicationFilter = ({ archived = false }: { archived?: boolean }) => {
+    const { updatePreferences } = useDemo();
+
+    return (
+        <button
+            onClick={() =>
+                void updatePreferences(
+                    archived ? { archived_application_job_statuses: ['Applied'] } : { application_job_statuses: [] }
+                )
+            }
+            type='button'
+        >
+            Hide {archived ? 'archived' : 'active'} applications
+        </button>
+    );
+};
+
 describe('demo page interactions', () => {
     beforeEach(() => {
         mockConfirm.mockReset();
@@ -180,6 +212,24 @@ describe('demo page interactions', () => {
         );
     });
 
+    test('does not auto-scroll after a status change when list sorting is not Job Status', async () => {
+        const scrollAndHighlight = vi.spyOn(highlightElement, 'scrollAndHighlight');
+        renderDemo(<DemoViewApplication />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Sort by' }));
+        await userEvent.click(screen.getByRole('radio', { name: /Company A/ }));
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Sort by' })).toBeEnabled());
+
+        await userEvent.click(screen.getAllByRole('button', { name: 'Edit Status' })[0]);
+        fireEvent.change(screen.getByRole('listbox'), { target: { value: 'Interview' } });
+        await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 150));
+        });
+
+        expect(scrollAndHighlight).not.toHaveBeenCalled();
+    });
+
     test('updates board status and archives without success toasts', async () => {
         renderDemo(<DemoViewApplication />);
 
@@ -199,7 +249,8 @@ describe('demo page interactions', () => {
         await userEvent.click(screen.getByRole('button', { name: 'List' }));
         expect(screen.getAllByText(/Job Status: Rejected/i).length).toBeGreaterThan(0);
 
-        await userEvent.click(screen.getAllByRole('button', { name: 'Archive' })[0]);
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        await clickConfirmedAction(screen.getAllByRole('button', { name: 'Archive' })[0]);
         expect(screen.queryByText('Application archived.')).not.toBeInTheDocument();
     });
 
@@ -240,7 +291,8 @@ describe('demo page interactions', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
         expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'true');
 
-        await userEvent.click(screen.getAllByRole('button', { name: 'Unarchive' })[0]);
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        await clickConfirmedAction(screen.getAllByRole('button', { name: 'Unarchive' })[0]);
         expect(screen.queryByText('Application restored.')).not.toBeInTheDocument();
 
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
@@ -295,6 +347,34 @@ describe('demo page interactions', () => {
             }
             expect(csv).not.toContain('HorizonAI Labs');
             expect(screen.getByRole('link', { name: 'Export as CSV' })).toHaveAttribute('download', filename);
+        }
+    );
+
+    test.each([
+        ['active', false, 'Demo application view and management controls', 'No applications match your filters'],
+        [
+            'archived',
+            true,
+            'Demo archived application view and management controls',
+            'No archived applications match your filters',
+        ],
+    ] as const)(
+        'hides demo %s application actions when the filter has no matches',
+        async (_, archived, label, title) => {
+            renderDemo(
+                <>
+                    <SetEmptyApplicationFilter archived={archived} />
+                    {archived ? <DemoViewArchivedApplication /> : <DemoViewApplication />}
+                </>
+            );
+
+            await userEvent.click(
+                screen.getByRole('button', { name: `Hide ${archived ? 'archived' : 'active'} applications` })
+            );
+
+            expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+            expect(screen.getByRole('region', { name: label }).children).toHaveLength(1);
         }
     );
 
@@ -707,7 +787,10 @@ describe('demo page interactions', () => {
         fireEvent.click(screen.getByRole('checkbox', { name: 'Past Interviews' }));
 
         expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'More...' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Demo archived interview view and management controls' }).children
+        ).toHaveLength(1);
         await userEvent.click(screen.getByRole('button', { name: 'Show all interviews' }));
 
         expect(await screen.findByRole('region', { name: 'Archived interviews' })).toBeInTheDocument();
@@ -774,7 +857,7 @@ describe('demo page interactions', () => {
         const fetchSpy = vi.spyOn(globalThis, 'fetch');
         renderDemo(<DemoRouteHarness />, [routes.demoDashboard]);
 
-        await userEvent.click(screen.getByRole('button', { name: 'View Offer applications' }));
+        await userEvent.click(screen.getByRole('button', { name: 'View Offer bar' }));
 
         expect(await screen.findByRole('heading', { name: /Greenhouse CloudOps/ })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: /Quantum Ledger/ })).toBeInTheDocument();

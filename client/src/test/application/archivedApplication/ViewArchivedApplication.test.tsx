@@ -106,6 +106,9 @@ const mockArchivedApplicationCollection = (applications: unknown[]) => {
         if (url.endsWith('/archived-job-applications/summary')) {
             return response({ application_count: applications.length, related_interview_count: 0 });
         }
+        if (/\/archived-job-applications\/\d+\/relation-summary$/.test(url)) {
+            return response({ related_interview_count: 0 });
+        }
         return init?.method === 'GET' ? response(applications) : response(undefined, 204);
     });
 };
@@ -123,6 +126,9 @@ describe('Archived job application viewing flow', () => {
             }
             if (url.endsWith('/archived-job-applications/summary')) {
                 return response({ application_count: 1, related_interview_count: 0 });
+            }
+            if (/\/archived-job-applications\/\d+\/relation-summary$/.test(url)) {
+                return response({ related_interview_count: 0 });
             }
             return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
         });
@@ -731,6 +737,15 @@ describe('Archived job application viewing flow', () => {
     });
 
     test('deletes application after user confirms', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/archived-job-applications/1/relation-summary')) {
+                return response({ related_interview_count: 1 });
+            }
+            if (url.endsWith('/archived-job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
         render(
             <MemoryRouter>
                 <ViewArchivedApplication />
@@ -749,11 +764,16 @@ describe('Archived job application viewing flow', () => {
             expect(mockConfirm).toHaveBeenCalledWith({
                 title: 'Confirm Deletion',
                 description:
-                    'Are you sure you want to delete this archived job application? This action is permanent and cannot be undone.',
+                    'Delete this archived job application and its 1 related archived interview? This action is permanent and cannot be undone.',
                 confirmationText: 'Delete',
                 cancellationText: 'Cancel',
                 confirmationButtonProps: { autoFocus: true },
             })
+        );
+
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/archived-job-applications/1/relation-summary`,
+            { method: 'GET' }
         );
 
         await waitFor(() =>
@@ -837,7 +857,17 @@ describe('Archived job application viewing flow', () => {
         expect(await screen.findByRole('heading', { name: 'No archived applications yet' })).toBeInTheDocument();
     });
 
-    test('unarchive job application', async () => {
+    test('unarchives an application with its exact relation confirmation', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/archived-job-applications/1/relation-summary')) {
+                return response({ related_interview_count: 2 });
+            }
+            if (url.endsWith('/archived-job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
         render(
             <MemoryRouter>
                 <ViewArchivedApplication />
@@ -849,11 +879,105 @@ describe('Archived job application viewing flow', () => {
         userEvent.click(screen.getByRole('button', { name: /unarchive/i }));
 
         await waitFor(() =>
+            expect(mockConfirm).toHaveBeenCalledWith({
+                title: 'Confirm Unarchive',
+                description: 'Unarchive this archived job application and its 2 related archived interviews?',
+                confirmationText: 'Unarchive',
+                cancellationText: 'Cancel',
+                confirmationButtonProps: { autoFocus: true },
+            })
+        );
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/archived-job-applications/1/relation-summary`,
+            { method: 'GET' }
+        );
+        await waitFor(() =>
             expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/1/restore`, {
                 method: 'PATCH',
             })
         );
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
+    });
+
+    test('keeps an archived application when its single-action confirmation is cancelled', async () => {
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        const deleteButton = await screen.findByRole('button', { name: 'Delete' });
+        await clickConfirmedAction(deleteButton);
+
+        expect(mockConfirm).toHaveBeenCalledOnce();
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/archived-job-applications/1/relation-summary`,
+            { method: 'GET' }
+        );
+        expect(fetch).not.toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/1`, {
+            method: 'DELETE',
+        });
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        await waitFor(() => expect(deleteButton).toBeEnabled());
+    });
+
+    test('does not confirm or mutate when an archived relation summary fails', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/archived-job-applications/1/relation-summary')) {
+                return response({ message: 'Unable to inspect this archived application.' }, 500);
+            }
+            if (url.endsWith('/archived-job-applications/summary')) {
+                return response({ application_count: 1, related_interview_count: 0 });
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+
+        expect(await screen.findByText('Unable to inspect this archived application.')).toBeInTheDocument();
+        expect(mockConfirm).not.toHaveBeenCalled();
+        expect(fetch).not.toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications/1`, {
+            method: 'DELETE',
+        });
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+    });
+
+    test('guards an archived application action synchronously while confirmation is pending', async () => {
+        let resolveConfirmation: ((result: { confirmed: boolean }) => void) | undefined;
+        mockConfirm.mockImplementationOnce(
+            () =>
+                new Promise<{ confirmed: boolean }>((resolve) => {
+                    resolveConfirmation = resolve;
+                })
+        );
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+        const unarchiveButton = await screen.findByRole('button', { name: 'Unarchive' });
+
+        act(() => {
+            unarchiveButton.click();
+            unarchiveButton.click();
+        });
+
+        await waitFor(() => expect(mockConfirm).toHaveBeenCalledOnce());
+        expect(
+            fetch.mock.calls.filter(([url]) => String(url).endsWith('/archived-job-applications/1/relation-summary'))
+        ).toHaveLength(1);
+        expect(unarchiveButton).toBeDisabled();
+
+        await act(async () => {
+            resolveConfirmation?.({ confirmed: false });
+        });
+        await waitFor(() => expect(unarchiveButton).toBeEnabled());
     });
 
     test('renders the archived application empty state with no data', async () => {
@@ -910,6 +1034,33 @@ describe('Archived job application viewing flow', () => {
         );
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
+    });
+
+    test('hides collection actions when filters hide every archived application', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/archived-job-applications/summary')) {
+                return response({ application_count: 3, related_interview_count: 1 });
+            }
+            return response([]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { initialPreferences: { archived_application_job_statuses: ['Offer'] } }
+        );
+
+        expect(
+            await screen.findByRole('heading', { name: 'No archived applications match your filters' })
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Archived application view and management controls' }).children
+        ).toHaveLength(1);
+        expect(
+            fetch.mock.calls.filter(([url]) => String(url).endsWith('/archived-job-applications/summary'))
+        ).toHaveLength(0);
     });
 
     test('clears archived application filters and refreshes board results', async () => {

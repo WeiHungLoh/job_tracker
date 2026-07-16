@@ -6,7 +6,7 @@ export type InterviewTimeFilter = 'Upcoming Interviews' | 'Past Interviews';
 
 export const INTERVIEW_TIME_FILTERS: readonly InterviewTimeFilter[] = ['Upcoming Interviews', 'Past Interviews'];
 
-type InterviewTimingSource = {
+export type InterviewTimingSource = {
     interview_date: string;
     interview_duration_minutes: number;
 };
@@ -142,3 +142,43 @@ export const getUpcomingInterviews = <Interview extends InterviewTimingSource>(
     interviews: readonly Interview[],
     now = new Date()
 ): Interview[] => filterAndSortInterviews(interviews, ['Upcoming Interviews'], now);
+
+export const interviewTimesOverlap = (
+    firstInterview: InterviewTimingSource,
+    secondInterview: InterviewTimingSource,
+    now = new Date()
+): boolean => {
+    const firstTiming = getInterviewTiming(firstInterview, now);
+    const secondTiming = getInterviewTiming(secondInterview, now);
+
+    return (
+        firstTiming.isValid &&
+        secondTiming.isValid &&
+        firstTiming.start.getTime() < secondTiming.end.getTime() &&
+        secondTiming.start.getTime() < firstTiming.end.getTime()
+    );
+};
+
+type IdentifiedInterviewTimingSource = InterviewTimingSource & {
+    interview_id: number;
+};
+
+export const findInterviewSchedulingConflicts = <Interview extends IdentifiedInterviewTimingSource>(
+    interviews: readonly Interview[],
+    proposedInterview: InterviewTimingSource,
+    now = new Date()
+): Interview[] => {
+    const proposedTiming = getInterviewTiming(proposedInterview, now);
+    if (!proposedTiming.isValid || proposedTiming.start.getTime() < now.getTime()) {
+        return [];
+    }
+
+    return interviews
+        .filter((interview) => interviewTimesOverlap(proposedInterview, interview, now))
+        .sort((firstInterview, secondInterview) => {
+            const startDifference =
+                getInterviewTiming(firstInterview, now).start.getTime() -
+                getInterviewTiming(secondInterview, now).start.getTime();
+            return startDifference || firstInterview.interview_id - secondInterview.interview_id;
+        });
+};

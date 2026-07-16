@@ -1,5 +1,6 @@
 import type {
     ApplicationCollectionSummary,
+    ApplicationRelationSummary,
     JobApplication,
     JobStatus,
     JobStatusCount,
@@ -23,6 +24,21 @@ export type CreateApplicationRequest = {
     jobStatus: JobStatus;
     jobLocation: string;
     jobURL: string;
+    allowDuplicate?: boolean;
+};
+
+export type DuplicateApplicationCode = 'POSSIBLE_DUPLICATE_APPLICATION';
+
+export type DuplicateApplicationDetails = {
+    company_name: string;
+    job_title: string;
+    application_date: string;
+};
+
+export type DuplicateApplicationErrorResponse = {
+    code: DuplicateApplicationCode;
+    message: string;
+    duplicate: DuplicateApplicationDetails;
 };
 
 export type UpdateNotesRequest = {
@@ -33,8 +49,9 @@ export type UpdateApplicationStatusRequest = {
     jobStatus: JobStatus;
 };
 
-export type CreateApplicationResponse = string | ErrorResponse;
+export type CreateApplicationResponse = string | DuplicateApplicationErrorResponse | ErrorResponse;
 export type ListApplicationsResponse = JobApplication[] | ErrorResponse;
 export type ListJobStatusCountsResponse = JobStatusCount[] | ErrorResponse;
 export type ListWeeklyApplicationsResponse = WeeklyApplicationCount[] | ErrorResponse;
 export type GetApplicationCollectionSummaryResponse = ApplicationCollectionSummary | ErrorResponse;
+export type GetApplicationRelationSummaryResponse = ApplicationRelationSummary | ErrorResponse;

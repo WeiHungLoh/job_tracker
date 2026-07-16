@@ -1,10 +1,64 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import AddApplication from '../../../pages/application/jobApplication/addApplication/AddApplication';
 import { MemoryRouter } from 'react-router-dom';
-import { render } from '../../renderWithToast';
+import { render as renderWithToast } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
+import { ConfirmProvider } from 'material-ui-confirm';
+import { defaultConfirmOptions } from '../../../components/confirmation/defaultConfirmOptions';
+import formatDate from '../../../helper/dateFormatter';
 
 globalThis.fetch = vi.fn();
+
+const DUPLICATE_APPLICATION = {
+    company_name: 'Morgan Stanley',
+    job_title: 'Software Engineer',
+    application_date: '2026-03-03T02:30:00.000Z',
+};
+
+const duplicateResponse = (
+    data: unknown = {
+        code: 'POSSIBLE_DUPLICATE_APPLICATION',
+        message: 'A possible duplicate job application already exists.',
+        duplicate: DUPLICATE_APPLICATION,
+    }
+) => ({
+    ok: false,
+    status: 409,
+    statusText: 'Conflict',
+    headers: new Headers({ 'content-type': 'application/json' }),
+    json: async () => data,
+});
+
+const successResponse = () => ({
+    ok: true,
+    status: 201,
+    headers: new Headers({ 'content-type': 'text/plain' }),
+    text: async () => 'Successfully added a job application!',
+});
+
+const render = (ui: ReactNode) =>
+    renderWithToast(<ConfirmProvider defaultOptions={defaultConfirmOptions}>{ui}</ConfirmProvider>);
+
+const fillCompleteApplicationForm = () => {
+    userEvent.type(screen.getByLabelText(/company name/i), '  Morgan Stanley  ');
+    userEvent.type(screen.getByLabelText(/job title/i), '  Software Engineer  ');
+    userEvent.selectOptions(screen.getByLabelText(/job status/i), 'Interview');
+    fireEvent.change(screen.getByLabelText(/application date/i), {
+        target: { value: '2025-08-03T14:30' },
+    });
+    userEvent.type(screen.getByLabelText(/job location/i), '  Singapore  ');
+    userEvent.type(screen.getByLabelText(/job posting url/i), '  https://example.com/jobs/1  ');
+};
+
+const expectCompleteApplicationFormValues = () => {
+    expect(screen.getByLabelText(/company name/i)).toHaveValue('  Morgan Stanley  ');
+    expect(screen.getByLabelText(/job title/i)).toHaveValue('  Software Engineer  ');
+    expect(screen.getByLabelText(/job status/i)).toHaveValue('Interview');
+    expect(screen.getByLabelText(/application date/i)).toHaveValue('2025-08-03T14:30');
+    expect(screen.getByLabelText(/job location/i)).toHaveValue('  Singapore  ');
+    expect(screen.getByLabelText(/job posting url/i)).toHaveValue('  https://example.com/jobs/1  ');
+};
 
 describe('User add application flow', () => {
     beforeEach(() => {
@@ -110,6 +164,7 @@ describe('User add application flow', () => {
         expect(jobTitleInput).toHaveAttribute('aria-describedby', jobTitleError.id);
         expect(document.activeElement).toBe(companyNameInput);
         expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -368,5 +423,216 @@ describe('User add application flow', () => {
         await waitFor(() => expect(screen.getByText('Failed to add a job application')).toBeInTheDocument());
         expect(screen.getByLabelText(/company name/i)).toHaveValue('ABC Pte Ltd');
         expect(screen.getByLabelText(/job title/i)).toHaveValue('Cleaner');
+    });
+
+    test('shows duplicate details with exactly Cancel and Add Anyway actions', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse());
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/company name/i), 'Morgan Stanley');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Software Engineer');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        const dialog = await screen.findByRole('dialog');
+        const formattedApplicationDate = formatDate(DUPLICATE_APPLICATION.application_date).formattedDate;
+
+        expect(within(dialog).getByRole('heading', { name: 'Possible Duplicate Application' })).toBeInTheDocument();
+        expect(dialog).toHaveTextContent(DUPLICATE_APPLICATION.company_name);
+        expect(dialog).toHaveTextContent(DUPLICATE_APPLICATION.job_title);
+        expect(dialog).toHaveTextContent(formattedApplicationDate);
+        expect(within(dialog).getAllByRole('button')).toHaveLength(2);
+        expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', { name: 'Add Anyway' })).toBeInTheDocument();
+        expect(within(dialog).queryByRole('button', { name: /view existing/i })).not.toBeInTheDocument();
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+    });
+
+    test('cancels a duplicate submission without retrying, resetting, or showing a toast', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse());
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        fillCompleteApplicationForm();
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+        userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expectCompleteApplicationFormValues();
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+    });
+
+    test('closes a duplicate dialog with Escape without retrying, resetting, or showing a toast', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse());
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        fillCompleteApplicationForm();
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+        const dialog = await screen.findByRole('dialog');
+        fireEvent.keyDown(dialog, { key: 'Escape' });
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expectCompleteApplicationFormValues();
+        expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
+    });
+
+    test('adds anyway with the same normalized request, then shows success and resets once', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse()).mockResolvedValueOnce(successResponse());
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        fillCompleteApplicationForm();
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+        userEvent.click(await screen.findByRole('button', { name: 'Add Anyway' }));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+        const expectedRequest = {
+            appDate: new Date(2025, 7, 3, 14, 30).toISOString(),
+            companyName: 'Morgan Stanley',
+            jobLocation: 'Singapore',
+            jobStatus: 'Interview',
+            jobTitle: 'Software Engineer',
+            jobURL: 'https://example.com/jobs/1',
+        };
+        const firstRequest = fetch.mock.calls[0][1] as RequestInit;
+        const confirmedRequest = fetch.mock.calls[1][1] as RequestInit;
+        expect(JSON.parse(firstRequest.body as string)).toEqual(expectedRequest);
+        expect(JSON.parse(confirmedRequest.body as string)).toEqual({ ...expectedRequest, allowDuplicate: true });
+
+        await waitFor(() => expect(screen.getByText('Successfully added a job application!')).toBeInTheDocument());
+        expect(screen.getAllByTestId('toast')).toHaveLength(1);
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job status/i)).toHaveValue('Applied');
+        expect(screen.getByLabelText(/application date/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job posting url/i)).toHaveValue('');
+    });
+
+    test('confirms Add Anyway with Enter exactly once using the original normalized request', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse()).mockResolvedValueOnce(successResponse());
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/company name/i), '  Morgan Stanley  ');
+        userEvent.type(screen.getByLabelText(/job title/i), '  Software Engineer  ');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        const addAnywayButton = await screen.findByRole('button', { name: 'Add Anyway' });
+        await waitFor(() => expect(addAnywayButton).toHaveFocus());
+        userEvent.keyboard('{enter}');
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+        const firstRequest = JSON.parse((fetch.mock.calls[0][1] as RequestInit).body as string);
+        const confirmedRequest = JSON.parse((fetch.mock.calls[1][1] as RequestInit).body as string);
+        const { allowDuplicate, ...confirmedRequestWithoutOverride } = confirmedRequest;
+        expect(firstRequest).not.toHaveProperty('allowDuplicate');
+        expect(allowDuplicate).toBe(true);
+        expect(confirmedRequestWithoutOverride).toEqual(firstRequest);
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    test('shows the standard error toast and preserves values when Add Anyway fails', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse()).mockResolvedValueOnce({
+            headers: new Headers({ 'content-type': 'text/plain' }),
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+            text: async () => 'Failed to add a job application',
+        });
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        fillCompleteApplicationForm();
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+        userEvent.click(await screen.findByRole('button', { name: 'Add Anyway' }));
+
+        await waitFor(() => expect(screen.getByText('Failed to add a job application')).toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(2);
+        expectCompleteApplicationFormValues();
+        expect(screen.getAllByTestId('toast')).toHaveLength(1);
+    });
+
+    test('handles a malformed duplicate conflict as a normal request error without opening a dialog', async () => {
+        fetch.mockResolvedValueOnce(
+            duplicateResponse({
+                code: 'POSSIBLE_DUPLICATE_APPLICATION',
+                message: 'Malformed duplicate response',
+                duplicate: {
+                    ...DUPLICATE_APPLICATION,
+                    application_date: 'not-a-date',
+                },
+            })
+        );
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/company name/i), 'Morgan Stanley');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Software Engineer');
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(screen.getByText('Malformed duplicate response')).toBeInTheDocument());
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    test('keeps one submission pending through the duplicate dialog', async () => {
+        fetch.mockResolvedValueOnce(duplicateResponse());
+
+        render(
+            <MemoryRouter>
+                <AddApplication />
+            </MemoryRouter>
+        );
+
+        userEvent.type(screen.getByLabelText(/company name/i), 'Morgan Stanley');
+        userEvent.type(screen.getByLabelText(/job title/i), 'Software Engineer');
+        const form = screen.getByRole('button', { name: /add job application/i }).closest('form');
+        expect(form).not.toBeNull();
+
+        fireEvent.submit(form!);
+        fireEvent.submit(form!);
+
+        await screen.findByRole('dialog');
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(screen.getAllByRole('dialog')).toHaveLength(1);
+
+        fireEvent.submit(form!);
+        expect(fetch).toHaveBeenCalledTimes(1);
+        userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(screen.getByRole('button', { name: /add job application/i })).not.toHaveAttribute('aria-busy');
     });
 });

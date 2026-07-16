@@ -109,17 +109,62 @@ describe('makeJobTrackerAPIRequest', () => {
         expect(result).toEqual({ applications: 2 });
     });
 
-    test('throws the parsed backend error for a non-success response', async () => {
-        fetch.mockResolvedValueOnce(response({ message: 'Invalid request' }, false, 400));
+    test('retains the parsed structured body on a non-success response', async () => {
+        const errorBody = {
+            code: 'POSSIBLE_DUPLICATE_APPLICATION',
+            message: 'Possible duplicate application found.',
+            duplicate: {
+                company_name: 'Morgan Stanley',
+                job_title: 'Software Engineer',
+                application_date: '2026-03-03T10:30:00.000Z',
+            },
+        };
+        fetch.mockResolvedValueOnce(response(errorBody, false, 409));
 
         await expect(
-            makeJobTrackerAPIRequest<null, { message: string }>(null, {
+            makeJobTrackerAPIRequest<null, typeof errorBody>(null, {
                 url: '/applications',
                 verb: 'GET',
             })
         ).rejects.toEqual(
             expect.objectContaining<JobTrackerAPIError>({
+                data: errorBody,
+                message: 'Possible duplicate application found.',
+                status: 409,
+            })
+        );
+    });
+
+    test('preserves a plain-text backend error message', async () => {
+        fetch.mockResolvedValueOnce(response('Invalid request', false, 400));
+
+        await expect(
+            makeJobTrackerAPIRequest<null, string>(null, {
+                url: '/applications',
+                verb: 'GET',
+            })
+        ).rejects.toEqual(
+            expect.objectContaining<JobTrackerAPIError>({
+                data: 'Invalid request',
                 message: 'Invalid request',
+                status: 400,
+            })
+        );
+    });
+
+    test('preserves JSON detail error-message selection', async () => {
+        const errorBody = { detail: 'Application details are invalid.', field: 'companyName' };
+        fetch.mockResolvedValueOnce(response(errorBody, false, 400));
+
+        await expect(
+            makeJobTrackerAPIRequest<null, typeof errorBody>(null, {
+                url: '/applications',
+                verb: 'GET',
+            })
+        ).rejects.toEqual(
+            expect.objectContaining<JobTrackerAPIError>({
+                data: errorBody,
+                message: 'Application details are invalid.',
                 status: 400,
             })
         );
