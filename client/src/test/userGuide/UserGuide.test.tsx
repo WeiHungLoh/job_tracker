@@ -44,6 +44,14 @@ describe('renders user guide properly', () => {
         expect(screen.getByText(/job URLs are limited to 2048 characters/i)).toBeVisible();
         expect(screen.getByText(/standard card list and the board layout/i)).toBeVisible();
         expect(screen.getByText(/active application board groups cards by status/i)).toBeVisible();
+        expect(screen.getByRole('heading', { name: /quick capture from a job posting/i })).toBeVisible();
+        expect(screen.getByRole('link', { name: /save to job tracker/i })).toBeVisible();
+        expect(screen.getByText(/sign in to job tracker before using quick capture/i)).toBeVisible();
+        expect(screen.getByText(/desktop browser(?:'|’)s bookmarks bar/i)).toBeVisible();
+        expect(screen.getByText(/job posting url is prefilled/i)).toBeVisible();
+        expect(screen.getByText(/browser-tab title is shown only as a reference/i)).toBeVisible();
+        expect(screen.getByText(/complete the remaining fields manually/i)).toBeVisible();
+        expect(screen.getByText(/copy the job page url and paste it/i)).toBeVisible();
         expect(screen.getByText(/quick visual overview/i)).not.toBeVisible();
 
         await userEvent.click(screen.getByRole('button', { name: /^interviews$/i }));

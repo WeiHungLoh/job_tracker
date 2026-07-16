@@ -2,6 +2,35 @@
     composes: formPage from '../../../../components/formPage/FormPage.module.css';
 }
 
+.capturedPageTitle {
+    padding: var(--spaceCompact) var(--spaceCard);
+    margin-bottom: var(--spaceCard);
+    border: 1px solid var(--colorCardBorder);
+    border-left: 4px solid var(--colorPrimary);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+    overflow-wrap: anywhere;
+}
+
+.capturedPageTitleLabel {
+    margin: 0;
+    color: var(--colorPrimary);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 700;
+}
+
+.capturedPageTitleValue {
+    margin: var(--spaceControl) 0 0;
+    color: var(--colorText);
+    font-weight: 600;
+}
+
+.capturedPageTitleHelp {
+    margin: var(--spaceControl) 0 0;
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeCompactControl);
+}
+
 .submitButton {
     composes: actions from '../../../../components/formPage/FormPage.module.css';
 }

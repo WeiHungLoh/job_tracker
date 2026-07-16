@@ -1,0 +1,38 @@
+.quickCaptureBookmarklet {
+    margin: var(--spaceCard) 0;
+}
+
+.quickCaptureBookmarklet p {
+    margin-bottom: var(--spaceCompact);
+}
+
+.bookmarkletLink.bookmarkletLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spaceControl) var(--spaceCompact);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorPrimary);
+    color: var(--colorBtnPrimaryText);
+    cursor: grab;
+    font-size: var(--fontSizeControl);
+    font-weight: 600;
+    line-height: normal;
+    text-align: center;
+    text-decoration: none;
+}
+
+.bookmarkletLink.bookmarkletLink:hover {
+    background-color: var(--colorPrimaryHover);
+    color: var(--colorBtnPrimaryText);
+}
+
+.bookmarkletLink.bookmarkletLink:focus-visible {
+    border-radius: var(--radiusControl);
+    outline: 3px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 3px;
+}
+
+.bookmarkletLink.bookmarkletLink:active {
+    cursor: grabbing;
+}

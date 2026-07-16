@@ -6,6 +6,7 @@ import { routes } from '../../routes';
 import styles from './UserGuide.module.css';
 import { useState } from 'react';
 import { FIELD_MAX_LENGTHS, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../../helper/formValidation';
+import QuickCaptureBookmarklet from './components/quickCaptureBookmarklet/QuickCaptureBookmarklet';
 
 const guideSections: readonly UserGuideSection[] = [
     {
@@ -148,6 +149,28 @@ const guideSections: readonly UserGuideSection[] = [
                     </li>
                 </ul>
                 <p>If the server rejects the submission, the entered application details remain in the form.</p>
+                <h3>Quick capture from a job posting</h3>
+                <p>
+                    Sign in to Job Tracker before using Quick Capture. In a desktop browser, make the bookmarks bar
+                    visible, then install the bookmark once:
+                </p>
+                <QuickCaptureBookmarklet />
+                <ol>
+                    <li>Visit a job advertisement and select the saved bookmark.</li>
+                    <li>Job Tracker opens the Add Application page in a new tab.</li>
+                    <li>The Job Posting URL is prefilled from the current page.</li>
+                    <li>The browser-tab title is shown only as a reference.</li>
+                    <li>Verify the title and complete the remaining fields manually before submitting.</li>
+                </ol>
+                <p>
+                    Quick Capture reads only the current top-level URL and browser-tab title. It does not inspect an
+                    Easy Apply modal or embedded iframe. Some portals may also use temporary or session-dependent URLs.
+                </p>
+                <p>
+                    Quick Capture works on most standard desktop job pages. Some websites or browser security settings
+                    may block bookmarklets. If it does not open, copy the job page URL and paste it into the Job Posting
+                    URL field manually.
+                </p>
                 <h3>View job applications</h3>
                 <p>
                     The application viewer lets you delete applications, edit their status and open their original job

@@ -165,11 +165,13 @@
 }
 
 .accordionPanel p:last-child,
-.accordionPanel ul:last-child {
+.accordionPanel ul:last-child,
+.accordionPanel ol:last-child {
     margin-bottom: 0;
 }
 
-.accordionPanel ul {
+.accordionPanel ul,
+.accordionPanel ol {
     margin: 0 0 14px;
     padding-left: 24px;
 }
