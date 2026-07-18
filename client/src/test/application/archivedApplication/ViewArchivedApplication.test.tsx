@@ -721,6 +721,97 @@ describe('Archived job application viewing flow', () => {
         expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
     });
 
+    test('ignores an older filter response after a newer selection has finished', async () => {
+        let resolveOlderFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        const olderApplication = { ...mockApplication, company_name: 'Older result' };
+        const latestApplication = { ...mockApplication, company_name: 'Latest result' };
+
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/archived-job-applications?jobStatuses=Offer')) {
+                return new Promise((resolve) => {
+                    resolveOlderFilter = resolve;
+                });
+            }
+            if (url.endsWith('/archived-job-applications?jobStatuses=Offer&jobStatuses=Accepted')) {
+                return response([latestApplication]);
+            }
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Accepted' }));
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. Latest result' })).toBeInTheDocument();
+
+        await act(async () => resolveOlderFilter(response([olderApplication])));
+
+        await waitFor(() =>
+            expect(screen.queryByRole('heading', { level: 2, name: '1. Older result' })).not.toBeInTheDocument()
+        );
+        expect(screen.getByRole('heading', { level: 2, name: '1. Latest result' })).toBeInTheDocument();
+    });
+
+    test('restores the newest persisted filter result when a later filter request fails', async () => {
+        let resolveOlderPreference: (preferences: UserPreferences) => void = () => undefined;
+        let resolveLatestFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        const olderApplication = { ...mockApplication, company_name: 'Persisted result' };
+        const updatePreferences = vi.fn(
+            () =>
+                new Promise<UserPreferences>((resolve) => {
+                    resolveOlderPreference = resolve;
+                })
+        );
+
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/archived-job-applications?jobStatuses=Offer')) {
+                return response([olderApplication]);
+            }
+            if (url.endsWith('/archived-job-applications?jobStatuses=Offer&jobStatuses=Accepted')) {
+                return new Promise((resolve) => {
+                    resolveLatestFilter = resolve;
+                });
+            }
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenCalledWith({ archived_application_job_statuses: ['Offer'] })
+        );
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Accepted' }));
+
+        await act(async () =>
+            resolveOlderPreference({
+                ...mockPreferences,
+                archived_application_job_statuses: ['Offer'],
+            })
+        );
+        await act(async () => resolveLatestFilter(response({ message: 'Unable to filter.' }, 400)));
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. Persisted result' })).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Accepted' })).not.toBeChecked();
+    });
+
     test('shows the board skeleton during the initial fetch in board view', async () => {
         fetch.mockImplementation(async () => await new Promise<ReturnType<typeof response>>(() => undefined));
 
@@ -925,7 +1016,7 @@ describe('Archived job application viewing flow', () => {
     test('does not confirm or mutate when an archived relation summary fails', async () => {
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/archived-job-applications/1/relation-summary')) {
-                return response({ message: 'Unable to inspect this archived application.' }, 500);
+                return response({ message: 'Unable to inspect this archived application.' }, 400);
             }
             if (url.endsWith('/archived-job-applications/summary')) {
                 return response({ application_count: 1, related_interview_count: 0 });

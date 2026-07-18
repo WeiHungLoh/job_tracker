@@ -86,9 +86,13 @@ const ApplicationBoard = ({
     hasInterview,
     isArchivingApplication,
     isUpdatingApplicationStatus,
+    noteSaveStatuses,
     onArchive,
     onDelete,
     onEditNotes,
+    onNotesBlur,
+    onNotesVisibilityChange,
+    onRetryNotes,
     onStatusChange,
     selectedJobStatuses,
     upcomingInterviewCountByJob,
@@ -181,9 +185,13 @@ const ApplicationBoard = ({
                                     isUpdatingStatus={isUpdatingApplicationStatus(application.job_id)}
                                     key={application.job_id}
                                     note={editedNotes[application.job_id] ?? application.notes}
+                                    noteSaveStatus={noteSaveStatuses[application.job_id] ?? 'idle'}
                                     onArchive={onArchive}
                                     onDelete={onDelete}
                                     onEditNotes={onEditNotes}
+                                    onNotesBlur={onNotesBlur}
+                                    onNotesVisibilityChange={onNotesVisibilityChange}
+                                    onRetryNotes={onRetryNotes}
                                     onStatusChange={onStatusChange}
                                     upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}
                                 />

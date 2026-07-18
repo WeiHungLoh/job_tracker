@@ -50,6 +50,10 @@
     composes: notes from '../../application/ApplicationCard.module.css';
 }
 
+.notesEditor {
+    composes: notesEditor from '../../application/ApplicationCard.module.css';
+}
+
 .location {
     composes: location from '../../application/ApplicationCard.module.css';
 }

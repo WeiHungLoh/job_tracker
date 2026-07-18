@@ -172,4 +172,40 @@ describe('ActivityControls', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         expect(screen.getByRole('checkbox', { name: 'Show All' })).toBePartiallyChecked();
     });
+
+    test('reflects externally saved filters while an older selection is still pending', async () => {
+        let resolveSelection!: (saved: boolean) => void;
+        const onSelectionChange = vi.fn(
+            () =>
+                new Promise<boolean>((resolve) => {
+                    resolveSelection = resolve;
+                })
+        );
+        const { rerender } = render(
+            <CheckboxFilter
+                buttonLabel='Filter by'
+                id='status-filter'
+                onSelectionChange={onSelectionChange}
+                options={['Applied', 'Offer']}
+                selectedOptions={['Applied', 'Offer']}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+
+        rerender(
+            <CheckboxFilter
+                buttonLabel='Filter by'
+                id='status-filter'
+                onSelectionChange={onSelectionChange}
+                options={['Applied', 'Offer']}
+                selectedOptions={['Applied', 'Offer']}
+            />
+        );
+
+        expect(screen.getByRole('checkbox', { name: 'Show All' })).toBeChecked();
+        resolveSelection(true);
+    });
 });

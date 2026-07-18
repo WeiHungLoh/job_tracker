@@ -19,6 +19,7 @@ import {
 import type { JobApplication, JobStatus } from '../../../../application/models';
 import styles from '../../applicationBoard/DemoApplicationBoard.module.css';
 import applicationBoardStyles from '../../../../application/applicationBoard/ApplicationBoard.module.css';
+import type { NoteSaveStatus } from '../../../../../hooks/useAutosaveNotes';
 
 const SCROLL_BOUNDARY_TOLERANCE = 1;
 
@@ -28,9 +29,13 @@ type DemoApplicationBoardProps = {
     editedNotes: Record<number, string>;
     hasInterview: (jobId: number) => boolean;
     isArchivingApplication: (jobId: number) => boolean;
+    noteSaveStatuses: Record<number, NoteSaveStatus>;
     onArchive: (jobId: number) => void | Promise<void>;
     onDelete: (jobId: number) => void | Promise<void>;
     onEditNotes: (jobId: number, notes: string) => void;
+    onNotesBlur: (jobId: number) => void;
+    onNotesVisibilityChange: (jobId: number, isVisible: boolean) => void;
+    onRetryNotes: (jobId: number) => void;
     onStatusChange: (application: JobApplication, jobStatus: JobStatus) => void | Promise<void>;
     selectedJobStatuses: readonly JobStatus[];
     upcomingInterviewCountByJob: Record<number, number>;
@@ -100,9 +105,13 @@ const DemoApplicationBoard = ({
     editedNotes,
     hasInterview,
     isArchivingApplication,
+    noteSaveStatuses,
     onArchive,
     onDelete,
     onEditNotes,
+    onNotesBlur,
+    onNotesVisibilityChange,
+    onRetryNotes,
     onStatusChange,
     selectedJobStatuses,
     upcomingInterviewCountByJob,
@@ -194,9 +203,13 @@ const DemoApplicationBoard = ({
                                     isDeleting={deletingApplicationIds.has(application.job_id)}
                                     key={application.job_id}
                                     note={editedNotes[application.job_id] ?? application.notes}
+                                    noteSaveStatus={noteSaveStatuses[application.job_id] ?? 'idle'}
                                     onArchive={onArchive}
                                     onDelete={onDelete}
                                     onEditNotes={onEditNotes}
+                                    onNotesBlur={onNotesBlur}
+                                    onNotesVisibilityChange={onNotesVisibilityChange}
+                                    onRetryNotes={onRetryNotes}
                                     onStatusChange={onStatusChange}
                                     upcomingInterviewCount={upcomingInterviewCountByJob[application.job_id] ?? 0}
                                 />

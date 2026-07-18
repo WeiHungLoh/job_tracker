@@ -5,6 +5,7 @@ type BoardCardActionsProps = PropsWithChildren<{
     actions: ReactNode;
     compactActions?: boolean;
     compactPanelSpacing?: boolean;
+    onOpenChange?: (isOpen: boolean) => void;
 }>;
 
 const BoardCardActions = ({
@@ -12,8 +13,12 @@ const BoardCardActions = ({
     children,
     compactActions = false,
     compactPanelSpacing = false,
+    onOpenChange,
 }: BoardCardActionsProps) => (
-    <details className={`${styles.actions} ${compactPanelSpacing ? styles.compactPanelSpacing : ''}`}>
+    <details
+        className={`${styles.actions} ${compactPanelSpacing ? styles.compactPanelSpacing : ''}`}
+        onToggle={(event) => onOpenChange?.(event.currentTarget.open)}
+    >
         <summary>Actions</summary>
         <div className={styles.actionPanel}>
             {children}

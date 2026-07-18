@@ -14,6 +14,7 @@ import ViewInterview from './pages/interview/jobInterview/viewInterview/ViewInte
 import Dashboard from './pages/dashboard/Dashboard';
 import SignUp from './pages/authentication/signUp/SignUp';
 import { routes } from './routes';
+import QuickCaptureProvider from './pages/application/jobApplication/QuickCaptureProvider';
 
 const UserGuide = lazy(() => import('./pages/userGuide/UserGuide'));
 const DemoLayout = lazy(() => import('./pages/demo/components/demoLayout/DemoLayout'));
@@ -41,38 +42,43 @@ export const appRoutes: RouteObject[] = [
                 element: <DemoLayout />,
             },
             {
-                element: <ProtectedRoutes />,
+                element: <QuickCaptureProvider />,
                 children: [
                     {
-                        element: <ProtectedLayout />,
+                        element: <ProtectedRoutes />,
                         children: [
                             {
-                                path: routes.dashboard,
-                                element: <Dashboard />,
-                            },
-                            {
-                                path: routes.addApplication,
-                                element: <AddApplication />,
-                            },
-                            {
-                                path: routes.viewApplications,
-                                element: <ViewApplication />,
-                            },
-                            {
-                                path: routes.addInterview,
-                                element: <AddInterview />,
-                            },
-                            {
-                                path: routes.viewInterviews,
-                                element: <ViewInterview />,
-                            },
-                            {
-                                path: routes.archivedApplications,
-                                element: <ViewArchivedApplication />,
-                            },
-                            {
-                                path: routes.archivedInterviews,
-                                element: <ViewArchivedInterview />,
+                                element: <ProtectedLayout />,
+                                children: [
+                                    {
+                                        path: routes.dashboard,
+                                        element: <Dashboard />,
+                                    },
+                                    {
+                                        path: routes.addApplication,
+                                        element: <AddApplication />,
+                                    },
+                                    {
+                                        path: routes.viewApplications,
+                                        element: <ViewApplication />,
+                                    },
+                                    {
+                                        path: routes.addInterview,
+                                        element: <AddInterview />,
+                                    },
+                                    {
+                                        path: routes.viewInterviews,
+                                        element: <ViewInterview />,
+                                    },
+                                    {
+                                        path: routes.archivedApplications,
+                                        element: <ViewArchivedApplication />,
+                                    },
+                                    {
+                                        path: routes.archivedInterviews,
+                                        element: <ViewArchivedInterview />,
+                                    },
+                                ],
                             },
                         ],
                     },

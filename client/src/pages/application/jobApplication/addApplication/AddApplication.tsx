@@ -7,7 +7,7 @@ import { MAX_DATETIME_LOCAL, MIN_DATETIME_LOCAL } from '../../../../helper/dateF
 import { routes } from '../../../../routes';
 import styles from './AddApplication.module.css';
 import { useJobTrackerAPI } from '../../../../api/useJobTrackerAPI';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../../components/toast/ToastProvider';
 import { JOB_STATUSES, type CreateApplicationRequest, type JobStatus } from '../../models';
@@ -20,23 +20,17 @@ import {
 import { useConfirm } from 'material-ui-confirm';
 import { isDuplicateApplicationError } from '../../possibleDuplicateApplication';
 import { createDuplicateApplicationConfirmation } from '../../../../helper/duplicateApplicationConfirmation';
-import {
-    MAX_CAPTURED_PAGE_TITLE_LENGTH,
-    QUICK_CAPTURE_JOB_URL_PARAM,
-    QUICK_CAPTURE_PAGE_TITLE_PARAM,
-} from '../quickCapture';
+import { useQuickCaptureData } from '../QuickCaptureProvider';
 
 const AddApplication = () => {
-    const [searchParams] = useSearchParams();
-    const capturedPageTitle = (searchParams.get(QUICK_CAPTURE_PAGE_TITLE_PARAM) ?? '')
-        .trim()
-        .slice(0, MAX_CAPTURED_PAGE_TITLE_LENGTH);
+    const quickCaptureData = useQuickCaptureData();
+    const [capturedData] = useState(quickCaptureData);
     const [companyName, setCompanyName] = useState<string>('');
     const [jobTitle, setJobTitle] = useState<string>('');
     const [jobStatus, setJobStatus] = useState<JobStatus>('Applied');
     const [applicationDate, setApplicationDate] = useState<string>('');
     const [jobLocation, setJobLocation] = useState<string>('');
-    const [jobURL, setJobURL] = useState<string>(() => searchParams.get(QUICK_CAPTURE_JOB_URL_PARAM) ?? '');
+    const [jobURL, setJobURL] = useState<string>(capturedData.jobURL);
     const { clearFieldError, errors, setErrors } = useFormErrors<ApplicationFormField>();
     const companyNameInputRef = useRef<HTMLInputElement>(null);
     const jobTitleInputRef = useRef<HTMLInputElement>(null);
@@ -135,12 +129,12 @@ const AddApplication = () => {
 
     return (
         <form className={styles.addApplication} noValidate onSubmit={handleAdd}>
-            {capturedPageTitle && (
+            {capturedData.pageTitle && (
                 <section className={styles.capturedPageTitle} aria-labelledby='captured-page-title-label'>
                     <p id='captured-page-title-label' className={styles.capturedPageTitleLabel}>
                         Captured page title
                     </p>
-                    <p className={styles.capturedPageTitleValue}>{capturedPageTitle}</p>
+                    <p className={styles.capturedPageTitleValue}>{capturedData.pageTitle}</p>
                     <p className={styles.capturedPageTitleHelp}>
                         Use this as a reference and verify the company and job title below.
                     </p>

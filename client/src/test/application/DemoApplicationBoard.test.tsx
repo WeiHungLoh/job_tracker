@@ -45,9 +45,13 @@ describe('DemoApplicationBoard', () => {
                 editedNotes={{}}
                 hasInterview={() => false}
                 isArchivingApplication={() => false}
+                noteSaveStatuses={{}}
                 onArchive={vi.fn()}
                 onDelete={vi.fn()}
                 onEditNotes={vi.fn()}
+                onNotesBlur={vi.fn()}
+                onNotesVisibilityChange={vi.fn()}
+                onRetryNotes={vi.fn()}
                 onStatusChange={vi.fn()}
                 selectedJobStatuses={JOB_STATUSES}
                 upcomingInterviewCountByJob={{}}

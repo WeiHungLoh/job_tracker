@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createApplicationCsvData } from '../../../../../helper/csvData';
 import { createApplicationRelationConfirmation } from '../../../../../helper/applicationRelationConfirmation';
@@ -47,6 +47,7 @@ import { getDashboardJobStatus } from '../../../../../helper/dashboardNavigation
 import useCurrentTime from '../../../../../hooks/useCurrentTime';
 import { shouldAutoScrollAfterStatusChange } from '../../../../application/applicationSorting';
 import usePendingIds from '../../../../../hooks/usePendingIds';
+import useAutosaveNotes from '../../../../../hooks/useAutosaveNotes';
 
 const DemoViewApplication = () => {
     const currentTime = useCurrentTime();
@@ -61,6 +62,14 @@ const DemoViewApplication = () => {
     const statusHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const { showErrorToast } = useToast();
+    const saveApplicationNotes = useCallback(
+        (jobId: number, notes: string) => {
+            dispatch({ type: 'UPDATE_APPLICATION_NOTES', payload: { jobId, notes } });
+            return Promise.resolve();
+        },
+        [dispatch]
+    );
+    const notesAutosave = useAutosaveNotes({ saveNotes: saveApplicationNotes });
     const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
     const bulkActionPendingRef = useRef(false);
     const pendingApplicationActionIdsRef = useRef<Set<number>>(new Set());
@@ -121,6 +130,9 @@ const DemoViewApplication = () => {
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
         if (nextViewMode === 'board') {
             closeStatusEditor();
+            notesAutosave.setAllNotesVisibility(false);
+        } else if (showNotes) {
+            notesAutosave.setAllNotesVisibility(true);
         }
         void updatePreferences({ application_view_mode: nextViewMode });
     };
@@ -141,13 +153,19 @@ const DemoViewApplication = () => {
         return true;
     };
 
+    const handleShowNotesToggle = () => {
+        const nextShowNotes = !showNotes;
+        notesAutosave.setAllNotesVisibility(nextShowNotes);
+        void updatePreferences({ application_show_notes: nextShowNotes });
+    };
+
     const handleEditNotes = (jobId: number, editedNotes: string) => {
         if (editedNotes.length > FIELD_MAX_LENGTHS.notes) {
             showErrorToast(`Notes must be ${FIELD_MAX_LENGTHS.notes} characters or fewer.`);
             return;
         }
 
-        dispatch({ type: 'UPDATE_APPLICATION_NOTES', payload: { jobId, notes: editedNotes } });
+        notesAutosave.editNotes(jobId, editedNotes);
     };
 
     const handleApplicationAction = async (action: 'archive' | 'delete', jobId: number) => {
@@ -175,10 +193,15 @@ const DemoViewApplication = () => {
                 return;
             }
 
+            if (action === 'archive' && !(await notesAutosave.flushNote(jobId))) {
+                return;
+            }
+
             dispatch({
                 type: action === 'archive' ? 'ARCHIVE_APPLICATION' : 'DELETE_APPLICATION',
                 payload: { jobId },
             });
+            notesAutosave.clearNoteState(jobId);
         } finally {
             pendingApplicationActionIdsRef.current.delete(jobId);
             if (action === 'archive') {
@@ -217,7 +240,12 @@ const DemoViewApplication = () => {
                 return;
             }
 
+            if (action === 'archive' && !(await notesAutosave.flushAllNotes())) {
+                return;
+            }
+
             dispatch({ type: action === 'archive' ? 'ARCHIVE_ALL_APPLICATIONS' : 'DELETE_ALL_APPLICATIONS' });
+            notesAutosave.clearAllNoteStates();
         } finally {
             bulkActionPendingRef.current = false;
             setPendingBulkAction(null);
@@ -330,15 +358,7 @@ const DemoViewApplication = () => {
                         ))}
                     {hasApplications && !isBoardView && (
                         <DisplayOptions id='demo-application-display-options'>
-                            <ToggleButton
-                                toggled={showNotes}
-                                onToggle={() =>
-                                    void updatePreferences({
-                                        application_show_notes: !showNotes,
-                                    })
-                                }
-                                label='Show notes'
-                            />
+                            <ToggleButton toggled={showNotes} onToggle={handleShowNotesToggle} label='Show notes' />
                             <ToggleButton
                                 toggled={showArchive}
                                 onToggle={() =>
@@ -368,12 +388,18 @@ const DemoViewApplication = () => {
                 <DemoApplicationBoard
                     applications={applications}
                     deletingApplicationIds={deletingApplicationIds}
-                    editedNotes={{}}
+                    editedNotes={notesAutosave.draftNotes}
                     hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
-                    isArchivingApplication={(jobId) => archivingApplicationIds.has(jobId)}
+                    isArchivingApplication={(jobId) =>
+                        pendingBulkAction === 'archive' || archivingApplicationIds.has(jobId)
+                    }
+                    noteSaveStatuses={notesAutosave.noteSaveStatuses}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
                     onEditNotes={handleEditNotes}
+                    onNotesBlur={notesAutosave.flushNote}
+                    onNotesVisibilityChange={notesAutosave.setNoteVisibility}
+                    onRetryNotes={notesAutosave.retryNotes}
                     onStatusChange={updateApplicationStatusFromBoard}
                     selectedJobStatuses={selectedJobStatuses}
                     upcomingInterviewCountByJob={upcomingInterviewCountByJob}
@@ -391,14 +417,17 @@ const DemoViewApplication = () => {
                         }
                         hasInterview={interviewJobIdSet.has(application.job_id)}
                         index={index}
-                        isArchiving={archivingApplicationIds.has(application.job_id)}
+                        isArchiving={pendingBulkAction === 'archive' || archivingApplicationIds.has(application.job_id)}
                         isDeleting={deletingApplicationIds.has(application.job_id)}
                         isEditingStatus={editingApplicationId === application.job_id}
                         key={application.job_id}
-                        note={application.notes}
+                        note={notesAutosave.draftNotes[application.job_id] ?? application.notes}
+                        noteSaveStatus={notesAutosave.noteSaveStatuses[application.job_id] ?? 'idle'}
                         onArchive={handleArchive}
                         onDelete={handleDelete}
                         onEditNotes={handleEditNotes}
+                        onNotesBlur={notesAutosave.flushNote}
+                        onRetryNotes={notesAutosave.retryNotes}
                         onJobStatusChange={setEditedJobStatus}
                         onToggleStatusEditor={handleStatusEditorToggle}
                         showArchive={showArchive}

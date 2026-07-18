@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createApplicationCsvData } from '../../../../helper/csvData';
 import { createApplicationRelationConfirmation } from '../../../../helper/applicationRelationConfirmation';
 import {
@@ -47,6 +47,8 @@ import { shouldAutoScrollAfterStatusChange, sortApplications } from '../../appli
 import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
 import { getDashboardJobStatus } from '../../../../helper/dashboardNavigation';
 import useCurrentTime from '../../../../hooks/useCurrentTime';
+import useAutosaveNotes from '../../../../hooks/useAutosaveNotes';
+import useFilterRequest from '../../../../hooks/useFilterRequest';
 
 const ViewApplication = () => {
     const currentTime = useCurrentTime();
@@ -60,12 +62,10 @@ const ViewApplication = () => {
     const [editedJobStatus, setEditedJobStatus] = useState<JobStatus | null>(null);
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const confirm = useConfirm();
-    const showNotesTimeout = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
     const statusHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const showCorrespondingAppTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const updatingStatusApplicationIdRef = useRef<Set<number>>(new Set());
     const pendingApplicationActionIdsRef = useRef<Set<number>>(new Set());
-    const [notes, setNotes] = useState<Record<number, string>>({});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isFilteringApplications, setIsFilteringApplications] = useState<boolean>(false);
     const [pendingBulkAction, setPendingBulkAction] = useState<'archive' | 'delete' | null>(null);
@@ -86,6 +86,25 @@ const ViewApplication = () => {
         stopPending: stopUpdatingApplicationStatus,
     } = usePendingIds();
     const { showErrorToast } = useToast();
+    const filterRequest = useFilterRequest<JobApplication[]>();
+    const saveApplicationNotes = useCallback(
+        async (jobId: number, editedNotes: string) => {
+            await api.application.updateNotes({ jobId, notes: editedNotes });
+            setApplications((current) =>
+                current.map((application) =>
+                    application.job_id === jobId ? { ...application, notes: editedNotes } : application
+                )
+            );
+        },
+        [api.application]
+    );
+    const handleNoteSaveError = useCallback(
+        (_jobId: number, error: unknown) => {
+            showErrorToast(getErrorToastMessage(error, 'Unable to save job application notes. Please try again.'));
+        },
+        [showErrorToast]
+    );
+    const notesAutosave = useAutosaveNotes({ onSaveError: handleNoteSaveError, saveNotes: saveApplicationNotes });
     const selectedJobStatuses = preferences.application_job_statuses;
     const showArchive = preferences.application_show_archive;
     const showNotes = preferences.application_show_notes;
@@ -128,6 +147,9 @@ const ViewApplication = () => {
     const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
         if (nextViewMode === 'board') {
             closeStatusEditor();
+            notesAutosave.setAllNotesVisibility(false);
+        } else if (showNotes) {
+            notesAutosave.setAllNotesVisibility(true);
         }
         void handlePreferenceUpdate({ application_view_mode: nextViewMode });
     };
@@ -157,20 +179,41 @@ const ViewApplication = () => {
     };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
+        const requestId = filterRequest.startRequest();
         closeStatusEditor();
         setIsFilteringApplications(true);
 
         try {
             const jobApplications = await api.application.listApplications({ jobStatuses });
-            await updatePreferences({ application_job_statuses: jobStatuses });
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
 
-            setApplications(Array.isArray(jobApplications) ? jobApplications : []);
+            await updatePreferences({ application_job_statuses: jobStatuses });
+            const savedApplications = filterRequest.saveResult(
+                requestId,
+                Array.isArray(jobApplications) ? jobApplications : []
+            );
+            if (savedApplications) {
+                setApplications(savedApplications);
+            }
+
             return true;
         } catch (error) {
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
+
+            const savedApplications = filterRequest.failRequest(requestId);
+            if (savedApplications) {
+                setApplications(savedApplications);
+            }
             showErrorToast(getErrorToastMessage(error, 'Unable to filter job applications. Please try again.'));
             return false;
         } finally {
-            setIsFilteringApplications(false);
+            if (filterRequest.isLatestRequest(requestId)) {
+                setIsFilteringApplications(false);
+            }
         }
     };
 
@@ -180,6 +223,12 @@ const ViewApplication = () => {
         } catch (error) {
             showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
         }
+    };
+
+    const handleShowNotesToggle = () => {
+        const nextShowNotes = !showNotes;
+        notesAutosave.setAllNotesVisibility(nextShowNotes);
+        void handlePreferenceUpdate({ application_show_notes: nextShowNotes });
     };
 
     useEffect(() => {
@@ -257,25 +306,7 @@ const ViewApplication = () => {
             return;
         }
 
-        setNotes((currentNotes) => ({ ...currentNotes, [jobId]: editedNotes }));
-
-        const taskId = showNotesTimeout.current[jobId];
-        if (taskId) {
-            clearTimeout(taskId);
-        }
-
-        showNotesTimeout.current[jobId] = setTimeout(async () => {
-            try {
-                await api.application.updateNotes({ jobId, notes: editedNotes });
-                setApplications((current) =>
-                    current.map((application) =>
-                        application.job_id === jobId ? { ...application, notes: editedNotes } : application
-                    )
-                );
-            } catch (error) {
-                showErrorToast(getErrorToastMessage(error, 'Unable to save job application notes. Please try again.'));
-            }
-        }, 500);
+        notesAutosave.editNotes(jobId, editedNotes);
     };
 
     const handleApplicationAction = async (action: 'archive' | 'delete', jobId: number) => {
@@ -301,11 +332,15 @@ const ViewApplication = () => {
             }
 
             if (action === 'archive') {
+                if (!(await notesAutosave.flushNote(jobId))) {
+                    return;
+                }
                 await api.archivedApplication.archiveApplication({ jobId });
             } else {
                 await api.application.deleteApplication({ jobId });
             }
 
+            notesAutosave.clearNoteState(jobId);
             setApplications((current) => current.filter((application) => application.job_id !== jobId));
             setInterviews((current) => current.filter((interview) => interview.job_id !== jobId));
         } catch (error) {
@@ -341,6 +376,7 @@ const ViewApplication = () => {
             countsLoaded = true;
 
             if (summary.application_count === 0) {
+                notesAutosave.clearAllNoteStates();
                 setApplications([]);
                 setInterviews([]);
                 return;
@@ -361,11 +397,15 @@ const ViewApplication = () => {
             }
 
             if (action === 'archive') {
+                if (!(await notesAutosave.flushAllNotes())) {
+                    return;
+                }
                 await api.archivedApplication.archiveAllApplications();
             } else {
                 await api.application.deleteAllApplications();
             }
 
+            notesAutosave.clearAllNoteStates();
             setApplications([]);
             setInterviews([]);
         } catch (error) {
@@ -382,6 +422,10 @@ const ViewApplication = () => {
     };
 
     const handleStatusEditorToggle = async (application: JobApplication) => {
+        if (updatingStatusApplicationIdRef.current.has(application.job_id)) {
+            return;
+        }
+
         const isEditing = editingApplicationId === application.job_id;
 
         if (!isEditing) {
@@ -400,6 +444,8 @@ const ViewApplication = () => {
             return;
         }
 
+        updatingStatusApplicationIdRef.current.add(application.job_id);
+        startUpdatingApplicationStatus(application.job_id);
         try {
             await api.application.updateStatus({
                 jobId: application.job_id,
@@ -425,6 +471,9 @@ const ViewApplication = () => {
             showErrorToast(
                 getErrorToastMessage(error, 'Unable to update the job application status. Please try again.')
             );
+        } finally {
+            updatingStatusApplicationIdRef.current.delete(application.job_id);
+            stopUpdatingApplicationStatus(application.job_id);
         }
     };
 
@@ -532,15 +581,7 @@ const ViewApplication = () => {
                         ))}
                     {hasApplications && !isBoardView && (
                         <DisplayOptions id='application-display-options'>
-                            <ToggleButton
-                                toggled={showNotes}
-                                onToggle={() =>
-                                    void handlePreferenceUpdate({
-                                        application_show_notes: !showNotes,
-                                    })
-                                }
-                                label='Show notes'
-                            />
+                            <ToggleButton toggled={showNotes} onToggle={handleShowNotesToggle} label='Show notes' />
                             <ToggleButton
                                 toggled={showArchive}
                                 onToggle={() =>
@@ -581,13 +622,19 @@ const ViewApplication = () => {
                         <ApplicationBoard
                             applications={displayedApplications}
                             deletingApplicationIds={deletingApplicationIds}
-                            editedNotes={notes}
+                            editedNotes={notesAutosave.draftNotes}
                             hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
-                            isArchivingApplication={(jobId) => archivingApplicationIds.has(jobId)}
+                            isArchivingApplication={(jobId) =>
+                                pendingBulkAction === 'archive' || archivingApplicationIds.has(jobId)
+                            }
                             isUpdatingApplicationStatus={(jobId) => updatingStatusApplicationIds.has(jobId)}
+                            noteSaveStatuses={notesAutosave.noteSaveStatuses}
                             onArchive={handleArchive}
                             onDelete={handleDelete}
                             onEditNotes={handleEditNotes}
+                            onNotesBlur={notesAutosave.flushNote}
+                            onNotesVisibilityChange={notesAutosave.setNoteVisibility}
+                            onRetryNotes={notesAutosave.retryNotes}
                             onStatusChange={updateApplicationStatusFromBoard}
                             selectedJobStatuses={selectedJobStatuses}
                             upcomingInterviewCountByJob={upcomingInterviewCountByJob}
@@ -605,14 +652,20 @@ const ViewApplication = () => {
                                 }
                                 hasInterview={interviewJobIdSet.has(application.job_id)}
                                 index={index}
-                                isArchiving={archivingApplicationIds.has(application.job_id)}
+                                isArchiving={
+                                    pendingBulkAction === 'archive' || archivingApplicationIds.has(application.job_id)
+                                }
                                 isDeleting={deletingApplicationIds.has(application.job_id)}
                                 isEditingStatus={editingApplicationId === application.job_id}
+                                isUpdatingStatus={updatingStatusApplicationIds.has(application.job_id)}
                                 key={application.job_id}
-                                note={notes[application.job_id] ?? application.notes}
+                                note={notesAutosave.draftNotes[application.job_id] ?? application.notes}
+                                noteSaveStatus={notesAutosave.noteSaveStatuses[application.job_id] ?? 'idle'}
                                 onArchive={handleArchive}
                                 onDelete={handleDelete}
                                 onEditNotes={handleEditNotes}
+                                onNotesBlur={notesAutosave.flushNote}
+                                onRetryNotes={notesAutosave.retryNotes}
                                 onJobStatusChange={setEditedJobStatus}
                                 onToggleStatusEditor={handleStatusEditorToggle}
                                 showArchive={showArchive}

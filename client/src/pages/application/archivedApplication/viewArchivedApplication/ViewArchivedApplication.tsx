@@ -42,6 +42,7 @@ import { createApplicationEmptyState } from '../../applicationEmptyState';
 import SortOptions from '../../../../components/activityControls/sortOptions/SortOptions';
 import { sortApplications } from '../../applicationSorting';
 import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
+import useFilterRequest from '../../../../hooks/useFilterRequest';
 
 const ViewArchivedApplication = () => {
     const api = useJobTrackerAPI();
@@ -67,6 +68,7 @@ const ViewArchivedApplication = () => {
         stopPending: stopUnarchivingApplication,
     } = usePendingIds();
     const { showErrorToast } = useToast();
+    const filterRequest = useFilterRequest<ArchivedJobApplication[]>();
     const selectedJobStatuses = preferences.archived_application_job_statuses;
     const showNotes = preferences.archived_application_show_notes;
     const viewMode = preferences.archived_application_view_mode;
@@ -122,21 +124,42 @@ const ViewArchivedApplication = () => {
     };
 
     const handleJobStatusChange = async (jobStatuses: JobStatus[]) => {
+        const requestId = filterRequest.startRequest();
         setIsFilteringApplications(true);
 
         try {
             const archivedApplications = await api.archivedApplication.listApplications({ jobStatuses });
-            await updatePreferences({ archived_application_job_statuses: jobStatuses });
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
 
-            setArchivedApplications(Array.isArray(archivedApplications) ? archivedApplications : []);
+            await updatePreferences({ archived_application_job_statuses: jobStatuses });
+            const savedApplications = filterRequest.saveResult(
+                requestId,
+                Array.isArray(archivedApplications) ? archivedApplications : []
+            );
+            if (savedApplications) {
+                setArchivedApplications(savedApplications);
+            }
+
             return true;
         } catch (error) {
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
+
+            const savedApplications = filterRequest.failRequest(requestId);
+            if (savedApplications) {
+                setArchivedApplications(savedApplications);
+            }
             showErrorToast(
                 getErrorToastMessage(error, 'Unable to filter archived job applications. Please try again.')
             );
             return false;
         } finally {
-            setIsFilteringApplications(false);
+            if (filterRequest.isLatestRequest(requestId)) {
+                setIsFilteringApplications(false);
+            }
         }
     };
 

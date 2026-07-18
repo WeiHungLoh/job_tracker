@@ -5,7 +5,7 @@ import { Outlet } from 'react-router-dom';
 import { UserPreferencesProvider } from '../userPreferences/UserPreferencesProvider';
 import { defaultConfirmOptions } from '../confirmation/defaultConfirmOptions';
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../userPreferences/models';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../toast/ToastProvider';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
@@ -15,6 +15,7 @@ const ProtectedLayout = () => {
     const { showErrorToast } = useToast();
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [preferencesError, setPreferencesError] = useState<boolean>(false);
+    const preferenceUpdateQueue = useRef<Promise<void>>(Promise.resolve());
 
     const loadPreferences = useCallback(async () => {
         setPreferencesError(false);
@@ -28,10 +29,17 @@ const ProtectedLayout = () => {
     }, [api.userPreferences, showErrorToast]);
 
     const updatePreferences = useCallback(
-        async (updatedPreferences: UpdateUserPreferencesRequest) => {
-            const savedPreferences = await api.userPreferences.update(updatedPreferences);
-            setPreferences(savedPreferences);
-            return savedPreferences;
+        (updatedPreferences: UpdateUserPreferencesRequest): Promise<UserPreferences> => {
+            const update = preferenceUpdateQueue.current.then(async () => {
+                const savedPreferences = await api.userPreferences.update(updatedPreferences);
+                setPreferences(savedPreferences);
+                return savedPreferences;
+            });
+            preferenceUpdateQueue.current = update.then(
+                () => undefined,
+                () => undefined
+            );
+            return update;
         },
         [api.userPreferences]
     );

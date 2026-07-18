@@ -1,5 +1,6 @@
 import { JobTrackerAPIError } from '../../api/models';
 import { makeAuthenticatedJobTrackerAPIRequest, makeJobTrackerAPIRequest } from '../../api/api';
+import { endpointConfig } from '../../api/endpointConfig';
 
 globalThis.fetch = vi.fn();
 
@@ -21,6 +22,23 @@ describe('makeJobTrackerAPIRequest', () => {
     beforeEach(() => {
         fetch.mockReset();
         fetch.mockResolvedValue(response());
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    test('opts read and absolute-update endpoints into retries without retrying state transitions', () => {
+        expect(endpointConfig.application.listApplications.retry).toBe(true);
+        expect(endpointConfig.application.updateNotes.retry).toBe(true);
+        expect(endpointConfig.application.updateStatus.retry).toBe(true);
+        expect(endpointConfig.userPreferences.update.retry).toBe(true);
+
+        expect(endpointConfig.application.createApplication).not.toHaveProperty('retry');
+        expect(endpointConfig.application.deleteApplication).not.toHaveProperty('retry');
+        expect(endpointConfig.archivedApplication.archiveApplication).not.toHaveProperty('retry');
+        expect(endpointConfig.archivedApplication.unarchiveApplication).not.toHaveProperty('retry');
+        expect(endpointConfig.authentication.refresh).not.toHaveProperty('retry');
     });
 
     test('maps path and query fields while serializing remaining fields as JSON', async () => {
@@ -109,6 +127,143 @@ describe('makeJobTrackerAPIRequest', () => {
         expect(result).toEqual({ applications: 2 });
     });
 
+    test('retries an opted-in request up to three times after transient network failures', async () => {
+        vi.useFakeTimers();
+        fetch
+            .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+            .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+            .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+            .mockResolvedValueOnce(response({ applications: 2 }));
+
+        const request = makeJobTrackerAPIRequest<null, { applications: number }>(null, {
+            url: '/applications',
+            verb: 'GET',
+            retry: true,
+        });
+
+        await vi.advanceTimersByTimeAsync(2_999);
+        expect(fetch).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(fetch).toHaveBeenCalledTimes(2);
+
+        await vi.advanceTimersByTimeAsync(6_000);
+
+        await expect(request).resolves.toEqual({ applications: 2 });
+        expect(fetch).toHaveBeenCalledTimes(4);
+    });
+
+    test('retries opted-in requests after 408 and server-error responses', async () => {
+        vi.useFakeTimers();
+        fetch
+            .mockResolvedValueOnce(response({ message: 'Request timed out.' }, false, 408))
+            .mockResolvedValueOnce(response({ message: 'Service unavailable.' }, false, 503))
+            .mockResolvedValueOnce(response({ applications: 2 }));
+
+        const request = makeJobTrackerAPIRequest<null, { applications: number }>(null, {
+            url: '/applications',
+            verb: 'GET',
+            retry: true,
+        });
+
+        await vi.advanceTimersByTimeAsync(6_000);
+
+        await expect(request).resolves.toEqual({ applications: 2 });
+        expect(fetch).toHaveBeenCalledTimes(3);
+    });
+
+    test('retries an actual server-error response even when its JSON body is malformed', async () => {
+        vi.useFakeTimers();
+        fetch
+            .mockResolvedValueOnce({
+                ...response(undefined, false, 503),
+                headers: new Headers({ 'content-type': 'application/json' }),
+                json: async () => {
+                    throw new SyntaxError('Unexpected token');
+                },
+            })
+            .mockResolvedValueOnce(response({ applications: 2 }));
+
+        const request = makeJobTrackerAPIRequest<null, { applications: number }>(null, {
+            url: '/applications',
+            verb: 'GET',
+            retry: true,
+        });
+        const result = expect(request).resolves.toEqual({ applications: 2 });
+
+        await vi.advanceTimersByTimeAsync(3_000);
+
+        await result;
+        expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    test('does not retry a TypeError thrown before the network request', async () => {
+        vi.useFakeTimers();
+
+        const request = makeJobTrackerAPIRequest(
+            { value: 1n },
+            {
+                url: '/applications',
+                verb: 'PATCH',
+                retry: true,
+            }
+        );
+        const rejection = expect(request).rejects.toBeInstanceOf(TypeError);
+
+        await vi.advanceTimersByTimeAsync(0);
+        const pendingTimerCount = vi.getTimerCount();
+        await vi.runAllTimersAsync();
+
+        await rejection;
+        expect(pendingTimerCount).toBe(0);
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test.each([400, 401, 409, 422, 429, 600])(
+        'does not retry an opted-in request after a %i response',
+        async (status) => {
+            fetch.mockResolvedValueOnce(response({ message: 'Request rejected.' }, false, status));
+
+            await expect(
+                makeJobTrackerAPIRequest<null, never>(null, {
+                    url: '/applications',
+                    verb: 'GET',
+                    retry: true,
+                })
+            ).rejects.toEqual(expect.objectContaining<JobTrackerAPIError>({ status }));
+            expect(fetch).toHaveBeenCalledTimes(1);
+        }
+    );
+
+    test('does not retry a transient failure unless the endpoint opts in', async () => {
+        fetch.mockResolvedValueOnce(response({ message: 'Service unavailable.' }, false, 503));
+
+        await expect(
+            makeJobTrackerAPIRequest<null, never>(null, {
+                url: '/applications',
+                verb: 'GET',
+            })
+        ).rejects.toEqual(expect.objectContaining<JobTrackerAPIError>({ status: 503 }));
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('stops after three retries when a transient failure continues', async () => {
+        vi.useFakeTimers();
+        fetch.mockResolvedValue(response({ message: 'Service unavailable.' }, false, 503));
+
+        const request = makeJobTrackerAPIRequest<null, never>(null, {
+            url: '/applications',
+            verb: 'GET',
+            retry: true,
+        });
+        const rejection = expect(request).rejects.toEqual(expect.objectContaining<JobTrackerAPIError>({ status: 503 }));
+
+        await vi.advanceTimersByTimeAsync(9_000);
+
+        await rejection;
+        expect(fetch).toHaveBeenCalledTimes(4);
+    });
+
     test('retains the parsed structured body on a non-success response', async () => {
         const errorBody = {
             code: 'POSSIBLE_DUPLICATE_APPLICATION',
@@ -179,6 +334,7 @@ describe('makeJobTrackerAPIRequest', () => {
         const result = await makeAuthenticatedJobTrackerAPIRequest<null, { applications: number }>(null, {
             url: '/job-applications',
             verb: 'GET',
+            retry: true,
         });
 
         expect(result).toEqual({ applications: 2 });
@@ -261,6 +417,7 @@ describe('makeJobTrackerAPIRequest', () => {
             makeJobTrackerAPIRequest<null, unknown>(null, {
                 url: '/applications',
                 verb: 'GET',
+                retry: true,
             })
         ).rejects.toEqual(
             expect.objectContaining<JobTrackerAPIError>({
@@ -268,5 +425,6 @@ describe('makeJobTrackerAPIRequest', () => {
                 status: 502,
             })
         );
+        expect(fetch).toHaveBeenCalledTimes(1);
     });
 });

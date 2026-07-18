@@ -4,6 +4,7 @@ export type EndpointConfigEntry = {
     url: string;
     verb: 'DELETE' | 'GET' | 'PATCH' | 'POST';
     fieldMap?: Record<string, FieldType>;
+    retry?: boolean;
 };
 
 export type APIRequest = Record<string, unknown> | null;
@@ -17,5 +18,14 @@ export class JobTrackerAPIError extends Error {
         this.name = 'JobTrackerAPIError';
         this.status = status;
         this.data = data;
+    }
+}
+
+export class RetryableJobTrackerAPIError extends JobTrackerAPIError {}
+
+export class RetryableNetworkError extends TypeError {
+    constructor(error: TypeError) {
+        super(error.message, { cause: error });
+        this.name = error.name;
     }
 }

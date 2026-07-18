@@ -7,6 +7,7 @@ import { FIELD_MAX_LENGTHS } from '../../../../helper/formValidation';
 import { JOB_STATUS_SORT_ORDER, type JobStatus } from '../../models';
 import { getApplicationBoardStatusClassName } from '../../applicationBoard/statusClassNames';
 import type { ApplicationBoardCardProps } from './models';
+import NoteSaveStatus from '../../../../components/noteSaveStatus/NoteSaveStatus';
 import styles from '../../applicationBoard/ApplicationBoard.module.css';
 
 const ApplicationBoardCard = ({
@@ -16,9 +17,13 @@ const ApplicationBoardCard = ({
     isDeleting,
     isUpdatingStatus,
     note,
+    noteSaveStatus,
     onArchive,
     onDelete,
     onEditNotes,
+    onNotesBlur,
+    onNotesVisibilityChange,
+    onRetryNotes,
     onStatusChange,
     upcomingInterviewCount,
 }: ApplicationBoardCardProps) => {
@@ -105,6 +110,7 @@ const ApplicationBoardCard = ({
 
             <BoardCardActions
                 compactPanelSpacing
+                onOpenChange={(isOpen) => onNotesVisibilityChange(application.job_id, isOpen)}
                 actions={
                     <>
                         <PrimaryButton
@@ -131,15 +137,25 @@ const ApplicationBoardCard = ({
                         Open job posting
                     </a>
                 )}
-                <label className={styles.notesField}>
-                    <span>Edit notes</span>
-                    <textarea
-                        maxLength={FIELD_MAX_LENGTHS.notes}
-                        onChange={(event) => onEditNotes(application.job_id, event.target.value)}
-                        placeholder='Add your notes here'
-                        value={note}
-                    />
-                </label>
+                <div className={styles.notesField}>
+                    <label htmlFor={`application-notes-${application.job_id}`}>Edit notes</label>
+                    <div className={styles.notesEditor}>
+                        <textarea
+                            id={`application-notes-${application.job_id}`}
+                            disabled={isArchiving}
+                            maxLength={FIELD_MAX_LENGTHS.notes}
+                            onChange={(event) => onEditNotes(application.job_id, event.target.value)}
+                            onBlur={() => onNotesBlur(application.job_id)}
+                            placeholder='Add your notes here'
+                            value={note}
+                        />
+                        <NoteSaveStatus
+                            applicationName={application.company_name}
+                            onRetry={() => onRetryNotes(application.job_id)}
+                            status={noteSaveStatus}
+                        />
+                    </div>
+                </div>
             </BoardCardActions>
         </article>
     );

@@ -5,6 +5,7 @@ import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 import { routes } from '../../../routes';
 import type { DemoApplicationCardProps } from './DemoApplicationCard.models';
 import { JOB_STATUSES, type JobStatus } from '../../application/models';
+import NoteSaveStatus from '../../../components/noteSaveStatus/NoteSaveStatus';
 import styles from './DemoApplicationCard.module.css';
 
 const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
@@ -147,12 +148,22 @@ const DemoApplicationCard = (props: DemoApplicationCardProps) => {
             {props.showNotes && (
                 <div className={styles.notes}>
                     {variant === 'job' ? (
-                        <textarea
-                            maxLength={FIELD_MAX_LENGTHS.notes}
-                            onChange={(event) => props.onEditNotes(application.job_id, event.target.value)}
-                            placeholder='Add your notes here'
-                            value={props.note}
-                        />
+                        <div className={styles.notesEditor}>
+                            <textarea
+                                aria-label={`Notes for ${application.company_name}`}
+                                disabled={props.isArchiving}
+                                maxLength={FIELD_MAX_LENGTHS.notes}
+                                onChange={(event) => props.onEditNotes(application.job_id, event.target.value)}
+                                onBlur={() => props.onNotesBlur(application.job_id)}
+                                placeholder='Add your notes here'
+                                value={props.note}
+                            />
+                            <NoteSaveStatus
+                                applicationName={application.company_name}
+                                onRetry={() => props.onRetryNotes(application.job_id)}
+                                status={props.noteSaveStatus}
+                            />
+                        </div>
                     ) : (
                         <textarea
                             disabled

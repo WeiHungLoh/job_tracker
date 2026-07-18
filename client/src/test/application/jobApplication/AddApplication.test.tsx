@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import AddApplication from '../../../pages/application/jobApplication/addApplication/AddApplication';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { render as renderWithToast } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { defaultConfirmOptions } from '../../../components/confirmation/defaultConfirmOptions';
 import formatDate from '../../../helper/dateFormatter';
 import { MAX_CAPTURED_PAGE_TITLE_LENGTH } from '../../../pages/application/jobApplication/quickCapture';
+import QuickCaptureProvider from '../../../pages/application/jobApplication/QuickCaptureProvider';
 
 globalThis.fetch = vi.fn();
 
@@ -41,6 +42,17 @@ const successResponse = () => ({
 const render = (ui: ReactNode) =>
     renderWithToast(<ConfirmProvider defaultOptions={defaultConfirmOptions}>{ui}</ConfirmProvider>);
 
+const renderQuickCaptureApplication = (entry: string) =>
+    render(
+        <MemoryRouter initialEntries={[entry]}>
+            <Routes>
+                <Route element={<QuickCaptureProvider />}>
+                    <Route path='/application/add' element={<AddApplication />} />
+                </Route>
+            </Routes>
+        </MemoryRouter>
+    );
+
 const fillCompleteApplicationForm = () => {
     userEvent.type(screen.getByLabelText(/company name/i), '  Morgan Stanley  ');
     userEvent.type(screen.getByLabelText(/job title/i), '  Software Engineer  ');
@@ -64,6 +76,10 @@ const expectCompleteApplicationFormValues = () => {
 describe('User add application flow', () => {
     beforeEach(() => {
         fetch.mockReset();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     test('successfully adds an application and a notification message is shown', async () => {
@@ -145,11 +161,7 @@ describe('User add application flow', () => {
     });
 
     test('keeps the URL empty and hides captured title information without quick-capture parameters', () => {
-        render(
-            <MemoryRouter initialEntries={['/application/add']}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        renderQuickCaptureApplication('/application/add');
 
         expect(screen.getByLabelText(/job posting url/i)).toHaveValue('');
         expect(screen.queryByText('Captured page title')).not.toBeInTheDocument();
@@ -157,16 +169,14 @@ describe('User add application flow', () => {
     });
 
     test('prefills a captured URL once and lets the user edit or clear it', async () => {
-        render(
-            <MemoryRouter initialEntries={['/application/add?jobURL=https%3A%2F%2Fexample.com%2Fjobs%2F1']}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        const replaceState = vi.spyOn(window.history, 'replaceState');
+        renderQuickCaptureApplication('/application/add#jobURL=https%3A%2F%2Fexample.com%2Fjobs%2F1');
 
         const jobURLInput = screen.getByLabelText(/job posting url/i);
         expect(jobURLInput).toHaveValue('https://example.com/jobs/1');
         expect(screen.queryByText('Captured page title')).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
+        expect(replaceState).toHaveBeenCalledWith(window.history.state, '', '/application/add');
 
         await userEvent.clear(jobURLInput);
         await userEvent.type(jobURLInput, 'https://careers.example.com/jobs/2');
@@ -176,18 +186,29 @@ describe('User add application flow', () => {
         expect(jobURLInput).toHaveValue('');
     });
 
+    test('supports and removes legacy query capture parameters', () => {
+        const replaceState = vi.spyOn(window.history, 'replaceState');
+        const query = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/legacy',
+            pageTitle: 'Legacy bookmark',
+            source: 'saved',
+        });
+
+        renderQuickCaptureApplication(`/application/add?${query.toString()}`);
+
+        expect(screen.getByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/legacy');
+        expect(screen.getByText('Legacy bookmark')).toBeInTheDocument();
+        expect(replaceState).toHaveBeenCalledWith(window.history.state, '', '/application/add?source=saved');
+    });
+
     test('shows a captured page title only as text and leaves company and job title empty', () => {
         const pageTitle = '<script>alert("x")</script>';
-        const query = new URLSearchParams({
+        const fragment = new URLSearchParams({
             jobURL: 'https://example.com/jobs/1',
             pageTitle,
         });
 
-        render(
-            <MemoryRouter initialEntries={[`/application/add?${query.toString()}`]}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
 
         expect(screen.getByText('Captured page title')).toBeInTheDocument();
         expect(screen.getByText(pageTitle)).toBeInTheDocument();
@@ -199,21 +220,13 @@ describe('User add application flow', () => {
 
     test('hides whitespace page titles and caps long titles for display', () => {
         const longTitle = `  ${'x'.repeat(MAX_CAPTURED_PAGE_TITLE_LENGTH + 20)}  `;
-        const { unmount } = render(
-            <MemoryRouter initialEntries={['/application/add?pageTitle=%20%20%20']}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        const { unmount } = renderQuickCaptureApplication('/application/add?pageTitle=%20%20%20');
 
         expect(screen.queryByText('Captured page title')).not.toBeInTheDocument();
         unmount();
 
         const query = new URLSearchParams({ pageTitle: longTitle });
-        render(
-            <MemoryRouter initialEntries={[`/application/add?${query.toString()}`]}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        renderQuickCaptureApplication(`/application/add?${query.toString()}`);
 
         expect(screen.getByText('x'.repeat(MAX_CAPTURED_PAGE_TITLE_LENGTH))).toBeInTheDocument();
         expect(screen.queryByText('x'.repeat(MAX_CAPTURED_PAGE_TITLE_LENGTH + 1))).not.toBeInTheDocument();
@@ -221,11 +234,7 @@ describe('User add application flow', () => {
 
     test('uses existing submission validation for an invalid captured URL', async () => {
         const query = new URLSearchParams({ jobURL: 'javascript:alert(1)' });
-        render(
-            <MemoryRouter initialEntries={[`/application/add?${query.toString()}`]}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        renderQuickCaptureApplication(`/application/add?${query.toString()}`);
 
         userEvent.type(screen.getByLabelText(/company name/i), 'ABC Pte Ltd');
         userEvent.type(screen.getByLabelText(/job title/i), 'Cleaner');
@@ -242,11 +251,7 @@ describe('User add application flow', () => {
             jobURL: 'https://example.com/jobs/1',
             pageTitle: 'Software Engineer at Example | Careers',
         });
-        render(
-            <MemoryRouter initialEntries={[`/application/add?${query.toString()}`]}>
-                <AddApplication />
-            </MemoryRouter>
-        );
+        renderQuickCaptureApplication(`/application/add?${query.toString()}`);
 
         userEvent.type(screen.getByLabelText(/company name/i), 'Example');
         userEvent.type(screen.getByLabelText(/job title/i), 'Software Engineer');

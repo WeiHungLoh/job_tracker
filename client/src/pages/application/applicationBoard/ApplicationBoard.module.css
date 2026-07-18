@@ -367,6 +367,18 @@
     resize: vertical;
 }
 
+.notesEditor {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.notesEditor textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 36px;
+}
+
 .readOnlyNotes textarea {
     cursor: default;
     opacity: 1;

@@ -224,6 +224,10 @@ describe('Job application viewing flow', () => {
         });
     });
 
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     test('displays job application details and action buttons', async () => {
         render(
             <MemoryRouter>
@@ -881,7 +885,7 @@ describe('Job application viewing flow', () => {
                 return response([]);
             }
             if (url.endsWith('/job-applications/1/status') && init?.method === 'PATCH') {
-                return response({ message: 'Status update is temporarily unavailable.' }, 503);
+                return response({ message: 'Status update is temporarily unavailable.' }, 400);
             }
             return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
         });
@@ -922,8 +926,15 @@ describe('Job application viewing flow', () => {
         await userEvent.click(screen.getByText('Actions'));
 
         expect(screen.getByRole('link', { name: 'Open job posting' })).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Add your notes here')).toBeVisible();
-        expect(screen.getByPlaceholderText('Add your notes here')).toHaveAttribute('maxlength', '3000');
+        const notesField = screen.getByPlaceholderText('Add your notes here');
+        expect(notesField).toBeVisible();
+        expect(notesField).toHaveAttribute('maxlength', '3000');
+        expect(within(card).queryByRole('status')).not.toBeInTheDocument();
+
+        fireEvent.change(notesField, { target: { value: 'Board note' } });
+        expect(
+            notesField.compareDocumentPosition(within(card).getByRole('status')) & Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Archive' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     });
@@ -1104,6 +1115,100 @@ describe('Job application viewing flow', () => {
         expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
     });
 
+    test('ignores an older filter response after a newer selection has finished', async () => {
+        let resolveOlderFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        const olderApplication = { ...mockApplication, company_name: 'Older result' };
+        const latestApplication = { ...mockApplication, company_name: 'Latest result' };
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications?jobStatuses=Offer')) {
+                return new Promise((resolve) => {
+                    resolveOlderFilter = resolve;
+                });
+            }
+            if (url.endsWith('/job-applications?jobStatuses=Offer&jobStatuses=Accepted')) {
+                return response([latestApplication]);
+            }
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Accepted' }));
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. Latest result' })).toBeInTheDocument();
+
+        await act(async () => resolveOlderFilter(response([olderApplication])));
+
+        await waitFor(() =>
+            expect(screen.queryByRole('heading', { level: 2, name: '1. Older result' })).not.toBeInTheDocument()
+        );
+        expect(screen.getByRole('heading', { level: 2, name: '1. Latest result' })).toBeInTheDocument();
+    });
+
+    test('restores the newest persisted filter result when a later filter request fails', async () => {
+        let resolveOlderPreference: (preferences: UserPreferences) => void = () => undefined;
+        let resolveLatestFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        const olderApplication = { ...mockApplication, company_name: 'Persisted result' };
+        const updatePreferences = vi.fn(
+            () =>
+                new Promise<UserPreferences>((resolve) => {
+                    resolveOlderPreference = resolve;
+                })
+        );
+
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications?jobStatuses=Offer')) {
+                return response([olderApplication]);
+            }
+            if (url.endsWith('/job-applications?jobStatuses=Offer&jobStatuses=Accepted')) {
+                return new Promise((resolve) => {
+                    resolveLatestFilter = resolve;
+                });
+            }
+            return response([mockApplication]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offer' }));
+        await waitFor(() => expect(updatePreferences).toHaveBeenCalledWith({ application_job_statuses: ['Offer'] }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Accepted' }));
+
+        await act(async () =>
+            resolveOlderPreference({
+                ...mockPreferences,
+                application_job_statuses: ['Offer'],
+            })
+        );
+        await act(async () => resolveLatestFilter(response({ message: 'Unable to filter.' }, 400)));
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. Persisted result' })).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Offer' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Accepted' })).not.toBeChecked();
+    });
+
     test('shows application controls above the skeleton during the initial fetch', () => {
         fetch.mockImplementation(async (url: string) => {
             if (url.endsWith('/job-interviews')) {
@@ -1160,7 +1265,7 @@ describe('Job application viewing flow', () => {
                 return response([]);
             }
             if (url.endsWith('/job-applications?jobStatuses=Offer')) {
-                return response({ message: 'Job application filtering is temporarily unavailable.' }, 503);
+                return response({ message: 'Job application filtering is temporarily unavailable.' }, 400);
             }
             return response([mockApplication]);
         });
@@ -1204,6 +1309,44 @@ describe('Job application viewing flow', () => {
         expect(statusUpdateRequestCount(1)).toBe(statusUpdatesBeforeEditing);
     });
 
+    test('disables the list status editor while an update is pending', async () => {
+        let resolveStatusUpdate: (value: ReturnType<typeof response>) => void = () => undefined;
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response(mockPreferences);
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/status') && init?.method === 'PATCH') {
+                return new Promise((resolve) => {
+                    resolveStatusUpdate = resolve;
+                });
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: /edit status/i }));
+        await userEvent.selectOptions(screen.getByRole('listbox'), 'Interview');
+        await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+        expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled();
+        expect(screen.getByRole('listbox')).toBeDisabled();
+        expect(statusUpdateRequestCount(1)).toBe(1);
+
+        await act(async () => resolveStatusUpdate(response(undefined, 204)));
+
+        await waitFor(() => expect(screen.getByRole('button', { name: /edit status/i })).toBeInTheDocument());
+        expect(statusUpdateRequestCount(1)).toBe(1);
+    });
+
     test('keeps the local status editor open and shows the backend message when saving fails', async () => {
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/user-preferences')) {
@@ -1216,7 +1359,7 @@ describe('Job application viewing flow', () => {
                 return response([]);
             }
             if (url.endsWith('/job-applications/1/status') && init?.method === 'PATCH') {
-                return response({ message: 'Status update is temporarily unavailable.' }, 503);
+                return response({ message: 'Status update is temporarily unavailable.' }, 400);
             }
             return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
         });
@@ -1459,6 +1602,97 @@ describe('Job application viewing flow', () => {
         await waitFor(() => expect(screen.queryByText(/ABC Pte Ltd/i)).not.toBeInTheDocument());
     });
 
+    test('keeps an application active when its pending notes cannot be saved before archiving', async () => {
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/1/relation-summary')) {
+                return response({ related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/notes') && init?.method === 'PATCH') {
+                return response({ message: 'Preserve these notes before archiving.' }, 400);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_show_archive: true, application_show_notes: true } }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        fireEvent.change(screen.getByPlaceholderText('Add your notes here'), {
+            target: { value: 'Keep this draft when archived' },
+        });
+        await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
+
+        expect(await screen.findByText('Preserve these notes before archiving.')).toBeInTheDocument();
+        expect(screen.getByText(/ABC Pte Ltd/i)).toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobId: 1 }),
+        });
+    });
+
+    test('prevents newer edits while an archive is preserving pending notes', async () => {
+        let resolveNotesSave: (value: ReturnType<typeof response>) => void = () => undefined;
+        const pendingNotesSave = new Promise<ReturnType<typeof response>>((resolve) => {
+            resolveNotesSave = resolve;
+        });
+
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/1/relation-summary')) {
+                return response({ related_interview_count: 0 });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/notes') && init?.method === 'PATCH') {
+                return pendingNotesSave;
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_show_archive: true, application_show_notes: true } }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        const notesField = screen.getByRole('textbox', { name: 'Notes for ABC Pte Ltd' });
+        fireEvent.change(notesField, { target: { value: 'Preserve this exact draft' } });
+        await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/job-applications/1/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: 'Preserve this exact draft' }),
+            })
+        );
+        expect(notesField).toBeDisabled();
+
+        await userEvent.type(notesField, ' with a newer edit');
+        expect(notesField).toHaveValue('Preserve this exact draft');
+
+        await act(async () => resolveNotesSave(response(undefined, 204)));
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(`${import.meta.env.VITE_API_URL}/archived-job-applications`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobId: 1 }),
+            })
+        );
+    });
+
     test('guards a single application action synchronously while confirmation is pending', async () => {
         let resolveConfirmation: ((result: { confirmed: boolean }) => void) | undefined;
         mockConfirm.mockImplementationOnce(
@@ -1495,7 +1729,7 @@ describe('Job application viewing flow', () => {
     test('shows the backend error when a relation summary cannot be loaded', async () => {
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/job-applications/1/relation-summary')) {
-                return response({ message: 'Unable to inspect this application.' }, 500);
+                return response({ message: 'Unable to inspect this application.' }, 400);
             }
             if (url.endsWith('/job-applications/summary')) {
                 return response({ application_count: 1, related_interview_count: 0 });
@@ -1554,6 +1788,95 @@ describe('Job application viewing flow', () => {
         await userEvent.click(screen.getByRole('switch', { name: 'Show notes' }));
 
         expect(screen.getByPlaceholderText('Add your notes here')).toHaveAttribute('maxlength', '3000');
+    });
+
+    test('autosaves notes after 1000ms and clears the Saved message after 3000ms', async () => {
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show notes' }));
+
+        const notesField = screen.getByPlaceholderText('Add your notes here');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+        vi.useFakeTimers();
+        fireEvent.change(notesField, { target: { value: 'Follow up next week' } });
+        const status = screen.getByRole('status');
+        expect(status).toHaveTextContent('Saving…');
+
+        await act(async () => vi.advanceTimersByTimeAsync(999));
+        expect(
+            fetch.mock.calls.filter(
+                ([url, init]: [string, RequestInit?]) =>
+                    url.endsWith('/job-applications/1/notes') && init?.method === 'PATCH'
+            )
+        ).toHaveLength(0);
+
+        await act(async () => vi.advanceTimersByTimeAsync(1));
+        const noteRequests = fetch.mock.calls.filter(
+            ([url, init]: [string, RequestInit?]) =>
+                url.endsWith('/job-applications/1/notes') && init?.method === 'PATCH'
+        );
+        expect(noteRequests).toHaveLength(1);
+        expect(JSON.parse(String(noteRequests[0][1]?.body))).toEqual({ notes: 'Follow up next week' });
+        expect(status).toHaveTextContent('Saved');
+
+        await act(async () => vi.advanceTimersByTimeAsync(3_000));
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    test('keeps a final note error visible and retries the latest draft immediately', async () => {
+        let noteRequestCount = 0;
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                return response({
+                    ...mockPreferences,
+                    ...(init?.body ? JSON.parse(String(init.body)) : {}),
+                });
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            if (url.endsWith('/job-applications/1/notes') && init?.method === 'PATCH') {
+                noteRequestCount += 1;
+                return noteRequestCount === 1
+                    ? response({ message: 'Notes could not be saved.' }, 400)
+                    : response(undefined, 204);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show notes' }));
+
+        vi.useFakeTimers();
+        fireEvent.change(screen.getByPlaceholderText('Add your notes here'), {
+            target: { value: 'Retry this draft' },
+        });
+        await act(async () => vi.advanceTimersByTimeAsync(1_000));
+
+        expect(screen.getByText('Couldn’t save')).toBeInTheDocument();
+        expect(screen.getByText('Notes could not be saved.')).toBeInTheDocument();
+
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Retry saving notes for ABC Pte Ltd' }));
+            await Promise.resolve();
+        });
+
+        expect(noteRequestCount).toBe(2);
+        expect(screen.getByRole('status')).toHaveTextContent('Saved');
     });
 
     test('renders the active application empty state with no data', async () => {
@@ -1748,6 +2071,41 @@ describe('Job application viewing flow', () => {
         expect(await screen.findByRole('heading', { name: 'No active applications yet' })).toBeInTheDocument();
     });
 
+    test('disables every notes editor while a bulk archive is pending', async () => {
+        let resolveSummary: (value: ReturnType<typeof response>) => void = () => undefined;
+        const pendingSummary = new Promise<ReturnType<typeof response>>((resolve) => {
+            resolveSummary = resolve;
+        });
+
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/job-applications/summary')) {
+                return pendingSummary;
+            }
+            if (url.endsWith('/job-interviews')) {
+                return response([]);
+            }
+            return init?.method === 'GET' ? response([mockApplication]) : response(undefined, 204);
+        });
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+
+        render(
+            <MemoryRouter>
+                <ViewApplication />
+            </MemoryRouter>,
+            { initialPreferences: { application_show_notes: true } }
+        );
+
+        await screen.findByText(/ABC Pte Ltd/i);
+        const notesField = screen.getByRole('textbox', { name: 'Notes for ABC Pte Ltd' });
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Archive all applications' }));
+
+        expect(notesField).toBeDisabled();
+
+        await act(async () => resolveSummary(response({ application_count: 1, related_interview_count: 0 })));
+        await waitFor(() => expect(notesField).toBeEnabled());
+    });
+
     test('does not mutate when the bulk confirmation is cancelled or closed', async () => {
         mockConfirm.mockResolvedValueOnce({ confirmed: false });
         render(
@@ -1793,7 +2151,7 @@ describe('Job application viewing flow', () => {
     test('does not confirm or mutate when refreshed active counts fail', async () => {
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/job-applications/summary')) {
-                throw new TypeError('Failed to fetch');
+                return response({ message: 'Unable to load active application counts. Please try again.' }, 400);
             }
             if (url.endsWith('/job-interviews')) {
                 return response([]);

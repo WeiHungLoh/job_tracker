@@ -82,6 +82,10 @@
     composes: notesField from '../../../application/applicationBoard/ApplicationBoard.module.css';
 }
 
+.notesEditor {
+    composes: notesEditor from '../../../application/applicationBoard/ApplicationBoard.module.css';
+}
+
 .readOnlyNotes {
     composes: readOnlyNotes from '../../../application/applicationBoard/ApplicationBoard.module.css';
 }

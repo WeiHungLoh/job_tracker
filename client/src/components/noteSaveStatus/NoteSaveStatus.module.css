@@ -1,0 +1,47 @@
+.status {
+    position: absolute;
+    right: 24px;
+    bottom: 8px;
+    z-index: 1;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    background-color: var(--colorNotesBg);
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeMetadata);
+    font-weight: 700;
+    line-height: 1.25;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.saving {
+    color: var(--colorNoteSavingText);
+}
+
+.saved {
+    color: var(--colorNoteSavedText);
+}
+
+.error {
+    color: var(--colorNoteErrorText);
+}
+
+.retry {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: 700;
+    pointer-events: auto;
+    text-decoration: underline;
+}
+
+.retry:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}

@@ -1,4 +1,6 @@
 import type { JobApplication, JobStatus } from '../../models';
+import type { EditableNotesProps } from '../../../../components/noteSaveStatus/models';
+import type { NoteSaveStatus } from '../../../../hooks/useAutosaveNotes';
 
 export type BoardStatusChangeHandler = (application: JobApplication, jobStatus: JobStatus) => void | Promise<void>;
 
@@ -9,24 +11,27 @@ export type ApplicationBoardProps = {
     hasInterview: (jobId: number) => boolean;
     isArchivingApplication: (jobId: number) => boolean;
     isUpdatingApplicationStatus: (jobId: number) => boolean;
+    noteSaveStatuses: Record<number, NoteSaveStatus>;
     onArchive: (jobId: number) => void | Promise<void>;
     onDelete: (jobId: number) => void | Promise<void>;
     onEditNotes: (jobId: number, notes: string) => void;
+    onNotesBlur: (jobId: number) => void;
+    onNotesVisibilityChange: (jobId: number, isVisible: boolean) => void;
+    onRetryNotes: (jobId: number) => void;
     onStatusChange: BoardStatusChangeHandler;
     selectedJobStatuses: readonly JobStatus[];
     upcomingInterviewCountByJob: Record<number, number>;
 };
 
-export type ApplicationBoardCardProps = {
+export type ApplicationBoardCardProps = EditableNotesProps & {
     application: JobApplication;
     isArchiving: boolean;
     isDeleting: boolean;
     isUpdatingStatus: boolean;
-    note: string;
     hasInterview: boolean;
     onArchive: (jobId: number) => void | Promise<void>;
     onDelete: (jobId: number) => void | Promise<void>;
-    onEditNotes: (jobId: number, notes: string) => void;
+    onNotesVisibilityChange: (jobId: number, isVisible: boolean) => void;
     onStatusChange: BoardStatusChangeHandler;
     upcomingInterviewCount: number;
 };

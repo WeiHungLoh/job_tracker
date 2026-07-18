@@ -1,12 +1,19 @@
 import type { APIRequest, EndpointConfigEntry } from './models';
 import type { RefreshAuthenticationRequest, RefreshAuthenticationResponse } from '../pages/authentication/models';
-import { JobTrackerAPIError } from './models';
+import { JobTrackerAPIError, RetryableJobTrackerAPIError, RetryableNetworkError } from './models';
 import { endpointConfig } from './endpointConfig';
 import { routes } from '../routes';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const PUBLIC_ROUTES = new Set<string>([routes.signIn, routes.signUp, routes.userGuide]);
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 3000;
 let activeRefreshRequest: Promise<RefreshAuthenticationResponse> | undefined;
+
+type RequestDetails = {
+    init: RequestInit;
+    url: string;
+};
 
 const appendQueryValue = (query: URLSearchParams, field: string, value: unknown): void => {
     if (!Array.isArray(value)) {
@@ -20,6 +27,43 @@ const appendQueryValue = (query: URLSearchParams, field: string, value: unknown)
     }
 
     value.forEach((item) => query.append(field, String(item)));
+};
+
+const buildRequest = (request: APIRequest, config: EndpointConfigEntry): RequestDetails => {
+    let url = `${apiUrl.replace(/\/$/, '')}/${config.url.replace(/^\//, '')}`;
+    const body: Record<string, unknown> = {};
+    const query = new URLSearchParams();
+    let formData: FormData | undefined;
+
+    Object.entries(request ?? {}).forEach(([field, value]) => {
+        const fieldType = config.fieldMap?.[field];
+
+        if (fieldType === 'path') {
+            url = url.replace(`:${field}`, encodeURIComponent(String(value)));
+        } else if (fieldType === 'query') {
+            appendQueryValue(query, field, value);
+        } else if (fieldType === 'formData') {
+            formData ??= new FormData();
+            formData.append(field, value instanceof Blob ? value : String(value));
+        } else {
+            body[field] = value;
+        }
+    });
+
+    const queryString = query.toString();
+    if (queryString) {
+        url += `${url.includes('?') ? '&' : '?'}${queryString}`;
+    }
+
+    const init: RequestInit = { method: config.verb };
+    if (formData) {
+        init.body = formData;
+    } else if (Object.keys(body).length > 0) {
+        init.headers = { 'Content-Type': 'application/json' };
+        init.body = JSON.stringify(body);
+    }
+
+    return { init, url };
 };
 
 const parseResponse = async <T>(response: Response): Promise<T> => {
@@ -37,50 +81,53 @@ const parseResponse = async <T>(response: Response): Promise<T> => {
     return (await response.text()) as T;
 };
 
-export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TResponse>(
-    request: TRequest,
-    config: EndpointConfigEntry
-): Promise<TResponse> => {
-    let url = `${apiUrl.replace(/\/$/, '')}/${config.url.replace(/^\//, '')}`;
-    const body: Record<string, unknown> = {};
-    const formData = new FormData();
-    const query = new URLSearchParams();
-    let hasFormData = false;
+const getErrorMessage = (data: unknown, fallback: string): string => {
+    if (typeof data === 'string') {
+        return data;
+    }
+    if (!data || typeof data !== 'object') {
+        return fallback;
+    }
 
-    Object.entries(request ?? {}).forEach(([field, value]) => {
-        const fieldType = config.fieldMap?.[field];
+    const errorBody = data as { detail?: unknown; message?: unknown };
+    if (typeof errorBody.message === 'string') {
+        return errorBody.message;
+    }
+    if (typeof errorBody.detail === 'string') {
+        return errorBody.detail;
+    }
 
-        if (fieldType === 'path') {
-            url = url.replace(`:${field}`, encodeURIComponent(String(value)));
-        } else if (fieldType === 'query') {
-            appendQueryValue(query, field, value);
-        } else if (fieldType === 'formData') {
-            formData.append(field, value instanceof Blob ? value : String(value));
-            hasFormData = true;
-        } else {
-            body[field] = value;
+    return JSON.stringify(data);
+};
+
+const isRetryableResponseStatus = (status: number): boolean => {
+    return status === 408 || (status >= 500 && status < 600);
+};
+
+const fetchResponse = async (url: string, init: RequestInit): Promise<Response> => {
+    try {
+        return await fetch(url, init);
+    } catch (error) {
+        if (error instanceof TypeError) {
+            throw new RetryableNetworkError(error);
         }
-    });
 
-    const queryString = query.toString();
-    if (queryString) {
-        url += `${url.includes('?') ? '&' : '?'}${queryString}`;
+        throw error;
     }
+};
 
-    const hasBody = Object.keys(body).length > 0;
-    const init: RequestInit = {
-        method: config.verb,
-    };
+const sendRequest = async <TResponse>({ init, url }: RequestDetails): Promise<TResponse> => {
+    const response = await fetchResponse(url, init);
+    let data: TResponse;
+    try {
+        data = await parseResponse<TResponse>(response);
+    } catch (error) {
+        if (!isRetryableResponseStatus(response.status)) {
+            throw error;
+        }
 
-    if (hasFormData) {
-        init.body = formData;
-    } else if (hasBody) {
-        init.headers = { 'Content-Type': 'application/json' };
-        init.body = JSON.stringify(body);
+        data = null as TResponse;
     }
-
-    const response = await fetch(url, init);
-    const data = await parseResponse<TResponse>(response);
     const contentType = response.headers?.get('content-type') ?? '';
 
     if (
@@ -93,23 +140,41 @@ export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TRes
     }
 
     if (!response.ok) {
-        let message = response.statusText || 'Unknown error';
-        if (typeof data === 'string') {
-            message = data;
-        } else if (data && typeof data === 'object') {
-            const errorBody = data as { detail?: unknown; message?: unknown };
-            if (typeof errorBody.message === 'string') {
-                message = errorBody.message;
-            } else if (typeof errorBody.detail === 'string') {
-                message = errorBody.detail;
-            } else {
-                message = JSON.stringify(data);
-            }
-        }
-        throw new JobTrackerAPIError(message, response.status, data);
+        const message = getErrorMessage(data, response.statusText || 'Unknown error');
+        const APIError = isRetryableResponseStatus(response.status) ? RetryableJobTrackerAPIError : JobTrackerAPIError;
+        throw new APIError(message, response.status, data);
     }
 
     return data;
+};
+
+const isRetryableRequestError = (error: unknown): boolean => {
+    return error instanceof RetryableNetworkError || error instanceof RetryableJobTrackerAPIError;
+};
+
+const wait = (delay: number): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+};
+
+export const makeJobTrackerAPIRequest = async <TRequest extends APIRequest, TResponse>(
+    request: TRequest,
+    config: EndpointConfigEntry
+): Promise<TResponse> => {
+    const requestDetails = buildRequest(request, config);
+    let retriesRemaining = config.retry ? MAX_RETRIES : 0;
+
+    while (true) {
+        try {
+            return await sendRequest<TResponse>(requestDetails);
+        } catch (error) {
+            if (retriesRemaining === 0 || !isRetryableRequestError(error)) {
+                throw error;
+            }
+
+            retriesRemaining -= 1;
+            await wait(RETRY_DELAY_MS);
+        }
+    }
 };
 
 const refreshAuthentication = async (): Promise<void> => {

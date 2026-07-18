@@ -1,6 +1,6 @@
 import type { CheckboxFilterProps } from './models';
 import styles from './CheckboxFilter.module.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ControlDropdown from '../ControlDropdown';
 
 const haveSameOptions = <Option extends string>(
@@ -21,6 +21,8 @@ const CheckboxFilter = <Option extends string>({
     onSelectionChange,
 }: CheckboxFilterProps<Option>) => {
     const [selectedOptions, setSelectedOptions] = useState<Option[]>([...savedOptions]);
+    const savedOptionsRef = useRef(savedOptions);
+    savedOptionsRef.current = savedOptions;
 
     useEffect(() => {
         setSelectedOptions([...savedOptions]);
@@ -32,17 +34,17 @@ const CheckboxFilter = <Option extends string>({
     const applySelection = async (nextOptions: Option[]) => {
         setSelectedOptions(nextOptions);
 
-        if (haveSameOptions(nextOptions, savedOptions)) {
+        if (haveSameOptions(nextOptions, savedOptionsRef.current)) {
             return;
         }
 
         try {
             const selectionSaved = await onSelectionChange(nextOptions);
             if (!selectionSaved) {
-                setSelectedOptions([...savedOptions]);
+                setSelectedOptions([...savedOptionsRef.current]);
             }
         } catch {
-            setSelectedOptions([...savedOptions]);
+            setSelectedOptions([...savedOptionsRef.current]);
         }
     };
 

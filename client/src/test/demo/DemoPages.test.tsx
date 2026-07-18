@@ -202,6 +202,7 @@ describe('demo page interactions', () => {
             target: { value: 'Demo note update' },
         });
         expect(firstNotesField).toHaveValue('Demo note update');
+        expect(screen.getAllByText('Saving…').length).toBeGreaterThan(0);
 
         await userEvent.click(screen.getAllByRole('button', { name: 'Edit Status' })[0]);
         fireEvent.change(screen.getByRole('listbox'), { target: { value: 'Offer' } });

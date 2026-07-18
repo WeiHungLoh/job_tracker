@@ -123,6 +123,9 @@
     --colorNotesBorder: #d5a82f;
     --colorNotesText: #4f4527;
     --colorNotesShadow: rgba(0, 0, 0, 0.1);
+    --colorNoteSavingText: #0b57d0;
+    --colorNoteSavedText: #155724;
+    --colorNoteErrorText: #b02a37;
 
     /* Misc accents */
     --colorLocationText: #005f56;
@@ -273,6 +276,9 @@
     --colorNotesBorder: #d1a93e;
     --colorNotesText: #f4e7bd;
     --colorNotesShadow: rgba(0, 0, 0, 0.3);
+    --colorNoteSavingText: #6ea8fe;
+    --colorNoteSavedText: #75b798;
+    --colorNoteErrorText: #ff7b86;
 
     /* Status badges — slightly darker for dark backgrounds */
     --colorStatusApplied: #148f9e;

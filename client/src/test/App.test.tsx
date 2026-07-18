@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { appRoutes } from '../App';
 import { render } from './renderWithToast';
 import userEvent from '@testing-library/user-event';
@@ -82,6 +82,7 @@ describe('App routing and authentication behavior', () => {
     });
 
     afterEach(() => {
+        vi.useRealTimers();
         localStorage.removeItem(AUTH_FOCUSED_MODE_STORAGE_KEY);
         localStorage.removeItem('theme');
     });
@@ -116,6 +117,32 @@ describe('App routing and authentication behavior', () => {
         });
     });
 
+    test('scrubs legacy Quick Capture data before authentication begins and retains it for the form', async () => {
+        const replaceState = vi.spyOn(window.history, 'replaceState');
+        let resolveAuthentication: (value: ReturnType<typeof jsonResponse>) => void = () => undefined;
+        fetch.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveAuthentication = resolve;
+                })
+        );
+        const query = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/private',
+            source: 'bookmark',
+        });
+
+        renderRoute(`/application/add?${query.toString()}`);
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        expect(replaceState).toHaveBeenCalledWith(window.history.state, '', '/application/add?source=bookmark');
+        expect(replaceState.mock.invocationCallOrder[0]).toBeLessThan(fetch.mock.invocationCallOrder[0]);
+
+        await act(async () => resolveAuthentication(jsonResponse({ message: 'Authenticated user.' })));
+
+        expect(await screen.findByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/private');
+        replaceState.mockRestore();
+    });
+
     test('redirects to SignIn when authentication receives the Vite HTML fallback', async () => {
         fetch.mockResolvedValueOnce(response(true, 200, '<!doctype html><html></html>', 'text/html'));
         renderRoute('/application/view');
@@ -125,12 +152,15 @@ describe('App routing and authentication behavior', () => {
     });
 
     test('shows a retry state when authentication is temporarily unavailable', async () => {
-        fetch.mockResolvedValueOnce({
+        fetch.mockResolvedValue({
             ...response(false, 503),
             headers: new Headers({ 'content-type': 'application/json' }),
             json: async () => ({ message: 'Authentication is temporarily unavailable.' }),
         });
+        vi.useFakeTimers();
         renderRoute('/application/view');
+        await act(async () => vi.advanceTimersByTimeAsync(9_000));
+        vi.useRealTimers();
 
         await waitFor(() =>
             expect(screen.getByRole('heading', { name: /Unable to verify authentication/i })).toBeInTheDocument()
@@ -139,6 +169,7 @@ describe('App routing and authentication behavior', () => {
         expect(screen.queryByText(/sign in to job tracker/i)).not.toBeInTheDocument();
         expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
         expect(screen.getByText('Authentication is temporarily unavailable.')).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledTimes(4);
     });
 
     test('renders only the fallback screen while authentication is pending', () => {
@@ -224,6 +255,65 @@ describe('App routing and authentication behavior', () => {
         expect(sortPreferenceRequest?.[1]).toMatchObject({
             body: JSON.stringify({ application_list_sort_order: 'company_name_asc' }),
         });
+    });
+
+    test('serializes preference updates so an older retry cannot overwrite a newer choice', async () => {
+        let preferences = { ...mockPreferences };
+        let preferenceUpdateCount = 0;
+        let resolveFirstPreferenceUpdate: (value: ReturnType<typeof jsonResponse>) => void = () => undefined;
+        const applications = [
+            {
+                application_date: '2025-06-20T00:00:00Z',
+                company_name: 'ABC Pte Ltd',
+                job_id: 1,
+                job_location: '',
+                job_posting_url: '',
+                job_status: 'Applied',
+                job_title: 'Engineer',
+                notes: '',
+            },
+        ];
+        fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+            if (url.endsWith('/user-preferences')) {
+                if (init?.method !== 'PATCH' || !init.body) {
+                    return jsonResponse(preferences);
+                }
+
+                preferenceUpdateCount += 1;
+                const updatedPreferences = JSON.parse(String(init.body));
+                if (preferenceUpdateCount === 1) {
+                    return new Promise((resolve) => {
+                        resolveFirstPreferenceUpdate = resolve;
+                    });
+                }
+
+                preferences = { ...preferences, ...updatedPreferences };
+                return jsonResponse(preferences);
+            }
+            if (url.endsWith('/job-interviews')) {
+                return jsonResponse([]);
+            }
+            if (url.includes('/job-applications?')) {
+                return jsonResponse(applications);
+            }
+            return response();
+        });
+
+        renderRoute(routes.viewApplications);
+
+        expect(await screen.findByRole('heading', { level: 2, name: '1. ABC Pte Ltd' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Display options' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show notes' }));
+        await userEvent.click(screen.getByRole('switch', { name: 'Show archive' }));
+
+        expect(preferenceUpdateCount).toBe(1);
+
+        preferences = { ...preferences, application_show_notes: true };
+        await act(async () => resolveFirstPreferenceUpdate(jsonResponse(preferences)));
+
+        await waitFor(() => expect(preferenceUpdateCount).toBe(2));
+        expect(screen.getByRole('switch', { name: 'Show notes' })).toHaveAttribute('aria-checked', 'true');
+        expect(screen.getByRole('switch', { name: 'Show archive' })).toHaveAttribute('aria-checked', 'true');
     });
 
     test('navigates between active and archived applications from the navbar toggle', async () => {

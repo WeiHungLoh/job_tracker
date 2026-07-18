@@ -2,7 +2,7 @@ export const endpointConfig = {
     authentication: {
         signIn: { url: '/authentication/sessions', verb: 'POST' },
         signUp: { url: '/authentication/users', verb: 'POST' },
-        verify: { url: '/authentication/sessions/current', verb: 'GET' },
+        verify: { url: '/authentication/sessions/current', verb: 'GET', retry: true },
         refresh: { url: '/authentication/sessions/refresh', verb: 'POST' },
         logout: { url: '/authentication/sessions/current', verb: 'DELETE' },
     },
@@ -11,14 +11,16 @@ export const endpointConfig = {
             url: '/job-applications',
             verb: 'GET',
             fieldMap: { jobStatuses: 'query' },
+            retry: true,
         },
-        listWeeklyApplications: { url: '/job-applications/weekly-counts', verb: 'GET' },
-        listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET' },
-        getSummary: { url: '/job-applications/summary', verb: 'GET' },
+        listWeeklyApplications: { url: '/job-applications/weekly-counts', verb: 'GET', retry: true },
+        listJobStatusCounts: { url: '/job-applications/status-counts', verb: 'GET', retry: true },
+        getSummary: { url: '/job-applications/summary', verb: 'GET', retry: true },
         getRelationSummary: {
             url: '/job-applications/:jobId/relation-summary',
             verb: 'GET',
             fieldMap: { jobId: 'path' },
+            retry: true,
         },
         createApplication: { url: '/job-applications', verb: 'POST' },
         deleteApplication: {
@@ -27,12 +29,22 @@ export const endpointConfig = {
             fieldMap: { jobId: 'path' },
         },
         deleteAllApplications: { url: '/job-applications', verb: 'DELETE' },
-        updateNotes: { url: '/job-applications/:jobId/notes', verb: 'PATCH', fieldMap: { jobId: 'path' } },
-        updateStatus: { url: '/job-applications/:jobId/status', verb: 'PATCH', fieldMap: { jobId: 'path' } },
+        updateNotes: {
+            url: '/job-applications/:jobId/notes',
+            verb: 'PATCH',
+            fieldMap: { jobId: 'path' },
+            retry: true,
+        },
+        updateStatus: {
+            url: '/job-applications/:jobId/status',
+            verb: 'PATCH',
+            fieldMap: { jobId: 'path' },
+            retry: true,
+        },
     },
     interview: {
-        listInterviews: { url: '/job-interviews', verb: 'GET' },
-        getSummary: { url: '/job-interviews/summary', verb: 'GET' },
+        listInterviews: { url: '/job-interviews', verb: 'GET', retry: true },
+        getSummary: { url: '/job-interviews/summary', verb: 'GET', retry: true },
         createInterview: { url: '/job-interviews', verb: 'POST' },
         deleteInterview: {
             url: '/job-interviews/:interviewId',
@@ -46,15 +58,17 @@ export const endpointConfig = {
             url: '/archived-job-applications',
             verb: 'GET',
             fieldMap: { jobStatuses: 'query' },
+            retry: true,
         },
         archiveApplication: { url: '/archived-job-applications', verb: 'PATCH' },
         archiveAllApplications: { url: '/archived-job-applications/archive-all', verb: 'PATCH' },
         unarchiveAllApplications: { url: '/archived-job-applications/unarchive-all', verb: 'PATCH' },
-        getSummary: { url: '/archived-job-applications/summary', verb: 'GET' },
+        getSummary: { url: '/archived-job-applications/summary', verb: 'GET', retry: true },
         getRelationSummary: {
             url: '/archived-job-applications/:archivedJobId/relation-summary',
             verb: 'GET',
             fieldMap: { archivedJobId: 'path' },
+            retry: true,
         },
         deleteApplication: {
             url: '/archived-job-applications/:archivedJobId',
@@ -69,8 +83,8 @@ export const endpointConfig = {
         },
     },
     archivedInterview: {
-        listInterviews: { url: '/archived-job-interviews', verb: 'GET' },
-        getSummary: { url: '/archived-job-interviews/summary', verb: 'GET' },
+        listInterviews: { url: '/archived-job-interviews', verb: 'GET', retry: true },
+        getSummary: { url: '/archived-job-interviews/summary', verb: 'GET', retry: true },
         deleteInterview: {
             url: '/archived-job-interviews/:archivedInterviewId',
             verb: 'DELETE',
@@ -79,7 +93,7 @@ export const endpointConfig = {
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },
     userPreferences: {
-        get: { url: '/user-preferences', verb: 'GET' },
-        update: { url: '/user-preferences', verb: 'PATCH' },
+        get: { url: '/user-preferences', verb: 'GET', retry: true },
+        update: { url: '/user-preferences', verb: 'PATCH', retry: true },
     },
 } as const;
