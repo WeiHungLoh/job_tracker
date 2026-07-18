@@ -51,7 +51,7 @@ describe('renders user guide properly', () => {
         expect(screen.getByRole('heading', { name: /quick capture from a job posting/i })).toBeVisible();
         expect(screen.getByRole('link', { name: /save to job tracker/i })).toBeVisible();
         expect(screen.getByText(/sign in to job tracker before using quick capture/i)).toBeVisible();
-        expect(screen.getByText(/replace your previously installed quick capture bookmark/i)).toBeVisible();
+        expect(screen.getByText(/install the bookmark once/i)).toBeVisible();
         expect(screen.getByText(/desktop browser(?:'|’)s bookmarks bar/i)).toBeVisible();
         expect(screen.getByText(/job posting url is prefilled/i)).toBeVisible();
         expect(screen.getByText(/browser-tab title is shown only as a reference/i)).toBeVisible();
