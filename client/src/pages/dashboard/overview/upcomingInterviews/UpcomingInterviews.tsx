@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import DashboardCard from './DashboardCard';
-import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
-import formatDate from '../../helper/dateFormatter';
-import type { UpcomingInterviewsProps } from './models';
-import { getUpcomingInterviews } from './dashboardData';
+import DashboardCard from '../../shared/dashboardCard/DashboardCard';
+import LoadingSpinner from '../../../../components/loadingSpinner/LoadingSpinner';
+import formatDate from '../../../../helper/dateFormatter';
+import type { UpcomingInterviewsProps } from '../../models';
+import { getUpcomingInterviews } from '../../data/dashboardData';
 import styles from './UpcomingInterviews.module.css';
-import { getInterviewTiming } from '../../helper/interviewTiming';
+import { getInterviewTiming } from '../../../../helper/interviewTiming';
 
 const MAX_UPCOMING_INTERVIEWS = 3;
 

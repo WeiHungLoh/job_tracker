@@ -1,13 +1,15 @@
-import ApplicationPipelineChart from './ApplicationPipelineChart';
-import ApplicationsLineChart from './ApplicationsLineChart';
-import ClosedOutcomesChart from './ClosedOutcomesChart';
-import DashboardStats from './DashboardStats';
-import UpcomingInterviews from './UpcomingInterviews';
+import ApplicationPipelineChart from './charts/applicationPipeline/ApplicationPipelineChart';
+import ApplicationsLineChart from './charts/applicationsTrend/ApplicationsLineChart';
+import ClosedOutcomesChart from './charts/closedOutcomes/ClosedOutcomesChart';
+import DashboardStats from './overview/dashboardStats/DashboardStats';
+import UpcomingInterviews from './overview/upcomingInterviews/UpcomingInterviews';
+import AttentionCenter from './attentionCenter/AttentionCenter';
 import type { DashboardContentProps } from './models';
 import styles from './Dashboard.module.css';
 import useCurrentTime from '../../hooks/useCurrentTime';
 
 const DashboardContent = ({
+    applications,
     statusCounts,
     interviews,
     weeklyApplications,
@@ -25,6 +27,14 @@ const DashboardContent = ({
                     statusCounts={statusCounts}
                     interviews={interviews}
                     weeklyApplications={weeklyApplications}
+                    isLoading={isLoading}
+                />
+            </section>
+            <section className={styles.attentionSection}>
+                <AttentionCenter
+                    applications={applications}
+                    currentTime={currentTime}
+                    interviews={interviews}
                     isLoading={isLoading}
                 />
             </section>

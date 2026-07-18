@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardContent from './DashboardContent';
-import type { JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
+import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
 import type { JobInterview } from '../interview/models';
 import type {
     DashboardApplicationNavigationState,
@@ -11,9 +11,11 @@ import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
 import { routes } from '../../routes';
+import { ATTENTION_APPLICATION_STATUSES } from './attentionCenter/attentionCenterData';
 
 const Dashboard = () => {
     const [statusCounts, setStatusCounts] = useState<JobStatusCount[]>([]);
+    const [applications, setApplications] = useState<JobApplication[]>([]);
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
     const [weeklyApplications, setWeeklyApplications] = useState<WeeklyApplicationCount[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -36,17 +38,20 @@ const Dashboard = () => {
 
         const fetchDashboardData = async () => {
             try {
-                const [jobStatusCounts, jobInterviews, weeklyApplicationCounts] = await Promise.all([
-                    api.application.listJobStatusCounts(),
-                    api.interview.listInterviews(),
-                    api.application.listWeeklyApplications(),
-                ]);
+                const [jobStatusCounts, jobInterviews, weeklyApplicationCounts, attentionApplications] =
+                    await Promise.all([
+                        api.application.listJobStatusCounts(),
+                        api.interview.listInterviews(),
+                        api.application.listWeeklyApplications(),
+                        api.application.listApplications({ jobStatuses: [...ATTENTION_APPLICATION_STATUSES] }),
+                    ]);
 
                 if (!isActive) {
                     return;
                 }
 
                 setStatusCounts(Array.isArray(jobStatusCounts) ? jobStatusCounts : []);
+                setApplications(Array.isArray(attentionApplications) ? attentionApplications : []);
                 setInterviews(Array.isArray(jobInterviews) ? jobInterviews : []);
                 setWeeklyApplications(Array.isArray(weeklyApplicationCounts) ? weeklyApplicationCounts : []);
             } catch (error) {
@@ -67,6 +72,7 @@ const Dashboard = () => {
 
     return (
         <DashboardContent
+            applications={applications}
             statusCounts={statusCounts}
             interviews={interviews}
             weeklyApplications={weeklyApplications}

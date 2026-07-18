@@ -5,13 +5,15 @@ type DashboardCardProps = {
     title: string;
     description?: string;
     children: ReactNode;
+    className?: string;
 };
 
-const DashboardCard = ({ title, description, children }: DashboardCardProps) => {
+const DashboardCard = ({ title, description, children, className = '' }: DashboardCardProps) => {
     const titleId = useId();
+    const classes = [styles.card, className].filter(Boolean).join(' ');
 
     return (
-        <article className={styles.card} aria-labelledby={titleId}>
+        <article className={classes} aria-labelledby={titleId}>
             <header className={styles.header}>
                 <h2 id={titleId}>{title}</h2>
                 {description && <p>{description}</p>}

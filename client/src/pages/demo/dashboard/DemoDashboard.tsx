@@ -27,6 +27,7 @@ const DemoDashboard = () => {
 
     return (
         <DashboardContent
+            applications={state.applications}
             statusCounts={statusCounts}
             interviews={state.interviews}
             weeklyApplications={weeklyApplications}

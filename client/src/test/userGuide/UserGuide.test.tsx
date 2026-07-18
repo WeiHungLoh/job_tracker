@@ -28,6 +28,10 @@ describe('renders user guide properly', () => {
 
         expect(screen.getByText(/quick visual overview/i)).toBeVisible();
         expect(screen.getByText(/interview rate counts applications currently at/i)).toBeVisible();
+        expect(screen.getByText(/shows up to six applications/i)).toBeVisible();
+        expect(screen.getByText(/applied for 7 days or more/i)).toBeVisible();
+        expect(screen.getByText(/stale after 21 days/i)).toBeVisible();
+        expect(screen.getByText(/advisory and read-only/i)).toBeVisible();
 
         await userEvent.click(screen.getByRole('button', { name: /demo mode/i }));
 

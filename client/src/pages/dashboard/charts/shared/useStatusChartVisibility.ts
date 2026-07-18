@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { JobStatus } from '../application/models';
+import type { JobStatus } from '../../../application/models';
 
 type StatusChartVisibility = {
     hiddenStatuses: ReadonlySet<JobStatus>;

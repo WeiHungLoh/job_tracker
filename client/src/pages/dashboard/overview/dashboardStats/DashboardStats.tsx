@@ -1,11 +1,11 @@
-import Icon from '../../components/icon/Icon';
-import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
+import Icon from '../../../../components/icon/Icon';
+import LoadingSpinner from '../../../../components/loadingSpinner/LoadingSpinner';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import styles from './DashboardStats.module.css';
-import type { DashboardStatsProps } from './models';
-import type { JobStatus } from '../application/models';
-import { getStatusCountMap, getTotalStatusCount, getUpcomingInterviews } from './dashboardData';
+import type { DashboardStatsProps } from '../../models';
+import type { JobStatus } from '../../../application/models';
+import { getStatusCountMap, getTotalStatusCount, getUpcomingInterviews } from '../../data/dashboardData';
 
 const INTERVIEW_PLUS_STATUSES: readonly JobStatus[] = ['Interview', 'Offer', 'Accepted', 'Declined'];
 const OFFER_PLUS_STATUSES: readonly JobStatus[] = ['Offer', 'Accepted', 'Declined'];

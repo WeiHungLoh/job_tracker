@@ -1,0 +1,104 @@
+.attentionCard {
+    min-height: 0;
+}
+
+.attentionCard > header {
+    padding-bottom: 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--colorPrimary) 40%, var(--colorCardBorder));
+}
+
+.attentionCard > header h2 {
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: var(--radiusControl);
+    background-color: var(--colorPrimary);
+    color: var(--colorBtnPrimaryText);
+}
+
+.attentionList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spaceCompact);
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.attentionItem {
+    --attentionStatusColor: var(--colorPrimary);
+
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--colorCardBorder);
+    border-inline-start: 4px solid var(--attentionStatusColor);
+    border-radius: 12px;
+    background: var(--colorCardBg);
+}
+
+.attentionItem.applied {
+    --attentionStatusColor: var(--colorStatusApplied);
+}
+
+.attentionItem.interview {
+    --attentionStatusColor: var(--colorStatusInterview);
+}
+
+.attentionItem.offer {
+    --attentionStatusColor: var(--colorStatusOffer);
+}
+
+.itemHeading {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.applicationDetails {
+    min-width: 0;
+}
+
+.applicationDetails h3,
+.centered h3 {
+    margin: 0;
+    color: var(--colorText);
+    font-size: 0.95rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.applicationDetails p,
+.reason,
+.centered p {
+    color: var(--colorTextSecondary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.applicationDetails p {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+}
+
+.reason {
+    margin: 9px 0 0;
+}
+
+.centered {
+    display: grid;
+    min-height: 110px;
+    flex: 1;
+    place-items: center;
+    text-align: center;
+}
+
+.centered p {
+    margin: 6px 0 0;
+}
+
+@media (max-width: 768px) {
+    .attentionList {
+        grid-template-columns: 1fr;
+    }
+}

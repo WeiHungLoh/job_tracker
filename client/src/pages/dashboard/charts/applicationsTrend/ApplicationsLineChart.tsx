@@ -9,13 +9,13 @@ import {
     Tooltip,
 } from 'chart.js';
 import { useMemo, useState } from 'react';
-import formatDate from '../../helper/dateFormatter';
+import formatDate from '../../../../helper/dateFormatter';
 import { Line } from 'react-chartjs-2';
-import DashboardCard from './DashboardCard';
-import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
-import type { ApplicationsLineChartProps } from './models';
+import DashboardCard from '../../shared/dashboardCard/DashboardCard';
+import LoadingSpinner from '../../../../components/loadingSpinner/LoadingSpinner';
+import type { ApplicationsLineChartProps } from '../../models';
 import styles from './ApplicationsLineChart.module.css';
-import { useTheme } from '../../components/theme/ThemeContext';
+import { useTheme } from '../../../../components/theme/ThemeContext';
 import {
     CHART_COLORS,
     DASHBOARD_TOOLTIP_OPTIONS,
@@ -24,8 +24,8 @@ import {
     TITLE_FONT,
     TITLE_PADDING,
     trendTooltipPlugin,
-} from './chartConfig';
-import { getWeeklyInterviewCounts } from './dashboardData';
+} from '../shared/chartConfig';
+import { getWeeklyInterviewCounts } from '../../data/dashboardData';
 
 ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
 

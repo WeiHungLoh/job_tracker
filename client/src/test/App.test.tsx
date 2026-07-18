@@ -554,6 +554,11 @@ describe('App routing and authentication behavior', () => {
             expect(requestedUrls.filter((url) => url.endsWith('/job-applications/status-counts'))).toHaveLength(1);
             expect(requestedUrls.filter((url) => url.endsWith('/job-interviews'))).toHaveLength(1);
             expect(requestedUrls.filter((url) => url.endsWith('/job-applications/weekly-counts'))).toHaveLength(1);
+            expect(
+                requestedUrls.filter((url) =>
+                    url.endsWith('/job-applications?jobStatuses=Applied&jobStatuses=Interview&jobStatuses=Offer')
+                )
+            ).toHaveLength(1);
         });
     });
 

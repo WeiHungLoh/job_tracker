@@ -1,4 +1,4 @@
-import { getWeeklyInterviewCounts } from '../../pages/dashboard/dashboardData';
+import { getWeeklyInterviewCounts } from '../../pages/dashboard/data/dashboardData';
 import type { WeeklyApplicationCount } from '../../pages/application/models';
 import type { JobInterview } from '../../pages/interview/models';
 

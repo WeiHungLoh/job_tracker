@@ -1,17 +1,20 @@
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ChartData, ChartOptions, Plugin } from 'chart.js';
-import ApplicationPipelineChart from '../../pages/dashboard/ApplicationPipelineChart';
-import ApplicationsLineChart from '../../pages/dashboard/ApplicationsLineChart';
-import ClosedOutcomesChart from '../../pages/dashboard/ClosedOutcomesChart';
+import ApplicationPipelineChart from '../../pages/dashboard/charts/applicationPipeline/ApplicationPipelineChart';
+import ApplicationsLineChart from '../../pages/dashboard/charts/applicationsTrend/ApplicationsLineChart';
+import ClosedOutcomesChart from '../../pages/dashboard/charts/closedOutcomes/ClosedOutcomesChart';
 import DashboardContent from '../../pages/dashboard/DashboardContent';
-import DashboardStats from '../../pages/dashboard/DashboardStats';
-import dashboardStatsStyles from '../../pages/dashboard/DashboardStats.module.css';
-import statusLegendStyles from '../../pages/dashboard/StatusLegend.module.css';
-import UpcomingInterviews from '../../pages/dashboard/UpcomingInterviews';
-import type { JobStatusCount, WeeklyApplicationCount } from '../../pages/application/models';
+import DashboardStats from '../../pages/dashboard/overview/dashboardStats/DashboardStats';
+import dashboardStatsStyles from '../../pages/dashboard/overview/dashboardStats/DashboardStats.module.css';
+import statusLegendStyles from '../../pages/dashboard/charts/shared/StatusLegend.module.css';
+import UpcomingInterviews from '../../pages/dashboard/overview/upcomingInterviews/UpcomingInterviews';
+import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../../pages/application/models';
 import type { JobInterview } from '../../pages/interview/models';
-import { getStatusBarTooltipPlacement, getTrendTooltipPlacement } from '../../pages/dashboard/chartConfig';
+import {
+    getStatusBarTooltipPlacement,
+    getTrendTooltipPlacement,
+} from '../../pages/dashboard/charts/shared/chartConfig';
 import { render } from '../renderWithToast';
 
 const chartMocks = vi.hoisted(() => ({
@@ -81,6 +84,17 @@ const statusCount = (jobStatus: JobStatusCount['job_status'], count: number): Jo
     count: String(count),
 });
 
+const createApplication = (jobId: number, jobStatus: JobStatus): JobApplication => ({
+    job_id: jobId,
+    company_name: `Application Company ${jobId}`,
+    job_title: `Application Role ${jobId}`,
+    application_date: '2026-06-01T12:00:00.000Z',
+    job_status: jobStatus,
+    job_location: '',
+    job_posting_url: '',
+    notes: '',
+});
+
 const getRenderedBars = (): Array<string | null> =>
     within(screen.getByTestId('bar-chart'))
         .getAllByText(/:/)
@@ -109,6 +123,7 @@ describe('Dashboard V2', () => {
     test('renders all dashboard sections', () => {
         render(
             <DashboardContent
+                applications={[createApplication(1, 'Offer')]}
                 statusCounts={[statusCount('Applied', 4), statusCount('Rejected', 1)]}
                 interviews={[]}
                 weeklyApplications={[{ start_of_week: '2026-07-06', applications_count: '4' }]}
@@ -117,6 +132,8 @@ describe('Dashboard V2', () => {
         );
 
         expect(screen.getByText('Total Active Applications')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Needs Attention' })).toBeInTheDocument();
+        expect(screen.getByText('Application Company 1')).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Job Search Activity' })).toBeInTheDocument();
         expect(
             screen.getByText('Applications submitted and interviews scheduled over the past eight weeks.')
@@ -530,7 +547,15 @@ describe('Dashboard V2', () => {
     });
 
     test('retains the complete dashboard empty state', () => {
-        render(<DashboardContent statusCounts={[]} interviews={[]} weeklyApplications={[]} isLoading={false} />);
+        render(
+            <DashboardContent
+                applications={[]}
+                statusCounts={[]}
+                interviews={[]}
+                weeklyApplications={[]}
+                isLoading={false}
+            />
+        );
 
         expect(
             screen.getByText(
@@ -547,6 +572,7 @@ describe('Dashboard V2', () => {
     test('retains the complete dashboard loading state', () => {
         render(
             <DashboardContent
+                applications={[]}
                 statusCounts={[statusCount('Applied', 1), statusCount('Rejected', 1)]}
                 interviews={[]}
                 weeklyApplications={[{ start_of_week: '2026-07-06', applications_count: '1' }]}
@@ -554,7 +580,7 @@ describe('Dashboard V2', () => {
             />
         );
 
-        expect(screen.getAllByRole('progressbar', { name: 'Loading' })).toHaveLength(5);
+        expect(screen.getAllByRole('progressbar', { name: 'Loading' })).toHaveLength(6);
         expect(screen.queryByTestId('line-chart')).not.toBeInTheDocument();
         expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('Weekly application summary')).not.toBeInTheDocument();
@@ -612,6 +638,7 @@ describe('Dashboard V2', () => {
 
         render(
             <DashboardContent
+                applications={[createApplication(1, 'Interview')]}
                 statusCounts={[]}
                 interviews={[endingInterview]}
                 weeklyApplications={[]}

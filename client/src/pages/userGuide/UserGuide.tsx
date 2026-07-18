@@ -50,6 +50,19 @@ const guideSections: readonly UserGuideSection[] = [
                         interviews, interview rate, and offer rate.
                     </li>
                     <li>
+                        <strong>Needs attention:</strong> Shows up to six applications that may need a follow-up,
+                        ordered by urgency.
+                        <ul>
+                            <li>Interview applications appear after every scheduled interview has ended.</li>
+                            <li>Applications at Offer always appear.</li>
+                            <li>Applied applications with no interview appear when applied for 7 days or more.</li>
+                            <li>Applications in that same state are marked stale after 21 days.</li>
+                        </ul>
+                        <p>
+                            This card is advisory and read-only. Future interviews stay in the Upcoming Interviews card.
+                        </p>
+                    </li>
+                    <li>
                         <strong>Application trend:</strong> Shows applications added over the past eight weeks, with a
                         summary of this week, the change from last week, and the best week.
                     </li>

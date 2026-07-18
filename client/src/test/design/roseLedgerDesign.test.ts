@@ -413,7 +413,9 @@ describe('Rose Ledger visual contract', () => {
 
     it('freezes the other responsive layout boundaries', () => {
         const activityControls = readSource('src/components/activityControls/ActivityControls.module.css');
-        const applicationsLineChart = readSource('src/pages/dashboard/ApplicationsLineChart.module.css');
+        const applicationsLineChart = readSource(
+            'src/pages/dashboard/charts/applicationsTrend/ApplicationsLineChart.module.css'
+        );
         const navbar = readSource('src/components/navbar/Navbar.module.css');
         const dashboard = readSource('src/pages/dashboard/Dashboard.module.css');
         const formPage = readSource('src/components/formPage/FormPage.module.css');
@@ -568,6 +570,34 @@ describe('Rose Ledger visual contract', () => {
         ].forEach((declaration) => expect(darkCss).toContain(declaration));
 
         expect(declarationsByFile(/^\s*(?:-webkit-)?box-shadow\s*:[^;]+;/gm)).toEqual(expectedBoxShadowDeclarations);
+    });
+
+    it('keeps the attention center distinct with a title marker and compact Board status badges', () => {
+        const attentionCenter = readSource('src/pages/dashboard/attentionCenter/AttentionCenter.module.css');
+        const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
+
+        expect(attentionCenter).toMatch(
+            /\.attentionCard\s*>\s*header\s+h2\s*\{[^}]*width:\s*fit-content;[^}]*padding:\s*5px 10px;[^}]*border-radius:\s*var\(--radiusControl\);[^}]*background-color:\s*var\(--colorPrimary\);[^}]*color:\s*var\(--colorBtnPrimaryText\);/s
+        );
+        expect(attentionCenter).toMatch(
+            /\.attentionCard\s*>\s*header\s*\{[^}]*padding-bottom:\s*14px;[^}]*border-bottom:\s*1px solid color-mix\(in srgb, var\(--colorPrimary\) 40%, var\(--colorCardBorder\)\);/s
+        );
+        expect(attentionCenter).toMatch(
+            /\.attentionItem\s*\{[^}]*border-inline-start:\s*4px solid var\(--attentionStatusColor\);/s
+        );
+        ['Applied', 'Interview', 'Offer'].forEach((status) =>
+            expect(attentionCenter).toContain(`--attentionStatusColor: var(--colorStatus${status});`)
+        );
+        expect(attentionCenter).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+        expect(attentionCenter).toMatch(
+            /@media \(max-width: 768px\)\s*\{[^}]*\.attentionList\s*\{[^}]*grid-template-columns:\s*1fr;/s
+        );
+        expect(applicationBoard).toMatch(
+            /\.statusBadge,\s*\.upcomingBadge\s*\{[^}]*padding:\s*4px 9px;[^}]*font-size:\s*0\.6875rem;[^}]*font-weight:\s*600;/s
+        );
+        expect(attentionCenter).not.toMatch(
+            /border-top|gradient\(|box-shadow|background:\s*color-mix|\.status\s*\{|colorBtnDestructive|colorError/i
+        );
     });
 
     it('completes the shared button, form, and menu visual contracts', () => {

@@ -1,4 +1,4 @@
-import type { JobStatus } from '../application/models';
+import type { JobStatus } from '../../../application/models';
 import styles from './StatusLegend.module.css';
 
 type StatusLegendProps = {

@@ -5,18 +5,9 @@ import { FIELD_MAX_LENGTHS } from '../../helper/formValidation';
 import { routes } from '../../routes';
 import type { ApplicationCardProps } from './ApplicationCard.models';
 import { JOB_STATUSES, type JobStatus } from './models';
+import ApplicationStatusBadge from './ApplicationStatusBadge';
 import NoteSaveStatus from '../../components/noteSaveStatus/NoteSaveStatus';
 import styles from './ApplicationCard.module.css';
-
-const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
-    Accepted: styles.accepted,
-    Applied: styles.applied,
-    Declined: styles.declined,
-    Ghosted: styles.ghosted,
-    Interview: styles.interview,
-    Offer: styles.offer,
-    Rejected: styles.rejected,
-};
 
 const JOB_STATUS_CARD_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.statusAccepted,
@@ -52,9 +43,7 @@ const ApplicationCard = (props: ApplicationCardProps) => {
                 {variant === 'job' ? (
                     <>
                         <div className={styles.badgeGroup}>
-                            <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>
-                                Job Status: {application.job_status}
-                            </p>
+                            <ApplicationStatusBadge jobStatus={application.job_status} showLabel />
                             {props.upcomingInterviewCount > 0 && (
                                 <span className={styles.upcomingBadge}>
                                     {props.upcomingInterviewCount} Upcoming Interview
@@ -89,7 +78,7 @@ const ApplicationCard = (props: ApplicationCardProps) => {
                         )}
                     </>
                 ) : (
-                    <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>Job Status: {application.job_status}</p>
+                    <ApplicationStatusBadge jobStatus={application.job_status} showLabel />
                 )}
 
                 {application.job_posting_url !== '' && (

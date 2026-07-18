@@ -1,4 +1,4 @@
-import type { JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
+import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
 import type { JobInterview } from '../interview/models';
 
 export type DashboardInterviewSelectHandler = (interviewId: number) => void;
@@ -17,7 +17,10 @@ export type DashboardNavigationProps = {
     onStatusSelect?: DashboardStatusSelectHandler;
 };
 
-export type DashboardContentProps = DashboardDataProps & DashboardNavigationProps;
+export type DashboardContentProps = DashboardDataProps &
+    DashboardNavigationProps & {
+        applications: JobApplication[];
+    };
 export type DashboardStatsProps = DashboardDataProps & {
     currentTime?: Date;
 };

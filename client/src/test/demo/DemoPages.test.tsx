@@ -847,6 +847,12 @@ describe('demo page interactions', () => {
         renderDemo(<DemoDashboard />, [routes.demoDashboard]);
 
         expect(screen.getByText('Total Active Applications')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Needs Attention' })).toBeInTheDocument();
+        expect(
+            within(screen.getByRole('list', { name: 'Applications needing attention' })).getAllByRole('listitem')
+        ).toHaveLength(6);
+        expect(screen.getByText('Quantum Ledger')).toBeInTheDocument();
+        expect(screen.getByText('Northstar Mobility')).toBeInTheDocument();
         expect(screen.getByText('Demo line chart')).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Upcoming Interviews' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Application Pipeline' })).toBeInTheDocument();
