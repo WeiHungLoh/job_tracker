@@ -543,6 +543,7 @@ describe('Job interview viewer flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
+        expect(screen.getByText('Try showing all time filters to see every active interview.')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
         expect(screen.getByRole('region', { name: 'Interview view and management controls' }).children).toHaveLength(1);
         await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));

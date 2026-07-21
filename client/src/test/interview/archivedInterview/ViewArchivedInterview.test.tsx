@@ -202,6 +202,7 @@ describe('Archived job interview viewer flow', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
+        expect(screen.getByText('Try showing all time filters to see every archived interview.')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'Archived interview view and management controls' }).children
