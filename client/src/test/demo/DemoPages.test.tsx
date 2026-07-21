@@ -853,7 +853,7 @@ describe('demo page interactions', () => {
         expect(
             screen.getByRole('region', { name: 'Demo archived interview view and management controls' }).children
         ).toHaveLength(1);
-        await userEvent.click(screen.getByRole('button', { name: 'Show all interviews' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
 
         expect(await screen.findByRole('region', { name: 'Archived interviews' })).toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'More...' }));

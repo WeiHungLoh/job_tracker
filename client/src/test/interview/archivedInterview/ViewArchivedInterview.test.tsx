@@ -206,6 +206,8 @@ describe('Archived job interview viewer flow', () => {
         expect(
             screen.getByRole('region', { name: 'Archived interview view and management controls' }).children
         ).toHaveLength(1);
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(await screen.findByRole('region', { name: 'Archived interviews' })).toBeInTheDocument();
     });
 
     test('shows error toast when corresponding archived job application is not available', async () => {

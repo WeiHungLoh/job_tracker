@@ -352,7 +352,7 @@ describe('App routing and authentication behavior', () => {
 
         renderRoute('/offer-decisions');
 
-        expect(await screen.findByRole('heading', { name: 'No current offers to compare' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'No offers to compare' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Offer Comparison' })).toHaveAttribute('aria-current', 'page');
         expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('/offer-decisions'))).toHaveLength(1);
     });

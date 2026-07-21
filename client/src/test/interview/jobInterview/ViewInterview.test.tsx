@@ -527,7 +527,7 @@ describe('Job interview viewer flow', () => {
         );
     });
 
-    test('shows filtered empty state, restores Show All, and rolls back a failed saved filter', async () => {
+    test('shows filtered empty state, clears filters, and rolls back a failed saved filter', async () => {
         const endedInterview = {
             ...mockInterview,
             company_name: 'Ended Company',
@@ -545,7 +545,7 @@ describe('Job interview viewer flow', () => {
         expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
         expect(screen.getByRole('region', { name: 'Interview view and management controls' }).children).toHaveLength(1);
-        await userEvent.click(screen.getByRole('button', { name: 'Show all interviews' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
         expect(await screen.findByRole('article', { name: 'Ended Company interview' })).toBeInTheDocument();
         firstRender.unmount();
 

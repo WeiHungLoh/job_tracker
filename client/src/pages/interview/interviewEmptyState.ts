@@ -20,10 +20,10 @@ export const createInterviewEmptyState = (options: InterviewEmptyStateOptions): 
     if (options.filtersAreActive) {
         return {
             title: 'No interviews match your filters',
-            description: 'Try showing all interviews or choose a different time filter.',
+            description: 'Clear the current filters or choose a different time filter.',
             followsControls: true,
             icon: 'interview',
-            primaryAction: { label: 'Show all interviews', onClick: options.onClearFilters },
+            primaryAction: { label: 'Clear filters', onClick: options.onClearFilters },
         };
     }
 

@@ -760,10 +760,11 @@ const OfferDecisionWorkspace = ({ data, onDelete, onSave, readOnly }: OfferDecis
                     description={
                         readOnly
                             ? 'Saved evaluations appear here after their applications are archived.'
-                            : 'Applications with Offer status appear here automatically.'
+                            : 'Applications with Offer status appear here, along with saved evaluations that later move to Accepted or Declined.'
                     }
+                    followsControls
                     icon='briefcase'
-                    title={readOnly ? 'No archived offer comparisons' : 'No current offers to compare'}
+                    title={readOnly ? 'No archived offer comparisons' : 'No offers to compare'}
                 />
             ) : readOnly ? (
                 <>

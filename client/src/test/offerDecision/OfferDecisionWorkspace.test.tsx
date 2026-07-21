@@ -541,9 +541,18 @@ describe('OfferDecisionWorkspace', () => {
 
     test('renders purpose-built empty states', () => {
         const { rerender } = render(<OfferDecisionWorkspace data={{ applications: [] }} readOnly={false} />);
-        expect(screen.getByRole('heading', { name: 'No current offers to compare' })).toBeInTheDocument();
+        const activeEmptyState = screen.getByRole('heading', { name: 'No offers to compare' }).closest('section');
+        expect(activeEmptyState?.className).toContain('followsControls');
+        expect(
+            screen.getByText(
+                'Applications with Offer status appear here, along with saved evaluations that later move to Accepted or Declined.'
+            )
+        ).toBeInTheDocument();
 
         rerender(<OfferDecisionWorkspace data={{ applications: [] }} readOnly />);
-        expect(screen.getByRole('heading', { name: 'No archived offer comparisons' })).toBeInTheDocument();
+        const archivedEmptyState = screen
+            .getByRole('heading', { name: 'No archived offer comparisons' })
+            .closest('section');
+        expect(archivedEmptyState?.className).toContain('followsControls');
     });
 });
