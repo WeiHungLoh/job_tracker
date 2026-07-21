@@ -3,11 +3,14 @@ import type { JobInterview } from '../../interview/models';
 import { getInterviewTiming } from '../../../helper/interviewTiming';
 
 export const FOLLOW_UP_AFTER_DAYS = 7;
-export const STALE_AFTER_DAYS = 21;
 export const MAX_ATTENTION_ITEMS = 6;
 export const ATTENTION_APPLICATION_STATUSES = ['Applied', 'Interview', 'Offer'] as const satisfies readonly JobStatus[];
 
-export type AttentionItemCategory = 'post-interview' | 'offer-review' | 'stale-application' | 'application-follow-up';
+export type AttentionItemCategory =
+    | 'post-interview'
+    | 'interview-unscheduled'
+    | 'offer-review'
+    | 'application-follow-up';
 
 export type AttentionItem = {
     application: JobApplication;
@@ -23,16 +26,19 @@ type AttentionCandidate = AttentionItem & {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CATEGORY_PRIORITY: Record<AttentionItemCategory, number> = {
     'post-interview': 0,
-    'offer-review': 1,
-    'stale-application': 2,
+    'interview-unscheduled': 1,
+    'offer-review': 2,
     'application-follow-up': 3,
 };
 
-const getApplicationAgeDays = (application: JobApplication, now: Date): number | null => {
-    const applicationTime = Date.parse(application.application_date);
-    const elapsed = now.getTime() - applicationTime;
+const getElapsedDays = (startTime: number, now: Date): number | null => {
+    const elapsed = now.getTime() - startTime;
 
-    return Number.isFinite(applicationTime) && elapsed >= 0 ? Math.floor(elapsed / DAY_MS) : null;
+    return Number.isFinite(startTime) && elapsed >= 0 ? Math.floor(elapsed / DAY_MS) : null;
+};
+
+const getApplicationAgeDays = (application: JobApplication, now: Date): number | null => {
+    return getElapsedDays(Date.parse(application.application_date), now);
 };
 
 export const getAttentionItems = (
@@ -56,17 +62,37 @@ export const getAttentionItems = (
             const timings = linkedInterviews.map((interview) => getInterviewTiming(interview, now));
             if (timings.every((timing) => timing.isValid && timing.hasEnded)) {
                 const latestEnd = Math.max(...timings.map((timing) => timing.end.getTime()));
-                const category: AttentionItemCategory = 'post-interview';
-                return [
-                    {
-                        application,
-                        category,
-                        message: 'Your interview process has ended. Follow up or update the application status.',
-                        priority: CATEGORY_PRIORITY[category],
-                        sortValue: latestEnd,
-                    },
-                ];
+                const interviewAgeDays = getElapsedDays(latestEnd, now);
+
+                if (interviewAgeDays !== null && interviewAgeDays >= FOLLOW_UP_AFTER_DAYS) {
+                    const category: AttentionItemCategory = 'post-interview';
+                    return [
+                        {
+                            application,
+                            category,
+                            message: `Your interview process ended ${interviewAgeDays} days ago. Follow up or update the application status.`,
+                            priority: CATEGORY_PRIORITY[category],
+                            sortValue: interviewAgeDays,
+                        },
+                    ];
+                }
             }
+
+            return [];
+        }
+
+        if (application.job_status === 'Interview') {
+            const category: AttentionItemCategory = 'interview-unscheduled';
+            return [
+                {
+                    application,
+                    category,
+                    message:
+                        'This application is at Interview, but no interview has been scheduled. Add an interview to keep it updated.',
+                    priority: CATEGORY_PRIORITY[category],
+                    sortValue: ageDays ?? Number.NEGATIVE_INFINITY,
+                },
+            ];
         }
 
         if (application.job_status === 'Offer') {
@@ -86,17 +112,11 @@ export const getAttentionItems = (
             return [];
         }
 
-        const category: AttentionItemCategory | null =
-            ageDays >= STALE_AFTER_DAYS
-                ? 'stale-application'
-                : ageDays >= FOLLOW_UP_AFTER_DAYS
-                ? 'application-follow-up'
-                : null;
-
-        if (!category) {
+        if (ageDays < FOLLOW_UP_AFTER_DAYS) {
             return [];
         }
 
+        const category: AttentionItemCategory = 'application-follow-up';
         return [
             {
                 application,

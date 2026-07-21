@@ -41,25 +41,28 @@ describe('AttentionCenter', () => {
             <AttentionCenter
                 applications={[
                     createApplication(1, 'Interview'),
-                    createApplication(2, 'Offer'),
-                    createApplication(3, 'Applied'),
+                    createApplication(2, 'Interview'),
+                    createApplication(3, 'Offer'),
+                    createApplication(4, 'Applied'),
                 ]}
-                interviews={[createInterview(1, '2026-07-09T10:00:00.000Z')]}
+                interviews={[createInterview(1, '2026-07-02T11:00:00.000Z')]}
                 currentTime={currentTime}
                 isLoading={false}
             />
         );
 
         const list = screen.getByRole('list', { name: 'Applications needing attention' });
-        expect(within(list).getAllByRole('listitem')).toHaveLength(3);
+        expect(within(list).getAllByRole('listitem')).toHaveLength(4);
         expect(within(list).getByText('Company 1')).toBeInTheDocument();
-        expect(within(list).getByText('Interview')).toBeInTheDocument();
+        expect(within(list).getByText('Company 2')).toBeInTheDocument();
+        expect(within(list).getAllByText('Interview')).toHaveLength(2);
         expect(within(list).getByText('Offer')).toBeInTheDocument();
         expect(within(list).getByText('Applied')).toBeInTheDocument();
-        expect(within(list).getByText('Interview')).toHaveClass(
-            boardStyles.statusBadge,
-            getApplicationBoardStatusClassName('Interview')
-        );
+        within(list)
+            .getAllByText('Interview')
+            .forEach((badge) =>
+                expect(badge).toHaveClass(boardStyles.statusBadge, getApplicationBoardStatusClassName('Interview'))
+            );
         expect(within(list).getByText('Offer')).toHaveClass(
             boardStyles.statusBadge,
             getApplicationBoardStatusClassName('Offer')
@@ -68,6 +71,16 @@ describe('AttentionCenter', () => {
             boardStyles.statusBadge,
             getApplicationBoardStatusClassName('Applied')
         );
+        expect(
+            within(list).getByText(
+                'Your interview process ended 8 days ago. Follow up or update the application status.'
+            )
+        ).toBeInTheDocument();
+        expect(
+            within(list).getByText(
+                'This application is at Interview, but no interview has been scheduled. Add an interview to keep it updated.'
+            )
+        ).toBeInTheDocument();
         expect(within(list).queryByText('•')).not.toBeInTheDocument();
         expect(screen.queryByRole('link')).not.toBeInTheDocument();
         expect(screen.queryByRole('button')).not.toBeInTheDocument();

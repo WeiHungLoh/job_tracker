@@ -50,16 +50,25 @@ const guideSections: readonly UserGuideSection[] = [
                         interviews, interview rate, and offer rate.
                     </li>
                     <li>
-                        <strong>Needs attention:</strong> Shows up to six applications that may need a follow-up,
-                        ordered by urgency.
+                        <strong>Needs attention:</strong> Shows up to six applications that may require action, ordered
+                        by urgency.
                         <ul>
-                            <li>Interview applications appear after every scheduled interview has ended.</li>
-                            <li>Applications at Offer always appear.</li>
-                            <li>Applied applications with no interview appear when applied for 7 days or more.</li>
-                            <li>Applications in that same state are marked stale after 21 days.</li>
+                            <li>
+                                Interview applications appear when every scheduled interview has ended and at least
+                                seven full days have passed since the latest interview ended. The number of days is
+                                calculated from the latest interview&apos;s end time, including its duration, and
+                                applications waiting longer are ranked higher.
+                            </li>
+                            <li>Applications marked as Interview with no scheduled interview prompt you to add one.</li>
+                            <li>Applications at Offer appear after Interview-related items.</li>
+                            <li>
+                                Applied applications with no linked interview appear after seven days, with older
+                                applications ranked higher.
+                            </li>
                         </ul>
                         <p>
-                            This card is advisory and read-only. Future interviews stay in the Upcoming Interviews card.
+                            This card is advisory and read-only. Future and ongoing interviews remain in the Upcoming
+                            Interviews card.
                         </p>
                     </li>
                     <li>

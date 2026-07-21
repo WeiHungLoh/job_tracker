@@ -63,7 +63,7 @@
 .centered h3 {
     margin: 0;
     color: var(--colorText);
-    font-size: 0.95rem;
+    font-size: 1.5rem;
     line-height: 1.35;
     overflow-wrap: anywhere;
 }
@@ -72,8 +72,12 @@
 .reason,
 .centered p {
     color: var(--colorTextSecondary);
-    font-size: 0.8rem;
+    font-size: var(--fontSizeBody);
     line-height: 1.4;
+}
+
+.itemHeading > span {
+    font-size: var(--fontSizeCompactControl);
 }
 
 .applicationDetails p {
@@ -95,6 +99,23 @@
 
 .centered p {
     margin: 6px 0 0;
+}
+
+@media (max-width: 803px) {
+    .applicationDetails h3,
+    .centered h3 {
+        font-size: 1.2rem;
+    }
+
+    .applicationDetails p,
+    .reason,
+    .centered p {
+        font-size: 0.9rem;
+    }
+
+    .itemHeading > span {
+        font-size: 0.7rem;
+    }
 }
 
 @media (max-width: 768px) {

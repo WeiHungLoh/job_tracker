@@ -612,9 +612,11 @@ describe('Rose Ledger visual contract', () => {
         expect(declarationsByFile(/^\s*(?:-webkit-)?box-shadow\s*:[^;]+;/gm)).toEqual(expectedBoxShadowDeclarations);
     });
 
-    it('keeps the attention center distinct with a title marker and compact Board status badges', () => {
+    it('keeps the attention center distinct and matches the readable application and interview card type scale', () => {
         const attentionCenter = readSource('src/pages/dashboard/attentionCenter/AttentionCenter.module.css');
         const applicationBoard = readSource('src/pages/application/applicationBoard/ApplicationBoard.module.css');
+        const applicationCard = readSource('src/pages/application/ApplicationCard.module.css');
+        const interviewCard = readSource('src/pages/interview/InterviewCard.module.css');
 
         expect(attentionCenter).toMatch(
             /\.attentionCard\s*>\s*header\s+h2\s*\{[^}]*width:\s*fit-content;[^}]*padding:\s*5px 10px;[^}]*border-radius:\s*var\(--radiusControl\);[^}]*background-color:\s*var\(--colorPrimary\);[^}]*color:\s*var\(--colorBtnPrimaryText\);/s
@@ -629,8 +631,30 @@ describe('Rose Ledger visual contract', () => {
             expect(attentionCenter).toContain(`--attentionStatusColor: var(--colorStatus${status});`)
         );
         expect(attentionCenter).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+        expect(attentionCenter).toMatch(/\.attentionItem\s*\{[^}]*min-width:\s*0;/s);
+        expect(attentionCenter).toMatch(/\.applicationDetails\s*\{[^}]*min-width:\s*0;/s);
+        expect(attentionCenter).toMatch(
+            /\.applicationDetails h3,\s*\.centered h3\s*\{[^}]*font-size:\s*1\.5rem;[^}]*overflow-wrap:\s*anywhere;/s
+        );
+        expect(attentionCenter).toMatch(
+            /\.applicationDetails p,\s*\.reason,\s*\.centered p\s*\{[^}]*font-size:\s*var\(--fontSizeBody\);/s
+        );
+        expect(attentionCenter).toMatch(
+            /\.itemHeading\s*>\s*span\s*\{[^}]*font-size:\s*var\(--fontSizeCompactControl\);/s
+        );
+        expect(attentionCenter).toMatch(
+            /@media \(max-width: 803px\)\s*\{[\s\S]*?\.applicationDetails h3,\s*\.centered h3\s*\{[^}]*font-size:\s*1\.2rem;[\s\S]*?\.applicationDetails p,\s*\.reason,\s*\.centered p\s*\{[^}]*font-size:\s*0\.9rem;[\s\S]*?\.itemHeading\s*>\s*span\s*\{[^}]*font-size:\s*0\.7rem;/
+        );
         expect(attentionCenter).toMatch(
             /@media \(max-width: 768px\)\s*\{[^}]*\.attentionList\s*\{[^}]*grid-template-columns:\s*1fr;/s
+        );
+        expect(applicationCard).toMatch(/\.applicationContent h2\s*\{[^}]*font-size:\s*1\.5rem;/s);
+        expect(interviewCard).toMatch(/\.interviewContent h2\s*\{[^}]*font-size:\s*1\.5rem;/s);
+        expect(applicationCard).toMatch(
+            /@media \(max-width: 803px\)\s*\{[\s\S]*?\.applicationContent\s*\{[^}]*font-size:\s*0\.9rem;[\s\S]*?\.applicationContent h2\s*\{[^}]*font-size:\s*1\.2rem;/
+        );
+        expect(interviewCard).toMatch(
+            /@media \(max-width: 803px\)\s*\{[\s\S]*?\.interviewContent\s*\{[^}]*font-size:\s*0\.9rem;[\s\S]*?\.interviewContent h2\s*\{[^}]*font-size:\s*1\.2rem;/
         );
         expect(applicationBoard).toMatch(
             /\.statusBadge,\s*\.upcomingBadge\s*\{[^}]*padding:\s*4px 9px;[^}]*font-size:\s*0\.6875rem;[^}]*font-weight:\s*600;/s
