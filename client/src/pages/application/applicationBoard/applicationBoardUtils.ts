@@ -1,8 +1,15 @@
+import { pointerWithin, rectIntersection, type CollisionDetection } from '@dnd-kit/core';
 import type { JobStatus } from '../models';
 import { JOB_STATUSES, JOB_STATUS_SORT_ORDER } from '../models';
 
 type StatusApplication = {
     job_status: JobStatus;
+};
+
+export const detectApplicationBoardCollisions: CollisionDetection = (args) => {
+    const pointerCollisions = pointerWithin(args);
+
+    return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
 };
 
 export const isJobStatus = (value: string): value is JobStatus => {

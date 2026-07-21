@@ -20,6 +20,8 @@ export const weeksAgo = (now: Date, weeks: number, hour = 12): Date => daysAgo(n
 
 export const toDateString = (date: Date): string => date.toISOString();
 
+export const toDateOnlyString = (date: Date): string => date.toISOString().slice(0, 10);
+
 const pad = (value: number): string => String(value).padStart(2, '0');
 
 export const toDateTimeString = (date: Date): string => {

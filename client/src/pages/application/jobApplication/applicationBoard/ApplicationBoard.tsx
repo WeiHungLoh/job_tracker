@@ -12,12 +12,14 @@ import { useCallback, useRef, useState, type UIEvent } from 'react';
 import ApplicationBoardCard from './ApplicationBoardCard';
 import ApplicationBoardColumn from '../../applicationBoard/ApplicationBoardColumn';
 import {
+    detectApplicationBoardCollisions,
     getOrderedBoardStatuses,
     groupApplicationsByStatus,
     isJobStatus,
 } from '../../applicationBoard/applicationBoardUtils';
 import type { ApplicationBoardProps } from './models';
 import styles from '../../applicationBoard/ApplicationBoard.module.css';
+import { isApplicationStatusDisabled } from '../../applicationStatusRestrictions';
 
 const SCROLL_BOUNDARY_TOLERANCE = 1;
 
@@ -84,6 +86,7 @@ const ApplicationBoard = ({
     deletingApplicationIds,
     editedNotes,
     hasInterview,
+    hasOfferEvaluation,
     isArchivingApplication,
     isUpdatingApplicationStatus,
     noteSaveStatuses,
@@ -99,17 +102,12 @@ const ApplicationBoard = ({
 }: ApplicationBoardProps) => {
     const boardRef = useRef<HTMLDivElement>(null);
     const [draggingApplicationId, setDraggingApplicationId] = useState<number | null>(null);
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor)
-    );
+    const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
     const groupedApplications = groupApplicationsByStatus(applications);
     const boardStatuses = getOrderedBoardStatuses(selectedJobStatuses);
     const activeApplicationHasInterview = draggingApplicationId !== null && hasInterview(draggingApplicationId);
+    const activeApplicationHasOfferEvaluation =
+        draggingApplicationId !== null && hasOfferEvaluation(draggingApplicationId);
     const clampCurrentBoardScroll = useCallback(() => {
         if (boardRef.current) {
             clampBoardScrollLeft(boardRef.current);
@@ -141,7 +139,13 @@ const ApplicationBoard = ({
         if (!application || !isJobStatus(destinationStatus) || application.job_status === destinationStatus) {
             return;
         }
-        if (destinationStatus === 'Applied' && hasInterview(application.job_id)) {
+        if (
+            isApplicationStatusDisabled(
+                destinationStatus,
+                hasInterview(application.job_id),
+                hasOfferEvaluation(application.job_id)
+            )
+        ) {
             return;
         }
 
@@ -151,6 +155,7 @@ const ApplicationBoard = ({
     return (
         <DndContext
             autoScroll={{ canScroll: canAutoScrollBoard }}
+            collisionDetection={detectApplicationBoardCollisions}
             modifiers={APPLICATION_BOARD_DRAG_MODIFIERS}
             onDragCancel={handleDragCancel}
             onDragEnd={handleDragEnd}
@@ -167,7 +172,11 @@ const ApplicationBoard = ({
             >
                 {boardStatuses.map((status) => {
                     const statusApplications = groupedApplications[status];
-                    const isDropDisabled = status === 'Applied' && activeApplicationHasInterview;
+                    const isDropDisabled = isApplicationStatusDisabled(
+                        status,
+                        activeApplicationHasInterview,
+                        activeApplicationHasOfferEvaluation
+                    );
 
                     return (
                         <ApplicationBoardColumn
@@ -180,6 +189,7 @@ const ApplicationBoard = ({
                                 <ApplicationBoardCard
                                     application={application}
                                     hasInterview={hasInterview(application.job_id)}
+                                    hasOfferEvaluation={hasOfferEvaluation(application.job_id)}
                                     isArchiving={isArchivingApplication(application.job_id)}
                                     isDeleting={deletingApplicationIds.has(application.job_id)}
                                     isUpdatingStatus={isUpdatingApplicationStatus(application.job_id)}

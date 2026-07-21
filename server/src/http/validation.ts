@@ -8,8 +8,21 @@ import {
     type ApplicationViewMode,
     type JobStatus,
     type InterviewTimeFilter,
+    OFFER_WORK_ARRANGEMENTS,
+    type OfferDetails,
+    type OfferDecisionValues,
 } from '../db/models.js';
-import { PASSWORD_MAX_BYTES, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../config/validation.js';
+import type { SaveOfferEvaluationRequest } from '../routes/offerDecision/models.js';
+import {
+    OFFER_ANNUAL_LEAVE_DAYS_MAX,
+    OFFER_DECISION_VALUE_MAX,
+    OFFER_DECISION_VALUE_MIN,
+    OFFER_DETAILS_MAX_LENGTHS,
+    OFFER_MONTHLY_BASE_SALARY_MAX,
+    PASSWORD_MAX_BYTES,
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+} from '../config/validation.js';
 
 const HOSTNAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+$/i;
 const ISO_DATE_PATTERN =
@@ -95,6 +108,66 @@ export const toIntegerInRange = (value: unknown, minimum: number, maximum: numbe
     return typeof value === 'number' && Number.isInteger(value) && value >= minimum && value <= maximum
         ? value
         : undefined;
+};
+
+const isOfferDecisionValue = (value: unknown): value is number =>
+    toIntegerInRange(value, OFFER_DECISION_VALUE_MIN, OFFER_DECISION_VALUE_MAX) !== undefined;
+
+export const isOfferDecisionValues = (value: unknown): value is OfferDecisionValues => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const values = value as Record<string, unknown>;
+    return (
+        isOfferDecisionValue(values.career_growth) &&
+        isOfferDecisionValue(values.company_culture_fit) &&
+        isOfferDecisionValue(values.work_life_balance) &&
+        isOfferDecisionValue(values.compensation)
+    );
+};
+
+const isNormalizedBoundedText = (value: unknown, maximum: number): value is string =>
+    typeof value === 'string' && value === value.trim() && value.length <= maximum;
+
+const isNormalizedISOString = (value: string): boolean => {
+    if (!isValidDate(value)) {
+        return false;
+    }
+
+    return new Date(value).toISOString() === value;
+};
+
+export const isOfferDetails = (value: unknown): value is OfferDetails => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const details = value as Record<string, unknown>;
+    return (
+        typeof details.currency === 'string' &&
+        /^[A-Z]{3}$/.test(details.currency) &&
+        toIntegerInRange(details.monthly_base_salary, 0, OFFER_MONTHLY_BASE_SALARY_MAX) !== undefined &&
+        isNormalizedBoundedText(details.bonus, OFFER_DETAILS_MAX_LENGTHS.bonus) &&
+        (details.annual_leave_days === null ||
+            toIntegerInRange(details.annual_leave_days, 0, OFFER_ANNUAL_LEAVE_DAYS_MAX) !== undefined) &&
+        typeof details.work_arrangement === 'string' &&
+        (details.work_arrangement === '' ||
+            OFFER_WORK_ARRANGEMENTS.some((arrangement) => arrangement === details.work_arrangement)) &&
+        typeof details.decision_deadline === 'string' &&
+        isNormalizedISOString(details.decision_deadline) &&
+        isNormalizedBoundedText(details.pros, OFFER_DETAILS_MAX_LENGTHS.notes) &&
+        isNormalizedBoundedText(details.concerns, OFFER_DETAILS_MAX_LENGTHS.notes)
+    );
+};
+
+export const isSaveOfferEvaluationRequest = (value: unknown): value is SaveOfferEvaluationRequest => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const request = value as Partial<SaveOfferEvaluationRequest>;
+    return isOfferDecisionValues(request.ratings) && isOfferDetails(request.details);
 };
 
 export const isValidDate = (value: unknown): value is string => {

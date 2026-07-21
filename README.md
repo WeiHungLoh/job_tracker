@@ -6,7 +6,7 @@
 
 ## Overview
 
-Job Tracker is a full-stack PERN application for managing job applications and interviews. It supports status tracking, interview management, archiving, CSV export, user preferences, and secure authentication.
+Job Tracker is a full-stack PERN application for managing job applications, interviews, and structured offer comparisons. It supports status tracking, equal-weight offer scoring, archiving, CSV export, user preferences, and secure authentication.
 
 -   Site: https://jobtracker.weihungloh.com/
 -   User Guide: https://jobtracker.weihungloh.com/user-guide/
@@ -27,6 +27,9 @@ Job Tracker is a full-stack PERN application for managing job applications and i
 -   Prioritize up to six follow-ups with a read-only Needs Attention action center using clear 7-day and 21-day signals
 -   Switch between list and Kanban board views with drag-and-drop status updates
 -   Track interviews linked to job applications
+-   Compare current offers using required decision timing and monthly salary, practical terms, four fit ratings, and live scores
+-   Keep saved evaluations as read-only history after status changes, or delete an active evaluation without deleting its application
+-   Review or delete archived offer evaluations while keeping archived records read-only
 -   Add upcoming interviews to Google Calendar, Apple Calendar, and Outlook
 -   Archive and restore applications and interviews
 -   Export application and interview data to CSV

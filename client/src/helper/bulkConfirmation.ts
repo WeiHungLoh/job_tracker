@@ -27,6 +27,7 @@ const applicationDescription = (
     action: 'Archive' | 'Delete' | 'Unarchive',
     applicationCount: number,
     interviewCount: number,
+    offerEvaluationCount: number,
     state: ApplicationCollectionState
 ) => {
     const applicationLabel = formatCountLabel(applicationCount, `${state} job application`);
@@ -34,33 +35,55 @@ const applicationDescription = (
     const filterLabel = state === 'archived' ? 'archived job-status filters' : 'job-status filters';
     const permanence = action === 'Delete' ? ` ${PERMANENT_DELETION_WARNING}` : '';
 
+    if (offerEvaluationCount > 0) {
+        const possessive = applicationCount === 1 ? 'its' : 'their';
+        const evaluationLabel = formatCountLabel(offerEvaluationCount, 'saved offer evaluation');
+        const lifecycle =
+            action === 'Archive'
+                ? ' Saved offer evaluations become read-only while archived.'
+                : action === 'Unarchive'
+                ? ' Saved offer evaluations become editable again.'
+                : permanence;
+
+        return `${action} all ${applicationLabel}, ${possessive} ${interviewLabel}, and ${possessive} ${evaluationLabel}? This affects every ${state} application you own, including applications not visible under the current ${filterLabel}.${lifecycle}`;
+    }
+
     return `${action} all ${applicationLabel} and ${
         applicationCount === 1 ? 'its' : 'their'
     } ${interviewLabel}? This affects every ${state} application you own, including applications not visible under the current ${filterLabel}.${permanence}`;
 };
 
-export const createArchiveAllConfirmation = (applicationCount: number, interviewCount: number): ConfirmOptions =>
+export const createArchiveAllConfirmation = (
+    applicationCount: number,
+    interviewCount: number,
+    offerEvaluationCount = 0
+): ConfirmOptions =>
     bulkOptions(
         'Confirm Archive All',
-        applicationDescription('Archive', applicationCount, interviewCount, 'active'),
+        applicationDescription('Archive', applicationCount, interviewCount, offerEvaluationCount, 'active'),
         'Archive All'
     );
 
-export const createUnarchiveAllConfirmation = (applicationCount: number, interviewCount: number): ConfirmOptions =>
+export const createUnarchiveAllConfirmation = (
+    applicationCount: number,
+    interviewCount: number,
+    offerEvaluationCount = 0
+): ConfirmOptions =>
     bulkOptions(
         'Confirm Unarchive All',
-        applicationDescription('Unarchive', applicationCount, interviewCount, 'archived'),
+        applicationDescription('Unarchive', applicationCount, interviewCount, offerEvaluationCount, 'archived'),
         'Unarchive All'
     );
 
 export const createDeleteAllApplicationsConfirmation = (
     applicationCount: number,
     interviewCount: number,
+    offerEvaluationCount: number,
     state: ApplicationCollectionState
 ): ConfirmOptions =>
     bulkOptions(
         'Confirm Delete All',
-        applicationDescription('Delete', applicationCount, interviewCount, state),
+        applicationDescription('Delete', applicationCount, interviewCount, offerEvaluationCount, state),
         'Delete All'
     );
 

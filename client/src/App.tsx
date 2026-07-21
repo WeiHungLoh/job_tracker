@@ -15,6 +15,7 @@ import Dashboard from './pages/dashboard/Dashboard';
 import SignUp from './pages/authentication/signUp/SignUp';
 import { routes } from './routes';
 import QuickCaptureProvider from './pages/application/jobApplication/QuickCaptureProvider';
+import OfferDecisionPage from './pages/offerDecision/OfferDecisionPage';
 
 const UserGuide = lazy(() => import('./pages/userGuide/UserGuide'));
 const DemoLayout = lazy(() => import('./pages/demo/components/demoLayout/DemoLayout'));
@@ -77,6 +78,14 @@ export const appRoutes: RouteObject[] = [
                                     {
                                         path: routes.archivedInterviews,
                                         element: <ViewArchivedInterview />,
+                                    },
+                                    {
+                                        path: routes.offerDecisions,
+                                        element: <OfferDecisionPage archived={false} />,
+                                    },
+                                    {
+                                        path: routes.archivedOfferDecisions,
+                                        element: <OfferDecisionPage archived />,
                                     },
                                 ],
                             },

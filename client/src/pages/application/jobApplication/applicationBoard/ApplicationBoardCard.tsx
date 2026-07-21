@@ -9,10 +9,12 @@ import { getApplicationBoardStatusClassName } from '../../applicationBoard/statu
 import type { ApplicationBoardCardProps } from './models';
 import NoteSaveStatus from '../../../../components/noteSaveStatus/NoteSaveStatus';
 import styles from '../../applicationBoard/ApplicationBoard.module.css';
+import { isApplicationStatusDisabled } from '../../applicationStatusRestrictions';
 
 const ApplicationBoardCard = ({
     application,
     hasInterview,
+    hasOfferEvaluation,
     isArchiving,
     isDeleting,
     isUpdatingStatus,
@@ -101,7 +103,11 @@ const ApplicationBoardCard = ({
                     value={application.job_status}
                 >
                     {JOB_STATUS_SORT_ORDER.map((status) => (
-                        <option disabled={status === 'Applied' && hasInterview} key={status} value={status}>
+                        <option
+                            disabled={isApplicationStatusDisabled(status, hasInterview, hasOfferEvaluation)}
+                            key={status}
+                            value={status}
+                        >
                             {status}
                         </option>
                     ))}

@@ -116,4 +116,22 @@ describe('single-application relation confirmations', () => {
             });
         }
     );
+
+    test('describes saved evaluation lifecycle for archive, restore, and deletion', () => {
+        expect(createApplicationRelationConfirmation('archive', 'active', 0, 1).description).toBe(
+            'Archive this active job application and its saved offer evaluation? The saved offer evaluation becomes read-only while archived.'
+        );
+        expect(createApplicationRelationConfirmation('unarchive', 'archived', 0, 1).description).toBe(
+            'Unarchive this archived job application and its saved offer evaluation? The saved offer evaluation becomes editable again.'
+        );
+        expect(createApplicationRelationConfirmation('delete', 'archived', 0, 1).description).toBe(
+            'Delete this archived job application and its saved offer evaluation? This action is permanent and cannot be undone.'
+        );
+    });
+
+    test('lists interviews and an evaluation without ambiguous ownership', () => {
+        expect(createApplicationRelationConfirmation('archive', 'active', 2, 1).description).toBe(
+            'Archive this active job application, its 2 related active interviews, and its saved offer evaluation? The saved offer evaluation becomes read-only while archived.'
+        );
+    });
 });

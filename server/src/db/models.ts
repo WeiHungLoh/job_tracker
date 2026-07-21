@@ -52,6 +52,7 @@ export type JobApplication = {
     job_location: string;
     job_posting_url: string;
     notes: string;
+    has_offer_evaluation: boolean;
 };
 
 export type ArchivedJobApplication = {
@@ -114,10 +115,59 @@ export type WeeklyApplicationCount = {
 export type ApplicationCollectionSummary = {
     application_count: number;
     related_interview_count: number;
+    offer_evaluation_count: number;
 };
 
 export type ApplicationRelationSummary = {
     related_interview_count: number;
+    offer_evaluation_count: number;
+};
+
+export type OfferDecisionValues = {
+    career_growth: number;
+    company_culture_fit: number;
+    work_life_balance: number;
+    compensation: number;
+};
+
+export type OfferWorkArrangement = '' | 'Remote' | 'Hybrid' | 'On-site' | 'Flexible';
+
+export const OFFER_WORK_ARRANGEMENTS: readonly Exclude<OfferWorkArrangement, ''>[] = [
+    'Remote',
+    'Hybrid',
+    'On-site',
+    'Flexible',
+];
+
+export type OfferDetails = {
+    currency: string;
+    monthly_base_salary: number | null;
+    bonus: string;
+    annual_leave_days: number | null;
+    work_arrangement: OfferWorkArrangement;
+    decision_deadline: string;
+    pros: string;
+    concerns: string;
+};
+
+export type OfferEvaluation = {
+    job_id: number;
+    ratings: OfferDecisionValues;
+    details: OfferDetails;
+    updated_at: Date;
+};
+
+export type OfferDecisionApplication = {
+    job_id: number;
+    company_name: string;
+    job_title: string;
+    job_status: JobStatus;
+    application_date: string;
+    evaluation: OfferEvaluation | null;
+};
+
+export type OfferDecisionWorkspace = {
+    applications: OfferDecisionApplication[];
 };
 
 export type InterviewCollectionSummary = {

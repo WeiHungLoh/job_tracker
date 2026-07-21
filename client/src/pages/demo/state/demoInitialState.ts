@@ -10,6 +10,7 @@ import type { DemoState } from '../models';
 import type { JobStatus } from '../../application/models';
 import { daysAgo, daysFromNow, toDateString, weeksAgo } from './demoDateHelpers';
 import { DEFAULT_INTERVIEW_DURATION_MINUTES, INTERVIEW_TIME_FILTERS } from '../../../helper/interviewTiming';
+import type { OfferDecisionValues, OfferDetails, OfferEvaluation } from '../../offerDecision/models';
 
 const defaultDemoPreferences = {
     application_job_statuses: [...JOB_STATUSES],
@@ -455,11 +456,89 @@ const createArchivedInterviews = (now: Date): ArchivedJobInterview[] => [
     },
 ];
 
+const createOfferEvaluation = (
+    jobId: number,
+    ratings: OfferDecisionValues,
+    details: OfferDetails,
+    updatedAt: Date
+): OfferEvaluation => ({
+    job_id: jobId,
+    ratings,
+    details,
+    updated_at: updatedAt.toISOString(),
+});
+
+const createOfferEvaluations = (now: Date): Record<number, OfferEvaluation> => {
+    return {
+        111: createOfferEvaluation(
+            111,
+            {
+                career_growth: 4,
+                company_culture_fit: 5,
+                work_life_balance: 3,
+                compensation: 4,
+            },
+            {
+                currency: 'SGD',
+                monthly_base_salary: 10000,
+                bonus: '12% target',
+                annual_leave_days: 20,
+                work_arrangement: 'Hybrid',
+                decision_deadline: toDateString(daysFromNow(now, 5)),
+                pros: 'Strong product ownership and a clear promotion path.',
+                concerns: 'Two fixed office days each week.',
+            },
+            daysAgo(now, 2)
+        ),
+        112: createOfferEvaluation(
+            112,
+            {
+                career_growth: 4,
+                company_culture_fit: 4,
+                work_life_balance: 4,
+                compensation: 5,
+            },
+            {
+                currency: 'SGD',
+                monthly_base_salary: 10500,
+                bonus: '10% target',
+                annual_leave_days: 24,
+                work_arrangement: 'Remote',
+                decision_deadline: toDateString(daysFromNow(now, 7)),
+                pros: 'Higher base salary and flexible location.',
+                concerns: 'Smaller engineering team and broader on-call scope.',
+            },
+            daysAgo(now, 1)
+        ),
+        204: createOfferEvaluation(
+            204,
+            {
+                career_growth: 3,
+                company_culture_fit: 4,
+                work_life_balance: 4,
+                compensation: 3,
+            },
+            {
+                currency: 'SGD',
+                monthly_base_salary: 9200,
+                bonus: 'One month performance bonus',
+                annual_leave_days: 21,
+                work_arrangement: 'On-site',
+                decision_deadline: toDateString(daysAgo(now, 65)),
+                pros: 'Stable team and well-defined responsibilities.',
+                concerns: 'Commute was longer than preferred.',
+            },
+            daysAgo(now, 70)
+        ),
+    };
+};
+
 export const createDemoInitialState = (now = new Date()): DemoState => ({
     applications: applicationSeeds.map((seed) => createApplication(seed, now)),
     archivedApplications: archivedApplicationSeeds.map((seed) => createArchivedApplication(seed, now)),
     interviews: createInterviews(now),
     archivedInterviews: createArchivedInterviews(now),
+    offerEvaluations: createOfferEvaluations(now),
     preferences: {
         ...defaultDemoPreferences,
         application_job_statuses: [...defaultDemoPreferences.application_job_statuses],

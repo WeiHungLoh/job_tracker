@@ -9,6 +9,7 @@ export type ApplicationBoardProps = {
     deletingApplicationIds: ReadonlySet<number>;
     editedNotes: Record<number, string>;
     hasInterview: (jobId: number) => boolean;
+    hasOfferEvaluation: (jobId: number) => boolean;
     isArchivingApplication: (jobId: number) => boolean;
     isUpdatingApplicationStatus: (jobId: number) => boolean;
     noteSaveStatuses: Record<number, NoteSaveStatus>;
@@ -29,6 +30,7 @@ export type ApplicationBoardCardProps = EditableNotesProps & {
     isDeleting: boolean;
     isUpdatingStatus: boolean;
     hasInterview: boolean;
+    hasOfferEvaluation: boolean;
     onArchive: (jobId: number) => void | Promise<void>;
     onDelete: (jobId: number) => void | Promise<void>;
     onNotesVisibilityChange: (jobId: number, isVisible: boolean) => void;

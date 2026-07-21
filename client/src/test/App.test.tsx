@@ -337,6 +337,52 @@ describe('App routing and authentication behavior', () => {
         );
     });
 
+    test('renders active Offer Comparison from the permanent active navbar entry', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/user-preferences')) {
+                return jsonResponse(mockPreferences);
+            }
+            if (url.endsWith('/offer-decisions')) {
+                return jsonResponse({
+                    applications: [],
+                });
+            }
+            return response();
+        });
+
+        renderRoute('/offer-decisions');
+
+        expect(await screen.findByRole('heading', { name: 'No current offers to compare' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Offer Comparison' })).toHaveAttribute('aria-current', 'page');
+        expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('/offer-decisions'))).toHaveLength(1);
+    });
+
+    test('keeps archived Offer Comparisons review-only and pairs the archive toggle', async () => {
+        fetch.mockImplementation(async (url: string) => {
+            if (url.endsWith('/user-preferences')) {
+                return jsonResponse(mockPreferences);
+            }
+            if (url.includes('/offer-decisions')) {
+                return jsonResponse({
+                    applications: [],
+                });
+            }
+            return response();
+        });
+
+        renderRoute('/offer-decisions/archive');
+
+        expect(await screen.findByRole('heading', { name: 'No archived offer comparisons' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Archived Offer Comparisons' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+        expect(screen.queryByRole('button', { name: /save evaluation/i })).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Show Active' }));
+        expect(await screen.findByRole('link', { name: 'Offer Comparison' })).toHaveAttribute('aria-current', 'page');
+    });
+
     test('labels the production theme action with the theme it will switch to', async () => {
         renderRoute(routes.addApplication);
 
@@ -420,6 +466,8 @@ describe('App routing and authentication behavior', () => {
         [routes.demoViewInterviews, /Quantum Ledger/i],
         [routes.demoArchivedApplications, /Riverlane Studio/i],
         [routes.demoArchivedInterviews, /Riverlane Studio/i],
+        [routes.demoOfferDecisions, /DevOps UI Engineer/i],
+        [routes.demoArchivedOfferDecisions, /^Software Engineer$/i],
     ])('renders public demo route %s without authentication', async (route, expectedText) => {
         renderRoute(route);
 
@@ -512,6 +560,23 @@ describe('App routing and authentication behavior', () => {
             'aria-current',
             'page'
         );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('pairs active and archived Offer Comparisons in the demo navbar', async () => {
+        renderRoute(routes.demoOfferDecisions);
+
+        expect(await screen.findByRole('link', { name: 'Offer Comparison' })).toHaveAttribute('aria-current', 'page');
+        await userEvent.click(screen.getByRole('button', { name: 'Show Archived' }));
+
+        expect(await screen.findByRole('link', { name: 'Archived Offer Comparisons' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+        expect(screen.queryByRole('button', { name: /save evaluation/i })).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Show Active' }));
+        expect(await screen.findByRole('link', { name: 'Offer Comparison' })).toHaveAttribute('aria-current', 'page');
         expect(fetch).not.toHaveBeenCalled();
     });
 

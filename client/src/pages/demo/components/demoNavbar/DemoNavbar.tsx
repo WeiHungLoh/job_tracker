@@ -6,18 +6,24 @@ import { routes } from '../../../../routes';
 import styles from '../../../../components/navbar/Navbar.module.css';
 import { useTheme } from '../../../../components/theme/ThemeContext';
 
-const ARCHIVED_LOCATIONS: readonly string[] = [routes.demoArchivedApplications, routes.demoArchivedInterviews];
+const ARCHIVED_LOCATIONS: readonly string[] = [
+    routes.demoArchivedApplications,
+    routes.demoArchivedInterviews,
+    routes.demoArchivedOfferDecisions,
+];
 
 const ACTIVE_NAV_LINKS = [
     { to: routes.demoDashboard, label: 'Dashboard' },
     { to: routes.demoAddApplication, label: 'Add Job Application' },
     { to: routes.demoViewApplications, label: 'View Job Applications' },
     { to: routes.demoViewInterviews, label: 'View Interviews' },
+    { to: routes.demoOfferDecisions, label: 'Offer Comparison' },
 ] as const;
 
 const ARCHIVED_NAV_LINKS = [
     { to: routes.demoArchivedApplications, label: 'View Archived Applications' },
     { to: routes.demoArchivedInterviews, label: 'View Archived Interviews' },
+    { to: routes.demoArchivedOfferDecisions, label: 'Archived Offer Comparisons' },
 ] as const;
 
 const DemoNavbar = () => {
@@ -33,6 +39,15 @@ const DemoNavbar = () => {
     }, [archived, currentLocation]);
 
     const handleArchiveStatusToggle = () => {
+        if (currentLocation === routes.demoOfferDecisions) {
+            navigate(routes.demoArchivedOfferDecisions);
+            return;
+        }
+        if (currentLocation === routes.demoArchivedOfferDecisions) {
+            navigate(routes.demoOfferDecisions);
+            return;
+        }
+
         navigate(archived ? routes.demoViewApplications : routes.demoArchivedApplications);
     };
 

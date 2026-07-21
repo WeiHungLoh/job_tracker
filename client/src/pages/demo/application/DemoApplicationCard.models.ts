@@ -11,6 +11,7 @@ export type DemoJobApplicationCardProps = DemoApplicationCardBaseProps &
         application: JobApplication;
         editedJobStatus: JobStatus;
         hasInterview: boolean;
+        hasOfferEvaluation: boolean;
         isArchiving: boolean;
         isEditingStatus: boolean;
         onArchive: (jobId: number) => void | Promise<void>;

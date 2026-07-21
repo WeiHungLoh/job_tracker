@@ -72,6 +72,14 @@ import type {
     VerifyAuthenticationRequest,
     VerifyAuthenticationResponse,
 } from '../pages/authentication/models';
+import type {
+    DeleteOfferEvaluationRequest,
+    DeleteOfferEvaluationResponse,
+    GetOfferDecisionsRequest,
+    GetOfferDecisionsResponse,
+    SaveOfferEvaluationAPIRequest,
+    SaveOfferEvaluationResponse,
+} from '../pages/offerDecision/models';
 import { endpointConfig } from './endpointConfig';
 import { makeAuthenticatedJobTrackerAPIRequest, makeJobTrackerAPIRequest } from './api';
 import { useMemo } from 'react';
@@ -302,6 +310,34 @@ export const useJobTrackerAPI = () => {
             >(null, endpointConfig.archivedInterview.deleteAllInterviews);
         };
 
+        const getActiveOfferDecisions = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<GetOfferDecisionsRequest, GetOfferDecisionsResponse>(
+                null,
+                endpointConfig.offerDecision.getActive
+            );
+        };
+
+        const getArchivedOfferDecisions = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<GetOfferDecisionsRequest, GetOfferDecisionsResponse>(
+                null,
+                endpointConfig.offerDecision.getArchived
+            );
+        };
+
+        const saveOfferEvaluation = async (req: SaveOfferEvaluationAPIRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                SaveOfferEvaluationAPIRequest,
+                SaveOfferEvaluationResponse
+            >(req, endpointConfig.offerDecision.saveEvaluation);
+        };
+
+        const deleteOfferEvaluation = async (req: DeleteOfferEvaluationRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                DeleteOfferEvaluationRequest,
+                DeleteOfferEvaluationResponse
+            >(req, endpointConfig.offerDecision.deleteEvaluation);
+        };
+
         const getUserPreferences = async () => {
             return await makeAuthenticatedJobTrackerAPIRequest<GetUserPreferencesRequest, GetUserPreferencesResponse>(
                 null,
@@ -353,6 +389,12 @@ export const useJobTrackerAPI = () => {
                 getSummary: getArchivedInterviewSummary,
                 deleteInterview: deleteArchivedInterview,
                 deleteAllInterviews: deleteAllArchivedInterviews,
+            },
+            offerDecision: {
+                getActive: getActiveOfferDecisions,
+                getArchived: getArchivedOfferDecisions,
+                saveEvaluation: saveOfferEvaluation,
+                deleteEvaluation: deleteOfferEvaluation,
             },
             userPreferences: {
                 get: getUserPreferences,

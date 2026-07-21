@@ -92,6 +92,21 @@ export const endpointConfig = {
         },
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },
+    offerDecision: {
+        getActive: { url: '/offer-decisions', verb: 'GET', retry: true },
+        getArchived: { url: '/offer-decisions/archived', verb: 'GET', retry: true },
+        saveEvaluation: {
+            url: '/offer-decisions/:jobId',
+            verb: 'PUT',
+            fieldMap: { jobId: 'path' },
+            retry: true,
+        },
+        deleteEvaluation: {
+            url: '/offer-decisions/:jobId',
+            verb: 'DELETE',
+            fieldMap: { jobId: 'path' },
+        },
+    },
     userPreferences: {
         get: { url: '/user-preferences', verb: 'GET', retry: true },
         update: { url: '/user-preferences', verb: 'PATCH', retry: true },

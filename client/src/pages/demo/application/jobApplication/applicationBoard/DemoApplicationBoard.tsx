@@ -12,6 +12,7 @@ import { useCallback, useRef, useState, type UIEvent } from 'react';
 import DemoApplicationBoardCard from './DemoApplicationBoardCard';
 import DemoApplicationBoardColumn from '../../applicationBoard/DemoApplicationBoardColumn';
 import {
+    detectApplicationBoardCollisions,
     getOrderedBoardStatuses,
     groupApplicationsByStatus,
     isJobStatus,
@@ -20,6 +21,7 @@ import type { JobApplication, JobStatus } from '../../../../application/models';
 import styles from '../../applicationBoard/DemoApplicationBoard.module.css';
 import applicationBoardStyles from '../../../../application/applicationBoard/ApplicationBoard.module.css';
 import type { NoteSaveStatus } from '../../../../../hooks/useAutosaveNotes';
+import { isApplicationStatusDisabled } from '../../../../application/applicationStatusRestrictions';
 
 const SCROLL_BOUNDARY_TOLERANCE = 1;
 
@@ -28,6 +30,7 @@ type DemoApplicationBoardProps = {
     deletingApplicationIds: ReadonlySet<number>;
     editedNotes: Record<number, string>;
     hasInterview: (jobId: number) => boolean;
+    hasOfferEvaluation: (jobId: number) => boolean;
     isArchivingApplication: (jobId: number) => boolean;
     noteSaveStatuses: Record<number, NoteSaveStatus>;
     onArchive: (jobId: number) => void | Promise<void>;
@@ -104,6 +107,7 @@ const DemoApplicationBoard = ({
     deletingApplicationIds,
     editedNotes,
     hasInterview,
+    hasOfferEvaluation,
     isArchivingApplication,
     noteSaveStatuses,
     onArchive,
@@ -118,17 +122,12 @@ const DemoApplicationBoard = ({
 }: DemoApplicationBoardProps) => {
     const boardRef = useRef<HTMLDivElement>(null);
     const [draggingApplicationId, setDraggingApplicationId] = useState<number | null>(null);
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor)
-    );
+    const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
     const groupedApplications = groupApplicationsByStatus(applications);
     const boardStatuses = getOrderedBoardStatuses(selectedJobStatuses);
     const activeApplicationHasInterview = draggingApplicationId !== null && hasInterview(draggingApplicationId);
+    const activeApplicationHasOfferEvaluation =
+        draggingApplicationId !== null && hasOfferEvaluation(draggingApplicationId);
     const clampCurrentBoardScroll = useCallback(() => {
         if (boardRef.current) {
             clampBoardScrollLeft(boardRef.current);
@@ -160,7 +159,13 @@ const DemoApplicationBoard = ({
         if (!application || !isJobStatus(destinationStatus) || application.job_status === destinationStatus) {
             return;
         }
-        if (destinationStatus === 'Applied' && hasInterview(application.job_id)) {
+        if (
+            isApplicationStatusDisabled(
+                destinationStatus,
+                hasInterview(application.job_id),
+                hasOfferEvaluation(application.job_id)
+            )
+        ) {
             return;
         }
 
@@ -170,6 +175,7 @@ const DemoApplicationBoard = ({
     return (
         <DndContext
             autoScroll={{ canScroll: canAutoScrollBoard }}
+            collisionDetection={detectApplicationBoardCollisions}
             modifiers={APPLICATION_BOARD_DRAG_MODIFIERS}
             onDragCancel={handleDragCancel}
             onDragEnd={handleDragEnd}
@@ -186,7 +192,11 @@ const DemoApplicationBoard = ({
             >
                 {boardStatuses.map((status) => {
                     const statusApplications = groupedApplications[status];
-                    const isDropDisabled = status === 'Applied' && activeApplicationHasInterview;
+                    const isDropDisabled = isApplicationStatusDisabled(
+                        status,
+                        activeApplicationHasInterview,
+                        activeApplicationHasOfferEvaluation
+                    );
 
                     return (
                         <DemoApplicationBoardColumn
@@ -199,6 +209,7 @@ const DemoApplicationBoard = ({
                                 <DemoApplicationBoardCard
                                     application={application}
                                     hasInterview={hasInterview(application.job_id)}
+                                    hasOfferEvaluation={hasOfferEvaluation(application.job_id)}
                                     isArchiving={isArchivingApplication(application.job_id)}
                                     isDeleting={deletingApplicationIds.has(application.job_id)}
                                     key={application.job_id}

@@ -9,6 +9,7 @@ import { sortApplications } from '../../application/applicationSorting';
 import type { DemoState } from '../models';
 import { startOfLocalWeek, toDateString } from './demoDateHelpers';
 import { filterAndSortInterviews, getInterviewTiming } from '../../../helper/interviewTiming';
+import type { OfferDecisionApplication, OfferDecisionWorkspaceData } from '../../offerDecision/models';
 
 type InterviewWithDate = {
     interview_date: string;
@@ -71,6 +72,66 @@ export const selectUpcomingInterviewCountByJob = (state: DemoState, now = new Da
     });
 
     return counts;
+};
+
+const getOfferDecisionStatusOrder = (application: OfferDecisionApplication): number => {
+    if (application.job_status === 'Offer') {
+        return 1;
+    }
+    return 2;
+};
+
+const compareOfferDecisionApplications = (
+    firstApplication: OfferDecisionApplication,
+    secondApplication: OfferDecisionApplication
+): number => {
+    const statusDifference =
+        getOfferDecisionStatusOrder(firstApplication) - getOfferDecisionStatusOrder(secondApplication);
+    if (statusDifference !== 0) {
+        return statusDifference;
+    }
+
+    const companyDifference = firstApplication.company_name.localeCompare(secondApplication.company_name);
+    if (companyDifference !== 0) {
+        return companyDifference;
+    }
+
+    const titleDifference = firstApplication.job_title.localeCompare(secondApplication.job_title);
+    return titleDifference !== 0 ? titleDifference : firstApplication.job_id - secondApplication.job_id;
+};
+
+export const selectOfferDecisionWorkspace = (state: DemoState): OfferDecisionWorkspaceData => {
+    const applications = state.applications
+        .filter(
+            (application) => application.job_status === 'Offer' || Boolean(state.offerEvaluations[application.job_id])
+        )
+        .map<OfferDecisionApplication>((application) => ({
+            job_id: application.job_id,
+            company_name: application.company_name,
+            job_title: application.job_title,
+            job_status: application.job_status,
+            application_date: application.application_date,
+            evaluation: state.offerEvaluations[application.job_id] ?? null,
+        }))
+        .sort(compareOfferDecisionApplications);
+
+    return { applications };
+};
+
+export const selectArchivedOfferDecisionWorkspace = (state: DemoState): OfferDecisionWorkspaceData => {
+    const applications = state.archivedApplications
+        .filter((application) => Boolean(state.offerEvaluations[application.archived_job_id]))
+        .map<OfferDecisionApplication>((application) => ({
+            job_id: application.archived_job_id,
+            company_name: application.company_name,
+            job_title: application.job_title,
+            job_status: application.job_status,
+            application_date: application.application_date,
+            evaluation: state.offerEvaluations[application.archived_job_id],
+        }))
+        .sort(compareOfferDecisionApplications);
+
+    return { applications };
 };
 
 export const selectJobStatusCounts = (state: DemoState): JobStatusCount[] => {

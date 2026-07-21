@@ -9,6 +9,8 @@ export const routes = {
     viewInterviews: '/interview/view',
     archivedApplications: '/application/archive',
     archivedInterviews: '/interview/archive',
+    offerDecisions: '/offer-decisions',
+    archivedOfferDecisions: '/offer-decisions/archive',
     demoRoot: '/demo',
     demoDashboard: '/demo/dashboard',
     demoAddApplication: '/demo/application/add',
@@ -17,4 +19,6 @@ export const routes = {
     demoViewInterviews: '/demo/interview/view',
     demoArchivedApplications: '/demo/application/archive',
     demoArchivedInterviews: '/demo/interview/archive',
+    demoOfferDecisions: '/demo/offer-decisions',
+    demoArchivedOfferDecisions: '/demo/offer-decisions/archive',
 } as const;

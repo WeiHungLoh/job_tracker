@@ -9,10 +9,12 @@ import { getApplicationBoardStatusClassName } from '../../../../application/appl
 import NoteSaveStatus from '../../../../../components/noteSaveStatus/NoteSaveStatus';
 import type { EditableNotesProps } from '../../../../../components/noteSaveStatus/models';
 import styles from '../../applicationBoard/DemoApplicationBoard.module.css';
+import { isApplicationStatusDisabled } from '../../../../application/applicationStatusRestrictions';
 
 type DemoApplicationBoardCardProps = EditableNotesProps & {
     application: JobApplication;
     hasInterview: boolean;
+    hasOfferEvaluation: boolean;
     isArchiving: boolean;
     isDeleting: boolean;
     onArchive: (jobId: number) => void | Promise<void>;
@@ -25,6 +27,7 @@ type DemoApplicationBoardCardProps = EditableNotesProps & {
 const DemoApplicationBoardCard = ({
     application,
     hasInterview,
+    hasOfferEvaluation,
     isArchiving,
     isDeleting,
     note,
@@ -103,7 +106,11 @@ const DemoApplicationBoardCard = ({
                     value={application.job_status}
                 >
                     {JOB_STATUS_SORT_ORDER.map((status) => (
-                        <option disabled={status === 'Applied' && hasInterview} key={status} value={status}>
+                        <option
+                            disabled={isApplicationStatusDisabled(status, hasInterview, hasOfferEvaluation)}
+                            key={status}
+                            value={status}
+                        >
                             {status}
                         </option>
                     ))}

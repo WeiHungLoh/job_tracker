@@ -176,6 +176,46 @@ const contrastRatio = (first: string, second: string) => {
 };
 
 describe('Rose Ledger visual contract', () => {
+    it('keeps Offer Comparison inside the existing solid-surface design system', () => {
+        const offerDecisionCss = readSource('src/pages/offerDecision/OfferDecisionWorkspace.module.css');
+
+        expect(offerDecisionCss).not.toContain('linear-gradient');
+        expect(offerDecisionCss).not.toContain('box-shadow');
+        expect(offerDecisionCss).toContain('background-color: var(--colorCardBg);');
+        expect(offerDecisionCss).toContain('border: 1px solid var(--colorCardBorder);');
+        expect(offerDecisionCss).toContain('color: var(--colorTextSecondary);');
+        expect(offerDecisionCss).toContain(".evaluationGrid[data-card-count='one']");
+        expect(offerDecisionCss).toContain(".evaluationGrid[data-card-count='two']");
+        expect(offerDecisionCss).toContain('align-items: start;');
+        expect(offerDecisionCss).toContain('outline: 3px solid var(--colorPrimaryFocusShadow);');
+        expect(offerDecisionCss).toContain('white-space: nowrap;');
+        expect(offerDecisionCss).toContain('align-items: flex-end;');
+        expect(offerDecisionCss).not.toContain('.cardActions button {\n        width: 100%;');
+        expect(offerDecisionCss).toMatch(/\.ratingFields legend\s*\{[^}]*padding-right:/s);
+        expect(offerDecisionCss).toMatch(
+            /\.detailsReview dt,\s*\.reviewValue dt\s*\{[^}]*color:\s*var\(--colorLabel\);[^}]*font-size:\s*var\(--fontSizeBody\);[^}]*font-weight:\s*500;/s
+        );
+        expect(offerDecisionCss).toMatch(
+            /\.detailsReview dd\s*\{[^}]*color:\s*var\(--colorText\);[^}]*font-size:\s*var\(--fontSizeBody\);[^}]*font-weight:\s*400;/s
+        );
+        expect(offerDecisionCss).toMatch(
+            /\.comparisonSection\s*\+\s*\.comparisonSection\s*\{[^}]*padding-top:\s*var\(--spacePageGrid\);[^}]*border-top:\s*1px solid var\(--colorCardBorder\);/s
+        );
+        expect(offerDecisionCss).toMatch(
+            /\.reviewSection h4\s*\{[^}]*color:\s*var\(--colorPrimary\);[^}]*font-size:\s*var\(--fontSizeMetadata\);[^}]*text-transform:\s*uppercase;/s
+        );
+        expect(offerDecisionCss).toMatch(
+            /\.detailsReview,\s*\.reviewValues\s*\{[^}]*padding:\s*var\(--spaceCompact\);[^}]*background-color:\s*var\(--colorControlMutedSurface\);/s
+        );
+        expect(offerDecisionCss).toMatch(
+            /\.expiredBadge\s*\{[^}]*padding:\s*4px 9px;[^}]*font-size:\s*0\.6875rem;[^}]*font-weight:\s*600;[^}]*line-height:\s*1\.2;/s
+        );
+        expect(offerDecisionCss).toMatch(/\.sectionHeading h2\s*\{[^}]*font-size:\s*1\.5rem;/s);
+        expect(offerDecisionCss).toMatch(/\.cardHeader h3\s*\{[^}]*font-size:\s*1\.5rem;/s);
+        expect(offerDecisionCss).toContain('@media (max-width: 768px)');
+        expect(offerDecisionCss).not.toMatch(/\.cardActions\s*\{[^}]*flex-direction:\s*column;/s);
+    });
+
     it('defines both approved palettes and the shared metric aliases', () => {
         const globalCss = readSource('src/index.css');
         const lightCss = getThemeBlock(globalCss, 'light');

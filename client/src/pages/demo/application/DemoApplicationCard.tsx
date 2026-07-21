@@ -7,6 +7,7 @@ import type { DemoApplicationCardProps } from './DemoApplicationCard.models';
 import { JOB_STATUSES, type JobStatus } from '../../application/models';
 import NoteSaveStatus from '../../../components/noteSaveStatus/NoteSaveStatus';
 import styles from './DemoApplicationCard.module.css';
+import { isApplicationStatusDisabled } from '../../application/applicationStatusRestrictions';
 
 const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.accepted,
@@ -71,7 +72,11 @@ const DemoApplicationCard = (props: DemoApplicationCardProps) => {
                             >
                                 {JOB_STATUSES.map((status) => (
                                     <option
-                                        disabled={status === 'Applied' && props.hasInterview}
+                                        disabled={isApplicationStatusDisabled(
+                                            status,
+                                            props.hasInterview,
+                                            props.hasOfferEvaluation
+                                        )}
                                         key={status}
                                         value={status}
                                     >

@@ -231,7 +231,12 @@ const ViewArchivedApplication = () => {
         try {
             const summary = await api.archivedApplication.getRelationSummary({ archivedJobId });
             const { confirmed } = await confirm(
-                createApplicationRelationConfirmation(action, 'archived', summary.related_interview_count)
+                createApplicationRelationConfirmation(
+                    action,
+                    'archived',
+                    summary.related_interview_count,
+                    summary.offer_evaluation_count
+                )
             );
 
             if (!confirmed) {
@@ -286,10 +291,15 @@ const ViewArchivedApplication = () => {
 
             const confirmation =
                 action === 'unarchive'
-                    ? createUnarchiveAllConfirmation(summary.application_count, summary.related_interview_count)
+                    ? createUnarchiveAllConfirmation(
+                          summary.application_count,
+                          summary.related_interview_count,
+                          summary.offer_evaluation_count
+                      )
                     : createDeleteAllApplicationsConfirmation(
                           summary.application_count,
                           summary.related_interview_count,
+                          summary.offer_evaluation_count,
                           'archived'
                       );
             const { confirmed } = await confirm(confirmation);

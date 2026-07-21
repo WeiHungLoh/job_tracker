@@ -103,12 +103,21 @@ const guideSections: readonly UserGuideSection[] = [
                 <ul>
                     <li>No account, authentication, backend request or database write is used.</li>
                     <li>Changes remain while you move around demo pages, then reset when the browser refreshes.</li>
-                    <li>Success toasts match the signed-in app: only adding an application or interview shows one.</li>
+                    <li>
+                        Success toasts match the signed-in app when adding an application or interview and when first
+                        saving an offer evaluation.
+                    </li>
                 </ul>
                 <h3>Applications</h3>
                 <p>
                     Add applications, switch between list and board view, filter by status, edit notes, update status,
                     archive, restore, delete and export CSV records.
+                </p>
+                <h3>Offer comparison</h3>
+                <p>
+                    Compare the sample offers using monthly salary, bonus, practical offer facts and four fit ratings.
+                    Saving or deleting an evaluation updates demo state only. Archived comparisons use the same
+                    read-only, deletable view as the signed-in app.
                 </p>
                 <p>
                     Form validation uses the same limits as the signed-in app, including the{' '}
@@ -127,6 +136,56 @@ const guideSections: readonly UserGuideSection[] = [
                     Use <code>Show Archived</code> to open archived applications and switch the demo navigation to
                     archived records. Use <code>Show Active</code> to return to active applications. Use{' '}
                     <code>Exit Demo</code> to return to sign in without logging out or verifying authentication.
+                </p>
+            </>
+        ),
+    },
+    {
+        id: 'offer-decisions',
+        title: 'Offer Comparison',
+        icon: 'briefcase',
+        content: (
+            <>
+                <h3>Compare current offers</h3>
+                <p>
+                    Open Offer Comparison from the active navigation bar. Only active applications with status{' '}
+                    <code>Offer</code> appear in Compare current offers, and only those applications can add or edit an
+                    evaluation.
+                </p>
+                <p>
+                    Select <code>Add evaluation</code> for an unevaluated offer. New fit ratings begin at 3 of 5. Select{' '}
+                    <code>Cancel evaluation</code> to discard a new evaluation before it is saved.
+                </p>
+                <h3>Record terms and rate fit</h3>
+                <p>
+                    Enter the required decision deadline, currency and monthly base salary. Currency starts as{' '}
+                    <code>SGD</code>. Bonus, annual leave, work arrangement, pros and cons are optional. After the offer
+                    terms, rate career growth, company and culture fit, work-life balance, and compensation from 1 to 5
+                    with the sliders; the equal-weight fit rating updates immediately.
+                </p>
+                <p>
+                    Select <code>Save evaluation</code> on that offer. A successful first save moves it from Offers to
+                    evaluate into Evaluated offers, locks its fields and shows a confirmation. Select{' '}
+                    <code>Edit evaluation</code> to unlock it again. Save evaluation stays available and validates the
+                    required fields when selected. You can also press Enter from a form field to save. Unsaved changes
+                    remain on screen if saving fails.
+                </p>
+                <p>
+                    The decision deadline stays visible above the fit rating when details are collapsed. Evaluated and
+                    expired offers are sorted by deadline, then fit rating and name. Expired offers remain available to
+                    review, edit or delete when their applications still have Offer status.
+                </p>
+                <h3>Status changes, deletion and archive</h3>
+                <p>
+                    While a saved evaluation exists, its application can only remain at Offer or move to Accepted or
+                    Declined. Accepted and declined applications stay under Previous evaluations as read-only records.
+                    Deleting the evaluation removes only that evaluation and restores the normal status options, subject
+                    to the existing interview restriction.
+                </p>
+                <p>
+                    <code>Show Archived</code> opens Archived Offer Comparisons. Archived evaluations are read-only but
+                    can be shown, hidden or deleted there. Deleting an application still permanently deletes its saved
+                    evaluation through the existing cascade.
                 </p>
             </>
         ),
@@ -286,8 +345,9 @@ const guideSections: readonly UserGuideSection[] = [
             <>
                 <p>
                     Select <code>Show Archived</code> to open archived applications and replace the active navigation
-                    links with archived applications and archived interviews. Select <code>Show Active</code> to return
-                    to active job applications.
+                    links with archived applications, archived interviews and archived offer comparisons. Select{' '}
+                    <code>Show Active</code> to return to active job applications. When toggled from either Offer
+                    Comparison page, the button opens its directly paired active or archived page.
                 </p>
                 <ul>
                     <li>
@@ -313,8 +373,11 @@ const guideSections: readonly UserGuideSection[] = [
             <>
                 <ul>
                     <li>Deleting an active or archived application also deletes its linked interview.</li>
+                    <li>Deleting an active or archived application also deletes its saved offer evaluation.</li>
                     <li>Archiving an application automatically archives its linked interview.</li>
+                    <li>Archiving preserves its saved offer evaluation as a read-only snapshot.</li>
                     <li>Unarchiving an application automatically restores its linked interview.</li>
+                    <li>Unarchiving restores access to its saved evaluation; only Offer status makes it editable.</li>
                     <li>Archived records are not editable until they are restored.</li>
                     <li>
                         <strong>Archive All</strong> affects every active application you own, not only applications
@@ -326,7 +389,8 @@ const guideSections: readonly UserGuideSection[] = [
                     </li>
                     <li>
                         <strong>Delete All applications</strong> permanently deletes the complete active or archived
-                        application collection selected and all of its related interviews, regardless of filters.
+                        application collection selected, all of its related interviews and all saved offer evaluations,
+                        regardless of filters.
                     </li>
                     <li>
                         <strong>Delete All interviews</strong> permanently deletes the complete active or archived
@@ -334,8 +398,9 @@ const guideSections: readonly UserGuideSection[] = [
                     </li>
                 </ul>
                 <p>
-                    Bulk confirmations show the current application and related-interview counts before the action.
-                    Single and bulk deletions are permanent, so review the selected records before confirming.
+                    Bulk confirmations show the current application, related-interview and saved-evaluation counts
+                    before the action. Single and bulk deletions are permanent, so review the selected records before
+                    confirming.
                 </p>
             </>
         ),

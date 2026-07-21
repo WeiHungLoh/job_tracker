@@ -41,6 +41,22 @@ describe('renders user guide properly', () => {
             routes.demoViewApplications
         );
         expect(screen.getByText(/no account, authentication, backend request or database write/i)).toBeVisible();
+        expect(screen.getByText(/four fit ratings/i)).toBeVisible();
+
+        await userEvent.click(screen.getByRole('button', { name: /^offer comparison$/i }));
+
+        expect(screen.getByText(/open offer comparison from the active navigation bar/i)).toBeVisible();
+        expect(screen.getByText(/only those applications can add or edit an evaluation/i)).toBeVisible();
+        expect(screen.getByText(/currency starts as/i)).toBeVisible();
+        expect(screen.getByText(/successful first save moves it from offers to evaluate/i)).toBeVisible();
+        expect(screen.getByText(/save evaluation stays available/i)).toBeVisible();
+        expect(screen.getByText(/decision deadline stays visible above the fit rating/i)).toBeVisible();
+        expect(
+            screen.getByText(/review, edit or delete when their applications still have offer status/i)
+        ).toBeVisible();
+        expect(screen.getByText(/while a saved evaluation exists/i)).toBeVisible();
+        expect(screen.getByText(/deleting the evaluation removes only that evaluation/i)).toBeVisible();
+        expect(screen.getByText(/archived evaluations are read-only/i)).toBeVisible();
 
         await userEvent.click(screen.getByRole('button', { name: /adding and managing applications/i }));
 

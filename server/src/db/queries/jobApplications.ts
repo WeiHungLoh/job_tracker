@@ -2,7 +2,7 @@ import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount 
 import { pool } from '../connectDB.js';
 import { hasAffectedRows, JOB_STATUS_SORT_ORDER } from './shared.js';
 
-export type UpdateApplicationStatusResult = 'active-interview' | 'not-found' | 'updated';
+export type UpdateApplicationStatusResult = 'active-interview' | 'offer-evaluation' | 'not-found' | 'updated';
 
 type PotentialDuplicateApplication = {
     company_name: string;
@@ -80,10 +80,16 @@ export const getJobApplications = async (userId: number, jobStatuses: JobStatus[
             job_status,
             job_location,
             job_posting_url,
-            notes
-         FROM job_applications
-         WHERE user_id = $1 AND is_archived = false
-            AND job_status = ANY($2::text[])
+            applications.notes,
+            EXISTS (
+                SELECT 1
+                FROM offer_evaluations
+                WHERE offer_evaluations.job_id = applications.job_id
+                    AND offer_evaluations.user_id = applications.user_id
+            ) AS has_offer_evaluation
+         FROM job_applications AS applications
+         WHERE applications.user_id = $1 AND applications.is_archived = false
+            AND applications.job_status = ANY($2::text[])
          ORDER BY ${JOB_STATUS_SORT_ORDER},
             application_date DESC`,
         [userId, jobStatuses]
@@ -159,9 +165,28 @@ export const updateApplicationStatus = async (
     jobId: number,
     userId: number
 ): Promise<UpdateApplicationStatusResult> => {
-    const result = await pool.query<{ application_exists: boolean; application_updated: boolean }>(
+    const result = await pool.query<{
+        application_exists: boolean;
+        application_updated: boolean;
+        has_active_interview: boolean;
+        has_offer_evaluation: boolean;
+    }>(
         `WITH application AS (
-            SELECT job_id
+            SELECT
+                job_id,
+                EXISTS (
+                    SELECT 1
+                    FROM offer_evaluations
+                    WHERE offer_evaluations.job_id = job_applications.job_id
+                        AND offer_evaluations.user_id = job_applications.user_id
+                ) AS has_offer_evaluation,
+                EXISTS (
+                    SELECT 1
+                    FROM interviews
+                    WHERE interviews.job_id = job_applications.job_id
+                        AND interviews.user_id = job_applications.user_id
+                        AND interviews.is_archived = false
+                ) AS has_active_interview
             FROM job_applications
             WHERE job_id = $2 AND user_id = $3 AND is_archived = false
         ),
@@ -171,26 +196,32 @@ export const updateApplicationStatus = async (
             FROM application
             WHERE job_applications.job_id = application.job_id
                 AND (
+                    NOT application.has_offer_evaluation
+                    OR $1::text IN ('Offer', 'Accepted', 'Declined')
+                )
+                AND (
                     $1::text <> 'Applied'
                     OR job_applications.job_status = 'Applied'
-                    OR NOT EXISTS (
-                        SELECT 1
-                        FROM interviews
-                        WHERE interviews.job_id = job_applications.job_id
-                            AND interviews.user_id = $3
-                            AND interviews.is_archived = false
-                    )
+                    OR NOT application.has_active_interview
                 )
             RETURNING 1
         )
         SELECT
             EXISTS(SELECT 1 FROM application) AS application_exists,
-            EXISTS(SELECT 1 FROM updated_application) AS application_updated`,
+            EXISTS(SELECT 1 FROM updated_application) AS application_updated,
+            COALESCE((SELECT has_active_interview FROM application), false) AS has_active_interview,
+            COALESCE((SELECT has_offer_evaluation FROM application), false) AS has_offer_evaluation`,
         [jobStatus, jobId, userId]
     );
 
     if (result.rows[0]?.application_updated) {
         return 'updated';
     }
-    return result.rows[0]?.application_exists ? 'active-interview' : 'not-found';
+    if (!result.rows[0]?.application_exists) {
+        return 'not-found';
+    }
+    if (jobStatus === 'Applied' && result.rows[0].has_active_interview) {
+        return 'active-interview';
+    }
+    return result.rows[0].has_offer_evaluation ? 'offer-evaluation' : 'active-interview';
 };

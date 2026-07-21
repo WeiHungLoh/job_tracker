@@ -380,6 +380,15 @@ test('returns 401 when a protected route has no token', async () => {
     assert.deepEqual(await response.json(), { message: 'No authentication token found. Please sign in.' });
 });
 
+test('protects active and archived offer decision routes', async () => {
+    for (const path of ['/offer-decisions', '/offer-decisions/archived']) {
+        const response = await fetch(`${baseUrl}${path}`);
+
+        assert.equal(response.status, 401);
+        assert.deepEqual(await response.json(), { message: 'No authentication token found. Please sign in.' });
+    }
+});
+
 test('returns 401 and clears an expired access token', async () => {
     const token = jwt.sign({ ...TEST_USER, tokenType: 'access' }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: -1 });
     const response = await fetch(`${baseUrl}/job-applications`, {
@@ -446,7 +455,14 @@ test('returns 409 when moving an application with an active interview to Applied
     pool.query = async (sql, values) => {
         query = { sql: String(sql), values };
         return {
-            rows: [{ application_exists: true, application_updated: false }],
+            rows: [
+                {
+                    application_exists: true,
+                    application_updated: false,
+                    has_active_interview: true,
+                    has_offer_evaluation: false,
+                },
+            ],
         };
     };
 
@@ -471,6 +487,46 @@ test('returns 409 when moving an application with an active interview to Applied
         assert.match(query.sql, /interviews\.is_archived = false/);
         assert.doesNotMatch(query.sql, /interview_duration_minutes|NOW\(\)/);
         assert.doesNotMatch(query.sql, /edit_status/);
+    } finally {
+        pool.query = originalQuery;
+    }
+});
+
+test('returns 409 when a saved offer evaluation is moved outside Offer, Accepted or Declined', async () => {
+    const originalQuery = pool.query;
+    let query;
+    pool.query = async (sql, values) => {
+        query = { sql: String(sql), values };
+        return {
+            rows: [
+                {
+                    application_exists: true,
+                    application_updated: false,
+                    has_active_interview: false,
+                    has_offer_evaluation: true,
+                },
+            ],
+        };
+    };
+
+    try {
+        const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+        const response = await fetch(`${baseUrl}/job-applications/1/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Cookie: `access_token=${token}`,
+            },
+            body: JSON.stringify({ jobStatus: 'Interview' }),
+        });
+
+        assert.equal(response.status, 409);
+        assert.deepEqual(await response.json(), {
+            message: 'Delete the offer evaluation before changing to a status other than Offer, Accepted or Declined.',
+        });
+        assert.deepEqual(query.values, ['Interview', 1, TEST_USER.id]);
+        assert.match(query.sql, /FROM offer_evaluations/);
+        assert.match(query.sql, /\$1::text IN \('Offer', 'Accepted', 'Declined'\)/);
     } finally {
         pool.query = originalQuery;
     }

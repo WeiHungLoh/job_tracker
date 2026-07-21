@@ -26,11 +26,23 @@ describe('bulk confirmations', () => {
     });
 
     test('describes active and archived permanent application deletion', () => {
-        expect(createDeleteAllApplicationsConfirmation(2, 1, 'active').description).toBe(
+        expect(createDeleteAllApplicationsConfirmation(2, 1, 0, 'active').description).toBe(
             'Delete all 2 active job applications and their 1 related active interview? This affects every active application you own, including applications not visible under the current job-status filters. This action is permanent and cannot be undone.'
         );
-        expect(createDeleteAllApplicationsConfirmation(5, 2, 'archived').description).toBe(
+        expect(createDeleteAllApplicationsConfirmation(5, 2, 0, 'archived').description).toBe(
             'Delete all 5 archived job applications and their 2 related archived interviews? This affects every archived application you own, including applications not visible under the current archived job-status filters. This action is permanent and cannot be undone.'
+        );
+    });
+
+    test('describes saved evaluation lifecycle in bulk application actions', () => {
+        expect(createArchiveAllConfirmation(3, 2, 2).description).toBe(
+            'Archive all 3 active job applications, their 2 related active interviews, and their 2 saved offer evaluations? This affects every active application you own, including applications not visible under the current job-status filters. Saved offer evaluations become read-only while archived.'
+        );
+        expect(createUnarchiveAllConfirmation(1, 0, 1).description).toBe(
+            'Unarchive all 1 archived job application, its 0 related archived interviews, and its 1 saved offer evaluation? This affects every archived application you own, including applications not visible under the current archived job-status filters. Saved offer evaluations become editable again.'
+        );
+        expect(createDeleteAllApplicationsConfirmation(2, 1, 1, 'archived').description).toBe(
+            'Delete all 2 archived job applications, their 1 related archived interview, and their 1 saved offer evaluation? This affects every archived application you own, including applications not visible under the current archived job-status filters. This action is permanent and cannot be undone.'
         );
     });
 

@@ -94,7 +94,7 @@ test('collection summaries use one aggregate query with matching user and archiv
         calls.push({ sql, values });
         return {
             rows: String(sql).includes('COUNT(DISTINCT')
-                ? [{ application_count: 2, related_interview_count: 1 }]
+                ? [{ application_count: 2, related_interview_count: 1, offer_evaluation_count: 1 }]
                 : [{ interview_count: 3 }],
         };
     };
@@ -103,6 +103,7 @@ test('collection summaries use one aggregate query with matching user and archiv
         assert.deepEqual(await getApplicationCollectionSummary(9, false), {
             application_count: 2,
             related_interview_count: 1,
+            offer_evaluation_count: 1,
         });
         assert.deepEqual(await getInterviewCollectionSummary(9, true), { interview_count: 3 });
     } finally {
@@ -111,6 +112,7 @@ test('collection summaries use one aggregate query with matching user and archiv
 
     assert.match(calls[0].sql, /applications\.user_id = \$1/);
     assert.match(calls[0].sql, /interviews\.user_id = \$1/);
+    assert.match(calls[0].sql, /COUNT\(DISTINCT evaluations\.job_id\)::integer AS offer_evaluation_count/);
     assert.deepEqual(calls[0].values, [9, false]);
     assert.match(calls[1].sql, /WHERE user_id = \$1 AND is_archived = \$2/);
     assert.deepEqual(calls[1].values, [9, true]);

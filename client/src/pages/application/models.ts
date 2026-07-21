@@ -75,6 +75,7 @@ export type JobApplication = {
     job_location: string;
     job_posting_url: string;
     notes: string;
+    has_offer_evaluation?: boolean;
 };
 
 export type ArchivedJobApplication = {
@@ -102,12 +103,14 @@ export type ListJobStatusCountsResponse = JobStatusCount[];
 export type ApplicationCollectionSummary = {
     application_count: number;
     related_interview_count: number;
+    offer_evaluation_count: number;
 };
 export type GetApplicationCollectionSummaryRequest = null;
 export type GetApplicationCollectionSummaryResponse = ApplicationCollectionSummary;
 
 export type ApplicationRelationSummary = {
     related_interview_count: number;
+    offer_evaluation_count: number;
 };
 export type GetApplicationRelationSummaryRequest = {
     jobId: number;

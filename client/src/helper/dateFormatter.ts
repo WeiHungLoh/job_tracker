@@ -27,6 +27,23 @@ export const parseDatetimeLocal = (value: string): Date => {
     return date;
 };
 
+const padDateTimePart = (value: number): string => String(value).padStart(2, '0');
+
+export const toDatetimeLocalInputValue = (value: string): string => {
+    if (!value) {
+        return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return `${date.getFullYear()}-${padDateTimePart(date.getMonth() + 1)}-${padDateTimePart(
+        date.getDate()
+    )}T${padDateTimePart(date.getHours())}:${padDateTimePart(date.getMinutes())}`;
+};
+
 export const isInvalidDatetimeLocalInput = (value: string, validity?: ValidityState): boolean => {
     if (validity?.badInput || validity?.rangeUnderflow || validity?.rangeOverflow) {
         return true;

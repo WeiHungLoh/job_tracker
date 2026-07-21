@@ -2,7 +2,7 @@ export type FieldType = 'formData' | 'path' | 'query';
 
 export type EndpointConfigEntry = {
     url: string;
-    verb: 'DELETE' | 'GET' | 'PATCH' | 'POST';
+    verb: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
     fieldMap?: Record<string, FieldType>;
     retry?: boolean;
 };

@@ -1,7 +1,15 @@
 import type { FormErrors } from './models';
 
 type FocusableRef = {
-    readonly current: { focus: () => void } | null;
+    readonly current: {
+        focus: (options?: FocusOptions) => void;
+        scrollIntoView?: (options?: ScrollIntoViewOptions) => void;
+    } | null;
+};
+
+const INVALID_FIELD_SCROLL_OPTIONS: ScrollIntoViewOptions = {
+    behavior: 'smooth',
+    block: 'center',
 };
 
 export const focusFirstInvalidField = <TField extends string>(
@@ -10,7 +18,8 @@ export const focusFirstInvalidField = <TField extends string>(
 ) => {
     for (const [field, ref] of fields) {
         if (errors[field]) {
-            ref.current?.focus();
+            ref.current?.scrollIntoView?.(INVALID_FIELD_SCROLL_OPTIONS);
+            ref.current?.focus({ preventScroll: true });
             return;
         }
     }

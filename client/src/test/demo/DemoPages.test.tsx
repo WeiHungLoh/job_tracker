@@ -9,6 +9,7 @@ import DemoViewApplication from '../../pages/demo/application/jobApplication/vie
 import DemoViewArchivedApplication from '../../pages/demo/application/archivedApplication/viewArchivedApplication/DemoViewArchivedApplication';
 import DemoViewInterview from '../../pages/demo/interview/jobInterview/viewInterview/DemoViewInterview';
 import DemoViewArchivedInterview from '../../pages/demo/interview/archivedInterview/viewArchivedInterview/DemoViewArchivedInterview';
+import DemoOfferDecisionPage from '../../pages/demo/offerDecision/DemoOfferDecisionPage';
 import { UserPreferencesProvider } from '../../components/userPreferences/UserPreferencesProvider';
 import { createDemoInitialState } from '../../pages/demo/state/demoInitialState';
 import { daysFromNow, toDateTimeString } from '../../pages/demo/state/demoDateHelpers';
@@ -177,6 +178,66 @@ describe('demo page interactions', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    test('edits and saves one offer evaluation in demo state without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        renderDemo(<DemoOfferDecisionPage archived={false} />, [routes.demoOfferDecisions]);
+
+        expect(screen.getByRole('heading', { name: 'Evaluated offers' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Edit evaluation for Greenhouse CloudOps' }));
+        expect(screen.getByLabelText('Greenhouse CloudOps Company/Culture Fit rating')).toHaveValue('5');
+        fireEvent.change(screen.getByLabelText('Greenhouse CloudOps Company/Culture Fit rating'), {
+            target: { value: '4' },
+        });
+        fireEvent.change(screen.getByLabelText('Greenhouse CloudOps monthly base salary'), {
+            target: { value: '10500' },
+        });
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Save evaluation for Greenhouse CloudOps' }));
+        });
+
+        expect(screen.queryByText('Offer evaluation saved.')).not.toBeInTheDocument();
+        expect(screen.queryByText('Offer evaluation added.')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Greenhouse CloudOps Company/Culture Fit rating')).not.toBeInTheDocument();
+        expect(screen.getByText('SGD 10,500')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Edit evaluation for Greenhouse CloudOps' })).toBeInTheDocument();
+        expect(fetchSpy).not.toHaveBeenCalled();
+        fetchSpy.mockRestore();
+    });
+
+    test('shows a success toast only when an offer evaluation is first added', async () => {
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        renderDemo(<DemoOfferDecisionPage archived={false} />, [routes.demoOfferDecisions]);
+
+        await clickConfirmedAction(screen.getByRole('button', { name: 'Delete evaluation for Greenhouse CloudOps' }));
+        expect(
+            await screen.findByRole('button', { name: 'Add evaluation for Greenhouse CloudOps' })
+        ).toBeInTheDocument();
+        expect(screen.queryByText('Offer evaluation deleted.')).not.toBeInTheDocument();
+
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Add evaluation for Greenhouse CloudOps' }));
+            fireEvent.change(screen.getByLabelText('Greenhouse CloudOps decision deadline'), {
+                target: { value: '2026-08-20T10:00' },
+            });
+            fireEvent.change(screen.getByLabelText('Greenhouse CloudOps monthly base salary'), {
+                target: { value: '10000' },
+            });
+            await userEvent.click(screen.getByRole('button', { name: 'Save evaluation for Greenhouse CloudOps' }));
+        });
+
+        expect(await screen.findByText('Offer evaluation added.')).toBeInTheDocument();
+    });
+
+    test('renders archived demo offer comparisons as review-only snapshots', () => {
+        renderDemo(<DemoOfferDecisionPage archived />, [routes.demoArchivedOfferDecisions]);
+
+        expect(screen.getByRole('heading', { name: 'Archived expired evaluated offers' })).toBeInTheDocument();
+        expect(screen.getByText('Keppel Digital')).toBeInTheDocument();
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /edit evaluation/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /save evaluation/i })).not.toBeInTheDocument();
     });
 
     test('updates application notes and status with auto-scroll highlighting', async () => {

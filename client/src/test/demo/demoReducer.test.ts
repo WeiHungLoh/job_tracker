@@ -4,11 +4,14 @@ import { demoReducer } from '../../pages/demo/state/demoReducer';
 import {
     selectApplications,
     selectArchivedApplications,
+    selectArchivedOfferDecisionWorkspace,
     selectJobStatusCounts,
+    selectOfferDecisionWorkspace,
     selectWeeklyApplications,
     sortInterviews,
 } from '../../pages/demo/state/demoSelectors';
 import { createInterviewCsvData } from '../../helper/csvData';
+import type { OfferDecisionValues } from '../../pages/offerDecision/models';
 
 const fixedNow = new Date(2026, 6, 7, 12, 0, 0, 0);
 const fixedNowMs = fixedNow.getTime();
@@ -26,6 +29,7 @@ describe('demo reducer state', () => {
         expect(state.interviews).toHaveLength(9);
         expect(state.archivedApplications.length).toBeGreaterThanOrEqual(4);
         expect(state.archivedInterviews.length).toBeGreaterThanOrEqual(3);
+        expect(Object.keys(state.offerEvaluations)).toHaveLength(3);
         expect(JOB_STATUSES.every((status) => coveredStatuses.has(status))).toBe(true);
         expect(earliestApplicationAgeDays).toBeGreaterThanOrEqual(49);
 
@@ -59,6 +63,114 @@ describe('demo reducer state', () => {
         expect(
             createInterviewCsvData(sortedArchivedInterviews).map((interview) => interview.archived_interview_id)
         ).toEqual([504, 503, 502, 501]);
+    });
+
+    test('selects active offer candidates and archived evaluation snapshots', () => {
+        const state = createDemoInitialState(fixedNow);
+        const activeWorkspace = selectOfferDecisionWorkspace(state);
+        const archivedWorkspace = selectArchivedOfferDecisionWorkspace(state);
+
+        expect(activeWorkspace.applications.map((application) => application.job_id)).toEqual([111, 112]);
+        expect(
+            activeWorkspace.applications.find((application) => application.job_id === 111)?.evaluation
+        ).not.toBeNull();
+        expect(activeWorkspace.applications.find((application) => application.job_id === 113)).toBeUndefined();
+        expect(archivedWorkspace.applications.map((application) => application.job_id)).toEqual([204]);
+        expect(archivedWorkspace.applications[0].evaluation).toBe(state.offerEvaluations[204]);
+        expect(activeWorkspace.applications[0].application_date).toBe(
+            state.applications.find((application) => application.job_id === 111)?.application_date
+        );
+    });
+
+    test('saves one current Offer evaluation without changing other evaluations', () => {
+        const state = createDemoInitialState(fixedNow);
+        const ratings: OfferDecisionValues = {
+            career_growth: 5,
+            company_culture_fit: 5,
+            work_life_balance: 3,
+            compensation: 4,
+        };
+        const details = {
+            currency: 'SGD',
+            monthly_base_salary: 10500,
+            bonus: '15% target',
+            annual_leave_days: 21,
+            work_arrangement: 'Hybrid' as const,
+            decision_deadline: '2026-08-15',
+            pros: 'Strong product ownership',
+            concerns: 'Two office days each week',
+        };
+        const updatedAt = '2026-07-18T09:30:00.000Z';
+        const updated = demoReducer(state, {
+            type: 'SAVE_OFFER_EVALUATION',
+            payload: {
+                jobId: 111,
+                request: { ratings, details },
+                updatedAt,
+            },
+        });
+
+        expect(updated.offerEvaluations[111]).toEqual({
+            job_id: 111,
+            ratings,
+            details,
+            updated_at: updatedAt,
+        });
+        expect(updated.offerEvaluations[112]).toBe(state.offerEvaluations[112]);
+        expect(updated.offerEvaluations).not.toBe(state.offerEvaluations);
+    });
+
+    test('ignores a save when the application is no longer in Offer status', () => {
+        const state = createDemoInitialState(fixedNow);
+        const request = {
+            ratings: state.offerEvaluations[111].ratings,
+            details: state.offerEvaluations[111].details,
+        };
+        const updated = demoReducer(state, {
+            type: 'SAVE_OFFER_EVALUATION',
+            payload: { jobId: 113, request, updatedAt: '2026-07-18T09:30:00.000Z' },
+        });
+
+        expect(updated).toBe(state);
+    });
+
+    test('deletes an offer evaluation without deleting its application', () => {
+        const state = createDemoInitialState(fixedNow);
+        const updated = demoReducer(state, { type: 'DELETE_OFFER_EVALUATION', payload: { jobId: 111 } });
+
+        expect(updated.offerEvaluations[111]).toBeUndefined();
+        expect(updated.applications.find((application) => application.job_id === 111)).toBe(
+            state.applications.find((application) => application.job_id === 111)
+        );
+    });
+
+    test('preserves offer evaluations across archive and restore and removes them on deletion', () => {
+        const state = createDemoInitialState(fixedNow);
+        const archived = demoReducer(state, { type: 'ARCHIVE_APPLICATION', payload: { jobId: 111 } });
+
+        expect(archived.offerEvaluations[111]).toBe(state.offerEvaluations[111]);
+        expect(
+            selectOfferDecisionWorkspace(archived).applications.some((application) => application.job_id === 111)
+        ).toBe(false);
+        expect(
+            selectArchivedOfferDecisionWorkspace(archived).applications.some(
+                (application) => application.job_id === 111
+            )
+        ).toBe(true);
+
+        const restored = demoReducer(archived, { type: 'RESTORE_APPLICATION', payload: { archivedJobId: 111 } });
+        expect(restored.offerEvaluations[111]).toBe(state.offerEvaluations[111]);
+        expect(
+            selectOfferDecisionWorkspace(restored).applications.some((application) => application.job_id === 111)
+        ).toBe(true);
+
+        const activeDeleted = demoReducer(restored, { type: 'DELETE_APPLICATION', payload: { jobId: 111 } });
+        const archivedDeleted = demoReducer(state, {
+            type: 'DELETE_ARCHIVED_APPLICATION',
+            payload: { archivedJobId: 204 },
+        });
+        expect(activeDeleted.offerEvaluations[111]).toBeUndefined();
+        expect(archivedDeleted.offerEvaluations[204]).toBeUndefined();
     });
 
     test('sorts active and archived interviews like production without mutating the input', () => {

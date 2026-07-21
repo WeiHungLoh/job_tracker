@@ -113,8 +113,9 @@ const DemoViewArchivedApplication = () => {
             const relatedInterviewCount = state.archivedInterviews.filter(
                 (interview) => interview.archived_job_id === archivedJobId
             ).length;
+            const offerEvaluationCount = state.offerEvaluations[archivedJobId] ? 1 : 0;
             const confirmationResult = await confirm(
-                createApplicationRelationConfirmation(action, 'archived', relatedInterviewCount)
+                createApplicationRelationConfirmation(action, 'archived', relatedInterviewCount, offerEvaluationCount)
             );
 
             if (!confirmationResult?.confirmed) {
@@ -149,6 +150,9 @@ const DemoViewArchivedApplication = () => {
         const interviewCount = state.archivedInterviews.filter((interview) =>
             applicationIds.has(interview.archived_job_id)
         ).length;
+        const offerEvaluationCount = state.archivedApplications.filter(
+            (application) => state.offerEvaluations[application.archived_job_id]
+        ).length;
 
         try {
             if (state.archivedApplications.length === 0) {
@@ -157,10 +161,15 @@ const DemoViewArchivedApplication = () => {
 
             const confirmation =
                 action === 'unarchive'
-                    ? createUnarchiveAllConfirmation(state.archivedApplications.length, interviewCount)
+                    ? createUnarchiveAllConfirmation(
+                          state.archivedApplications.length,
+                          interviewCount,
+                          offerEvaluationCount
+                      )
                     : createDeleteAllApplicationsConfirmation(
                           state.archivedApplications.length,
                           interviewCount,
+                          offerEvaluationCount,
                           'archived'
                       );
             const { confirmed } = await confirm(confirmation);

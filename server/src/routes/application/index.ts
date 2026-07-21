@@ -285,6 +285,14 @@ router.patch(
                 sendError(res, 409, 'A job application with an active interview cannot be moved to Applied.');
                 return;
             }
+            if (updateResult === 'offer-evaluation') {
+                sendError(
+                    res,
+                    409,
+                    'Delete the offer evaluation before changing to a status other than Offer, Accepted or Declined.'
+                );
+                return;
+            }
             if (updateResult === 'not-found') {
                 sendError(res, 404, 'Job application not found.');
                 return;

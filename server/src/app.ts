@@ -10,6 +10,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { errorHandler, type MiddlewareError, notFoundHandler } from './middleware/errorHandlers.js';
 import interviewRoute from './routes/interview/index.js';
+import offerDecisionRoute from './routes/offerDecision/index.js';
 import rateLimit from 'express-rate-limit';
 import userPreferencesRoute from './routes/userPreferences/index.js';
 
@@ -53,6 +54,7 @@ export const createApp = (): express.Express => {
     app.use('/job-interviews', authenticateAccessToken, interviewRoute);
     app.use('/archived-job-applications', authenticateAccessToken, archivedApplicationRoute);
     app.use('/archived-job-interviews', authenticateAccessToken, archivedInterviewRoute);
+    app.use('/offer-decisions', authenticateAccessToken, offerDecisionRoute);
     app.use('/user-preferences', authenticateAccessToken, userPreferencesRoute);
 
     app.use(notFoundHandler);

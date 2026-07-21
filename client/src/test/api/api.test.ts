@@ -41,6 +41,24 @@ describe('makeJobTrackerAPIRequest', () => {
         expect(endpointConfig.authentication.refresh).not.toHaveProperty('retry');
     });
 
+    test('declares active, archived, singular save, and delete offer comparison endpoints', () => {
+        expect(endpointConfig.offerDecision).toEqual({
+            getActive: { url: '/offer-decisions', verb: 'GET', retry: true },
+            getArchived: { url: '/offer-decisions/archived', verb: 'GET', retry: true },
+            saveEvaluation: {
+                url: '/offer-decisions/:jobId',
+                verb: 'PUT',
+                fieldMap: { jobId: 'path' },
+                retry: true,
+            },
+            deleteEvaluation: {
+                url: '/offer-decisions/:jobId',
+                verb: 'DELETE',
+                fieldMap: { jobId: 'path' },
+            },
+        });
+    });
+
     test('maps path and query fields while serializing remaining fields as JSON', async () => {
         await makeJobTrackerAPIRequest(
             {

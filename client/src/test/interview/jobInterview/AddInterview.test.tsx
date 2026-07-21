@@ -173,9 +173,11 @@ describe('AddInterview page', () => {
             </MemoryRouter>
         );
 
+        const dateInput = screen.getByLabelText('Interview Date');
+        const scrollIntoView = vi.fn();
+        dateInput.scrollIntoView = scrollIntoView;
         userEvent.click(screen.getByTestId('add-interview'));
 
-        const dateInput = screen.getByLabelText('Interview Date');
         const locationInput = screen.getByLabelText('Interview Location');
         const dateError = await screen.findByText('Please enter an interview date.');
         const locationError = screen.getByText('Please enter an interview location.');
@@ -185,6 +187,7 @@ describe('AddInterview page', () => {
         expect(locationInput).toHaveAttribute('aria-invalid', 'true');
         expect(locationInput).toHaveAttribute('aria-describedby', locationError.id);
         expect(document.activeElement).toBe(dateInput);
+        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
     });

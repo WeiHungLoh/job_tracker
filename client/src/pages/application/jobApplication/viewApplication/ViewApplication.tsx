@@ -324,7 +324,12 @@ const ViewApplication = () => {
         try {
             const summary = await api.application.getRelationSummary({ jobId });
             const { confirmed } = await confirm(
-                createApplicationRelationConfirmation(action, 'active', summary.related_interview_count)
+                createApplicationRelationConfirmation(
+                    action,
+                    'active',
+                    summary.related_interview_count,
+                    summary.offer_evaluation_count
+                )
             );
 
             if (!confirmed) {
@@ -384,10 +389,15 @@ const ViewApplication = () => {
 
             const confirmation =
                 action === 'archive'
-                    ? createArchiveAllConfirmation(summary.application_count, summary.related_interview_count)
+                    ? createArchiveAllConfirmation(
+                          summary.application_count,
+                          summary.related_interview_count,
+                          summary.offer_evaluation_count
+                      )
                     : createDeleteAllApplicationsConfirmation(
                           summary.application_count,
                           summary.related_interview_count,
+                          summary.offer_evaluation_count,
                           'active'
                       );
             const { confirmed } = await confirm(confirmation);
@@ -624,6 +634,12 @@ const ViewApplication = () => {
                             deletingApplicationIds={deletingApplicationIds}
                             editedNotes={notesAutosave.draftNotes}
                             hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
+                            hasOfferEvaluation={(jobId) =>
+                                Boolean(
+                                    applications.find((application) => application.job_id === jobId)
+                                        ?.has_offer_evaluation
+                                )
+                            }
                             isArchivingApplication={(jobId) =>
                                 pendingBulkAction === 'archive' || archivingApplicationIds.has(jobId)
                             }
@@ -651,6 +667,7 @@ const ViewApplication = () => {
                                         : application.job_status
                                 }
                                 hasInterview={interviewJobIdSet.has(application.job_id)}
+                                hasOfferEvaluation={Boolean(application.has_offer_evaluation)}
                                 index={index}
                                 isArchiving={
                                     pendingBulkAction === 'archive' || archivingApplicationIds.has(application.job_id)

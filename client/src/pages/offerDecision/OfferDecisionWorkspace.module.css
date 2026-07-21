@@ -1,0 +1,437 @@
+.workspace {
+    width: clamp(900px, 76%, 1280px);
+    max-width: 100%;
+    margin: 0 auto 30px;
+    padding: 32px;
+    color: var(--colorText);
+    box-sizing: border-box;
+}
+
+.loadingState {
+    display: grid;
+    min-height: 320px;
+    place-items: center;
+}
+
+.sectionHeading h2,
+.cardHeader h3 {
+    margin: 0;
+    color: var(--colorText);
+}
+
+.comparisonSection + .comparisonSection {
+    margin-top: var(--spacePageGrid);
+    padding-top: var(--spacePageGrid);
+    border-top: 1px solid var(--colorCardBorder);
+}
+
+.sectionHeading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--spaceSection);
+    margin-bottom: var(--spaceCard);
+}
+
+.sectionHeading h2 {
+    font-size: 1.5rem;
+}
+
+.sectionHeading > p {
+    max-width: 480px;
+    margin: 0;
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeControl);
+    line-height: 1.45;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.evaluationGrid {
+    display: grid;
+    align-items: start;
+    gap: var(--spaceSection);
+}
+
+.evaluationGrid[data-card-count='one'] {
+    grid-template-columns: minmax(0, 400px);
+}
+
+.evaluationGrid[data-card-count='two'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.evaluationGrid[data-card-count='many'] {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.evaluationCard {
+    min-width: 0;
+    padding: var(--spaceCard);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: var(--radiusCard);
+    background-color: var(--colorCardBg);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spaceCompact);
+}
+
+.cardHeader h3 {
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+}
+
+.cardHeader p {
+    margin: 4px 0 0;
+    color: var(--colorTextSecondary);
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.badges {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--spaceControl);
+}
+
+.expiredBadge {
+    display: inline-flex;
+    width: fit-content;
+    flex-shrink: 0;
+    padding: 4px 9px;
+    border-radius: var(--radiusPill);
+    background-color: var(--colorToastErrorBg);
+    color: var(--colorToastErrorText);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.deadlineSummary {
+    display: grid;
+    gap: 4px;
+    margin-top: var(--spaceCard);
+    padding: var(--spaceCompact);
+    border: 1px solid var(--colorPrimary);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorStatIconBg);
+}
+
+.deadlineSummary span {
+    color: var(--colorPrimary);
+    font-size: var(--fontSizeMetadata);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.deadlineSummary strong {
+    color: var(--colorText);
+    font-size: var(--fontSizeControl);
+}
+
+.score {
+    margin-top: var(--spaceCard);
+    padding: var(--spaceCompact);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+}
+
+.scoreHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spaceControl);
+    font-size: var(--fontSizeControl);
+}
+
+.scoreHeader strong {
+    color: var(--colorPrimary);
+    font-size: 1rem;
+}
+
+.score progress {
+    width: 100%;
+    height: 8px;
+    margin-top: var(--spaceControl);
+    accent-color: var(--colorPrimary);
+}
+
+.startEvaluation {
+    display: flex;
+    min-height: 150px;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--spaceCard);
+}
+
+.startEvaluation p {
+    margin: 0;
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeControl);
+    line-height: 1.5;
+}
+
+.detailsFields,
+.ratingFields {
+    display: grid;
+    gap: var(--spaceCompact);
+    margin: var(--spaceCard) 0 0;
+    padding: var(--spaceCard) 0 0;
+    border: 0;
+    border-top: 1px solid var(--colorControlBorder);
+}
+
+.detailsFields legend,
+.ratingFields legend {
+    padding: 0;
+    color: var(--colorText);
+    font-size: var(--fontSizeControl);
+    font-weight: 700;
+}
+
+.ratingFields legend {
+    padding-right: var(--spaceCompact);
+}
+
+.textField {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    color: var(--colorLabel);
+    font-size: var(--fontSizeControl);
+    font-weight: 600;
+}
+
+.textField input,
+.textField select,
+.textField textarea {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--spaceControl);
+    border: 1px solid var(--colorInputBorder);
+    border-radius: var(--radiusControl);
+    outline: none;
+    background-color: var(--colorInputBg);
+    color: var(--colorInputText);
+    font: inherit;
+}
+
+.textField textarea {
+    resize: vertical;
+    line-height: 1.45;
+}
+
+.textField input:focus,
+.textField select:focus,
+.textField textarea:focus {
+    border-color: var(--colorPrimary);
+    outline: 3px solid var(--colorPrimaryFocusShadow);
+    outline-offset: 0;
+}
+
+.textField input[aria-invalid='true'],
+.textField select[aria-invalid='true'],
+.textField textarea[aria-invalid='true'] {
+    border-color: var(--colorToastErrorAccent);
+}
+
+.fieldError {
+    color: var(--colorToastErrorText);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.ratingField {
+    display: grid;
+    gap: var(--spaceControl);
+    padding: var(--spaceCompact);
+    border: 1px solid var(--colorControlBorder);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+}
+
+.ratingHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spaceControl);
+    color: var(--colorLabel);
+    font-size: var(--fontSizeControl);
+}
+
+.ratingHeader output {
+    min-width: 42px;
+    padding: 3px 8px;
+    border: 1px solid var(--colorPrimary);
+    border-radius: var(--radiusPill);
+    background-color: var(--colorStatIconBg);
+    color: var(--colorPrimary);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 700;
+    text-align: center;
+}
+
+.ratingField input[type='range'] {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--colorPrimary);
+    cursor: pointer;
+}
+
+.ratingField input[type='range']:focus-visible {
+    border-radius: var(--radiusControl);
+    outline: 3px solid var(--colorPrimaryFocusShadow);
+    outline-offset: 2px;
+}
+
+.detailsReview,
+.reviewValues {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin: 0;
+    padding: var(--spaceCompact);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+}
+
+.reviewSection {
+    margin-top: var(--spaceCard);
+}
+
+.reviewSection h4 {
+    margin: 0 0 var(--spaceControl);
+    color: var(--colorPrimary);
+    font-size: var(--fontSizeMetadata);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.detailsReview > div {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+    padding: var(--spaceControl) 0;
+    border-bottom: 1px solid var(--colorControlBorder);
+}
+
+.detailsReview > div:first-child {
+    padding-top: 0;
+}
+
+.detailsReview > div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.detailsReview dt,
+.reviewValue dt {
+    color: var(--colorLabel);
+    font-size: var(--fontSizeBody);
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.detailsReview dd {
+    margin: 0;
+    color: var(--colorText);
+    font-size: var(--fontSizeBody);
+    font-weight: 400;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.reviewValue {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spaceControl);
+    padding: var(--spaceControl) 0;
+    border-bottom: 1px solid var(--colorControlBorder);
+}
+
+.reviewValue:first-child {
+    padding-top: 0;
+}
+
+.reviewValue:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.reviewValue dd {
+    min-width: 42px;
+    margin: 0;
+    padding: 3px 8px;
+    border: 1px solid var(--colorPrimary);
+    border-radius: var(--radiusPill);
+    background-color: var(--colorStatIconBg);
+    color: var(--colorPrimary);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 700;
+    text-align: center;
+}
+
+.cardActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--spaceControl);
+    margin-top: var(--spaceCard);
+}
+
+.lockedNotice {
+    margin: var(--spacePageGrid) 0 0;
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeControl);
+}
+
+@media (max-width: 768px) {
+    .workspace {
+        padding: 16px;
+    }
+
+    .sectionHeading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .sectionHeading > p {
+        text-align: left;
+        white-space: normal;
+    }
+
+    .sectionHeading h2,
+    .cardHeader h3 {
+        font-size: 1.2rem;
+    }
+
+    .cardHeader p,
+    .detailsReview dt,
+    .detailsReview dd,
+    .reviewValue dt {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .evaluationGrid[data-card-count='one'],
+    .evaluationGrid[data-card-count='two'],
+    .evaluationGrid[data-card-count='many'] {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+}

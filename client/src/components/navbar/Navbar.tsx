@@ -9,18 +9,24 @@ import { useTheme } from '../theme/ThemeContext';
 import { useToast } from '../toast/ToastProvider';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 
-const ARCHIVED_LOCATIONS: readonly string[] = [routes.archivedApplications, routes.archivedInterviews];
+const ARCHIVED_LOCATIONS: readonly string[] = [
+    routes.archivedApplications,
+    routes.archivedInterviews,
+    routes.archivedOfferDecisions,
+];
 
 const ACTIVE_NAV_LINKS = [
     { to: routes.dashboard, label: 'Dashboard' },
     { to: routes.addApplication, label: 'Add Job Application' },
     { to: routes.viewApplications, label: 'View Job Applications' },
     { to: routes.viewInterviews, label: 'View Interviews' },
+    { to: routes.offerDecisions, label: 'Offer Comparison' },
 ] as const;
 
 const ARCHIVED_NAV_LINKS = [
     { to: routes.archivedApplications, label: 'View Archived Applications' },
     { to: routes.archivedInterviews, label: 'View Archived Interviews' },
+    { to: routes.archivedOfferDecisions, label: 'Archived Offer Comparisons' },
 ] as const;
 
 const Navbar = () => {
@@ -38,6 +44,15 @@ const Navbar = () => {
     }, [archived, currentLocation]);
 
     const handleArchiveStatusToggle = () => {
+        if (currentLocation === routes.offerDecisions) {
+            navigate(routes.archivedOfferDecisions);
+            return;
+        }
+        if (currentLocation === routes.archivedOfferDecisions) {
+            navigate(routes.offerDecisions);
+            return;
+        }
+
         navigate(archived ? routes.viewApplications : routes.archivedApplications);
     };
 

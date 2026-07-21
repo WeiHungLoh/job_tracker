@@ -1,4 +1,4 @@
-import { isInvalidDatetimeLocalInput } from '../../helper/dateFormatter';
+import { isInvalidDatetimeLocalInput, toDatetimeLocalInputValue } from '../../helper/dateFormatter';
 
 describe('datetime-local validation', () => {
     test('rejects impossible calendar dates instead of normalizing them', () => {
@@ -21,5 +21,19 @@ describe('datetime-local validation', () => {
         expect(isInvalidDatetimeLocalInput('0000-04-30T23:59')).toBe(true);
         expect(isInvalidDatetimeLocalInput('20300-03-30T00:00')).toBe(true);
         expect(isInvalidDatetimeLocalInput('9999-12-31T23:59')).toBe(false);
+    });
+
+    test('converts a stored timestamp into the local date-time input format', () => {
+        const timestamp = '2026-07-18T10:30:00.000Z';
+        const date = new Date(timestamp);
+        const expected =
+            [
+                date.getFullYear(),
+                String(date.getMonth() + 1).padStart(2, '0'),
+                String(date.getDate()).padStart(2, '0'),
+            ].join('-') + `T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+        expect(toDatetimeLocalInputValue(timestamp)).toBe(expected);
+        expect(toDatetimeLocalInputValue('')).toBe('');
     });
 });

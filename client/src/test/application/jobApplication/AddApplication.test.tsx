@@ -274,9 +274,11 @@ describe('User add application flow', () => {
             </MemoryRouter>
         );
 
+        const companyNameInput = screen.getByLabelText(/company name/i);
+        const scrollIntoView = vi.fn();
+        companyNameInput.scrollIntoView = scrollIntoView;
         userEvent.click(screen.getByRole('button', { name: /add job application/i }));
 
-        const companyNameInput = screen.getByLabelText(/company name/i);
         const jobTitleInput = screen.getByLabelText(/job title/i);
         const companyNameError = await screen.findByText('Please enter a company name.');
         const jobTitleError = screen.getByText('Please enter a job title.');
@@ -287,6 +289,7 @@ describe('User add application flow', () => {
         expect(jobTitleInput).toHaveAttribute('aria-invalid', 'true');
         expect(jobTitleInput).toHaveAttribute('aria-describedby', jobTitleError.id);
         expect(document.activeElement).toBe(companyNameInput);
+        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();

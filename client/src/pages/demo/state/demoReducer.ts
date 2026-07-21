@@ -3,6 +3,8 @@ import type { ArchivedJobInterview, JobInterview } from '../../interview/models'
 import { createDemoInitialState } from './demoInitialState';
 import type { DemoState } from '../models';
 import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
+import type { OfferEvaluation, SaveOfferEvaluationRequest } from '../../offerDecision/models';
+import { isApplicationStatusDisabled } from '../../application/applicationStatusRestrictions';
 
 type CreateApplicationPayload = {
     applicationDate: Date;
@@ -22,6 +24,12 @@ type CreateInterviewPayload = {
     notes: string;
 };
 
+type SaveOfferEvaluationPayload = {
+    jobId: number;
+    request: SaveOfferEvaluationRequest;
+    updatedAt: string;
+};
+
 export type DemoAction =
     | { type: 'CREATE_APPLICATION'; payload: CreateApplicationPayload }
     | { type: 'UPDATE_APPLICATION_STATUS'; payload: { jobId: number; jobStatus: JobStatus } }
@@ -39,6 +47,8 @@ export type DemoAction =
     | { type: 'DELETE_ALL_INTERVIEWS' }
     | { type: 'DELETE_ARCHIVED_INTERVIEW'; payload: { archivedInterviewId: number } }
     | { type: 'DELETE_ALL_ARCHIVED_INTERVIEWS' }
+    | { type: 'SAVE_OFFER_EVALUATION'; payload: SaveOfferEvaluationPayload }
+    | { type: 'DELETE_OFFER_EVALUATION'; payload: { jobId: number } }
     | { type: 'UPDATE_PREFERENCES'; payload: UpdateUserPreferencesRequest }
     | { type: 'RESET_DEMO'; payload?: { now?: Date } };
 
@@ -99,6 +109,15 @@ const mergePreferences = (state: DemoState, updatedPreferences: UpdateUserPrefer
     return { ...state, preferences };
 };
 
+const removeOfferEvaluations = (
+    offerEvaluations: Record<number, OfferEvaluation>,
+    jobIds: readonly number[]
+): Record<number, OfferEvaluation> => {
+    const remainingEvaluations = { ...offerEvaluations };
+    jobIds.forEach((jobId) => delete remainingEvaluations[jobId]);
+    return remainingEvaluations;
+};
+
 export const demoReducer = (state: DemoState, action: DemoAction): DemoState => {
     switch (action.type) {
         case 'CREATE_APPLICATION': {
@@ -121,7 +140,17 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
             };
         }
 
-        case 'UPDATE_APPLICATION_STATUS':
+        case 'UPDATE_APPLICATION_STATUS': {
+            const hasInterview = state.interviews.some((interview) => interview.job_id === action.payload.jobId);
+            if (
+                isApplicationStatusDisabled(
+                    action.payload.jobStatus,
+                    hasInterview,
+                    Boolean(state.offerEvaluations[action.payload.jobId])
+                )
+            ) {
+                return state;
+            }
             return {
                 ...state,
                 applications: state.applications.map((application) =>
@@ -133,6 +162,7 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                         : application
                 ),
             };
+        }
 
         case 'UPDATE_APPLICATION_NOTES':
             return {
@@ -149,6 +179,7 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 ...state,
                 applications: state.applications.filter((application) => application.job_id !== action.payload.jobId),
                 interviews: state.interviews.filter((interview) => interview.job_id !== action.payload.jobId),
+                offerEvaluations: removeOfferEvaluations(state.offerEvaluations, [action.payload.jobId]),
             };
 
         case 'DELETE_ALL_APPLICATIONS':
@@ -156,6 +187,10 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 ...state,
                 applications: [],
                 interviews: [],
+                offerEvaluations: removeOfferEvaluations(
+                    state.offerEvaluations,
+                    state.applications.map((application) => application.job_id)
+                ),
             };
 
         case 'ARCHIVE_APPLICATION': {
@@ -247,6 +282,7 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 archivedInterviews: state.archivedInterviews.filter(
                     (interview) => interview.archived_job_id !== action.payload.archivedJobId
                 ),
+                offerEvaluations: removeOfferEvaluations(state.offerEvaluations, [action.payload.archivedJobId]),
             };
 
         case 'DELETE_ALL_ARCHIVED_APPLICATIONS':
@@ -254,6 +290,10 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                 ...state,
                 archivedApplications: [],
                 archivedInterviews: [],
+                offerEvaluations: removeOfferEvaluations(
+                    state.offerEvaluations,
+                    state.archivedApplications.map((application) => application.archived_job_id)
+                ),
             };
 
         case 'CREATE_INTERVIEW': {
@@ -303,6 +343,33 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
 
         case 'DELETE_ALL_ARCHIVED_INTERVIEWS':
             return { ...state, archivedInterviews: [] };
+
+        case 'SAVE_OFFER_EVALUATION': {
+            const { jobId, request, updatedAt } = action.payload;
+            const application = state.applications.find((candidate) => candidate.job_id === jobId);
+            if (application?.job_status !== 'Offer') {
+                return state;
+            }
+
+            return {
+                ...state,
+                offerEvaluations: {
+                    ...state.offerEvaluations,
+                    [jobId]: {
+                        job_id: jobId,
+                        ratings: { ...request.ratings },
+                        details: { ...request.details },
+                        updated_at: updatedAt,
+                    },
+                },
+            };
+        }
+
+        case 'DELETE_OFFER_EVALUATION':
+            return {
+                ...state,
+                offerEvaluations: removeOfferEvaluations(state.offerEvaluations, [action.payload.jobId]),
+            };
 
         case 'UPDATE_PREFERENCES':
             return mergePreferences(state, action.payload);

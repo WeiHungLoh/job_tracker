@@ -185,8 +185,9 @@ const DemoViewApplication = () => {
 
         try {
             const relatedInterviewCount = state.interviews.filter((interview) => interview.job_id === jobId).length;
+            const offerEvaluationCount = state.offerEvaluations[jobId] ? 1 : 0;
             const confirmationResult = await confirm(
-                createApplicationRelationConfirmation(action, 'active', relatedInterviewCount)
+                createApplicationRelationConfirmation(action, 'active', relatedInterviewCount, offerEvaluationCount)
             );
 
             if (!confirmationResult?.confirmed) {
@@ -224,6 +225,9 @@ const DemoViewApplication = () => {
         setPendingBulkAction(action);
         const applicationIds = new Set(state.applications.map((application) => application.job_id));
         const interviewCount = state.interviews.filter((interview) => applicationIds.has(interview.job_id)).length;
+        const offerEvaluationCount = state.applications.filter(
+            (application) => state.offerEvaluations[application.job_id]
+        ).length;
 
         try {
             if (state.applications.length === 0) {
@@ -232,8 +236,13 @@ const DemoViewApplication = () => {
 
             const confirmation =
                 action === 'archive'
-                    ? createArchiveAllConfirmation(state.applications.length, interviewCount)
-                    : createDeleteAllApplicationsConfirmation(state.applications.length, interviewCount, 'active');
+                    ? createArchiveAllConfirmation(state.applications.length, interviewCount, offerEvaluationCount)
+                    : createDeleteAllApplicationsConfirmation(
+                          state.applications.length,
+                          interviewCount,
+                          offerEvaluationCount,
+                          'active'
+                      );
             const { confirmed } = await confirm(confirmation);
 
             if (!confirmed) {
@@ -390,6 +399,7 @@ const DemoViewApplication = () => {
                     deletingApplicationIds={deletingApplicationIds}
                     editedNotes={notesAutosave.draftNotes}
                     hasInterview={(jobId) => interviewJobIdSet.has(jobId)}
+                    hasOfferEvaluation={(jobId) => Boolean(state.offerEvaluations[jobId])}
                     isArchivingApplication={(jobId) =>
                         pendingBulkAction === 'archive' || archivingApplicationIds.has(jobId)
                     }
@@ -416,6 +426,7 @@ const DemoViewApplication = () => {
                                 : application.job_status
                         }
                         hasInterview={interviewJobIdSet.has(application.job_id)}
+                        hasOfferEvaluation={Boolean(state.offerEvaluations[application.job_id])}
                         index={index}
                         isArchiving={pendingBulkAction === 'archive' || archivingApplicationIds.has(application.job_id)}
                         isDeleting={deletingApplicationIds.has(application.job_id)}

@@ -11,6 +11,7 @@ export type JobApplicationCardProps = ApplicationCardBaseProps &
         application: JobApplication;
         editedJobStatus: JobStatus;
         hasInterview: boolean;
+        hasOfferEvaluation: boolean;
         isArchiving: boolean;
         isEditingStatus: boolean;
         isUpdatingStatus: boolean;
