@@ -4,7 +4,7 @@ import type { ConfirmOptions } from 'material-ui-confirm';
 export const formatCountLabel = (count: number, singular: string, plural = `${singular}s`) =>
     `${count} ${count === 1 ? singular : plural}`;
 
-export type ApplicationCollectionState = 'active' | 'archived';
+export type CollectionState = 'active' | 'archived';
 
 export const PERMANENT_DELETION_WARNING = 'This action is permanent and cannot be undone.';
 
@@ -28,7 +28,7 @@ const applicationDescription = (
     applicationCount: number,
     interviewCount: number,
     offerEvaluationCount: number,
-    state: ApplicationCollectionState
+    state: CollectionState
 ) => {
     const applicationLabel = formatCountLabel(applicationCount, `${state} job application`);
     const interviewLabel = formatCountLabel(interviewCount, `related ${state} interview`);
@@ -79,7 +79,7 @@ export const createDeleteAllApplicationsConfirmation = (
     applicationCount: number,
     interviewCount: number,
     offerEvaluationCount: number,
-    state: ApplicationCollectionState
+    state: CollectionState
 ): ConfirmOptions =>
     bulkOptions(
         'Confirm Delete All',
@@ -89,7 +89,7 @@ export const createDeleteAllApplicationsConfirmation = (
 
 export const createDeleteAllInterviewsConfirmation = (
     interviewCount: number,
-    state: ApplicationCollectionState
+    state: CollectionState
 ): ConfirmOptions => {
     const interviewLabel = formatCountLabel(interviewCount, `${state} interview`);
 
@@ -102,7 +102,7 @@ export const createDeleteAllInterviewsConfirmation = (
 
 export const createDeleteAllOfferEvaluationsConfirmation = (
     evaluationCount: number,
-    state: ApplicationCollectionState
+    state: CollectionState
 ): ConfirmOptions => {
     const evaluationLabel = formatCountLabel(evaluationCount, `${state} offer evaluation`);
 

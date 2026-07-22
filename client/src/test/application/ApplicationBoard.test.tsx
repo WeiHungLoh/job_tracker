@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
-import DemoApplicationBoard from '../../pages/demo/application/jobApplication/applicationBoard/DemoApplicationBoard';
+import ApplicationBoard from '../../pages/application/jobApplication/applicationBoard/ApplicationBoard';
 import { JOB_STATUSES } from '../../pages/application/models';
 
 const dndState = vi.hoisted(() => ({
@@ -9,10 +9,6 @@ const dndState = vi.hoisted(() => ({
     pointerCollisions: [] as unknown[],
     rectangleCollisions: [] as unknown[],
     sensorOptions: [] as unknown[],
-}));
-
-vi.mock('../../pages/demo/application/applicationBoard/DemoApplicationBoard.module.css', () => ({
-    default: { board: 'demo-board production-board' },
 }));
 
 vi.mock('../../pages/application/applicationBoard/ApplicationBoard.module.css', () => ({
@@ -44,24 +40,25 @@ vi.mock('@dnd-kit/core', () => ({
     useSensors: vi.fn(() => []),
 }));
 
-vi.mock('../../pages/demo/application/applicationBoard/DemoApplicationBoardColumn', () => ({
+vi.mock('../../pages/application/applicationBoard/ApplicationBoardColumn', () => ({
     default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
-describe('DemoApplicationBoard', () => {
+describe('ApplicationBoard', () => {
     beforeEach(() => {
         dndState.sensorOptions = [];
     });
 
     test('allows horizontal auto-scroll while dragging a card', () => {
         render(
-            <DemoApplicationBoard
+            <ApplicationBoard
                 applications={[]}
                 deletingApplicationIds={new Set()}
                 editedNotes={{}}
                 hasInterview={() => false}
                 hasOfferEvaluation={() => false}
                 isArchivingApplication={() => false}
+                isUpdatingApplicationStatus={() => false}
                 noteSaveStatuses={{}}
                 onArchive={vi.fn()}
                 onDelete={vi.fn()}
@@ -93,13 +90,14 @@ describe('DemoApplicationBoard', () => {
         dndState.rectangleCollisions = [rectangleCollision];
 
         render(
-            <DemoApplicationBoard
+            <ApplicationBoard
                 applications={[]}
                 deletingApplicationIds={new Set()}
                 editedNotes={{}}
                 hasInterview={() => false}
                 hasOfferEvaluation={() => false}
                 isArchivingApplication={() => false}
+                isUpdatingApplicationStatus={() => false}
                 noteSaveStatuses={{}}
                 onArchive={vi.fn()}
                 onDelete={vi.fn()}

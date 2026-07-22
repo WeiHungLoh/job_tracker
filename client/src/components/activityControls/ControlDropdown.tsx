@@ -3,7 +3,7 @@ import PrimaryButton from '../button/PrimaryButton';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import type { ControlDropdownProps } from './models';
 import styles from './ControlDropdown.module.css';
-import useDropdown from '../../hooks/useDropdown';
+import useControlDropdown from './useControlDropdown';
 
 const ControlDropdown = ({
     children,
@@ -30,7 +30,7 @@ const ControlDropdown = ({
         openAbove,
         toggleDropdown,
         triggerRef,
-    } = useDropdown();
+    } = useControlDropdown();
     const hasActivityStyle = triggerStyle === 'activity';
     const dropdownId = `${id}-options`;
     const containerClasses = [

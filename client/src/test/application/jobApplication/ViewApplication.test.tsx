@@ -1,7 +1,7 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import ViewApplication from '../../../pages/application/jobApplication/viewApplication/ViewApplication';
-import { render } from '../../renderWithToast';
+import { render } from '../../renderWithProviders';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../../../components/userPreferences/models';

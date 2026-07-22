@@ -2,7 +2,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import AddInterview from '../../../pages/interview/jobInterview/addInterview/AddInterview';
 import ViewApplication from '../../../pages/application/jobApplication/viewApplication/ViewApplication';
-import { render as renderWithToast } from '../../renderWithToast';
+import { render as renderWithToast } from '../../renderWithProviders';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfirmProvider } from 'material-ui-confirm';

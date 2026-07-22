@@ -3,7 +3,7 @@ import DashboardCard from '../../shared/dashboardCard/DashboardCard';
 import LoadingSpinner from '../../../../components/loadingSpinner/LoadingSpinner';
 import formatDate from '../../../../helper/dateFormatter';
 import type { UpcomingInterviewsProps } from '../../models';
-import { getUpcomingInterviews } from '../../data/dashboardData';
+import { getUpcomingInterviews } from '../../dashboardSelectors';
 import styles from './UpcomingInterviews.module.css';
 import { getInterviewTiming } from '../../../../helper/interviewTiming';
 

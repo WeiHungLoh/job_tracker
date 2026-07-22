@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 import UserGuide from '../../pages/userGuide/UserGuide';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 import { routes } from '../../routes';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

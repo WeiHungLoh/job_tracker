@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from 'react';
-import { createApplicationCsvData } from '../../../../../helper/csvData';
-import { createApplicationRelationConfirmation } from '../../../../../helper/applicationRelationConfirmation';
+import { createApplicationCsvData } from '../../../../../helper/csvExport';
+import { createApplicationRelationConfirmation } from '../../../../application/applicationRelationConfirmation';
 import {
     createDeleteAllApplicationsConfirmation,
     createUnarchiveAllConfirmation,
-} from '../../../../../helper/bulkConfirmation';
+} from '../../../../../components/confirmation/bulkConfirmations';
 import {
     APPLICATION_BOARD_SORT_OPTIONS,
     APPLICATION_CSV_HEADERS,
@@ -23,10 +23,10 @@ import CheckboxFilter from '../../../../../components/activityControls/checkboxF
 import DisplayOptions from '../../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
 import SortOptions from '../../../../../components/activityControls/sortOptions/SortOptions';
-import DemoArchivedApplicationBoard from '../archivedApplicationBoard/DemoArchivedApplicationBoard';
+import ArchivedApplicationBoard from '../../../../application/archivedApplication/archivedApplicationBoard/ArchivedApplicationBoard';
 import DemoApplicationCard from '../../DemoApplicationCard';
-import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
-import type { ApplicationViewMode } from '../../../../../components/activityControls/applicationViewToggle/models';
+import CollectionViewToggle from '../../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
+import type { CollectionViewMode } from '../../../../../components/activityControls/collectionViewToggle/models';
 import { selectArchivedApplications } from '../../../state/demoSelectors';
 import styles from './DemoViewArchivedApplication.module.css';
 import { useDemoHashHighlight } from '../../../hooks/useDemoHashHighlight';
@@ -75,7 +75,7 @@ const DemoViewArchivedApplication = () => {
         visibleIds: visibleApplicationIds,
     });
 
-    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+    const handleViewModeChange = (nextViewMode: CollectionViewMode) => {
         void updatePreferences({ archived_application_view_mode: nextViewMode });
     };
 
@@ -224,7 +224,11 @@ const DemoViewArchivedApplication = () => {
                     ariaLabel='Demo archived application view and management controls'
                     mobileLayout={isBoardView || !hasApplications ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
-                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CollectionViewToggle
+                        ariaLabel='Application view'
+                        currentView={viewMode}
+                        onViewChange={handleViewModeChange}
+                    />
                     <CheckboxFilter
                         buttonLabel='Filter by'
                         id='demo-archived-application-job-status-filter'
@@ -267,14 +271,14 @@ const DemoViewArchivedApplication = () => {
             {!hasApplications && <EmptyState {...emptyState} />}
 
             {hasApplications && isBoardView && (
-                <DemoArchivedApplicationBoard
+                <ArchivedApplicationBoard
                     applications={archivedApplications}
                     deletingApplicationIds={deletingApplicationIds}
                     onDelete={handleDelete}
-                    onRestore={handleRestore}
-                    restoringApplicationIds={restoringApplicationIds}
+                    onUnarchive={handleRestore}
                     selectedJobStatuses={selectedJobStatuses}
                     showNotes={showNotes}
+                    unarchivingApplicationIds={restoringApplicationIds}
                 />
             )}
 

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 const VIEWPORT_GUTTER = 8;
 const DROPDOWN_GAP = 8;
 
-const useDropdown = () => {
+const useControlDropdown = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -110,4 +110,4 @@ const useDropdown = () => {
     };
 };
 
-export default useDropdown;
+export default useControlDropdown;

@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { createInterviewCsvData } from '../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
-import { createDeleteAllInterviewsConfirmation } from '../../../../helper/bulkConfirmation';
+import { createInterviewCsvData } from '../../../../helper/csvExport';
+import { createDeleteConfirmation } from '../../../../components/confirmation/deleteConfirmation';
+import { createDeleteAllInterviewsConfirmation } from '../../../../components/confirmation/bulkConfirmations';
 import {
     ACTIVE_APPLICATION_BOARD_MESSAGE,
     getApplicationUnavailableMessage,
-} from '../../../../helper/applicationUnavailableMessage';
+} from '../../applicationNavigationMessages';
 import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../../models';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import { routes } from '../../../../routes';
@@ -22,11 +22,11 @@ import ActivityControls from '../../../../components/activityControls/ActivityCo
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../interviewEmptyState';
-import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
-import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import CollectionViewToggle from '../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
+import type { CollectionViewMode } from '../../../../components/activityControls/collectionViewToggle/models';
 import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skeletonInterviewBoard/SkeletonInterviewBoard';
 import InterviewGrid from '../../interviewGrid/InterviewGrid';
-import { getDashboardInterviewId } from '../../../../helper/dashboardNavigation';
+import { getDashboardInterviewId } from '../../../dashboard/navigation';
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import {
@@ -78,7 +78,7 @@ const ViewInterview = () => {
         currentTime
     );
 
-    const handleViewModeChange = async (nextViewMode: ApplicationViewMode) => {
+    const handleViewModeChange = async (nextViewMode: CollectionViewMode) => {
         try {
             await updatePreferences({ interview_view_mode: nextViewMode });
         } catch (error) {
@@ -407,7 +407,7 @@ const ViewInterview = () => {
                     ariaLabel='Interview view and management controls'
                     mobileLayout='inlineWhenPossible'
                 >
-                    <ApplicationViewToggle
+                    <CollectionViewToggle
                         ariaLabel='Interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}

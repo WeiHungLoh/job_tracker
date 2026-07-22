@@ -4,7 +4,7 @@ import {
     createDeleteAllApplicationsConfirmation,
     createDeleteAllInterviewsConfirmation,
     createUnarchiveAllConfirmation,
-} from '../../helper/bulkConfirmation';
+} from '../../components/confirmation/bulkConfirmations';
 
 describe('bulk confirmations', () => {
     test('describes all active application archive counts and filter-independent scope', () => {

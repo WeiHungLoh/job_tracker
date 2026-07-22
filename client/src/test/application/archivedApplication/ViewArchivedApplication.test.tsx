@@ -1,7 +1,7 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedApplication from '../../../pages/application/archivedApplication/viewArchivedApplication/ViewArchivedApplication';
-import { render } from '../../renderWithToast';
+import { render } from '../../renderWithProviders';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../../../pages/application/models';
 import { routes } from '../../../routes';

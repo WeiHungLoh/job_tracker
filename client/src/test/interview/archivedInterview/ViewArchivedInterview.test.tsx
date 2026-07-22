@@ -2,7 +2,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedInterview from '../../../pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
 import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
-import { render, testPreferences } from '../../renderWithToast';
+import { render, testPreferences } from '../../renderWithProviders';
 import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();

@@ -7,7 +7,7 @@ import type {
 import { JOB_STATUSES } from '../../application/models';
 import { sortApplications } from '../../application/applicationSorting';
 import type { DemoState } from '../models';
-import { startOfLocalWeek, toDateString } from './demoDateHelpers';
+import { startOfLocalWeek, toDateString } from './demoDates';
 import { filterAndSortInterviews, getInterviewTiming } from '../../../helper/interviewTiming';
 import type { OfferDecisionApplication, OfferDecisionWorkspaceData } from '../../offerDecision/models';
 

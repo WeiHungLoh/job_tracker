@@ -3,7 +3,7 @@ import ApplicationStatusBadge from '../../pages/application/ApplicationStatusBad
 import applicationStyles from '../../pages/application/ApplicationCard.module.css';
 import boardStyles from '../../pages/application/applicationBoard/ApplicationBoard.module.css';
 import { getApplicationBoardStatusClassName } from '../../pages/application/applicationBoard/statusClassNames';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 
 describe('ApplicationStatusBadge', () => {
     test('uses the View Application status style with an optional label', () => {

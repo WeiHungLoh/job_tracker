@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useConfirm } from 'material-ui-confirm';
 import { useToast } from '../../../components/toast/ToastProvider';
-import { createBulkCalendarExportConfirmation } from '../../../helper/bulkConfirmation';
+import { createBulkCalendarExportConfirmation } from '../../../components/confirmation/bulkConfirmations';
 import { getUpcomingInterviews } from '../../../helper/interviewTiming';
 import type { JobInterview } from '../models';
 import { buildCalendarEventDetails, CALENDAR_ERROR_MESSAGE, downloadBulkIcsEvents } from './calendarEvent';

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import AddApplication from '../../../pages/application/jobApplication/addApplication/AddApplication';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { render as renderWithToast } from '../../renderWithToast';
+import { render as renderWithToast } from '../../renderWithProviders';
 import userEvent from '@testing-library/user-event';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { defaultConfirmOptions } from '../../../components/confirmation/defaultConfirmOptions';

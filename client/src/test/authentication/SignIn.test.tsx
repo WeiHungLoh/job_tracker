@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
 import SignIn from '../../pages/authentication/signIn/SignIn';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
 

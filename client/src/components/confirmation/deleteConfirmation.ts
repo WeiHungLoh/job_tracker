@@ -1,5 +1,5 @@
 import type { ConfirmOptions } from 'material-ui-confirm';
-import { PERMANENT_DELETION_WARNING } from './bulkConfirmation';
+import { PERMANENT_DELETION_WARNING } from './bulkConfirmations';
 
 export const createDeleteConfirmation = (target: string): ConfirmOptions => {
     const options: ConfirmOptions = {

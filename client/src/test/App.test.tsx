@@ -1,7 +1,7 @@
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { appRoutes } from '../App';
-import { render } from './renderWithToast';
+import { render } from './renderWithProviders';
 import userEvent from '@testing-library/user-event';
 import { JOB_STATUSES } from '../pages/application/models';
 import { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../components/authProductIntro/AuthProductIntro';

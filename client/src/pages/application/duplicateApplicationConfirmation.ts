@@ -1,6 +1,6 @@
 import type { ConfirmOptions } from 'material-ui-confirm';
-import type { DuplicateApplicationDetails } from '../pages/application/models';
-import formatDate from './dateFormatter';
+import type { DuplicateApplicationDetails } from './models';
+import formatDate from '../../helper/dateFormatter';
 
 export const createDuplicateApplicationConfirmation = (duplicate: DuplicateApplicationDetails): ConfirmOptions => ({
     title: 'Possible Duplicate Application',

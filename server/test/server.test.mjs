@@ -18,7 +18,7 @@ import {
 } from '../dist/config/validation.js';
 import {
     getPasswordValidationError,
-    isApplicationViewMode,
+    isCollectionViewMode,
     isValidDate,
     isValidHttpURL,
     normalizeEmail,
@@ -271,11 +271,11 @@ test('parses active and archived offer comparison filter query parameters', () =
     assert.equal(toOfferDecisionFilterQueryValues('Unknown', false), undefined);
 });
 
-test('validates application view mode values', () => {
-    assert.equal(isApplicationViewMode('list'), true);
-    assert.equal(isApplicationViewMode('board'), true);
-    assert.equal(isApplicationViewMode('calendar'), false);
-    assert.equal(isApplicationViewMode(undefined), false);
+test('validates collection view mode values', () => {
+    assert.equal(isCollectionViewMode('list'), true);
+    assert.equal(isCollectionViewMode('board'), true);
+    assert.equal(isCollectionViewMode('calendar'), false);
+    assert.equal(isCollectionViewMode(undefined), false);
 });
 
 test('returns 422 for unsupported user preference view modes', async () => {

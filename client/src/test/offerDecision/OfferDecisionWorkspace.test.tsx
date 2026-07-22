@@ -10,7 +10,7 @@ import type {
     SaveOfferEvaluationRequest,
 } from '../../pages/offerDecision/models';
 import type { UserPreferences } from '../../components/userPreferences/models';
-import { render, testPreferences } from '../renderWithToast';
+import { render, testPreferences } from '../renderWithProviders';
 
 const mockConfirm = vi.hoisted(() => vi.fn());
 

@@ -1,4 +1,4 @@
-import { getWeeklyInterviewCounts } from '../../pages/dashboard/data/dashboardData';
+import { getWeeklyInterviewCounts } from '../../pages/dashboard/dashboardSelectors';
 import type { WeeklyApplicationCount } from '../../pages/application/models';
 import type { JobInterview } from '../../pages/interview/models';
 
@@ -19,7 +19,7 @@ const interview = (interviewId: number, interviewDate: string): JobInterview => 
     interview_notes: '',
 });
 
-describe('dashboard data', () => {
+describe('dashboard selectors', () => {
     test('aligns interview starts to all eight existing half-open weekly buckets', () => {
         const interviews = [
             interview(1, '2026-05-18T00:00:00.000Z'),

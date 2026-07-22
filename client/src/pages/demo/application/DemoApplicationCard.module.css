@@ -77,31 +77,3 @@
 .url {
     composes: url from '../../application/ApplicationCard.module.css';
 }
-
-.applied {
-    composes: applied from '../../application/ApplicationCard.module.css';
-}
-
-.interview {
-    composes: interview from '../../application/ApplicationCard.module.css';
-}
-
-.offer {
-    composes: offer from '../../application/ApplicationCard.module.css';
-}
-
-.accepted {
-    composes: accepted from '../../application/ApplicationCard.module.css';
-}
-
-.rejected {
-    composes: rejected from '../../application/ApplicationCard.module.css';
-}
-
-.ghosted {
-    composes: ghosted from '../../application/ApplicationCard.module.css';
-}
-
-.declined {
-    composes: declined from '../../application/ApplicationCard.module.css';
-}

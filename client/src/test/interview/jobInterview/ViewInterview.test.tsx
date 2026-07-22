@@ -1,7 +1,7 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import ViewInterview from '../../../pages/interview/jobInterview/viewInterview/ViewInterview';
-import { render } from '../../renderWithToast';
+import { render } from '../../renderWithProviders';
 import userEvent from '@testing-library/user-event';
 import type { UpdateUserPreferencesRequest, UserPreferences } from '../../../components/userPreferences/models';
 import { JOB_STATUSES } from '../../../pages/application/models';

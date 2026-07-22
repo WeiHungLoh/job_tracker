@@ -1,18 +1,14 @@
-import type { ApplicationViewMode, ApplicationViewToggleProps } from './models';
-import styles from './ApplicationViewToggle.module.css';
+import type { CollectionViewMode, CollectionViewToggleProps } from './models';
+import styles from './CollectionViewToggle.module.css';
 
-const VIEW_MODE_LABEL: Record<ApplicationViewMode, string> = {
+const VIEW_MODE_LABEL: Record<CollectionViewMode, string> = {
     board: 'Board',
     list: 'List',
 };
 
-const VIEW_MODES: readonly ApplicationViewMode[] = ['list', 'board'];
+const VIEW_MODES: readonly CollectionViewMode[] = ['list', 'board'];
 
-const ApplicationViewToggle = ({
-    ariaLabel = 'Application view',
-    currentView,
-    onViewChange,
-}: ApplicationViewToggleProps) => (
+const CollectionViewToggle = ({ ariaLabel, currentView, onViewChange }: CollectionViewToggleProps) => (
     <div className={styles.toggleWrapper}>
         <div aria-label={ariaLabel} className={styles.toggle} role='group'>
             {VIEW_MODES.map((viewMode) => (
@@ -30,4 +26,4 @@ const ApplicationViewToggle = ({
     </div>
 );
 
-export default ApplicationViewToggle;
+export default CollectionViewToggle;

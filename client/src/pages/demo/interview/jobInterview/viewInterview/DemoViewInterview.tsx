@@ -1,11 +1,11 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { createInterviewCsvData } from '../../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
-import { createDeleteAllInterviewsConfirmation } from '../../../../../helper/bulkConfirmation';
+import { createInterviewCsvData } from '../../../../../helper/csvExport';
+import { createDeleteConfirmation } from '../../../../../components/confirmation/deleteConfirmation';
+import { createDeleteAllInterviewsConfirmation } from '../../../../../components/confirmation/bulkConfirmations';
 import {
     ACTIVE_APPLICATION_BOARD_MESSAGE,
     getApplicationUnavailableMessage,
-} from '../../../../../helper/applicationUnavailableMessage';
+} from '../../../../interview/applicationNavigationMessages';
 import { INTERVIEW_CSV_HEADERS, type JobInterview } from '../../../../interview/models';
 import { routes } from '../../../../../routes';
 import styles from '../../../../interview/InterviewListPage.module.css';
@@ -19,9 +19,9 @@ import InterviewCard from '../../../../interview/InterviewCard';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
 import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
-import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
+import CollectionViewToggle from '../../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
-import { getDashboardInterviewId } from '../../../../../helper/dashboardNavigation';
+import { getDashboardInterviewId } from '../../../../dashboard/navigation';
 import { scrollAndHighlight } from '../../../../../helper/highlightElement';
 import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import {
@@ -197,7 +197,7 @@ const DemoViewInterview = () => {
                     ariaLabel='Demo interview view and management controls'
                     mobileLayout='inlineWhenPossible'
                 >
-                    <ApplicationViewToggle
+                    <CollectionViewToggle
                         ariaLabel='Interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void updatePreferences({ interview_view_mode: nextViewMode })}

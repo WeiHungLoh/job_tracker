@@ -1,6 +1,6 @@
 import type { DuplicateApplicationDetails } from '../../pages/application/models';
 import formatDate from '../../helper/dateFormatter';
-import { createDuplicateApplicationConfirmation } from '../../helper/duplicateApplicationConfirmation';
+import { createDuplicateApplicationConfirmation } from '../../pages/application/duplicateApplicationConfirmation';
 
 describe('duplicate application confirmation', () => {
     test('includes duplicate details and uses the standard confirm actions with Enter enabled', () => {

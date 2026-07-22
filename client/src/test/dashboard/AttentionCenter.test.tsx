@@ -4,7 +4,7 @@ import boardStyles from '../../pages/application/applicationBoard/ApplicationBoa
 import { getApplicationBoardStatusClassName } from '../../pages/application/applicationBoard/statusClassNames';
 import type { JobApplication, JobStatus } from '../../pages/application/models';
 import type { JobInterview } from '../../pages/interview/models';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 
 const currentTime = new Date('2026-07-10T12:00:00.000Z');
 

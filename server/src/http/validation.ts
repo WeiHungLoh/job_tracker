@@ -7,7 +7,7 @@ import {
     ARCHIVED_OFFER_DECISION_FILTERS,
     type ApplicationBoardSortOrder,
     type ApplicationListSortOrder,
-    type ApplicationViewMode,
+    type CollectionViewMode,
     type JobStatus,
     type InterviewTimeFilter,
     type OfferDecisionFilter,
@@ -15,8 +15,8 @@ import {
     OFFER_WORK_ARRANGEMENTS,
     type OfferDetails,
     type OfferDecisionValues,
+    type OfferEvaluationInput,
 } from '../db/models.js';
-import type { SaveOfferEvaluationRequest } from '../routes/offerDecision/models.js';
 import {
     OFFER_ANNUAL_LEAVE_DAYS_MAX,
     OFFER_DECISION_VALUE_MAX,
@@ -165,12 +165,12 @@ export const isOfferDetails = (value: unknown): value is OfferDetails => {
     );
 };
 
-export const isSaveOfferEvaluationRequest = (value: unknown): value is SaveOfferEvaluationRequest => {
+export const isSaveOfferEvaluationRequest = (value: unknown): value is OfferEvaluationInput => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return false;
     }
 
-    const request = value as Partial<SaveOfferEvaluationRequest>;
+    const request = value as Partial<OfferEvaluationInput>;
     return isOfferDecisionValues(request.ratings) && isOfferDetails(request.details);
 };
 
@@ -267,11 +267,11 @@ export const toOfferDecisionFilterQueryValues = (
 export const isOptionalBoolean = (value: unknown): value is boolean | undefined =>
     value === undefined || typeof value === 'boolean';
 
-export const isApplicationViewMode = (value: unknown): value is ApplicationViewMode =>
+export const isCollectionViewMode = (value: unknown): value is CollectionViewMode =>
     value === 'list' || value === 'board';
 
-export const isOptionalApplicationViewMode = (value: unknown): value is ApplicationViewMode | undefined =>
-    value === undefined || isApplicationViewMode(value);
+export const isOptionalCollectionViewMode = (value: unknown): value is CollectionViewMode | undefined =>
+    value === undefined || isCollectionViewMode(value);
 
 export const isApplicationListSortOrder = (value: unknown): value is ApplicationListSortOrder =>
     typeof value === 'string' && APPLICATION_LIST_SORT_ORDERS.some((sortOrder) => sortOrder === value);

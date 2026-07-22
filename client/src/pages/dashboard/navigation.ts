@@ -1,4 +1,4 @@
-import { JOB_STATUSES, type JobStatus } from '../pages/application/models';
+import { JOB_STATUSES, type JobStatus } from '../application/models';
 
 export type DashboardApplicationNavigationState = {
     dashboardJobStatus: JobStatus;

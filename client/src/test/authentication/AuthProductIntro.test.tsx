@@ -1,7 +1,7 @@
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { screen } from '@testing-library/react';
 import AuthProductIntro, { AUTH_FOCUSED_MODE_STORAGE_KEY } from '../../components/authProductIntro/AuthProductIntro';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
 

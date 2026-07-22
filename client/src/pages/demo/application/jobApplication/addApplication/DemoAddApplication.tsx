@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useToast } from '../../../../../components/toast/ToastProvider';
 import { findPotentialDuplicateApplication } from '../../../../application/possibleDuplicateApplication';
-import { createDuplicateApplicationConfirmation } from '../../../../../helper/duplicateApplicationConfirmation';
+import { createDuplicateApplicationConfirmation } from '../../../../application/duplicateApplicationConfirmation';
 import { useConfirm } from 'material-ui-confirm';
 import { getErrorToastMessage } from '../../../../../helper/getErrorToastMessage';
 

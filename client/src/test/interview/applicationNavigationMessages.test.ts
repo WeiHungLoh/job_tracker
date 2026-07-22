@@ -1,4 +1,4 @@
-import { getApplicationUnavailableMessage } from '../../helper/applicationUnavailableMessage';
+import { getApplicationUnavailableMessage } from '../../pages/interview/applicationNavigationMessages';
 
 const labels = {
     applicationLabel: 'This job application',

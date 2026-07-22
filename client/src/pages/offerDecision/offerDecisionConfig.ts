@@ -6,7 +6,18 @@ import type {
     OfferDetails,
     OfferWorkArrangement,
 } from './models';
-import { OFFER_DECISION_FILTER_CONFIG } from './models';
+
+type OfferDecisionFilterConfig = {
+    availableWhenArchived: boolean;
+    exportable: boolean;
+};
+
+export const OFFER_DECISION_FILTER_CONFIG = {
+    'Offers to Evaluate': { availableWhenArchived: false, exportable: false },
+    'Evaluated Offers': { availableWhenArchived: true, exportable: true },
+    'Expired Evaluated Offers': { availableWhenArchived: true, exportable: true },
+    'Previous Evaluations': { availableWhenArchived: true, exportable: true },
+} as const satisfies Record<OfferDecisionFilter, OfferDecisionFilterConfig>;
 
 export const OFFER_DECISION_VALUE_MIN = 1;
 export const OFFER_DECISION_VALUE_MAX = 5;

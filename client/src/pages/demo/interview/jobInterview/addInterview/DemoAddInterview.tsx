@@ -26,7 +26,7 @@ import {
     INTERVIEW_DURATION_MINUTES_MIN,
 } from '../../../../../helper/interviewTiming';
 import { useConfirm } from 'material-ui-confirm';
-import { createInterviewConflictConfirmation } from '../../../../../helper/interviewConflictConfirmation';
+import { createInterviewConflictConfirmation } from '../../../../interview/interviewConflictConfirmation';
 import { getErrorToastMessage } from '../../../../../helper/getErrorToastMessage';
 
 const DemoAddInterview = () => {

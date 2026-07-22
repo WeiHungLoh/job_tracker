@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { estimatePasswordStrength, type PasswordStrength } from '../../helper/passwordStrength';
+import { estimatePasswordStrength, type PasswordStrength } from './passwordStrength';
 import styles from './PasswordStrengthMeter.module.css';
 
 type PasswordStrengthMeterProps = {

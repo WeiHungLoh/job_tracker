@@ -5,12 +5,13 @@ import CheckboxFilter from '../../components/activityControls/checkboxFilter/Che
 import MoreOptions from '../../components/activityControls/moreOptions/MoreOptions';
 import EmptyState from '../../components/emptyState/EmptyState';
 import { focusFirstInvalidField } from '../../components/formPage/focusFirstInvalidField';
-import { createDeleteAllOfferEvaluationsConfirmation } from '../../helper/bulkConfirmation';
-import { createDeleteConfirmation } from '../../helper/deleteConfirmation';
+import { createDeleteAllOfferEvaluationsConfirmation } from '../../components/confirmation/bulkConfirmations';
+import { createDeleteConfirmation } from '../../components/confirmation/deleteConfirmation';
 import { toDatetimeLocalInputValue } from '../../helper/dateFormatter';
 import {
     ACTIVE_OFFER_DECISION_FILTERS,
     ARCHIVED_OFFER_DECISION_FILTERS,
+    OFFER_DECISION_FILTER_CONFIG,
     isArchivedOfferDecisionFilter,
 } from './offerDecisionConfig';
 import {
@@ -33,7 +34,6 @@ import OfferDecisionSkeleton from './OfferDecisionSkeleton';
 import OfferEvaluationCard from './OfferEvaluationCard';
 import { type OfferFieldRefs } from './OfferEvaluationForm';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
-import { OFFER_DECISION_FILTER_CONFIG } from './models';
 import { routes } from '../../routes';
 import { useToast } from '../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../components/userPreferences/UserPreferencesProvider';

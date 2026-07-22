@@ -1,12 +1,12 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import type { ArchivedJobInterview } from '../../models';
-import { createInterviewCsvData } from '../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../helper/deleteConfirmation';
-import { createDeleteAllInterviewsConfirmation } from '../../../../helper/bulkConfirmation';
+import { createInterviewCsvData } from '../../../../helper/csvExport';
+import { createDeleteConfirmation } from '../../../../components/confirmation/deleteConfirmation';
+import { createDeleteAllInterviewsConfirmation } from '../../../../components/confirmation/bulkConfirmations';
 import {
     ARCHIVED_APPLICATION_BOARD_MESSAGE,
     getApplicationUnavailableMessage,
-} from '../../../../helper/applicationUnavailableMessage';
+} from '../../applicationNavigationMessages';
 import { INTERVIEW_CSV_HEADERS } from '../../models';
 import { useNavigate } from 'react-router-dom';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
@@ -23,8 +23,8 @@ import ActivityControls from '../../../../components/activityControls/ActivityCo
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../interviewEmptyState';
-import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
-import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import CollectionViewToggle from '../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
+import type { CollectionViewMode } from '../../../../components/activityControls/collectionViewToggle/models';
 import SkeletonInterviewBoard from '../../../../components/skeletonLoader/skeletonInterviewBoard/SkeletonInterviewBoard';
 import InterviewGrid from '../../interviewGrid/InterviewGrid';
 import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
@@ -55,7 +55,7 @@ const ViewArchivedInterview = () => {
     const isBoardView = viewMode === 'board';
     const csvData = useMemo(() => createInterviewCsvData(archivedInterviews), [archivedInterviews]);
 
-    const handleViewModeChange = async (nextViewMode: ApplicationViewMode) => {
+    const handleViewModeChange = async (nextViewMode: CollectionViewMode) => {
         try {
             await updatePreferences({ archived_interview_view_mode: nextViewMode });
         } catch (error) {
@@ -266,7 +266,7 @@ const ViewArchivedInterview = () => {
                     ariaLabel='Archived interview view and management controls'
                     mobileLayout='inlineWhenPossible'
                 >
-                    <ApplicationViewToggle
+                    <CollectionViewToggle
                         ariaLabel='Archived interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) => void handleViewModeChange(nextViewMode)}

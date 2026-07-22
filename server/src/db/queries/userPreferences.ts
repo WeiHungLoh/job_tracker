@@ -1,4 +1,3 @@
-import type { UpdateUserPreferencesRequest } from '../../routes/userPreferences/models.js';
 import type { UserPreferences } from '../models.js';
 import { pool } from '../connectDB.js';
 
@@ -33,7 +32,7 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
 
 export const updateUserPreferences = async (
     userId: number,
-    preferences: UpdateUserPreferencesRequest
+    preferences: Partial<UserPreferences>
 ): Promise<UserPreferences | undefined> => {
     const result = await pool.query<UserPreferences>(
         `UPDATE user_preferences

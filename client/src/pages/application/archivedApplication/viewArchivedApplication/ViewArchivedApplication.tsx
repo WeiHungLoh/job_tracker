@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ArchivedJobApplication } from '../../models';
-import { createApplicationCsvData } from '../../../../helper/csvData';
-import { createApplicationRelationConfirmation } from '../../../../helper/applicationRelationConfirmation';
+import { createApplicationCsvData } from '../../../../helper/csvExport';
+import { createApplicationRelationConfirmation } from '../../applicationRelationConfirmation';
 import {
     createDeleteAllApplicationsConfirmation,
     createUnarchiveAllConfirmation,
-} from '../../../../helper/bulkConfirmation';
+} from '../../../../components/confirmation/bulkConfirmations';
 import {
     APPLICATION_BOARD_SORT_OPTIONS,
     APPLICATION_CSV_HEADERS,
@@ -33,8 +33,8 @@ import ActivityControls from '../../../../components/activityControls/ActivityCo
 import DisplayOptions from '../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 import ArchivedApplicationBoard from '../archivedApplicationBoard/ArchivedApplicationBoard';
-import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
-import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import CollectionViewToggle from '../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
+import type { CollectionViewMode } from '../../../../components/activityControls/collectionViewToggle/models';
 import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/SkeletonBoard';
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../routes';
@@ -89,7 +89,7 @@ const ViewArchivedApplication = () => {
     );
     const csvData = useMemo(() => createApplicationCsvData(csvApplications), [csvApplications]);
 
-    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+    const handleViewModeChange = (nextViewMode: CollectionViewMode) => {
         void handlePreferenceUpdate({ archived_application_view_mode: nextViewMode });
     };
 
@@ -365,7 +365,11 @@ const ViewArchivedApplication = () => {
                     ariaLabel='Archived application view and management controls'
                     mobileLayout={isBoardView || !hasApplications ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
-                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CollectionViewToggle
+                        ariaLabel='Application view'
+                        currentView={viewMode}
+                        onViewChange={handleViewModeChange}
+                    />
                     <CheckboxFilter
                         buttonLabel='Filter by'
                         disabled={isLoading}

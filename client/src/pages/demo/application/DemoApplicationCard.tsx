@@ -5,19 +5,10 @@ import { FIELD_MAX_LENGTHS } from '../../../helper/formValidation';
 import { routes } from '../../../routes';
 import type { DemoApplicationCardProps } from './DemoApplicationCard.models';
 import { JOB_STATUSES, type JobStatus } from '../../application/models';
+import ApplicationStatusBadge from '../../application/ApplicationStatusBadge';
 import NoteSaveStatus from '../../../components/noteSaveStatus/NoteSaveStatus';
 import styles from './DemoApplicationCard.module.css';
 import { isApplicationStatusDisabled } from '../../application/applicationStatusRestrictions';
-
-const JOB_STATUS_CLASS_MAP: Record<JobStatus, string> = {
-    Accepted: styles.accepted,
-    Applied: styles.applied,
-    Declined: styles.declined,
-    Ghosted: styles.ghosted,
-    Interview: styles.interview,
-    Offer: styles.offer,
-    Rejected: styles.rejected,
-};
 
 const JOB_STATUS_CARD_CLASS_MAP: Record<JobStatus, string> = {
     Accepted: styles.statusAccepted,
@@ -53,9 +44,7 @@ const DemoApplicationCard = (props: DemoApplicationCardProps) => {
                 {variant === 'job' ? (
                     <>
                         <div className={styles.badgeGroup}>
-                            <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>
-                                Job Status: {application.job_status}
-                            </p>
+                            <ApplicationStatusBadge jobStatus={application.job_status} showLabel />
                             {props.upcomingInterviewCount > 0 && (
                                 <span className={styles.upcomingBadge}>
                                     {props.upcomingInterviewCount} Upcoming Interview
@@ -93,7 +82,7 @@ const DemoApplicationCard = (props: DemoApplicationCardProps) => {
                         )}
                     </>
                 ) : (
-                    <p className={JOB_STATUS_CLASS_MAP[application.job_status]}>Job Status: {application.job_status}</p>
+                    <ApplicationStatusBadge jobStatus={application.job_status} showLabel />
                 )}
 
                 {application.job_posting_url !== '' && (

@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createApplicationCsvData } from '../../../../helper/csvData';
-import { createApplicationRelationConfirmation } from '../../../../helper/applicationRelationConfirmation';
+import { createApplicationCsvData } from '../../../../helper/csvExport';
+import { createApplicationRelationConfirmation } from '../../applicationRelationConfirmation';
 import {
     createArchiveAllConfirmation,
     createDeleteAllApplicationsConfirmation,
-} from '../../../../helper/bulkConfirmation';
+} from '../../../../components/confirmation/bulkConfirmations';
 import type { JobInterview } from '../../../interview/models';
 import SkeletonCard from '../../../../components/skeletonLoader/skeletonCard/SkeletonCard';
 import {
@@ -36,8 +36,8 @@ import ActivityControls from '../../../../components/activityControls/ActivityCo
 import DisplayOptions from '../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../components/activityControls/moreOptions/MoreOptions';
 import ApplicationBoard from '../applicationBoard/ApplicationBoard';
-import ApplicationViewToggle from '../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
-import type { ApplicationViewMode } from '../../../../components/activityControls/applicationViewToggle/models';
+import CollectionViewToggle from '../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
+import type { CollectionViewMode } from '../../../../components/activityControls/collectionViewToggle/models';
 import SkeletonBoard from '../../../../components/skeletonLoader/skeletonBoard/SkeletonBoard';
 import EmptyState from '../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../routes';
@@ -45,7 +45,7 @@ import { createApplicationEmptyState } from '../../applicationEmptyState';
 import SortOptions from '../../../../components/activityControls/sortOptions/SortOptions';
 import { shouldAutoScrollAfterStatusChange, sortApplications } from '../../applicationSorting';
 import { getApplicationsInBoardOrder } from '../../applicationBoard/applicationBoardUtils';
-import { getDashboardJobStatus } from '../../../../helper/dashboardNavigation';
+import { getDashboardJobStatus } from '../../../dashboard/navigation';
 import useCurrentTime from '../../../../hooks/useCurrentTime';
 import useAutosaveNotes from '../../../../hooks/useAutosaveNotes';
 import useFilterRequest from '../../../../hooks/useFilterRequest';
@@ -144,7 +144,7 @@ const ViewApplication = () => {
         setEditedJobStatus(null);
     };
 
-    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+    const handleViewModeChange = (nextViewMode: CollectionViewMode) => {
         if (nextViewMode === 'board') {
             closeStatusEditor();
             notesAutosave.setAllNotesVisibility(false);
@@ -562,7 +562,11 @@ const ViewApplication = () => {
                     ariaLabel='Application view and management controls'
                     mobileLayout={isBoardView || !hasApplications ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
-                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CollectionViewToggle
+                        ariaLabel='Application view'
+                        currentView={viewMode}
+                        onViewChange={handleViewModeChange}
+                    />
                     <CheckboxFilter
                         buttonLabel='Filter by'
                         disabled={isLoading}

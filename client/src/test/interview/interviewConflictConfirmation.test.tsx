@@ -3,9 +3,9 @@ import { JobTrackerAPIError } from '../../api/models';
 import {
     createInterviewConflictConfirmation,
     isInterviewSchedulingConflictError,
-} from '../../helper/interviewConflictConfirmation';
+} from '../../pages/interview/interviewConflictConfirmation';
 import type { InterviewSchedulingConflictResponse } from '../../pages/interview/models';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 
 const conflict = {
     interview_id: 51,

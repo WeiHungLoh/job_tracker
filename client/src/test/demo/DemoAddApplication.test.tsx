@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { MemoryRouter } from 'react-router-dom';
 import { defaultConfirmOptions } from '../../components/confirmation/defaultConfirmOptions';
-import { render as renderWithToast } from '../renderWithToast';
+import { render as renderWithToast } from '../renderWithProviders';
 import DemoAddApplication from '../../pages/demo/application/jobApplication/addApplication/DemoAddApplication';
 import { DemoProvider, useDemo } from '../../pages/demo/context/DemoContext';
 import type { DemoAction } from '../../pages/demo/state/demoReducer';

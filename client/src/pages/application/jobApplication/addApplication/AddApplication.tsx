@@ -19,7 +19,7 @@ import {
 } from '../../../../helper/formValidation';
 import { useConfirm } from 'material-ui-confirm';
 import { isDuplicateApplicationError } from '../../possibleDuplicateApplication';
-import { createDuplicateApplicationConfirmation } from '../../../../helper/duplicateApplicationConfirmation';
+import { createDuplicateApplicationConfirmation } from '../../duplicateApplicationConfirmation';
 import { useQuickCaptureData } from '../QuickCaptureProvider';
 
 const AddApplication = () => {

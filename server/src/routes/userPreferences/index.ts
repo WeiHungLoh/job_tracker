@@ -13,7 +13,7 @@ import {
     isOfferDecisionFilterArray,
     isOptionalApplicationBoardSortOrder,
     isOptionalApplicationListSortOrder,
-    isOptionalApplicationViewMode,
+    isOptionalCollectionViewMode,
     isOptionalBoolean,
 } from '../../http/validation.js';
 import express from 'express';
@@ -102,10 +102,10 @@ router.patch(
             return;
         }
         if (
-            !isOptionalApplicationViewMode(application_view_mode) ||
-            !isOptionalApplicationViewMode(archived_application_view_mode) ||
-            !isOptionalApplicationViewMode(interview_view_mode) ||
-            !isOptionalApplicationViewMode(archived_interview_view_mode)
+            !isOptionalCollectionViewMode(application_view_mode) ||
+            !isOptionalCollectionViewMode(archived_application_view_mode) ||
+            !isOptionalCollectionViewMode(interview_view_mode) ||
+            !isOptionalCollectionViewMode(archived_interview_view_mode)
         ) {
             sendError(res, 422, 'View mode preferences must be list or board.');
             return;

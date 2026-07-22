@@ -1,5 +1,5 @@
 export type JobStatus = 'Accepted' | 'Applied' | 'Declined' | 'Ghosted' | 'Interview' | 'Offer' | 'Rejected';
-export type ApplicationViewMode = 'list' | 'board';
+export type CollectionViewMode = 'list' | 'board';
 
 export type InterviewTimeFilter = 'Upcoming Interviews' | 'Past Interviews';
 
@@ -171,6 +171,11 @@ export type OfferDetails = {
     concerns: string;
 };
 
+export type OfferEvaluationInput = {
+    ratings: OfferDecisionValues;
+    details: OfferDetails;
+};
+
 export type OfferEvaluation = {
     job_id: number;
     ratings: OfferDecisionValues;
@@ -206,16 +211,16 @@ export type UserPreferences = {
     application_show_notes: boolean;
     application_show_archive: boolean;
     application_enable_scroll: boolean;
-    application_view_mode: ApplicationViewMode;
+    application_view_mode: CollectionViewMode;
     application_list_sort_order: ApplicationListSortOrder;
     application_board_sort_order: ApplicationBoardSortOrder;
     archived_application_job_statuses: JobStatus[];
     archived_application_show_notes: boolean;
-    archived_application_view_mode: ApplicationViewMode;
+    archived_application_view_mode: CollectionViewMode;
     archived_application_list_sort_order: ApplicationListSortOrder;
     archived_application_board_sort_order: ApplicationBoardSortOrder;
-    interview_view_mode: ApplicationViewMode;
-    archived_interview_view_mode: ApplicationViewMode;
+    interview_view_mode: CollectionViewMode;
+    archived_interview_view_mode: CollectionViewMode;
     interview_time_filters: InterviewTimeFilter[];
     archived_interview_time_filters: InterviewTimeFilter[];
     offer_decision_filters: OfferDecisionFilter[];

@@ -1,10 +1,10 @@
 import type { PropsWithChildren } from 'react';
-import type { ApplicationViewMode } from '../../../components/activityControls/applicationViewToggle/models';
+import type { CollectionViewMode } from '../../../components/activityControls/collectionViewToggle/models';
 import styles from './InterviewGrid.module.css';
 
 type InterviewGridProps = PropsWithChildren<{
     ariaLabel: string;
-    layout: ApplicationViewMode;
+    layout: CollectionViewMode;
 }>;
 
 const InterviewGrid = ({ ariaLabel, children, layout }: InterviewGridProps) => (

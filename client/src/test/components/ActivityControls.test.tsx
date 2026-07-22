@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ActivityControls from '../../components/activityControls/ActivityControls';
 import CheckboxFilter from '../../components/activityControls/checkboxFilter/CheckboxFilter';
+import CollectionViewToggle from '../../components/activityControls/collectionViewToggle/CollectionViewToggle';
 import ControlDropdown from '../../components/activityControls/ControlDropdown';
 
 const createRect = ({
@@ -59,6 +60,16 @@ describe('ActivityControls', () => {
 
         expect(screen.getByRole('region', { name: 'Interview controls' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+    });
+
+    test('uses a caller-owned accessible label for the shared collection view toggle', async () => {
+        const onViewChange = vi.fn();
+        render(<CollectionViewToggle ariaLabel='Application view' currentView='list' onViewChange={onViewChange} />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Board' }));
+
+        expect(screen.getByRole('group', { name: 'Application view' })).toBeInTheDocument();
+        expect(onViewChange).toHaveBeenCalledWith('board');
     });
 
     test('exposes dropdown state and restores focus when Escape closes the panel', async () => {

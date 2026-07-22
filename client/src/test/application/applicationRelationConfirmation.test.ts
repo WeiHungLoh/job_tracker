@@ -1,4 +1,4 @@
-import { createApplicationRelationConfirmation } from '../../helper/applicationRelationConfirmation';
+import { createApplicationRelationConfirmation } from '../../pages/application/applicationRelationConfirmation';
 
 const confirmationCases = [
     {

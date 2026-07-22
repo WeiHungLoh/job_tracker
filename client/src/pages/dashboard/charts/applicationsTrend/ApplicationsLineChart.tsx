@@ -25,7 +25,7 @@ import {
     TITLE_PADDING,
     trendTooltipPlugin,
 } from '../shared/chartConfig';
-import { getWeeklyInterviewCounts } from '../../data/dashboardData';
+import { getWeeklyInterviewCounts } from '../../dashboardSelectors';
 
 ChartJS.register(CategoryScale, Legend, LineElement, LinearScale, PointElement, Title, Tooltip);
 

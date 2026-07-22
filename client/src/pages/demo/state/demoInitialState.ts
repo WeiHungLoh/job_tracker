@@ -8,7 +8,7 @@ import {
 import type { ArchivedJobInterview, JobInterview } from '../../interview/models';
 import type { DemoState } from '../models';
 import type { JobStatus } from '../../application/models';
-import { daysAgo, daysFromNow, toDateString, weeksAgo } from './demoDateHelpers';
+import { daysAgo, daysFromNow, toDateString, weeksAgo } from './demoDates';
 import { DEFAULT_INTERVIEW_DURATION_MINUTES, INTERVIEW_TIME_FILTERS } from '../../../helper/interviewTiming';
 import type { OfferDecisionValues, OfferDetails, OfferEvaluation } from '../../offerDecision/models';
 import {

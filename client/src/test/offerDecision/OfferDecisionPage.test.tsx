@@ -4,7 +4,7 @@ import OfferDecisionPage from '../../pages/offerDecision/OfferDecisionPage';
 import type { OfferDecisionWorkspaceData, OfferEvaluation } from '../../pages/offerDecision/models';
 import { parseDatetimeLocal } from '../../helper/dateFormatter';
 import type { UpdateUserPreferencesRequest } from '../../components/userPreferences/models';
-import { render, testPreferences } from '../renderWithToast';
+import { render, testPreferences } from '../renderWithProviders';
 
 const mocks = vi.hoisted(() => ({
     confirm: vi.fn(),

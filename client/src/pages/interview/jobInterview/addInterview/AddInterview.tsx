@@ -24,7 +24,7 @@ import { useConfirm } from 'material-ui-confirm';
 import {
     createInterviewConflictConfirmation,
     isInterviewSchedulingConflictError,
-} from '../../../../helper/interviewConflictConfirmation';
+} from '../../interviewConflictConfirmation';
 
 const AddInterview = () => {
     const [interviewDate, setInterviewDate] = useState<string>('');

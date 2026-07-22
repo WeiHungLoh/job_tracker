@@ -3,15 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import DashboardContent from './DashboardContent';
 import type { JobApplication, JobStatus, JobStatusCount, WeeklyApplicationCount } from '../application/models';
 import type { JobInterview } from '../interview/models';
-import type {
-    DashboardApplicationNavigationState,
-    DashboardInterviewNavigationState,
-} from '../../helper/dashboardNavigation';
+import type { DashboardApplicationNavigationState, DashboardInterviewNavigationState } from './navigation';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
 import { routes } from '../../routes';
-import { ATTENTION_APPLICATION_STATUSES } from './attentionCenter/attentionCenterData';
+import { ATTENTION_APPLICATION_STATUSES } from './attentionCenter/attentionItems';
 
 const Dashboard = () => {
     const [statusCounts, setStatusCounts] = useState<JobStatusCount[]>([]);

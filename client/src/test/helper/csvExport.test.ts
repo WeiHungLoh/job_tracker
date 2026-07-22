@@ -1,4 +1,4 @@
-import { createApplicationCsvData, createInterviewCsvData, escapeCsvFormula } from '../../helper/csvData';
+import { createApplicationCsvData, createInterviewCsvData, escapeCsvFormula } from '../../helper/csvExport';
 
 describe('escapeCsvFormula', () => {
     test.each([

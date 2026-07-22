@@ -1,7 +1,11 @@
 import type { ConfirmOptions } from 'material-ui-confirm';
-import { JobTrackerAPIError } from '../api/models';
-import type { InterviewSchedulingConflict, InterviewSchedulingConflictResponse } from '../pages/interview/models';
-import { getInterviewTiming, INTERVIEW_DURATION_MINUTES_MAX, INTERVIEW_DURATION_MINUTES_MIN } from './interviewTiming';
+import { JobTrackerAPIError } from '../../api/models';
+import type { InterviewSchedulingConflict, InterviewSchedulingConflictResponse } from './models';
+import {
+    getInterviewTiming,
+    INTERVIEW_DURATION_MINUTES_MAX,
+    INTERVIEW_DURATION_MINUTES_MIN,
+} from '../../helper/interviewTiming';
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 

@@ -1,5 +1,9 @@
 import type { ConfirmOptions } from 'material-ui-confirm';
-import { formatCountLabel, PERMANENT_DELETION_WARNING, type ApplicationCollectionState } from './bulkConfirmation';
+import {
+    formatCountLabel,
+    PERMANENT_DELETION_WARNING,
+    type CollectionState,
+} from '../../components/confirmation/bulkConfirmations';
 
 export type ApplicationRelationAction = 'archive' | 'delete' | 'unarchive';
 
@@ -17,7 +21,7 @@ const CONFIRMATION_TITLES: Record<ApplicationRelationAction, string> = {
 
 export const createApplicationRelationConfirmation = (
     action: ApplicationRelationAction,
-    state: ApplicationCollectionState,
+    state: CollectionState,
     relatedInterviewCount: number,
     offerEvaluationCount = 0
 ): ConfirmOptions => {

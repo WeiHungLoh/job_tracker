@@ -15,7 +15,7 @@ import {
     getStatusBarTooltipPlacement,
     getTrendTooltipPlacement,
 } from '../../pages/dashboard/charts/shared/chartConfig';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 
 const chartMocks = vi.hoisted(() => ({
     barOptions: undefined as ChartOptions<'bar'> | undefined,

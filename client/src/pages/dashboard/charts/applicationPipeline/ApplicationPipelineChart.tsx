@@ -12,7 +12,7 @@ import {
     createStatusBarChartOptions,
     statusBarTooltipPlugin,
 } from '../shared/chartConfig';
-import { getStatusCountMap } from '../../data/dashboardData';
+import { getStatusCountMap } from '../../dashboardSelectors';
 import styles from './ApplicationPipelineChart.module.css';
 import { useTheme } from '../../../../components/theme/ThemeContext';
 import useStatusChartVisibility from '../shared/useStatusChartVisibility';

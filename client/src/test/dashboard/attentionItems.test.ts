@@ -5,7 +5,7 @@ import {
     FOLLOW_UP_AFTER_DAYS,
     MAX_ATTENTION_ITEMS,
     getAttentionItems,
-} from '../../pages/dashboard/attentionCenter/attentionCenterData';
+} from '../../pages/dashboard/attentionCenter/attentionItems';
 
 const now = new Date('2026-07-18T12:00:00.000Z');
 const DAY_MS = 24 * 60 * 60 * 1000;

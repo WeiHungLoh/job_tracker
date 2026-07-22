@@ -5,7 +5,7 @@ import InterviewCard from '../../pages/interview/InterviewCard';
 import applicationStyles from '../../pages/application/ApplicationCard.module.css';
 import interviewStyles from '../../pages/interview/InterviewCard.module.css';
 import type { ArchivedJobInterview, JobInterview } from '../../pages/interview/models';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 
 const futureInterview: JobInterview = {
     company_name: 'Acme',

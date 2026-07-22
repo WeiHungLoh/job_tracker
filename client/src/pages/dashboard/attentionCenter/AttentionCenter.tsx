@@ -4,7 +4,7 @@ import type { JobApplication } from '../../application/models';
 import type { JobInterview } from '../../interview/models';
 import ApplicationStatusBadge from '../../application/ApplicationStatusBadge';
 import DashboardCard from '../shared/dashboardCard/DashboardCard';
-import { getAttentionItems } from './attentionCenterData';
+import { getAttentionItems } from './attentionItems';
 import styles from './AttentionCenter.module.css';
 
 type AttentionCenterProps = {

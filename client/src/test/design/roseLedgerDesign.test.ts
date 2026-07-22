@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -91,7 +91,7 @@ const expectedBoxShadowDeclarations = {
         'box-shadow: 0 6px 18px var(--colorAuthCardShadow);',
         'box-shadow: 0 14px 32px var(--colorControlShadow);',
     ],
-    'src/components/activityControls/applicationViewToggle/ApplicationViewToggle.module.css': [
+    'src/components/activityControls/collectionViewToggle/CollectionViewToggle.module.css': [
         'box-shadow: inset 0 0 0 1px var(--colorControlShadow);',
         'box-shadow: 0 1px 5px var(--colorControlShadow);',
     ],
@@ -176,6 +176,64 @@ const contrastRatio = (first: string, second: string) => {
 };
 
 describe('Rose Ledger visual contract', () => {
+    it('keeps responsibility-specific modules with their owners', () => {
+        const expectedPaths = [
+            'src/test/renderWithProviders.tsx',
+            'src/components/confirmation/bulkConfirmations.ts',
+            'src/components/confirmation/deleteConfirmation.ts',
+            'src/pages/application/applicationRelationConfirmation.ts',
+            'src/pages/application/duplicateApplicationConfirmation.ts',
+            'src/pages/interview/interviewConflictConfirmation.tsx',
+            'src/pages/interview/applicationNavigationMessages.ts',
+            'src/pages/dashboard/navigation.ts',
+            'src/components/passwordStrengthMeter/passwordStrength.ts',
+            'src/components/activityControls/useControlDropdown.ts',
+            'src/helper/csvExport.ts',
+            'src/pages/dashboard/dashboardSelectors.ts',
+            'src/pages/dashboard/attentionCenter/attentionItems.ts',
+            'src/pages/demo/state/demoDates.ts',
+        ];
+        const obsoletePaths = [
+            'src/test/renderWithToast.tsx',
+            'src/helper/bulkConfirmation.ts',
+            'src/helper/deleteConfirmation.ts',
+            'src/helper/applicationRelationConfirmation.ts',
+            'src/helper/duplicateApplicationConfirmation.ts',
+            'src/helper/interviewConflictConfirmation.tsx',
+            'src/helper/applicationUnavailableMessage.ts',
+            'src/helper/dashboardNavigation.ts',
+            'src/helper/passwordStrength.ts',
+            'src/hooks/useDropdown.ts',
+            'src/helper/csvData.ts',
+            'src/pages/dashboard/data/dashboardData.ts',
+            'src/pages/dashboard/attentionCenter/attentionCenterData.ts',
+            'src/pages/demo/state/demoDateHelpers.ts',
+        ];
+
+        expectedPaths.forEach((path) => expect(existsSync(resolve(clientRoot, path)), path).toBe(true));
+        obsoletePaths.forEach((path) => expect(existsSync(resolve(clientRoot, path)), path).toBe(false));
+    });
+
+    it('reuses the production application boards in demo views', () => {
+        const activeDemoView = readSource(
+            'src/pages/demo/application/jobApplication/viewApplication/DemoViewApplication.tsx'
+        );
+        const archivedDemoView = readSource(
+            'src/pages/demo/application/archivedApplication/viewArchivedApplication/DemoViewArchivedApplication.tsx'
+        );
+        const activeDemoBoardName = ['Demo', 'ApplicationBoard'].join('');
+        const archivedDemoBoardName = ['Demo', 'ArchivedApplicationBoard'].join('');
+
+        expect(activeDemoView).toContain(
+            "import ApplicationBoard from '../../../../application/jobApplication/applicationBoard/ApplicationBoard'"
+        );
+        expect(activeDemoView).not.toContain(activeDemoBoardName);
+        expect(archivedDemoView).toContain(
+            "import ArchivedApplicationBoard from '../../../../application/archivedApplication/archivedApplicationBoard/ArchivedApplicationBoard'"
+        );
+        expect(archivedDemoView).not.toContain(archivedDemoBoardName);
+    });
+
     it('keeps Offer Comparison inside the existing solid-surface design system', () => {
         const offerDecisionWorkspaceCss = readSource('src/pages/offerDecision/OfferDecisionWorkspace.module.css');
         const offerEvaluationCss = readSource('src/pages/offerDecision/OfferEvaluation.module.css');
@@ -378,14 +436,12 @@ describe('Rose Ledger visual contract', () => {
     });
 
     it('freezes the connected view toggle, dropdown caret, checkbox, and switch semantics', () => {
-        const viewToggle = readSource(
-            'src/components/activityControls/applicationViewToggle/ApplicationViewToggle.tsx'
-        );
+        const viewToggle = readSource('src/components/activityControls/collectionViewToggle/CollectionViewToggle.tsx');
         const dropdown = readSource('src/components/activityControls/ControlDropdown.tsx');
         const checkbox = readSource('src/components/activityControls/checkboxFilter/CheckboxFilter.tsx');
         const toggle = readSource('src/components/toggleButton/ToggleButton.tsx');
         const viewToggleCss = readSource(
-            'src/components/activityControls/applicationViewToggle/ApplicationViewToggle.module.css'
+            'src/components/activityControls/collectionViewToggle/CollectionViewToggle.module.css'
         );
         const dropdownCss = readSource('src/components/activityControls/ControlDropdown.module.css');
         const checkboxCss = readSource('src/components/activityControls/checkboxFilter/CheckboxFilter.module.css');
@@ -532,6 +588,18 @@ describe('Rose Ledger visual contract', () => {
         expect(activeDotRules).toContain('background-color: var(--colorPrimary);');
         expect(activeDotRules).toContain('opacity: 1;');
         expect(authProductIntro).toContain('.carouselDot:focus-visible {\n    outline-offset: 2px;\n}');
+    });
+
+    it('keeps offer filter config and demo status badge ownership with their runtime features', () => {
+        const offerModels = readSource('src/pages/offerDecision/models.ts');
+        const offerConfig = readSource('src/pages/offerDecision/offerDecisionConfig.ts');
+        const demoApplicationCard = readSource('src/pages/demo/application/DemoApplicationCard.tsx');
+
+        expect(offerModels).not.toContain('export const OFFER_DECISION_FILTER_CONFIG');
+        expect(offerConfig).toContain('export const OFFER_DECISION_FILTER_CONFIG');
+        expect(offerConfig).toContain('satisfies Record<OfferDecisionFilter, OfferDecisionFilterConfig>');
+        expect(demoApplicationCard).toContain('<ApplicationStatusBadge');
+        expect(demoApplicationCard).not.toContain('const JOB_STATUS_CLASS_MAP');
     });
 
     it('keeps application actions single-line and every scrollbar color native', () => {
@@ -687,7 +755,7 @@ describe('Rose Ledger visual contract', () => {
         const activityControls = readSource('src/components/activityControls/ActivityControls.module.css');
         const controlDropdown = readSource('src/components/activityControls/ControlDropdown.module.css');
         const viewToggle = readSource(
-            'src/components/activityControls/applicationViewToggle/ApplicationViewToggle.module.css'
+            'src/components/activityControls/collectionViewToggle/CollectionViewToggle.module.css'
         );
         const navbar = readSource('src/components/navbar/Navbar.module.css');
         const sortOptions = readSource('src/components/activityControls/sortOptions/SortOptions.module.css');

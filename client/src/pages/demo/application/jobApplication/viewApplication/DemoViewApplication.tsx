@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { createApplicationCsvData } from '../../../../../helper/csvData';
-import { createApplicationRelationConfirmation } from '../../../../../helper/applicationRelationConfirmation';
+import { createApplicationCsvData } from '../../../../../helper/csvExport';
+import { createApplicationRelationConfirmation } from '../../../../application/applicationRelationConfirmation';
 import {
     createArchiveAllConfirmation,
     createDeleteAllApplicationsConfirmation,
-} from '../../../../../helper/bulkConfirmation';
+} from '../../../../../components/confirmation/bulkConfirmations';
 import {
     APPLICATION_BOARD_SORT_OPTIONS,
     APPLICATION_CSV_HEADERS,
@@ -28,10 +28,10 @@ import CheckboxFilter from '../../../../../components/activityControls/checkboxF
 import DisplayOptions from '../../../../../components/activityControls/displayOptions/DisplayOptions';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
 import SortOptions from '../../../../../components/activityControls/sortOptions/SortOptions';
-import DemoApplicationBoard from '../applicationBoard/DemoApplicationBoard';
+import ApplicationBoard from '../../../../application/jobApplication/applicationBoard/ApplicationBoard';
 import DemoApplicationCard from '../../DemoApplicationCard';
-import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
-import type { ApplicationViewMode } from '../../../../../components/activityControls/applicationViewToggle/models';
+import CollectionViewToggle from '../../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
+import type { CollectionViewMode } from '../../../../../components/activityControls/collectionViewToggle/models';
 import {
     selectApplications,
     selectInterviewJobIdSet,
@@ -43,11 +43,13 @@ import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { routes } from '../../../../../routes';
 import { createApplicationEmptyState } from '../../../../application/applicationEmptyState';
 import { getApplicationsInBoardOrder } from '../../../../application/applicationBoard/applicationBoardUtils';
-import { getDashboardJobStatus } from '../../../../../helper/dashboardNavigation';
+import { getDashboardJobStatus } from '../../../../dashboard/navigation';
 import useCurrentTime from '../../../../../hooks/useCurrentTime';
 import { shouldAutoScrollAfterStatusChange } from '../../../../application/applicationSorting';
 import usePendingIds from '../../../../../hooks/usePendingIds';
 import useAutosaveNotes from '../../../../../hooks/useAutosaveNotes';
+
+const isDemoApplicationStatusUpdating = () => false;
 
 const DemoViewApplication = () => {
     const currentTime = useCurrentTime();
@@ -127,7 +129,7 @@ const DemoViewApplication = () => {
         setEditedJobStatus(null);
     };
 
-    const handleViewModeChange = (nextViewMode: ApplicationViewMode) => {
+    const handleViewModeChange = (nextViewMode: CollectionViewMode) => {
         if (nextViewMode === 'board') {
             closeStatusEditor();
             notesAutosave.setAllNotesVisibility(false);
@@ -341,7 +343,11 @@ const DemoViewApplication = () => {
                     ariaLabel='Demo application view and management controls'
                     mobileLayout={isBoardView || !hasApplications ? 'applicationCompact' : 'applicationWithDisplay'}
                 >
-                    <ApplicationViewToggle currentView={viewMode} onViewChange={handleViewModeChange} />
+                    <CollectionViewToggle
+                        ariaLabel='Application view'
+                        currentView={viewMode}
+                        onViewChange={handleViewModeChange}
+                    />
                     <CheckboxFilter
                         buttonLabel='Filter by'
                         id='demo-application-job-status-filter'
@@ -394,7 +400,7 @@ const DemoViewApplication = () => {
             {!hasApplications && <EmptyState {...emptyState} />}
 
             {hasApplications && isBoardView && (
-                <DemoApplicationBoard
+                <ApplicationBoard
                     applications={applications}
                     deletingApplicationIds={deletingApplicationIds}
                     editedNotes={notesAutosave.draftNotes}
@@ -403,6 +409,7 @@ const DemoViewApplication = () => {
                     isArchivingApplication={(jobId) =>
                         pendingBulkAction === 'archive' || archivingApplicationIds.has(jobId)
                     }
+                    isUpdatingApplicationStatus={isDemoApplicationStatusUpdating}
                     noteSaveStatuses={notesAutosave.noteSaveStatuses}
                     onArchive={handleArchive}
                     onDelete={handleDelete}

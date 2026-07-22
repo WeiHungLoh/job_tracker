@@ -1,11 +1,11 @@
 import { type MouseEvent, useMemo, useRef, useState } from 'react';
-import { createInterviewCsvData } from '../../../../../helper/csvData';
-import { createDeleteConfirmation } from '../../../../../helper/deleteConfirmation';
-import { createDeleteAllInterviewsConfirmation } from '../../../../../helper/bulkConfirmation';
+import { createInterviewCsvData } from '../../../../../helper/csvExport';
+import { createDeleteConfirmation } from '../../../../../components/confirmation/deleteConfirmation';
+import { createDeleteAllInterviewsConfirmation } from '../../../../../components/confirmation/bulkConfirmations';
 import {
     ARCHIVED_APPLICATION_BOARD_MESSAGE,
     getApplicationUnavailableMessage,
-} from '../../../../../helper/applicationUnavailableMessage';
+} from '../../../../interview/applicationNavigationMessages';
 import { INTERVIEW_CSV_HEADERS, type ArchivedJobInterview } from '../../../../interview/models';
 import { routes } from '../../../../../routes';
 import styles from '../../../../interview/InterviewListPage.module.css';
@@ -19,7 +19,7 @@ import InterviewCard from '../../../../interview/InterviewCard';
 import MoreOptions from '../../../../../components/activityControls/moreOptions/MoreOptions';
 import EmptyState from '../../../../../components/emptyState/EmptyState';
 import { createInterviewEmptyState } from '../../../../interview/interviewEmptyState';
-import ApplicationViewToggle from '../../../../../components/activityControls/applicationViewToggle/ApplicationViewToggle';
+import CollectionViewToggle from '../../../../../components/activityControls/collectionViewToggle/CollectionViewToggle';
 import InterviewGrid from '../../../../interview/interviewGrid/InterviewGrid';
 import CheckboxFilter from '../../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import {
@@ -147,7 +147,7 @@ const DemoViewArchivedInterview = () => {
                     ariaLabel='Demo archived interview view and management controls'
                     mobileLayout='inlineWhenPossible'
                 >
-                    <ApplicationViewToggle
+                    <CollectionViewToggle
                         ariaLabel='Archived interview view'
                         currentView={viewMode}
                         onViewChange={(nextViewMode) =>

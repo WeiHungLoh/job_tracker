@@ -4,7 +4,7 @@ import type { JobStatus } from '../../application/models';
 import type {
     DashboardApplicationNavigationState,
     DashboardInterviewNavigationState,
-} from '../../../helper/dashboardNavigation';
+} from '../../dashboard/navigation';
 import { selectJobStatusCounts, selectWeeklyApplications } from '../state/demoSelectors';
 import { useDemo } from '../context/DemoContext';
 import { routes } from '../../../routes';

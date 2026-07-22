@@ -1,13 +1,13 @@
 import type { MouseEvent } from 'react';
 import type { ArchivedJobInterview, JobInterview } from './models';
-import type { ApplicationViewMode } from '../../components/activityControls/applicationViewToggle/models';
+import type { CollectionViewMode } from '../../components/activityControls/collectionViewToggle/models';
 
 type InterviewCardBaseProps = {
     applicationRoute: string;
     currentTime?: Date;
     index: number;
     isDeleting: boolean;
-    layout?: ApplicationViewMode;
+    layout?: CollectionViewMode;
     onDelete: () => void | Promise<void>;
     onViewApplicationClick: (event: MouseEvent<HTMLAnchorElement>) => void | Promise<void>;
 };

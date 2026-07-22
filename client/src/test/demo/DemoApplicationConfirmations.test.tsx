@@ -6,7 +6,7 @@ import DemoViewArchivedApplication from '../../pages/demo/application/archivedAp
 import DemoViewApplication from '../../pages/demo/application/jobApplication/viewApplication/DemoViewApplication';
 import { DemoProvider, useDemo } from '../../pages/demo/context/DemoContext';
 import { createDemoInitialState } from '../../pages/demo/state/demoInitialState';
-import { render } from '../renderWithToast';
+import { render } from '../renderWithProviders';
 import userEvent from '@testing-library/user-event';
 
 const mockConfirm = vi.fn();

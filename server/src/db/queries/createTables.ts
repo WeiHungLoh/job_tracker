@@ -8,24 +8,31 @@ import {
     INTERVIEW_TIME_FILTERS,
     OFFER_DECISION_FILTERS,
     ARCHIVED_OFFER_DECISION_FILTERS,
+    OFFER_WORK_ARRANGEMENTS,
 } from '../models.js';
 import {
     DEFAULT_INTERVIEW_DURATION_MINUTES,
     INTERVIEW_DURATION_MINUTES_MAX,
     INTERVIEW_DURATION_MINUTES_MIN,
+    OFFER_ANNUAL_LEAVE_DAYS_MAX,
+    OFFER_DECISION_VALUE_MAX,
+    OFFER_DECISION_VALUE_MIN,
+    OFFER_DETAILS_MAX_LENGTHS,
+    OFFER_MONTHLY_BASE_SALARY_MAX,
 } from '../../config/validation.js';
 
 const toSQLTextValues = (values: readonly string[]): string => values.map((value) => `'${value}'`).join(', ');
 
 const JOB_STATUS_SQL_VALUES = toSQLTextValues(JOB_STATUSES);
 const JOB_STATUS_SQL_ARRAY = `ARRAY[${JOB_STATUS_SQL_VALUES}]::TEXT[]`;
-const APPLICATION_VIEW_MODE_SQL_VALUES = "'list', 'board'";
+const COLLECTION_VIEW_MODE_SQL_VALUES = "'list', 'board'";
 const APPLICATION_LIST_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_LIST_SORT_ORDERS);
 const APPLICATION_BOARD_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_BOARD_SORT_ORDERS);
 const INTERVIEW_TIME_FILTER_SQL_VALUES = toSQLTextValues(INTERVIEW_TIME_FILTERS);
 const INTERVIEW_TIME_FILTER_SQL_ARRAY = `ARRAY[${INTERVIEW_TIME_FILTER_SQL_VALUES}]::TEXT[]`;
 const OFFER_DECISION_FILTER_SQL_ARRAY = `ARRAY[${toSQLTextValues(OFFER_DECISION_FILTERS)}]::TEXT[]`;
 const ARCHIVED_OFFER_DECISION_FILTER_SQL_ARRAY = `ARRAY[${toSQLTextValues(ARCHIVED_OFFER_DECISION_FILTERS)}]::TEXT[]`;
+const OFFER_WORK_ARRANGEMENT_SQL_VALUES = toSQLTextValues(['', ...OFFER_WORK_ARRANGEMENTS]);
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -51,6 +58,40 @@ const createTables = async (): Promise<void> => {
             CONSTRAINT job_applications_job_user_unique
                 UNIQUE (job_id, user_id)
         )`;
+
+    const createOfferEvaluationTable = `CREATE TABLE IF NOT EXISTS offer_evaluations (
+        job_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        career_growth_rating INTEGER NOT NULL
+            CHECK (career_growth_rating BETWEEN ${OFFER_DECISION_VALUE_MIN} AND ${OFFER_DECISION_VALUE_MAX}),
+        company_culture_fit_rating INTEGER NOT NULL
+            CHECK (company_culture_fit_rating BETWEEN ${OFFER_DECISION_VALUE_MIN} AND ${OFFER_DECISION_VALUE_MAX}),
+        work_life_balance_rating INTEGER NOT NULL
+            CHECK (work_life_balance_rating BETWEEN ${OFFER_DECISION_VALUE_MIN} AND ${OFFER_DECISION_VALUE_MAX}),
+        compensation_rating INTEGER NOT NULL
+            CHECK (compensation_rating BETWEEN ${OFFER_DECISION_VALUE_MIN} AND ${OFFER_DECISION_VALUE_MAX}),
+        currency TEXT NOT NULL
+            CHECK (currency ~ '^[A-Z]{3}$'),
+        monthly_base_salary INTEGER NOT NULL
+            CHECK (monthly_base_salary BETWEEN 0 AND ${OFFER_MONTHLY_BASE_SALARY_MAX}),
+        bonus TEXT NOT NULL DEFAULT ''
+            CHECK (CHAR_LENGTH(bonus) <= ${OFFER_DETAILS_MAX_LENGTHS.bonus}),
+        annual_leave_days INTEGER
+            CHECK (annual_leave_days BETWEEN 0 AND ${OFFER_ANNUAL_LEAVE_DAYS_MAX}),
+        work_arrangement TEXT NOT NULL DEFAULT ''
+            CHECK (work_arrangement IN (${OFFER_WORK_ARRANGEMENT_SQL_VALUES})),
+        decision_deadline TIMESTAMPTZ NOT NULL,
+        pros TEXT NOT NULL DEFAULT ''
+            CHECK (CHAR_LENGTH(pros) <= ${OFFER_DETAILS_MAX_LENGTHS.notes}),
+        concerns TEXT NOT NULL DEFAULT ''
+            CHECK (CHAR_LENGTH(concerns) <= ${OFFER_DETAILS_MAX_LENGTHS.notes}),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (job_id, user_id),
+        CONSTRAINT offer_evaluations_job_user_fk
+            FOREIGN KEY (job_id, user_id)
+            REFERENCES job_applications(job_id, user_id)
+            ON DELETE CASCADE
+    )`;
 
     const createInterviewTable = `CREATE TABLE IF NOT EXISTS interviews (
             interview_id SERIAL PRIMARY KEY,
@@ -80,7 +121,7 @@ const createTables = async (): Promise<void> => {
             application_enable_scroll BOOLEAN NOT NULL DEFAULT true,
             application_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_application_view_mode_check
-                CHECK (application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+                CHECK (application_view_mode IN (${COLLECTION_VIEW_MODE_SQL_VALUES})),
             application_list_sort_order TEXT NOT NULL DEFAULT '${DEFAULT_APPLICATION_LIST_SORT_ORDER}'
                 CONSTRAINT user_preferences_application_list_sort_order_check
                 CHECK (application_list_sort_order IN (${APPLICATION_LIST_SORT_ORDER_SQL_VALUES})),
@@ -92,7 +133,7 @@ const createTables = async (): Promise<void> => {
             archived_application_show_notes BOOLEAN NOT NULL DEFAULT true,
             archived_application_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_archived_application_view_mode_check
-                CHECK (archived_application_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+                CHECK (archived_application_view_mode IN (${COLLECTION_VIEW_MODE_SQL_VALUES})),
             archived_application_list_sort_order TEXT NOT NULL DEFAULT '${DEFAULT_APPLICATION_LIST_SORT_ORDER}'
                 CONSTRAINT user_preferences_archived_application_list_sort_order_check
                 CHECK (archived_application_list_sort_order IN (${APPLICATION_LIST_SORT_ORDER_SQL_VALUES})),
@@ -101,10 +142,10 @@ const createTables = async (): Promise<void> => {
                 CHECK (archived_application_board_sort_order IN (${APPLICATION_BOARD_SORT_ORDER_SQL_VALUES})),
             interview_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_interview_view_mode_check
-                CHECK (interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+                CHECK (interview_view_mode IN (${COLLECTION_VIEW_MODE_SQL_VALUES})),
             archived_interview_view_mode TEXT NOT NULL DEFAULT 'list'
                 CONSTRAINT user_preferences_archived_interview_view_mode_check
-                CHECK (archived_interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES})),
+                CHECK (archived_interview_view_mode IN (${COLLECTION_VIEW_MODE_SQL_VALUES})),
             interview_time_filters TEXT[] NOT NULL DEFAULT ${INTERVIEW_TIME_FILTER_SQL_ARRAY}
                 CONSTRAINT user_preferences_interview_time_filters_check
                 CHECK (interview_time_filters <@ ${INTERVIEW_TIME_FILTER_SQL_ARRAY}),
@@ -145,7 +186,7 @@ const createTables = async (): Promise<void> => {
             ) THEN
                 ALTER TABLE user_preferences
                     ADD CONSTRAINT user_preferences_interview_view_mode_check
-                    CHECK (interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES}));
+                    CHECK (interview_view_mode IN (${COLLECTION_VIEW_MODE_SQL_VALUES}));
             END IF;
 
             IF NOT EXISTS (
@@ -155,7 +196,7 @@ const createTables = async (): Promise<void> => {
             ) THEN
                 ALTER TABLE user_preferences
                     ADD CONSTRAINT user_preferences_archived_interview_view_mode_check
-                    CHECK (archived_interview_view_mode IN (${APPLICATION_VIEW_MODE_SQL_VALUES}));
+                    CHECK (archived_interview_view_mode IN (${COLLECTION_VIEW_MODE_SQL_VALUES}));
             END IF;
         END
         $$`;
@@ -182,6 +223,7 @@ const createTables = async (): Promise<void> => {
     const setupQueries = [
         createUsersTable,
         createJobAppTable,
+        createOfferEvaluationTable,
         createInterviewTable,
         createUserPreferencesTable,
         addInterviewViewModePreferences,

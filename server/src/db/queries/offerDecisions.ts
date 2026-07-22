@@ -5,8 +5,8 @@ import type {
     OfferDetails,
     OfferDecisionWorkspace,
     OfferEvaluation,
+    OfferEvaluationInput,
 } from '../models.js';
-import type { SaveOfferEvaluationRequest } from '../../routes/offerDecision/models.js';
 import { pool } from '../connectDB.js';
 
 type OfferDecisionRow = {
@@ -162,7 +162,7 @@ const upsertOfferEvaluation = async (
     query: (sql: string, values?: unknown[]) => Promise<unknown>,
     userId: number,
     jobId: number,
-    request: SaveOfferEvaluationRequest
+    request: OfferEvaluationInput
 ): Promise<void> => {
     await query(
         `INSERT INTO offer_evaluations (
@@ -247,7 +247,7 @@ export const deleteAllOfferEvaluations = async (userId: number, isArchived: bool
 export const saveOfferEvaluation = async (
     userId: number,
     jobId: number,
-    request: SaveOfferEvaluationRequest
+    request: OfferEvaluationInput
 ): Promise<SaveOfferEvaluationResult> => {
     const client = await pool.connect();
 

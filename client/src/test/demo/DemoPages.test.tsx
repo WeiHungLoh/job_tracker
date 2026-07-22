@@ -12,8 +12,8 @@ import DemoViewArchivedInterview from '../../pages/demo/interview/archivedInterv
 import DemoOfferDecisionPage from '../../pages/demo/offerDecision/DemoOfferDecisionPage';
 import { UserPreferencesProvider } from '../../components/userPreferences/UserPreferencesProvider';
 import { createDemoInitialState } from '../../pages/demo/state/demoInitialState';
-import { daysFromNow, toDateTimeString } from '../../pages/demo/state/demoDateHelpers';
-import { render } from '../renderWithToast';
+import { daysFromNow, toDateTimeString } from '../../pages/demo/state/demoDates';
+import { render } from '../renderWithProviders';
 import { routes } from '../../routes';
 import userEvent from '@testing-library/user-event';
 import DemoRoutes from '../../pages/demo/components/demoLayout/DemoRoutes';
@@ -72,6 +72,12 @@ const DemoRecordCounts = () => {
     return (
         <>
             <output data-testid='demo-application-count'>{state.applications.length}</output>
+            <output data-testid='demo-active-application-companies'>
+                {state.applications.map((application) => application.company_name).join(',')}
+            </output>
+            <output data-testid='demo-archived-application-companies'>
+                {state.archivedApplications.map((application) => application.company_name).join(',')}
+            </output>
             <output data-testid='demo-interview-count'>{state.interviews.length}</output>
             <output data-testid='demo-last-interview-duration'>
                 {state.interviews[state.interviews.length - 1]?.interview_duration_minutes ?? ''}
@@ -92,7 +98,7 @@ const getExportCsvText = (): string => {
     return decodeURIComponent(csvStart === -1 ? href : href.slice(csvStart + 1)).replace(/^\uFEFF/, '');
 };
 
-const SetApplicationViewMode = ({ archived = false }: { archived?: boolean }) => {
+const SetCollectionViewMode = ({ archived = false }: { archived?: boolean }) => {
     const { updatePreferences } = useDemo();
 
     return (
@@ -314,6 +320,35 @@ describe('demo page interactions', () => {
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
         await clickConfirmedAction(screen.getAllByRole('button', { name: 'Archive' })[0]);
         expect(screen.queryByText('Application archived.')).not.toBeInTheDocument();
+    });
+
+    test('unarchives an application from the archived board into active demo state without fetching', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        renderDemo(
+            <>
+                <SetCollectionViewMode archived />
+                <DemoRecordCounts />
+                <DemoViewArchivedApplication />
+            </>,
+            [routes.demoArchivedApplications]
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Set application Board mode' }));
+        const board = await screen.findByRole('region', { name: 'Archived application board' });
+        const application = within(board).getByRole('article', {
+            name: 'Riverlane Studio Frontend Developer',
+        });
+
+        await userEvent.click(within(application).getByText('Actions'));
+        mockConfirm.mockResolvedValueOnce({ confirmed: true });
+        await clickConfirmedAction(within(application).getByRole('button', { name: 'Unarchive' }));
+
+        expect(
+            within(board).queryByRole('article', { name: 'Riverlane Studio Frontend Developer' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByTestId('demo-archived-application-companies')).not.toHaveTextContent('Riverlane Studio');
+        expect(screen.getByTestId('demo-active-application-companies')).toHaveTextContent('Riverlane Studio');
+        expect(fetchSpy).not.toHaveBeenCalled();
     });
 
     test('keeps independent list and board sorting preferences in the demo', async () => {
@@ -733,7 +768,7 @@ describe('demo page interactions', () => {
     test('blocks demo active corresponding navigation when active applications use Board view', async () => {
         renderDemo(
             <>
-                <SetApplicationViewMode />
+                <SetCollectionViewMode />
                 <DemoViewInterview />
             </>,
             [routes.demoViewInterviews]
@@ -767,7 +802,7 @@ describe('demo page interactions', () => {
     test('supports archived demo interview Board mode and guards archived corresponding navigation', async () => {
         renderDemo(
             <>
-                <SetApplicationViewMode archived />
+                <SetCollectionViewMode archived />
                 <DemoViewArchivedInterview />
             </>,
             [routes.demoArchivedInterviews]

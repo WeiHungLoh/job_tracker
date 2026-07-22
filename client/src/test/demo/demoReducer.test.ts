@@ -10,7 +10,7 @@ import {
     selectWeeklyApplications,
     sortInterviews,
 } from '../../pages/demo/state/demoSelectors';
-import { createInterviewCsvData } from '../../helper/csvData';
+import { createInterviewCsvData } from '../../helper/csvExport';
 import type { OfferDecisionValues } from '../../pages/offerDecision/models';
 
 const fixedNow = new Date(2026, 6, 7, 12, 0, 0, 0);

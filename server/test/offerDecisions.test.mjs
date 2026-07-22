@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import * as validationConfig from '../dist/config/validation.js';
 import * as httpValidation from '../dist/http/validation.js';
@@ -92,6 +93,46 @@ test('declares shared offer evaluation limits without an equity limit', () => {
     assert.equal(validationConfig.OFFER_MONTHLY_BASE_SALARY_MAX, 1_000_000_000);
     assert.equal(validationConfig.OFFER_ANNUAL_LEAVE_DAYS_MAX, 365);
     assert.deepEqual(validationConfig.OFFER_DETAILS_MAX_LENGTHS, { bonus: 200, notes: 1000 });
+});
+
+test('declares the constrained offer evaluation table after job applications without repair SQL', async () => {
+    const source = await readFile(new URL('../src/db/queries/createTables.ts', import.meta.url), 'utf8');
+    const table = source.match(/CREATE TABLE IF NOT EXISTS offer_evaluations \([\s\S]*?\n\s*\)`/)?.[0];
+    const setupQueries = source.match(/const setupQueries = \[[\s\S]*?\n\s*\];/)?.[0];
+
+    assert.ok(table);
+    assert.ok(setupQueries);
+    assert.match(table, /job_id INTEGER NOT NULL/);
+    assert.match(table, /user_id INTEGER NOT NULL/);
+    assert.match(table, /career_growth_rating INTEGER NOT NULL/);
+    assert.match(table, /company_culture_fit_rating INTEGER NOT NULL/);
+    assert.match(table, /work_life_balance_rating INTEGER NOT NULL/);
+    assert.match(table, /compensation_rating INTEGER NOT NULL/);
+    assert.match(table, /BETWEEN \$\{OFFER_DECISION_VALUE_MIN\} AND \$\{OFFER_DECISION_VALUE_MAX\}/);
+    assert.match(table, /currency TEXT NOT NULL/);
+    assert.match(table, /currency ~ '\^\[A-Z\]\{3\}\$'/);
+    assert.match(table, /monthly_base_salary INTEGER NOT NULL/);
+    assert.match(table, /BETWEEN 0 AND \$\{OFFER_MONTHLY_BASE_SALARY_MAX\}/);
+    assert.match(table, /bonus TEXT NOT NULL DEFAULT ''/);
+    assert.match(table, /CHAR_LENGTH\(bonus\) <= \$\{OFFER_DETAILS_MAX_LENGTHS\.bonus\}/);
+    assert.match(table, /annual_leave_days INTEGER\s+CHECK/);
+    assert.doesNotMatch(table, /annual_leave_days INTEGER NOT NULL/);
+    assert.match(table, /BETWEEN 0 AND \$\{OFFER_ANNUAL_LEAVE_DAYS_MAX\}/);
+    assert.match(table, /work_arrangement TEXT NOT NULL DEFAULT ''/);
+    assert.match(table, /work_arrangement IN \(\$\{OFFER_WORK_ARRANGEMENT_SQL_VALUES\}\)/);
+    assert.match(table, /decision_deadline TIMESTAMPTZ NOT NULL/);
+    assert.match(table, /pros TEXT NOT NULL DEFAULT ''/);
+    assert.match(table, /concerns TEXT NOT NULL DEFAULT ''/);
+    assert.match(table, /CHAR_LENGTH\(pros\) <= \$\{OFFER_DETAILS_MAX_LENGTHS\.notes\}/);
+    assert.match(table, /CHAR_LENGTH\(concerns\) <= \$\{OFFER_DETAILS_MAX_LENGTHS\.notes\}/);
+    assert.match(table, /updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP/);
+    assert.match(table, /PRIMARY KEY \(job_id, user_id\)/);
+    assert.match(table, /CONSTRAINT offer_evaluations_job_user_fk/);
+    assert.match(table, /FOREIGN KEY \(job_id, user_id\)/);
+    assert.match(table, /REFERENCES job_applications\(job_id, user_id\)/);
+    assert.match(table, /ON DELETE CASCADE/);
+    assert.ok(setupQueries.indexOf('createJobAppTable') < setupQueries.indexOf('createOfferEvaluationTable'));
+    assert.doesNotMatch(source, /ALTER TABLE offer_evaluations/);
 });
 
 test('validates complete bounded offer decision values', () => {
