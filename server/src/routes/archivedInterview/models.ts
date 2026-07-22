@@ -6,5 +6,9 @@ export type ArchivedInterviewIdParams = {
     archivedInterviewId: string;
 };
 
+export type ListArchivedInterviewsQuery = {
+    timeFilters?: string | string[];
+};
+
 export type ListArchivedInterviewsResponse = ArchivedJobInterview[] | ErrorResponse;
 export type GetArchivedInterviewCollectionSummaryResponse = InterviewCollectionSummary | ErrorResponse;

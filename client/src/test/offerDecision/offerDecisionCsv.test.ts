@@ -65,12 +65,14 @@ describe('offer evaluation CSV data', () => {
             'Evaluated Offers',
             'Company',
             'Acme, Inc.',
-            undefined,
+            '',
             'Previous Evaluations',
             'Company',
             'Beta',
         ]);
         expect(csvData.filter((row) => row[0] === 'Company')).toHaveLength(2);
+        expect(csvData[3]).toHaveLength(csvData[1].length);
+        expect(csvData[3].every((value) => value === '')).toBe(true);
         expect(flattened).toContain('N/A');
         expect(flattened).toContain("'=Strong, ownership");
         expect(flattened).toContain('Line one\n""Line two""');
@@ -90,7 +92,9 @@ describe('offer evaluation CSV data', () => {
             'Evaluated Offers',
         ]);
 
-        expect(csvData.filter((row) => row.length === 0)).toHaveLength(2);
+        expect(
+            csvData.filter((row) => row.length === csvData[1].length && row.every((value) => value === ''))
+        ).toHaveLength(2);
         expect(csvData.filter((row) => row[0] === 'Company')).toHaveLength(3);
         expect(csvData.filter((row) => row.length === 1 && typeof row[0] === 'string').map((row) => row[0])).toEqual([
             'Evaluated Offers',
@@ -102,7 +106,7 @@ describe('offer evaluation CSV data', () => {
         const onlyPrevious = createOfferEvaluationCsvData(groups, ['Offers to Evaluate', 'Previous Evaluations']);
         expect(onlyPrevious[0]).toEqual(['Previous Evaluations']);
         expect(onlyPrevious.filter((row) => row[0] === 'Company')).toHaveLength(1);
-        expect(onlyPrevious.filter((row) => row.length === 0)).toHaveLength(0);
+        expect(onlyPrevious.filter((row) => row.every((value) => value === ''))).toHaveLength(0);
     });
 
     test('returns no export rows when only Offers to Evaluate is selected', () => {

@@ -255,7 +255,7 @@ const ViewApplication = () => {
                         : Promise.resolve();
                 const [jobApplications, jobInterviews] = await Promise.all([
                     api.application.listApplications({ jobStatuses: initialJobStatuses }),
-                    api.interview.listInterviews(),
+                    api.interview.listInterviews({}),
                     preferenceUpdate,
                 ]);
 

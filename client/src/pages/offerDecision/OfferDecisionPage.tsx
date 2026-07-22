@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import EmptyState from '../../components/emptyState/EmptyState';
 import OfferDecisionWorkspace from './OfferDecisionWorkspace';
-import type { OfferDecisionWorkspaceData, SaveOfferEvaluationRequest } from './models';
+import type { OfferDecisionFilter, OfferDecisionWorkspaceData, SaveOfferEvaluationRequest } from './models';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
 import { routes } from '../../routes';
+import { useUserPreferences } from '../../components/userPreferences/UserPreferencesProvider';
+import useFilterRequest from '../../hooks/useFilterRequest';
+import { isArchivedOfferDecisionFilter } from './offerDecisionConfig';
 
 type OfferDecisionPageProps = {
     archived: boolean;
@@ -14,18 +17,24 @@ type OfferDecisionPageProps = {
 const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
     const [data, setData] = useState<OfferDecisionWorkspaceData>();
     const [isLoading, setIsLoading] = useState(true);
+    const [isFiltering, setIsFiltering] = useState(false);
     const [loadFailed, setLoadFailed] = useState(false);
     const requestIdRef = useRef(0);
     const api = useJobTrackerAPI();
     const { showErrorToast, showSuccessToast } = useToast();
+    const { preferences, updatePreferences } = useUserPreferences();
+    const filterRequest = useFilterRequest<OfferDecisionWorkspaceData>();
+    const selectedFilters = archived ? preferences.archived_offer_decision_filters : preferences.offer_decision_filters;
 
-    const loadWorkspace = async () => {
+    const loadWorkspace = async (filters: OfferDecisionFilter[] = selectedFilters) => {
         const requestId = ++requestIdRef.current;
         setIsLoading(true);
         setLoadFailed(false);
 
         try {
-            const workspace = archived ? await api.offerDecision.getArchived() : await api.offerDecision.getActive();
+            const workspace = archived
+                ? await api.offerDecision.getArchived({ filters: filters.filter(isArchivedOfferDecisionFilter) })
+                : await api.offerDecision.getActive({ filters });
             if (requestId === requestIdRef.current) {
                 setData(workspace);
             }
@@ -53,6 +62,62 @@ const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
             requestIdRef.current += 1;
         };
     }, [archived]);
+
+    const handleFilterSelection = async (filters: OfferDecisionFilter[]) => {
+        const requestId = filterRequest.startRequest();
+        setIsFiltering(true);
+
+        try {
+            const workspace = archived
+                ? await api.offerDecision.getArchived({ filters: filters.filter(isArchivedOfferDecisionFilter) })
+                : await api.offerDecision.getActive({ filters });
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
+
+            await updatePreferences(
+                archived
+                    ? { archived_offer_decision_filters: filters.filter(isArchivedOfferDecisionFilter) }
+                    : { offer_decision_filters: filters }
+            );
+            const savedWorkspace = filterRequest.saveResult(requestId, workspace);
+            if (savedWorkspace) {
+                setData(savedWorkspace);
+            }
+            return true;
+        } catch (error) {
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
+
+            const savedWorkspace = filterRequest.failRequest(requestId);
+            if (savedWorkspace) {
+                setData(savedWorkspace);
+            }
+            const fallback = archived
+                ? 'Unable to filter archived offer comparisons. Please try again.'
+                : 'Unable to filter offer comparisons. Please try again.';
+            showErrorToast(getErrorToastMessage(error, fallback));
+            return false;
+        } finally {
+            if (filterRequest.isLatestRequest(requestId)) {
+                setIsFiltering(false);
+            }
+        }
+    };
+
+    const getDeleteAllEvaluationCount = async (): Promise<number> => {
+        try {
+            const summary = archived ? await api.archivedApplication.getSummary() : await api.application.getSummary();
+            return summary.offer_evaluation_count;
+        } catch (error) {
+            const fallback = archived
+                ? 'Unable to load archived offer evaluation counts. Please try again.'
+                : 'Unable to load active offer evaluation counts. Please try again.';
+            showErrorToast(getErrorToastMessage(error, fallback));
+            throw error;
+        }
+    };
 
     const saveEvaluation = async (jobId: number, request: SaveOfferEvaluationRequest) => {
         const isNewEvaluation =
@@ -167,9 +232,12 @@ const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
         <OfferDecisionWorkspace
             applicationsRoute={routes.viewApplications}
             data={data ?? { applications: [] }}
+            getDeleteAllEvaluationCount={getDeleteAllEvaluationCount}
+            isFiltering={isFiltering}
             isLoading={isLoading}
             onDelete={deleteEvaluation}
             onDeleteAll={deleteAllEvaluations}
+            onFilterSelectionChange={handleFilterSelection}
             onSave={archived ? undefined : saveEvaluation}
             readOnly={archived}
         />

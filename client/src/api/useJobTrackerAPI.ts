@@ -77,7 +77,8 @@ import type {
     DeleteAllOfferEvaluationsResponse,
     DeleteOfferEvaluationRequest,
     DeleteOfferEvaluationResponse,
-    GetOfferDecisionsRequest,
+    GetActiveOfferDecisionsRequest,
+    GetArchivedOfferDecisionsRequest,
     GetOfferDecisionsResponse,
     SaveOfferEvaluationAPIRequest,
     SaveOfferEvaluationResponse,
@@ -186,9 +187,9 @@ export const useJobTrackerAPI = () => {
             >(req, endpointConfig.application.updateStatus);
         };
 
-        const listInterviews = async () => {
+        const listInterviews = async (req: ListInterviewsRequest) => {
             return await makeAuthenticatedJobTrackerAPIRequest<ListInterviewsRequest, ListInterviewsResponse>(
-                null,
+                req,
                 endpointConfig.interview.listInterviews
             );
         };
@@ -284,11 +285,11 @@ export const useJobTrackerAPI = () => {
             >(req, endpointConfig.archivedApplication.unarchiveApplication);
         };
 
-        const listArchivedInterviews = async () => {
+        const listArchivedInterviews = async (req: ListArchivedInterviewsRequest) => {
             return await makeAuthenticatedJobTrackerAPIRequest<
                 ListArchivedInterviewsRequest,
                 ListArchivedInterviewsResponse
-            >(null, endpointConfig.archivedInterview.listInterviews);
+            >(req, endpointConfig.archivedInterview.listInterviews);
         };
 
         const getArchivedInterviewSummary = async () => {
@@ -312,18 +313,18 @@ export const useJobTrackerAPI = () => {
             >(null, endpointConfig.archivedInterview.deleteAllInterviews);
         };
 
-        const getActiveOfferDecisions = async () => {
-            return await makeAuthenticatedJobTrackerAPIRequest<GetOfferDecisionsRequest, GetOfferDecisionsResponse>(
-                null,
-                endpointConfig.offerDecision.getActive
-            );
+        const getActiveOfferDecisions = async (req: GetActiveOfferDecisionsRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetActiveOfferDecisionsRequest,
+                GetOfferDecisionsResponse
+            >(req, endpointConfig.offerDecision.getActive);
         };
 
-        const getArchivedOfferDecisions = async () => {
-            return await makeAuthenticatedJobTrackerAPIRequest<GetOfferDecisionsRequest, GetOfferDecisionsResponse>(
-                null,
-                endpointConfig.offerDecision.getArchived
-            );
+        const getArchivedOfferDecisions = async (req: GetArchivedOfferDecisionsRequest) => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                GetArchivedOfferDecisionsRequest,
+                GetOfferDecisionsResponse
+            >(req, endpointConfig.offerDecision.getArchived);
         };
 
         const saveOfferEvaluation = async (req: SaveOfferEvaluationAPIRequest) => {

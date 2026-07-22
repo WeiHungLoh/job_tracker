@@ -1,7 +1,8 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ViewArchivedInterview from '../../../pages/interview/archivedInterview/viewArchivedInterview/ViewArchivedInterview';
-import { render } from '../../renderWithToast';
+import type { UpdateUserPreferencesRequest } from '../../../components/userPreferences/models';
+import { render, testPreferences } from '../../renderWithToast';
 import userEvent from '@testing-library/user-event';
 
 globalThis.fetch = vi.fn();
@@ -28,6 +29,8 @@ const response = (data?: unknown, status = 200) => ({
     text: async () => '',
     url: '',
 });
+
+const getTimeFilters = (url: string): string[] => new URLSearchParams(url.split('?')[1] ?? '').getAll('timeFilters');
 
 const mockConfirm = vi.fn();
 vi.mock('material-ui-confirm', () => ({
@@ -185,13 +188,12 @@ describe('Archived job interview viewer flow', () => {
     });
 
     test('hides collection actions when filters hide every archived interview', async () => {
-        fetch.mockResolvedValue(
-            response([
-                {
-                    ...mockInterview,
-                    interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-                },
-            ])
+        const futureInterview = {
+            ...mockInterview,
+            interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
+        fetch.mockImplementation(async (url: string) =>
+            response(getTimeFilters(url).join(',') === 'Past Interviews' ? [] : [futureInterview])
         );
 
         render(
@@ -296,6 +298,151 @@ describe('Archived job interview viewer flow', () => {
         expect(fetch).toHaveBeenCalledTimes(1);
     });
 
+    test('requests saved archived time filters initially and trusts the server response', async () => {
+        const serverFilteredInterview = {
+            ...mockInterview,
+            company_name: 'Server Filtered Archived Company',
+            interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
+        fetch.mockResolvedValue(response([serverFilteredInterview]));
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            { initialPreferences: { archived_interview_time_filters: ['Past Interviews'] } }
+        );
+
+        expect(
+            await screen.findByRole('article', { name: 'Server Filtered Archived Company interview' })
+        ).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/archived-job-interviews?timeFilters=Past+Interviews`,
+            { method: 'GET' }
+        );
+    });
+
+    test('fetches archived interviews before saving each changed selection', async () => {
+        const requestOrder: string[] = [];
+        const filteredInterview = {
+            ...mockInterview,
+            company_name: 'Filtered Archived Response',
+            interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
+        const updatePreferences = vi.fn(async (updates: UpdateUserPreferencesRequest) => {
+            requestOrder.push('preference');
+            return {
+                ...testPreferences,
+                ...updates,
+            };
+        });
+        fetch.mockImplementation(async (url: string) => {
+            if (getTimeFilters(url).join(',') === 'Past Interviews') {
+                requestOrder.push('filtered-get');
+                return response([filteredInterview]);
+            }
+            return response([mockInterview]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByRole('article', { name: 'ABC Pte Ltd interview' });
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+
+        expect(
+            await screen.findByRole('article', { name: 'Filtered Archived Response interview' })
+        ).toBeInTheDocument();
+        expect(requestOrder).toEqual(['filtered-get', 'preference']);
+        expect(updatePreferences).toHaveBeenCalledWith({ archived_interview_time_filters: ['Past Interviews'] });
+    });
+
+    test('shows the archived skeleton during a filter request without disabling rapid changes', async () => {
+        let resolveFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        fetch.mockImplementation(async (url: string) => {
+            if (getTimeFilters(url).join(',') === 'Past Interviews') {
+                return new Promise((resolve) => {
+                    resolveFilter = resolve;
+                });
+            }
+            return response([mockInterview]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>
+        );
+        await screen.findByRole('article', { name: 'ABC Pte Ltd interview' });
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+
+        expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
+        expect(screen.getByRole('button', { name: 'Filter by' })).toBeEnabled();
+        await act(async () => resolveFilter(response([])));
+        expect(await screen.findByRole('heading', { name: 'No interviews match your filters' })).toBeInTheDocument();
+    });
+
+    test('restores archived interviews and filters when preference persistence fails', async () => {
+        const updatePreferences = vi.fn().mockRejectedValue(new Error('save failed'));
+        fetch.mockImplementation(async (url: string) =>
+            response(getTimeFilters(url).join(',') === 'Past Interviews' ? [] : [mockInterview])
+        );
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+        await screen.findByRole('article', { name: 'ABC Pte Ltd interview' });
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+
+        expect(await screen.findByText('Unable to filter archived interviews. Please try again.')).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Upcoming Interviews' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Past Interviews' })).toBeChecked();
+        expect(screen.getByRole('article', { name: 'ABC Pte Ltd interview' })).toBeInTheDocument();
+    });
+
+    test('ignores an older archived filter response after a newer selection finishes', async () => {
+        let resolveOlderFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        const olderInterview = { ...mockInterview, company_name: 'Older Archived Result' };
+        const latestInterview = { ...mockInterview, company_name: 'Latest Archived Result' };
+        fetch.mockImplementation(async (url: string) => {
+            const timeFilters = getTimeFilters(url).join(',');
+            if (timeFilters === 'Past Interviews') {
+                return new Promise((resolve) => {
+                    resolveOlderFilter = resolve;
+                });
+            }
+            if (timeFilters === 'Upcoming Interviews') {
+                return response([latestInterview]);
+            }
+            return response([mockInterview]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewArchivedInterview />
+            </MemoryRouter>
+        );
+        await screen.findByRole('article', { name: 'ABC Pte Ltd interview' });
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Past Interviews' }));
+
+        expect(await screen.findByRole('article', { name: 'Latest Archived Result interview' })).toBeInTheDocument();
+        await act(async () => resolveOlderFilter(response([olderInterview])));
+        expect(screen.queryByRole('article', { name: 'Older Archived Result interview' })).not.toBeInTheDocument();
+    });
+
     test('filters archived Board display and exports CSV from the same collection', async () => {
         const now = Date.now();
         const interviews = [
@@ -312,7 +459,7 @@ describe('Archived job interview viewer flow', () => {
                 interview_date: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
             },
         ];
-        fetch.mockResolvedValue(response(interviews));
+        fetch.mockResolvedValue(response([interviews[1]]));
 
         render(
             <MemoryRouter>

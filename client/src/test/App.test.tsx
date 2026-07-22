@@ -349,7 +349,7 @@ describe('App routing and authentication behavior', () => {
             if (url.endsWith('/user-preferences')) {
                 return jsonResponse(mockPreferences);
             }
-            if (url.endsWith('/offer-decisions')) {
+            if (url.includes('/offer-decisions?')) {
                 return jsonResponse({
                     applications: [],
                 });
@@ -361,7 +361,7 @@ describe('App routing and authentication behavior', () => {
 
         expect(await screen.findByRole('heading', { name: 'No offers to compare' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Offer Comparison' })).toHaveAttribute('aria-current', 'page');
-        expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('/offer-decisions'))).toHaveLength(1);
+        expect(fetch.mock.calls.filter(([url]) => String(url).includes('/offer-decisions?'))).toHaveLength(1);
     });
 
     test('keeps archived Offer Comparisons review-only and pairs the archive toggle', async () => {

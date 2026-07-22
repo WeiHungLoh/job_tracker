@@ -30,24 +30,35 @@ import { getDashboardInterviewId } from '../../../../helper/dashboardNavigation'
 import { scrollAndHighlight } from '../../../../helper/highlightElement';
 import CheckboxFilter from '../../../../components/activityControls/checkboxFilter/CheckboxFilter';
 import {
-    filterAndSortInterviews,
+    getUpcomingInterviews,
     INTERVIEW_TIME_FILTERS,
     type InterviewTimeFilter,
 } from '../../../../helper/interviewTiming';
 import { useBulkInterviewCalendarExport } from '../../calendarOptions/useBulkInterviewCalendarExport';
 import useCurrentTime from '../../../../hooks/useCurrentTime';
+import useFilterRequest from '../../../../hooks/useFilterRequest';
+
+type InterviewFilterResult = {
+    interviews: JobInterview[];
+    upcomingInterviews?: JobInterview[];
+};
 
 const ViewInterview = () => {
     const api = useJobTrackerAPI();
     const currentTime = useCurrentTime();
     const { preferences, updatePreferences } = useUserPreferences();
     const [interviews, setInterviews] = useState<JobInterview[]>([]);
+    const [upcomingInterviews, setUpcomingInterviews] = useState<JobInterview[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isFilteringInterviews, setIsFilteringInterviews] = useState<boolean>(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const deleteAllPendingRef = useRef(false);
     const location = useLocation();
     const dashboardInterviewIdRef = useRef(getDashboardInterviewId(location.state));
+    const dashboardInterviewsRef = useRef<JobInterview[] | null>(null);
+    const dashboardInterviewRequestSettledRef = useRef(false);
     const dashboardViewUpdatePendingRef = useRef(false);
+    const dashboardViewUpdateFailedRef = useRef(false);
     const dashboardHighlightTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const {
         pendingIds: deletingInterviewIds,
@@ -57,16 +68,13 @@ const ViewInterview = () => {
     const confirm = useConfirm();
     const navigate = useNavigate();
     const { showErrorToast } = useToast();
+    const filterRequest = useFilterRequest<InterviewFilterResult>();
     const viewMode = preferences.interview_view_mode;
     const selectedTimeFilters = preferences.interview_time_filters;
     const isBoardView = viewMode === 'board';
-    const displayedInterviews = useMemo(
-        () => filterAndSortInterviews(interviews, selectedTimeFilters, currentTime),
-        [currentTime, interviews, selectedTimeFilters]
-    );
-    const csvData = useMemo(() => createInterviewCsvData(displayedInterviews), [displayedInterviews]);
+    const csvData = useMemo(() => createInterviewCsvData(interviews), [interviews]);
     const { exportUpcomingInterviews, upcomingInterviewCount } = useBulkInterviewCalendarExport(
-        interviews,
+        upcomingInterviews,
         currentTime
     );
 
@@ -79,12 +87,49 @@ const ViewInterview = () => {
     };
 
     const handleTimeFilterChange = async (timeFilters: InterviewTimeFilter[]) => {
+        const requestId = filterRequest.startRequest();
+        setIsFilteringInterviews(true);
+
         try {
+            const filteredInterviews = await api.interview.listInterviews({ timeFilters });
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
+
             await updatePreferences({ interview_time_filters: timeFilters });
+            const normalizedInterviews = Array.isArray(filteredInterviews) ? filteredInterviews : [];
+            const savedResult = filterRequest.saveResult(requestId, {
+                interviews: normalizedInterviews,
+                ...(timeFilters.includes('Upcoming Interviews')
+                    ? { upcomingInterviews: getUpcomingInterviews(normalizedInterviews, currentTime) }
+                    : {}),
+            });
+            if (savedResult) {
+                setInterviews(savedResult.interviews);
+                if (savedResult.upcomingInterviews) {
+                    setUpcomingInterviews(savedResult.upcomingInterviews);
+                }
+            }
+
             return true;
         } catch (error) {
-            showErrorToast(getErrorToastMessage(error, 'Unable to save interview filters. Please try again.'));
+            if (!filterRequest.isLatestRequest(requestId)) {
+                return true;
+            }
+
+            const savedResult = filterRequest.failRequest(requestId);
+            if (savedResult) {
+                setInterviews(savedResult.interviews);
+                if (savedResult.upcomingInterviews) {
+                    setUpcomingInterviews(savedResult.upcomingInterviews);
+                }
+            }
+            showErrorToast(getErrorToastMessage(error, 'Unable to filter interviews. Please try again.'));
             return false;
+        } finally {
+            if (filterRequest.isLatestRequest(requestId)) {
+                setIsFilteringInterviews(false);
+            }
         }
     };
 
@@ -92,15 +137,49 @@ const ViewInterview = () => {
         let isActive = true;
 
         const fetchInterviews = async () => {
+            const initialTimeFilters = dashboardInterviewIdRef.current
+                ? [...INTERVIEW_TIME_FILTERS]
+                : selectedTimeFilters;
+
             try {
-                const fetchedInterviews = await api.interview.listInterviews();
-                if (isActive) {
-                    setInterviews(Array.isArray(fetchedInterviews) ? fetchedInterviews : []);
+                const fetchedInterviews = await api.interview.listInterviews({ timeFilters: initialTimeFilters });
+                const normalizedInterviews = Array.isArray(fetchedInterviews) ? fetchedInterviews : [];
+                if (dashboardInterviewIdRef.current && dashboardViewUpdatePendingRef.current) {
+                    dashboardInterviewsRef.current = normalizedInterviews;
+                } else if (isActive && !dashboardViewUpdateFailedRef.current) {
+                    setInterviews(normalizedInterviews);
+                }
+
+                if (initialTimeFilters.includes('Upcoming Interviews')) {
+                    if (isActive) {
+                        setUpcomingInterviews(getUpcomingInterviews(normalizedInterviews, currentTime));
+                    }
+                } else {
+                    void api.interview
+                        .listInterviews({ timeFilters: ['Upcoming Interviews'] })
+                        .then((fetchedUpcomingInterviews) => {
+                            if (isActive) {
+                                setUpcomingInterviews(
+                                    Array.isArray(fetchedUpcomingInterviews) ? fetchedUpcomingInterviews : []
+                                );
+                            }
+                        })
+                        .catch((error: unknown) => {
+                            if (isActive) {
+                                showErrorToast(
+                                    getErrorToastMessage(
+                                        error,
+                                        'Unable to load upcoming interviews for calendar export. Please try again.'
+                                    )
+                                );
+                            }
+                        });
                 }
             } catch (error) {
                 showErrorToast(getErrorToastMessage(error, 'Unable to load interviews. Please try again.'));
             } finally {
-                if (isActive) {
+                dashboardInterviewRequestSettledRef.current = true;
+                if (isActive && !dashboardViewUpdatePendingRef.current) {
                     setIsLoading(false);
                 }
             }
@@ -126,17 +205,42 @@ const ViewInterview = () => {
 
         dashboardViewUpdatePendingRef.current = true;
         const switchToListView = async () => {
+            let viewUpdateSucceeded = false;
             try {
                 await updatePreferences({
                     ...(viewMode === 'list' ? {} : { interview_view_mode: 'list' }),
                     ...(hidesUpcomingInterviews ? { interview_time_filters: [...INTERVIEW_TIME_FILTERS] } : {}),
                 });
+                viewUpdateSucceeded = true;
             } catch (error) {
                 showErrorToast(getErrorToastMessage(error, 'Unable to save display preferences. Please try again.'));
+                dashboardViewUpdateFailedRef.current = true;
+                try {
+                    const restoredInterviews = await api.interview.listInterviews({
+                        timeFilters: selectedTimeFilters,
+                    });
+                    setInterviews(Array.isArray(restoredInterviews) ? restoredInterviews : []);
+                } catch (restoreError) {
+                    setInterviews([]);
+                    showErrorToast(
+                        getErrorToastMessage(
+                            restoreError,
+                            'Unable to restore the saved interview filters. Please try again.'
+                        )
+                    );
+                }
+                setIsLoading(false);
                 dashboardInterviewIdRef.current = null;
                 navigate(location.pathname, { replace: true, state: null });
             } finally {
                 dashboardViewUpdatePendingRef.current = false;
+                if (viewUpdateSucceeded && dashboardInterviewRequestSettledRef.current) {
+                    if (dashboardInterviewsRef.current) {
+                        setInterviews(dashboardInterviewsRef.current);
+                    }
+                    setIsLoading(false);
+                }
+                dashboardInterviewsRef.current = null;
             }
         };
 
@@ -179,6 +283,9 @@ const ViewInterview = () => {
             try {
                 await api.interview.deleteInterview({ interviewId });
                 setInterviews((current) => current.filter((interview) => interview.interview_id !== interviewId));
+                setUpcomingInterviews((current) =>
+                    current.filter((interview) => interview.interview_id !== interviewId)
+                );
             } finally {
                 stopDeletingInterview(interviewId);
             }
@@ -202,6 +309,7 @@ const ViewInterview = () => {
 
             if (summary.interview_count === 0) {
                 setInterviews([]);
+                setUpcomingInterviews([]);
                 return;
             }
 
@@ -215,6 +323,7 @@ const ViewInterview = () => {
 
             await api.interview.deleteAllInterviews();
             setInterviews([]);
+            setUpcomingInterviews([]);
         } catch (error) {
             showErrorToast(
                 getErrorToastMessage(
@@ -231,8 +340,7 @@ const ViewInterview = () => {
     };
 
     const hasInterviews = interviews.length > 0;
-    const hasDisplayedInterviews = displayedInterviews.length > 0;
-    const filtersAreActive = hasInterviews && selectedTimeFilters.length !== INTERVIEW_TIME_FILTERS.length;
+    const filtersAreActive = selectedTimeFilters.length !== INTERVIEW_TIME_FILTERS.length;
     const emptyState = createInterviewEmptyState({
         applicationsRoute: routes.viewApplications,
         filtersAreActive,
@@ -278,7 +386,7 @@ const ViewInterview = () => {
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        !isLoading && hasDisplayedInterviews ? (
+                        !isLoading && hasInterviews ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename='job_interviews.csv'
@@ -315,7 +423,7 @@ const ViewInterview = () => {
                 </ActivityControls>
             </div>
 
-            {isLoading &&
+            {(isLoading || isFilteringInterviews) &&
                 (isBoardView ? (
                     <SkeletonInterviewBoard />
                 ) : (
@@ -325,11 +433,11 @@ const ViewInterview = () => {
                     </>
                 ))}
 
-            {!isLoading && !hasDisplayedInterviews && <EmptyState {...emptyState} />}
+            {!isLoading && !isFilteringInterviews && !hasInterviews && <EmptyState {...emptyState} />}
 
-            {!isLoading && hasDisplayedInterviews && (
+            {!isLoading && !isFilteringInterviews && hasInterviews && (
                 <InterviewGrid ariaLabel='Active interviews' layout={viewMode}>
-                    {displayedInterviews.map((interview, index) => (
+                    {interviews.map((interview, index) => (
                         <InterviewCard
                             applicationRoute={routes.viewApplications}
                             currentTime={currentTime}

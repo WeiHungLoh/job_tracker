@@ -43,8 +43,18 @@ describe('makeJobTrackerAPIRequest', () => {
 
     test('declares active, archived, singular save, and delete offer comparison endpoints', () => {
         expect(endpointConfig.offerDecision).toEqual({
-            getActive: { url: '/offer-decisions', verb: 'GET', retry: true },
-            getArchived: { url: '/offer-decisions/archived', verb: 'GET', retry: true },
+            getActive: {
+                url: '/offer-decisions',
+                verb: 'GET',
+                fieldMap: { filters: 'query' },
+                retry: true,
+            },
+            getArchived: {
+                url: '/offer-decisions/archived',
+                verb: 'GET',
+                fieldMap: { filters: 'query' },
+                retry: true,
+            },
             deleteAllActiveEvaluations: { url: '/offer-decisions', verb: 'DELETE' },
             deleteAllArchivedEvaluations: { url: '/offer-decisions/archived', verb: 'DELETE' },
             saveEvaluation: {
@@ -58,6 +68,21 @@ describe('makeJobTrackerAPIRequest', () => {
                 verb: 'DELETE',
                 fieldMap: { jobId: 'path' },
             },
+        });
+    });
+
+    test('declares active and archived interview list filters as query fields', () => {
+        expect(endpointConfig.interview.listInterviews).toEqual({
+            url: '/job-interviews',
+            verb: 'GET',
+            fieldMap: { timeFilters: 'query' },
+            retry: true,
+        });
+        expect(endpointConfig.archivedInterview.listInterviews).toEqual({
+            url: '/archived-job-interviews',
+            verb: 'GET',
+            fieldMap: { timeFilters: 'query' },
+            retry: true,
         });
     });
 

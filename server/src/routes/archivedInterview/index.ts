@@ -2,6 +2,7 @@ import type {
     ArchivedInterviewIdParams,
     EmptyResponse,
     GetArchivedInterviewCollectionSummaryResponse,
+    ListArchivedInterviewsQuery,
     ListArchivedInterviewsResponse,
 } from './models.js';
 import type { Request, Response } from 'express';
@@ -12,7 +13,7 @@ import {
 } from '../../db/queries/archivedInterviews.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
 import express from 'express';
-import { toPositiveInteger } from '../../http/validation.js';
+import { toInterviewTimeFilterQueryValues, toPositiveInteger } from '../../http/validation.js';
 import { getInterviewCollectionSummary } from '../../db/queries/collectionSummaries.js';
 
 const router = express.Router();
@@ -20,11 +21,22 @@ const router = express.Router();
 router.get(
     '/',
     async (
-        req: Request<Record<string, never>, ListArchivedInterviewsResponse>,
+        req: Request<
+            Record<string, never>,
+            ListArchivedInterviewsResponse,
+            Record<string, never>,
+            ListArchivedInterviewsQuery
+        >,
         res: Response<ListArchivedInterviewsResponse>
     ): Promise<void> => {
+        const timeFilters = toInterviewTimeFilterQueryValues(req.query.timeFilters);
+        if (timeFilters === undefined) {
+            sendError(res, 422, 'Each interview time filter must be supported.');
+            return;
+        }
+
         try {
-            res.status(200).json(await getArchivedJobInterviews(req.user.id));
+            res.status(200).json(await getArchivedJobInterviews(req.user.id, timeFilters));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived interviews.');
         }

@@ -580,6 +580,56 @@ describe('OfferDecisionWorkspace', () => {
         expect(screen.queryByRole('heading', { name: 'Evaluated Offers' })).not.toBeInTheDocument();
     });
 
+    test('delegates production filter changes without persisting them in the workspace', async () => {
+        const onFilterSelectionChange = vi.fn().mockResolvedValue(true);
+        const updatePreferences = vi.fn();
+        render(
+            <OfferDecisionWorkspace
+                data={activeData}
+                onFilterSelectionChange={onFilterSelectionChange}
+                readOnly={false}
+            />,
+            { updatePreferences }
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offers to Evaluate' }));
+
+        expect(onFilterSelectionChange).toHaveBeenCalledWith([
+            'Evaluated Offers',
+            'Expired Evaluated Offers',
+            'Previous Evaluations',
+        ]);
+        expect(updatePreferences).not.toHaveBeenCalled();
+    });
+
+    test('shows the existing skeleton while filtering without disabling filter changes', async () => {
+        render(<OfferDecisionWorkspace data={activeData} isFiltering readOnly={false} />);
+
+        expect(screen.getByRole('status', { name: 'Loading offer comparisons' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Filter by' })).toBeEnabled();
+    });
+
+    test('uses the full production evaluation count for Delete All confirmation', async () => {
+        const getDeleteAllEvaluationCount = vi.fn().mockResolvedValue(7);
+        render(
+            <OfferDecisionWorkspace
+                data={activeData}
+                getDeleteAllEvaluationCount={getDeleteAllEvaluationCount}
+                onDeleteAll={vi.fn().mockResolvedValue(undefined)}
+                readOnly={false}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+
+        await waitFor(() => expect(getDeleteAllEvaluationCount).toHaveBeenCalledOnce());
+        expect(mockConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({ description: expect.stringContaining('7 active offer evaluations') })
+        );
+    });
+
     test('restores active and archived filters independently without saving during hydration', () => {
         const updatePreferences = vi.fn();
         const { rerender } = render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly={false} />, {
@@ -775,6 +825,7 @@ describe('OfferDecisionWorkspace', () => {
         expect(csv).toContain('Acme');
         expect(csv).toContain('Continuum');
         expect(csv).not.toContain('Beta Labs');
+        expect(csv).toContain(`\n${Array.from({ length: 18 }, () => '""').join(',')}\n"Previous Evaluations"`);
     });
 
     test('downloads escaped CSV text and N/A values from the generated table', async () => {

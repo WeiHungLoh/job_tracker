@@ -41,7 +41,7 @@ const Dashboard = () => {
                 const [jobStatusCounts, jobInterviews, weeklyApplicationCounts, attentionApplications] =
                     await Promise.all([
                         api.application.listJobStatusCounts(),
-                        api.interview.listInterviews(),
+                        api.interview.listInterviews({}),
                         api.application.listWeeklyApplications(),
                         api.application.listApplications({ jobStatuses: [...ATTENTION_APPLICATION_STATUSES] }),
                     ]);

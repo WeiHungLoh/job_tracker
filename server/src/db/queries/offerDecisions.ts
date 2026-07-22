@@ -1,5 +1,6 @@
 import type {
     JobStatus,
+    OfferDecisionFilter,
     OfferDecisionApplication,
     OfferDetails,
     OfferDecisionWorkspace,
@@ -78,7 +79,8 @@ const toApplication = (row: OfferDecisionRow): OfferDecisionApplication => ({
 
 export const getOfferDecisionWorkspace = async (
     userId: number,
-    isArchived: boolean
+    isArchived: boolean,
+    filters: readonly OfferDecisionFilter[]
 ): Promise<OfferDecisionWorkspace> => {
     const result = await pool.query<OfferDecisionRow>(
         `SELECT
@@ -114,6 +116,34 @@ export const getOfferDecisionWorkspace = async (
                 ))
                 OR ($2 = true AND evaluations.job_id IS NOT NULL)
             )
+            AND (
+                (
+                    'Offers to Evaluate' = ANY($3::text[])
+                    AND $2 = false
+                    AND applications.job_status = 'Offer'
+                    AND evaluations.job_id IS NULL
+                )
+                OR (
+                    'Evaluated Offers' = ANY($3::text[])
+                    AND applications.job_status = 'Offer'
+                    AND evaluations.job_id IS NOT NULL
+                    AND (
+                        evaluations.decision_deadline IS NULL
+                        OR evaluations.decision_deadline >= NOW()
+                    )
+                )
+                OR (
+                    'Expired Evaluated Offers' = ANY($3::text[])
+                    AND applications.job_status = 'Offer'
+                    AND evaluations.job_id IS NOT NULL
+                    AND evaluations.decision_deadline < NOW()
+                )
+                OR (
+                    'Previous Evaluations' = ANY($3::text[])
+                    AND applications.job_status <> 'Offer'
+                    AND evaluations.job_id IS NOT NULL
+                )
+            )
         ORDER BY
             CASE
                 WHEN applications.job_status = 'Offer' THEN 1
@@ -122,7 +152,7 @@ export const getOfferDecisionWorkspace = async (
             applications.company_name,
             applications.job_title,
             applications.job_id`,
-        [userId, isArchived]
+        [userId, isArchived, filters]
     );
 
     return { applications: result.rows.map(toApplication) };

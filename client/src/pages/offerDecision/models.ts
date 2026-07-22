@@ -95,7 +95,12 @@ export type InvalidOfferEvaluation = {
 
 export type OfferEvaluationValidationResult = ValidOfferEvaluation | InvalidOfferEvaluation;
 
-export type GetOfferDecisionsRequest = null;
+export type GetActiveOfferDecisionsRequest = {
+    filters: OfferDecisionFilter[];
+};
+export type GetArchivedOfferDecisionsRequest = {
+    filters: ArchivedOfferDecisionFilter[];
+};
 export type GetOfferDecisionsResponse = OfferDecisionWorkspaceData;
 export type SaveOfferEvaluationResponse = null;
 export type DeleteOfferEvaluationRequest = { jobId: number };
@@ -106,9 +111,12 @@ export type DeleteAllOfferEvaluationsResponse = null;
 export type OfferDecisionWorkspaceProps = {
     applicationsRoute?: string;
     data: OfferDecisionWorkspaceData;
+    getDeleteAllEvaluationCount?: () => Promise<number>;
+    isFiltering?: boolean;
     isLoading?: boolean;
     onDelete?: (jobId: number) => Promise<void>;
     onDeleteAll?: () => Promise<void>;
+    onFilterSelectionChange?: (filters: OfferDecisionFilter[]) => Promise<boolean>;
     onSave?: (jobId: number, request: SaveOfferEvaluationRequest) => Promise<void>;
     readOnly: boolean;
 };

@@ -1,4 +1,5 @@
 import type { JobStatus } from '../application/models';
+import type { InterviewTimeFilter } from '../../helper/interviewTiming';
 
 export type JobInterview = {
     interview_id: number;
@@ -26,7 +27,9 @@ export type ArchivedJobInterview = {
     interview_notes: string;
 };
 
-export type ListInterviewsRequest = null;
+export type ListInterviewsRequest = {
+    timeFilters?: InterviewTimeFilter[];
+};
 export type ListInterviewsResponse = JobInterview[];
 
 export type InterviewCollectionSummary = {
@@ -72,7 +75,9 @@ export type DeleteInterviewResponse = null;
 export type DeleteAllInterviewsRequest = null;
 export type DeleteAllInterviewsResponse = null;
 
-export type ListArchivedInterviewsRequest = null;
+export type ListArchivedInterviewsRequest = {
+    timeFilters?: InterviewTimeFilter[];
+};
 export type ListArchivedInterviewsResponse = ArchivedJobInterview[];
 
 export type DeleteArchivedInterviewRequest = {

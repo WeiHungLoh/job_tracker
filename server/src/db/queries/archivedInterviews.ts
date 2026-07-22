@@ -1,8 +1,11 @@
-import type { ArchivedJobInterview } from '../models.js';
+import type { ArchivedJobInterview, InterviewTimeFilter } from '../models.js';
 import { pool } from '../connectDB.js';
 import { hasAffectedRows } from './shared.js';
 
-export const getArchivedJobInterviews = async (userId: number): Promise<ArchivedJobInterview[]> => {
+export const getArchivedJobInterviews = async (
+    userId: number,
+    timeFilters: InterviewTimeFilter[]
+): Promise<ArchivedJobInterview[]> => {
     const result = await pool.query<ArchivedJobInterview>(
         `SELECT
             interviews.interview_id AS archived_interview_id,
@@ -20,10 +23,22 @@ export const getArchivedJobInterviews = async (userId: number): Promise<Archived
          WHERE interviews.user_id = $1
             AND interviews.is_archived = true
             AND job_applications.is_archived = true
+            AND (
+                (
+                    'Upcoming Interviews' = ANY($2::text[])
+                    AND interviews.interview_date
+                        + interviews.interview_duration_minutes * INTERVAL '1 minute' > NOW()
+                )
+                OR (
+                    'Past Interviews' = ANY($2::text[])
+                    AND interviews.interview_date
+                        + interviews.interview_duration_minutes * INTERVAL '1 minute' <= NOW()
+                )
+            )
          ORDER BY
             interviews.interview_date + interviews.interview_duration_minutes * INTERVAL '1 minute' > NOW() DESC,
             interviews.interview_date ASC`,
-        [userId]
+        [userId, timeFilters]
     );
     return result.rows;
 };

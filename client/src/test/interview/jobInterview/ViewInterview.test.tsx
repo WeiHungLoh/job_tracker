@@ -62,6 +62,8 @@ const response = (data?: unknown, status = 200) => ({
     url: '',
 });
 
+const getTimeFilters = (url: string): string[] => new URLSearchParams(url.split('?')[1] ?? '').getAll('timeFilters');
+
 const mockConfirm = vi.fn();
 const calendarMocks = vi.hoisted(() => ({ downloadBulkIcsEvents: vi.fn() }));
 vi.mock('material-ui-confirm', () => ({
@@ -192,6 +194,98 @@ describe('Job interview viewer flow', () => {
         );
         await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' }));
         expect(screen.getByRole('article', { name: 'ABC Pte Ltd interview' })).toBeInTheDocument();
+    });
+
+    test('restores the saved Past collection when dashboard filter persistence fails', async () => {
+        const futureInterview = {
+            ...mockInterview,
+            company_name: 'Future Dashboard Company',
+            interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
+        const pastInterview = {
+            ...mockInterview,
+            company_name: 'Past Saved Filter Company',
+            interview_date: '2020-01-01T00:00:00Z',
+            interview_id: 2,
+        };
+        fetch.mockImplementation(async (url: string) =>
+            response(
+                getTimeFilters(url).join(',') === 'Past Interviews' ? [pastInterview] : [futureInterview, pastInterview]
+            )
+        );
+        let rejectUpdate: (reason?: unknown) => void = () => undefined;
+        const updatePreferences = vi.fn(
+            () =>
+                new Promise<UserPreferences>((_resolve, reject) => {
+                    rejectUpdate = reject;
+                })
+        );
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: 1 } }]}>
+                <ViewInterview />
+            </MemoryRouter>,
+            {
+                initialPreferences: { interview_time_filters: ['Past Interviews'] },
+                updatePreferences,
+            }
+        );
+
+        await waitFor(() =>
+            expect(fetch).toHaveBeenCalledWith(
+                `${
+                    import.meta.env.VITE_API_URL
+                }/job-interviews?timeFilters=Upcoming+Interviews&timeFilters=Past+Interviews`,
+                { method: 'GET' }
+            )
+        );
+        expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
+        expect(screen.queryByRole('article', { name: 'Future Dashboard Company interview' })).not.toBeInTheDocument();
+        await act(async () => rejectUpdate(new Error('save failed')));
+
+        expect(await screen.findByText('Unable to save display preferences. Please try again.')).toBeInTheDocument();
+        expect(await screen.findByRole('article', { name: 'Past Saved Filter Company interview' })).toBeInTheDocument();
+        await waitFor(() =>
+            expect(
+                screen.queryByRole('article', { name: 'Future Dashboard Company interview' })
+            ).not.toBeInTheDocument()
+        );
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/job-interviews?timeFilters=Past+Interviews`,
+            { method: 'GET' }
+        );
+    });
+
+    test('stops dashboard loading when the interview fetch fails before filter persistence succeeds', async () => {
+        fetch.mockRejectedValue(new Error('fetch failed'));
+        let resolveUpdate: (preferences: UserPreferences) => void = () => undefined;
+        const updatePreferences = vi.fn(
+            () =>
+                new Promise<UserPreferences>((resolve) => {
+                    resolveUpdate = resolve;
+                })
+        );
+
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/interview/view', state: { dashboardInterviewId: 1 } }]}>
+                <ViewInterview />
+            </MemoryRouter>,
+            {
+                initialPreferences: { interview_time_filters: ['Past Interviews'] },
+                updatePreferences,
+            }
+        );
+
+        expect(await screen.findByText('Unable to load interviews. Please try again.')).toBeInTheDocument();
+        expect(screen.getAllByRole('status', { name: 'Loading results' })).toHaveLength(2);
+        await act(async () =>
+            resolveUpdate({
+                ...mockPreferences,
+                interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+            })
+        );
+
+        await waitFor(() => expect(screen.queryByRole('status', { name: 'Loading results' })).not.toBeInTheDocument());
     });
 
     test('ignores invalid dashboard interview IDs without changing view mode', async () => {
@@ -449,6 +543,133 @@ describe('Job interview viewer flow', () => {
         expect(fetch).toHaveBeenCalledTimes(1);
     });
 
+    test('requests saved time filters initially and trusts the server-filtered response', async () => {
+        const serverFilteredInterview = {
+            ...mockInterview,
+            company_name: 'Server Filtered Company',
+            interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
+        fetch.mockImplementation(async (url: string) => {
+            if (getTimeFilters(url).join(',') === 'Past Interviews') {
+                return response([serverFilteredInterview]);
+            }
+            if (getTimeFilters(url).join(',') === 'Upcoming Interviews') {
+                return response([]);
+            }
+            return response([]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>,
+            { initialPreferences: { interview_time_filters: ['Past Interviews'] } }
+        );
+
+        expect(await screen.findByRole('article', { name: 'Server Filtered Company interview' })).toBeInTheDocument();
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.VITE_API_URL}/job-interviews?timeFilters=Past+Interviews`,
+            { method: 'GET' }
+        );
+    });
+
+    test('keeps the requested Past collection when the calendar-only Upcoming request fails', async () => {
+        const pastInterview = {
+            ...mockInterview,
+            company_name: 'Past Collection Company',
+        };
+        fetch.mockImplementation(async (url: string) => {
+            if (getTimeFilters(url).join(',') === 'Upcoming Interviews') {
+                throw new Error('calendar unavailable');
+            }
+            return response([pastInterview]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>,
+            { initialPreferences: { interview_time_filters: ['Past Interviews'] } }
+        );
+
+        expect(await screen.findByRole('article', { name: 'Past Collection Company interview' })).toBeInTheDocument();
+        expect(
+            await screen.findByText('Unable to load upcoming interviews for calendar export. Please try again.')
+        ).toBeInTheDocument();
+    });
+
+    test('fetches filtered interviews before saving each changed selection', async () => {
+        const requestOrder: string[] = [];
+        const filteredInterview = {
+            ...mockInterview,
+            company_name: 'Filtered Response Company',
+            interview_date: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
+        const updatePreferences = vi.fn(async (updates: UpdateUserPreferencesRequest) => {
+            requestOrder.push('preference');
+            return { ...mockPreferences, ...updates };
+        });
+        fetch.mockImplementation(async (url: string) => {
+            if (getTimeFilters(url).join(',') === 'Past Interviews') {
+                requestOrder.push('filtered-get');
+                return response([filteredInterview]);
+            }
+            return response([mockInterview]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>,
+            { updatePreferences }
+        );
+
+        await screen.findByRole('article', { name: 'ABC Pte Ltd interview' });
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+
+        expect(await screen.findByRole('article', { name: 'Filtered Response Company interview' })).toBeInTheDocument();
+        expect(requestOrder).toEqual(['filtered-get', 'preference']);
+        expect(updatePreferences).toHaveBeenCalledWith({ interview_time_filters: ['Past Interviews'] });
+    });
+
+    test('ignores an older interview filter response after a newer selection finishes', async () => {
+        let resolveOlderFilter: (value: ReturnType<typeof response>) => void = () => undefined;
+        const olderInterview = { ...mockInterview, company_name: 'Older Interview Result' };
+        const latestInterview = { ...mockInterview, company_name: 'Latest Interview Result' };
+        fetch.mockImplementation(async (url: string) => {
+            const timeFilters = getTimeFilters(url).join(',');
+            if (timeFilters === 'Past Interviews') {
+                return new Promise((resolve) => {
+                    resolveOlderFilter = resolve;
+                });
+            }
+            if (timeFilters === 'Upcoming Interviews') {
+                return response([latestInterview]);
+            }
+            if (timeFilters === 'Upcoming Interviews,Past Interviews') {
+                return response([mockInterview]);
+            }
+            return response([]);
+        });
+
+        render(
+            <MemoryRouter>
+                <ViewInterview />
+            </MemoryRouter>
+        );
+
+        await screen.findByRole('article', { name: 'ABC Pte Ltd interview' });
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Past Interviews' }));
+
+        expect(await screen.findByRole('article', { name: 'Latest Interview Result interview' })).toBeInTheDocument();
+        await act(async () => resolveOlderFilter(response([olderInterview])));
+        expect(screen.queryByRole('article', { name: 'Older Interview Result interview' })).not.toBeInTheDocument();
+    });
+
     test('uses one filtered collection for display and CSV while bulk calendar and Delete All keep full scope', async () => {
         const now = Date.now();
         const interviews = [
@@ -474,6 +695,9 @@ describe('Job interview viewer flow', () => {
         fetch.mockImplementation(async (url: string, init?: RequestInit) => {
             if (url.endsWith('/job-interviews/summary')) {
                 return response({ interview_count: 3 });
+            }
+            if (init?.method === 'GET' && getTimeFilters(url).join(',') === 'Past Interviews') {
+                return response([interviews[2]]);
             }
             return init?.method === 'GET' ? response(interviews) : response(undefined, 204);
         });
@@ -540,7 +764,9 @@ describe('Job interview viewer flow', () => {
             company_name: 'Ended Company',
             interview_date: '2020-01-01T00:00:00Z',
         };
-        fetch.mockResolvedValue(response([endedInterview]));
+        fetch.mockImplementation(async (url: string) =>
+            response(getTimeFilters(url).join(',') === 'Upcoming Interviews' ? [] : [endedInterview])
+        );
 
         const firstRender = render(
             <MemoryRouter>
@@ -570,7 +796,7 @@ describe('Job interview viewer flow', () => {
         await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
         await userEvent.click(screen.getByRole('checkbox', { name: 'Upcoming Interviews' }));
 
-        expect(await screen.findByText('Unable to save interview filters. Please try again.')).toBeInTheDocument();
+        expect(await screen.findByText('Unable to filter interviews. Please try again.')).toBeInTheDocument();
         await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Upcoming Interviews' })).toBeChecked());
         expect(screen.getByRole('checkbox', { name: 'Past Interviews' })).toBeChecked();
         expect(screen.getByRole('article', { name: 'Ended Company interview' })).toBeInTheDocument();

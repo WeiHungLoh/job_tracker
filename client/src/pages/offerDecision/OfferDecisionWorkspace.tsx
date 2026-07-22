@@ -92,9 +92,12 @@ const ComparisonSection = ({ applications, description, heading, id, renderCard 
 const OfferDecisionWorkspace = ({
     applicationsRoute = routes.viewApplications,
     data,
+    getDeleteAllEvaluationCount,
+    isFiltering = false,
     isLoading = false,
     onDelete,
     onDeleteAll,
+    onFilterSelectionChange,
     onSave,
     readOnly,
 }: OfferDecisionWorkspaceProps) => {
@@ -126,6 +129,10 @@ const OfferDecisionWorkspace = ({
     const csvData = createOfferEvaluationCsvData(groups, selectedFilters);
 
     const handleFilterSelection = async (filters: OfferDecisionFilter[]) => {
+        if (onFilterSelectionChange) {
+            return await onFilterSelectionChange(filters);
+        }
+
         try {
             if (readOnly) {
                 await updatePreferences({
@@ -252,8 +259,15 @@ const OfferDecisionWorkspace = ({
         deleteAllPendingRef.current = true;
         setIsDeletingAll(true);
         try {
+            const deleteAllEvaluationCount = getDeleteAllEvaluationCount
+                ? await getDeleteAllEvaluationCount()
+                : evaluationCount;
+            if (deleteAllEvaluationCount === 0) {
+                return;
+            }
+
             const { confirmed } = await confirm(
-                createDeleteAllOfferEvaluationsConfirmation(evaluationCount, readOnly ? 'archived' : 'active')
+                createDeleteAllOfferEvaluationsConfirmation(deleteAllEvaluationCount, readOnly ? 'archived' : 'active')
             );
             if (!confirmed) {
                 return;
@@ -327,7 +341,7 @@ const OfferDecisionWorkspace = ({
             <div className={styles.controlsRow}>
                 <ActivityControls
                     actions={
-                        !isLoading && displayedEvaluationCount > 0 ? (
+                        !isLoading && !isFiltering && displayedEvaluationCount > 0 ? (
                             <MoreOptions
                                 csvData={csvData}
                                 csvFilename={
@@ -354,7 +368,7 @@ const OfferDecisionWorkspace = ({
                 </ActivityControls>
             </div>
 
-            {isLoading ? (
+            {isLoading || isFiltering ? (
                 <EvaluationGrid count={3}>
                     <OfferDecisionSkeleton />
                     <OfferDecisionSkeleton announceLoading={false} />

@@ -22,7 +22,9 @@ import {
     isValidDate,
     isValidHttpURL,
     normalizeEmail,
+    toInterviewTimeFilterQueryValues,
     toJobStatusQueryValues,
+    toOfferDecisionFilterQueryValues,
     toTrimmedString,
 } from '../dist/http/validation.js';
 
@@ -243,6 +245,32 @@ test('parses repeated job status query parameters', () => {
     assert.equal(toJobStatusQueryValues(['Accepted', 'Unknown']), undefined);
 });
 
+test('parses interview time filter query parameters', () => {
+    assert.deepEqual(toInterviewTimeFilterQueryValues(undefined), ['Upcoming Interviews', 'Past Interviews']);
+    assert.deepEqual(toInterviewTimeFilterQueryValues(''), ['Upcoming Interviews', 'Past Interviews']);
+    assert.deepEqual(toInterviewTimeFilterQueryValues(['Past Interviews', 'Past Interviews']), ['Past Interviews']);
+    assert.equal(toInterviewTimeFilterQueryValues(['Past Interviews', 'Unknown']), undefined);
+});
+
+test('parses active and archived offer comparison filter query parameters', () => {
+    assert.deepEqual(toOfferDecisionFilterQueryValues(undefined, false), [
+        'Offers to Evaluate',
+        'Evaluated Offers',
+        'Expired Evaluated Offers',
+        'Previous Evaluations',
+    ]);
+    assert.deepEqual(toOfferDecisionFilterQueryValues('', true), [
+        'Evaluated Offers',
+        'Expired Evaluated Offers',
+        'Previous Evaluations',
+    ]);
+    assert.deepEqual(toOfferDecisionFilterQueryValues(['Previous Evaluations', 'Previous Evaluations'], true), [
+        'Previous Evaluations',
+    ]);
+    assert.equal(toOfferDecisionFilterQueryValues('Offers to Evaluate', true), undefined);
+    assert.equal(toOfferDecisionFilterQueryValues('Unknown', false), undefined);
+});
+
 test('validates application view mode values', () => {
     assert.equal(isApplicationViewMode('list'), true);
     assert.equal(isApplicationViewMode('board'), true);
@@ -301,6 +329,19 @@ test('returns 422 for unsupported active and archived interview time filters', a
 
         assert.equal(response.status, 422);
         assert.deepEqual(await response.json(), { message });
+    }
+});
+
+test('returns 422 for unsupported active and archived interview GET filters', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+
+    for (const path of ['/job-interviews', '/archived-job-interviews']) {
+        const response = await fetch(`${baseUrl}${path}?timeFilters=Unknown`, {
+            headers: { Cookie: `access_token=${token}` },
+        });
+
+        assert.equal(response.status, 422);
+        assert.deepEqual(await response.json(), { message: 'Each interview time filter must be supported.' });
     }
 });
 

@@ -1,4 +1,4 @@
-import type { InterviewSchedulingConflictRecord, JobInterview } from '../models.js';
+import type { InterviewSchedulingConflictRecord, InterviewTimeFilter, JobInterview } from '../models.js';
 import { pool } from '../connectDB.js';
 import { hasAffectedRows } from './shared.js';
 
@@ -90,7 +90,7 @@ export const insertInterview = async (
     return result.rows[0]?.application_exists ? 'invalid-date' : 'not-found';
 };
 
-export const getInterviews = async (userId: number): Promise<JobInterview[]> => {
+export const getInterviews = async (userId: number, timeFilters: InterviewTimeFilter[]): Promise<JobInterview[]> => {
     const result = await pool.query<JobInterview>(
         `SELECT
             interviews.interview_id,
@@ -108,10 +108,22 @@ export const getInterviews = async (userId: number): Promise<JobInterview[]> => 
          WHERE interviews.user_id = $1
             AND interviews.is_archived = false
             AND job_applications.is_archived = false
+            AND (
+                (
+                    'Upcoming Interviews' = ANY($2::text[])
+                    AND interviews.interview_date
+                        + interviews.interview_duration_minutes * INTERVAL '1 minute' > NOW()
+                )
+                OR (
+                    'Past Interviews' = ANY($2::text[])
+                    AND interviews.interview_date
+                        + interviews.interview_duration_minutes * INTERVAL '1 minute' <= NOW()
+                )
+            )
          ORDER BY
              interviews.interview_date + interviews.interview_duration_minutes * INTERVAL '1 minute' > NOW() DESC,
              interviews.interview_date ASC`,
-        [userId]
+        [userId, timeFilters]
     );
     return result.rows;
 };

@@ -6,6 +6,10 @@ export type InterviewIdParams = {
     interviewId: string;
 };
 
+export type ListInterviewsQuery = {
+    timeFilters?: string | string[];
+};
+
 export type CreateInterviewRequest = {
     jobId: number;
     interviewDate: string;

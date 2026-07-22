@@ -1,15 +1,18 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { JobTrackerAPIError } from '../../api/models';
 import OfferDecisionPage from '../../pages/offerDecision/OfferDecisionPage';
 import type { OfferDecisionWorkspaceData, OfferEvaluation } from '../../pages/offerDecision/models';
 import { parseDatetimeLocal } from '../../helper/dateFormatter';
-import { render } from '../renderWithToast';
+import type { UpdateUserPreferencesRequest } from '../../components/userPreferences/models';
+import { render, testPreferences } from '../renderWithToast';
 
 const mocks = vi.hoisted(() => ({
     confirm: vi.fn(),
     deleteAllActiveEvaluations: vi.fn(),
     deleteAllArchivedEvaluations: vi.fn(),
     deleteEvaluation: vi.fn(),
+    getActiveApplicationSummary: vi.fn(),
+    getArchivedApplicationSummary: vi.fn(),
     getActive: vi.fn(),
     getArchived: vi.fn(),
     saveEvaluation: vi.fn(),
@@ -21,6 +24,12 @@ vi.mock('material-ui-confirm', () => ({ useConfirm: () => mocks.confirm }));
 
 vi.mock('../../api/useJobTrackerAPI', () => ({
     useJobTrackerAPI: () => ({
+        application: {
+            getSummary: mocks.getActiveApplicationSummary,
+        },
+        archivedApplication: {
+            getSummary: mocks.getArchivedApplicationSummary,
+        },
         offerDecision: {
             deleteAllActiveEvaluations: mocks.deleteAllActiveEvaluations,
             deleteAllArchivedEvaluations: mocks.deleteAllArchivedEvaluations,
@@ -103,9 +112,163 @@ describe('OfferDecisionPage', () => {
         mocks.deleteAllActiveEvaluations.mockResolvedValue(null);
         mocks.deleteAllArchivedEvaluations.mockResolvedValue(null);
         mocks.deleteEvaluation.mockResolvedValue(null);
+        mocks.getActiveApplicationSummary.mockResolvedValue({ offer_evaluation_count: 2 });
+        mocks.getArchivedApplicationSummary.mockResolvedValue({ offer_evaluation_count: 2 });
         mocks.getActive.mockResolvedValue(workspaceData);
         mocks.getArchived.mockResolvedValue(workspaceData);
         mocks.saveEvaluation.mockResolvedValue(null);
+    });
+
+    test('requests the saved active filters initially', async () => {
+        render(<OfferDecisionPage archived={false} />, {
+            initialPreferences: { offer_decision_filters: ['Previous Evaluations'] },
+        });
+
+        expect(await screen.findByRole('heading', { name: 'Previous Evaluations' })).toBeInTheDocument();
+        expect(mocks.getActive).toHaveBeenCalledWith({ filters: ['Previous Evaluations'] });
+    });
+
+    test('fetches active offer filters before saving the changed selection', async () => {
+        const requestOrder: string[] = [];
+        const updatePreferences = vi.fn(async (updates: UpdateUserPreferencesRequest) => {
+            requestOrder.push('preference');
+            return { ...testPreferences, ...updates };
+        });
+        mocks.getActive.mockImplementation(async ({ filters }: { filters: string[] }) => {
+            if (filters.length === 1 && filters[0] === 'Previous Evaluations') {
+                requestOrder.push('filtered-get');
+                return { applications: [workspaceData.applications[1]] };
+            }
+            return workspaceData;
+        });
+
+        render(<OfferDecisionPage archived={false} />, { updatePreferences });
+        await waitForActiveWorkspace();
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        expect(await screen.findByRole('heading', { name: 'Previous Evaluations' })).toBeInTheDocument();
+        expect(requestOrder).toEqual(['filtered-get', 'preference']);
+        expect(updatePreferences).toHaveBeenCalledWith({ offer_decision_filters: ['Previous Evaluations'] });
+    });
+
+    test('requests archived filters from the server and saves only the archived preference', async () => {
+        const updatePreferences = vi.fn(async (updates: UpdateUserPreferencesRequest) => ({
+            ...testPreferences,
+            ...updates,
+        }));
+        mocks.getArchived.mockResolvedValue({ applications: [workspaceData.applications[1]] });
+
+        render(<OfferDecisionPage archived />, {
+            initialPreferences: { archived_offer_decision_filters: ['Previous Evaluations'] },
+            updatePreferences,
+        });
+
+        expect(await screen.findByRole('heading', { name: 'Archived Previous Evaluations' })).toBeInTheDocument();
+        expect(mocks.getArchived).toHaveBeenCalledWith({ filters: ['Previous Evaluations'] });
+        expect(updatePreferences).not.toHaveBeenCalled();
+    });
+
+    test('fetches archived offer filters before saving the changed selection', async () => {
+        const requestOrder: string[] = [];
+        const updatePreferences = vi.fn(async (updates: UpdateUserPreferencesRequest) => {
+            requestOrder.push('preference');
+            return { ...testPreferences, ...updates };
+        });
+        mocks.getArchived.mockImplementation(async ({ filters }: { filters: string[] }) => {
+            if (filters.length === 1 && filters[0] === 'Previous Evaluations') {
+                requestOrder.push('filtered-get');
+                return { applications: [workspaceData.applications[1]] };
+            }
+            return workspaceData;
+        });
+
+        render(<OfferDecisionPage archived />, { updatePreferences });
+        await screen.findByRole('heading', { name: 'Archived Evaluated Offers' });
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        expect(await screen.findByRole('heading', { name: 'Archived Previous Evaluations' })).toBeInTheDocument();
+        expect(requestOrder).toEqual(['filtered-get', 'preference']);
+        expect(updatePreferences).toHaveBeenCalledWith({
+            archived_offer_decision_filters: ['Previous Evaluations'],
+        });
+    });
+
+    test('ignores an older offer filter response after a newer selection finishes', async () => {
+        let resolveOlderFilter: (value: OfferDecisionWorkspaceData) => void = () => undefined;
+        const olderApplication = {
+            ...workspaceData.applications[1],
+            company_name: 'Older Offer Result',
+        };
+        const latestApplication = {
+            ...workspaceData.applications[1],
+            company_name: 'Latest Offer Result',
+        };
+        mocks.getActive.mockImplementation(async ({ filters }: { filters: string[] }) => {
+            if (filters.length === 3 && !filters.includes('Offers to Evaluate')) {
+                return new Promise((resolve) => {
+                    resolveOlderFilter = resolve;
+                });
+            }
+            if (filters.length === 2) {
+                return { applications: [latestApplication] };
+            }
+            return workspaceData;
+        });
+
+        render(<OfferDecisionPage archived={false} />);
+        await waitForActiveWorkspace();
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Offers to Evaluate' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Evaluated Offers' }));
+
+        expect(await screen.findByRole('article', { name: 'Latest Offer Result Developer' })).toBeInTheDocument();
+        await act(async () => resolveOlderFilter({ applications: [olderApplication] }));
+        expect(screen.queryByRole('article', { name: 'Older Offer Result Developer' })).not.toBeInTheDocument();
+    });
+
+    test('restores saved offer filters when the filtered GET fails', async () => {
+        mocks.getActive.mockImplementation(async ({ filters }: { filters: string[] }) => {
+            if (filters.length === 3) {
+                throw new Error('offline');
+            }
+            return workspaceData;
+        });
+
+        render(<OfferDecisionPage archived={false} />);
+        await waitForActiveWorkspace();
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Offers to Evaluate' }));
+
+        await waitFor(() =>
+            expect(mocks.showErrorToast).toHaveBeenCalledWith('Unable to filter offer comparisons. Please try again.')
+        );
+        expect(screen.getByRole('checkbox', { name: 'Offers to Evaluate' })).toBeChecked();
+        expect(screen.getByRole('heading', { name: 'Offers to Evaluate' })).toBeInTheDocument();
+    });
+
+    test('restores saved offer filters when preference persistence fails after the GET', async () => {
+        mocks.getActive.mockImplementation(async ({ filters }: { filters: string[] }) =>
+            filters.length === 1 ? { applications: [workspaceData.applications[1]] } : workspaceData
+        );
+        const updatePreferences = vi.fn().mockRejectedValue(new Error('save failed'));
+
+        render(<OfferDecisionPage archived={false} />, { updatePreferences });
+        await waitForActiveWorkspace();
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        await waitFor(() =>
+            expect(mocks.showErrorToast).toHaveBeenCalledWith('Unable to filter offer comparisons. Please try again.')
+        );
+        expect(screen.getByRole('checkbox', { name: 'Offers to Evaluate' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Evaluated Offers' })).toBeChecked();
+        expect(screen.getByRole('heading', { name: 'Offers to Evaluate' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Evaluated Offers' })).toBeInTheDocument();
     });
 
     test('saves one new evaluation, moves it locally and does not refetch', async () => {
@@ -267,6 +430,8 @@ describe('OfferDecisionPage', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
 
         await waitFor(() => expect(mocks.deleteAllActiveEvaluations).toHaveBeenCalledOnce());
+        expect(mocks.getActiveApplicationSummary).toHaveBeenCalledOnce();
+        expect(mocks.getArchivedApplicationSummary).not.toHaveBeenCalled();
         expect(mocks.deleteAllArchivedEvaluations).not.toHaveBeenCalled();
         expect(await screen.findByRole('button', { name: 'Add evaluation for Acme' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Add evaluation for Beta Labs' })).toBeInTheDocument();
@@ -283,6 +448,8 @@ describe('OfferDecisionPage', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
 
         await waitFor(() => expect(mocks.deleteAllArchivedEvaluations).toHaveBeenCalledOnce());
+        expect(mocks.getArchivedApplicationSummary).toHaveBeenCalledOnce();
+        expect(mocks.getActiveApplicationSummary).not.toHaveBeenCalled();
         expect(mocks.deleteAllActiveEvaluations).not.toHaveBeenCalled();
         expect(await screen.findByRole('heading', { name: 'No archived offer comparisons' })).toBeInTheDocument();
         expect(mocks.showSuccessToast).toHaveBeenCalledWith('Archived offer evaluations deleted.');

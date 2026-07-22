@@ -4,6 +4,7 @@ import type {
     EmptyResponse,
     GetInterviewCollectionSummaryResponse,
     InterviewIdParams,
+    ListInterviewsQuery,
     ListInterviewsResponse,
 } from './models.js';
 import type { Request, Response } from 'express';
@@ -23,6 +24,7 @@ import { handleRouteError, sendError } from '../../http/responses.js';
 import {
     isOptionalBoolean,
     isValidDate,
+    toInterviewTimeFilterQueryValues,
     toIntegerInRange,
     toPositiveInteger,
     toTrimmedString,
@@ -116,11 +118,17 @@ router.post(
 router.get(
     '/',
     async (
-        req: Request<Record<string, never>, ListInterviewsResponse>,
+        req: Request<Record<string, never>, ListInterviewsResponse, Record<string, never>, ListInterviewsQuery>,
         res: Response<ListInterviewsResponse>
     ): Promise<void> => {
+        const timeFilters = toInterviewTimeFilterQueryValues(req.query.timeFilters);
+        if (timeFilters === undefined) {
+            sendError(res, 422, 'Each interview time filter must be supported.');
+            return;
+        }
+
         try {
-            res.status(200).json(await getInterviews(req.user.id));
+            res.status(200).json(await getInterviews(req.user.id, timeFilters));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load interviews.');
         }

@@ -25,6 +25,8 @@ const OFFER_EVALUATION_CSV_HEADERS = [
     'Updated Date',
 ] as const;
 
+const OFFER_EVALUATION_CSV_SEPARATOR = OFFER_EVALUATION_CSV_HEADERS.map(() => '');
+
 const EXPORTABLE_FILTERS = (Object.keys(OFFER_DECISION_FILTER_CONFIG) as OfferDecisionFilter[]).filter(
     (filter) => OFFER_DECISION_FILTER_CONFIG[filter].exportable
 );
@@ -73,7 +75,7 @@ export const createOfferEvaluationCsvData = (
     }
 
     return selectedGroups.flatMap((filter, index) => [
-        ...(index === 0 ? [] : [[]]),
+        ...(index === 0 ? [] : [OFFER_EVALUATION_CSV_SEPARATOR]),
         [filter],
         [...OFFER_EVALUATION_CSV_HEADERS],
         ...groups[filter].map(createEvaluationRow),

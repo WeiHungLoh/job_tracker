@@ -40,8 +40,8 @@ test('interview queries persist, return, and sort with the stored duration', asy
             await insertInterview(12, 34, '2027-01-02T00:00:00.000Z', 90, 'Remote', 'Technical', 'Prepare'),
             'created'
         );
-        assert.deepEqual(await getInterviews(34), []);
-        assert.deepEqual(await getArchivedJobInterviews(34), []);
+        assert.deepEqual(await getInterviews(34, ['Upcoming Interviews']), []);
+        assert.deepEqual(await getArchivedJobInterviews(34, ['Past Interviews']), []);
     } finally {
         pool.query = originalQuery;
     }
@@ -51,14 +51,26 @@ test('interview queries persist, return, and sort with the stored duration', asy
     assert.match(calls[0].sql, /SELECT \$1, \$2, \$3, \$4, \$5, \$6, \$7/);
 
     for (const call of calls.slice(1)) {
-        assert.match(call.sql, /interviews\.interview_duration_minutes/);
+        const compactSQL = call.sql.replace(/\s+/g, ' ').trim();
+        assert.match(compactSQL, /interviews\.interview_duration_minutes/);
+        assert.match(compactSQL, /'Upcoming Interviews' = ANY\(\$2::text\[\]\)/);
+        assert.match(compactSQL, /'Past Interviews' = ANY\(\$2::text\[\]\)/);
         assert.match(
-            call.sql,
+            compactSQL,
+            /interviews\.interview_date \+ interviews\.interview_duration_minutes \* INTERVAL '1 minute' > NOW\(\)/
+        );
+        assert.match(
+            compactSQL,
+            /interviews\.interview_date \+ interviews\.interview_duration_minutes \* INTERVAL '1 minute' <= NOW\(\)/
+        );
+        assert.match(
+            compactSQL,
             /interviews\.interview_date \+ interviews\.interview_duration_minutes \* INTERVAL '1 minute' > NOW\(\) DESC/
         );
-        assert.match(call.sql, /interviews\.interview_date ASC/);
-        assert.deepEqual(call.values, [34]);
+        assert.match(compactSQL, /interviews\.interview_date ASC/);
     }
+    assert.deepEqual(calls[1].values, [34, ['Upcoming Interviews']]);
+    assert.deepEqual(calls[2].values, [34, ['Past Interviews']]);
     assert.match(calls[1].sql, /interviews\.is_archived = false/);
     assert.match(calls[2].sql, /interviews\.is_archived = true/);
 });

@@ -6,6 +6,10 @@ export type SaveOfferEvaluationRequest = {
     details: OfferDetails;
 };
 
+export type GetOfferDecisionsQuery = {
+    filters?: string | string[];
+};
+
 export type GetOfferDecisionsResponse = OfferDecisionWorkspace | ErrorResponse;
 export type SaveOfferEvaluationResponse = EmptyResponse | ErrorResponse;
 export type DeleteOfferEvaluationResponse = EmptyResponse | ErrorResponse;

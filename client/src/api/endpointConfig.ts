@@ -43,7 +43,12 @@ export const endpointConfig = {
         },
     },
     interview: {
-        listInterviews: { url: '/job-interviews', verb: 'GET', retry: true },
+        listInterviews: {
+            url: '/job-interviews',
+            verb: 'GET',
+            fieldMap: { timeFilters: 'query' },
+            retry: true,
+        },
         getSummary: { url: '/job-interviews/summary', verb: 'GET', retry: true },
         createInterview: { url: '/job-interviews', verb: 'POST' },
         deleteInterview: {
@@ -83,7 +88,12 @@ export const endpointConfig = {
         },
     },
     archivedInterview: {
-        listInterviews: { url: '/archived-job-interviews', verb: 'GET', retry: true },
+        listInterviews: {
+            url: '/archived-job-interviews',
+            verb: 'GET',
+            fieldMap: { timeFilters: 'query' },
+            retry: true,
+        },
         getSummary: { url: '/archived-job-interviews/summary', verb: 'GET', retry: true },
         deleteInterview: {
             url: '/archived-job-interviews/:archivedInterviewId',
@@ -93,8 +103,18 @@ export const endpointConfig = {
         deleteAllInterviews: { url: '/archived-job-interviews', verb: 'DELETE' },
     },
     offerDecision: {
-        getActive: { url: '/offer-decisions', verb: 'GET', retry: true },
-        getArchived: { url: '/offer-decisions/archived', verb: 'GET', retry: true },
+        getActive: {
+            url: '/offer-decisions',
+            verb: 'GET',
+            fieldMap: { filters: 'query' },
+            retry: true,
+        },
+        getArchived: {
+            url: '/offer-decisions/archived',
+            verb: 'GET',
+            fieldMap: { filters: 'query' },
+            retry: true,
+        },
         deleteAllActiveEvaluations: { url: '/offer-decisions', verb: 'DELETE' },
         deleteAllArchivedEvaluations: { url: '/offer-decisions/archived', verb: 'DELETE' },
         saveEvaluation: {

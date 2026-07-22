@@ -1,6 +1,7 @@
 import type {
     DeleteAllOfferEvaluationsResponse,
     DeleteOfferEvaluationResponse,
+    GetOfferDecisionsQuery,
     GetOfferDecisionsResponse,
     SaveOfferEvaluationRequest,
     SaveOfferEvaluationResponse,
@@ -13,7 +14,11 @@ import {
     saveOfferEvaluation,
 } from '../../db/queries/offerDecisions.js';
 import { handleRouteError, sendError } from '../../http/responses.js';
-import { isSaveOfferEvaluationRequest, toPositiveInteger } from '../../http/validation.js';
+import {
+    isSaveOfferEvaluationRequest,
+    toOfferDecisionFilterQueryValues,
+    toPositiveInteger,
+} from '../../http/validation.js';
 import express from 'express';
 
 const router = express.Router();
@@ -41,11 +46,17 @@ const createDeleteAllHandler =
 router.get(
     '/',
     async (
-        req: Request<Record<string, never>, GetOfferDecisionsResponse>,
+        req: Request<Record<string, never>, GetOfferDecisionsResponse, Record<string, never>, GetOfferDecisionsQuery>,
         res: Response<GetOfferDecisionsResponse>
     ): Promise<void> => {
+        const filters = toOfferDecisionFilterQueryValues(req.query.filters, false);
+        if (filters === undefined) {
+            sendError(res, 422, 'Each offer comparison filter must be supported.');
+            return;
+        }
+
         try {
-            res.status(200).json(await getOfferDecisionWorkspace(req.user.id, false));
+            res.status(200).json(await getOfferDecisionWorkspace(req.user.id, false, filters));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load offer comparisons.');
         }
@@ -55,11 +66,17 @@ router.get(
 router.get(
     '/archived',
     async (
-        req: Request<Record<string, never>, GetOfferDecisionsResponse>,
+        req: Request<Record<string, never>, GetOfferDecisionsResponse, Record<string, never>, GetOfferDecisionsQuery>,
         res: Response<GetOfferDecisionsResponse>
     ): Promise<void> => {
+        const filters = toOfferDecisionFilterQueryValues(req.query.filters, true);
+        if (filters === undefined) {
+            sendError(res, 422, 'Each offer comparison filter must be supported.');
+            return;
+        }
+
         try {
-            res.status(200).json(await getOfferDecisionWorkspace(req.user.id, true));
+            res.status(200).json(await getOfferDecisionWorkspace(req.user.id, true, filters));
         } catch (error: unknown) {
             handleRouteError(res, error, 'Unable to load archived offer comparisons.');
         }

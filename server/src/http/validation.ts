@@ -226,28 +226,43 @@ export const isOfferDecisionFilterArray = (value: unknown): value is OfferDecisi
 export const isArchivedOfferDecisionFilterArray = (value: unknown): value is ArchivedOfferDecisionFilter[] =>
     Array.isArray(value) && value.every(isArchivedOfferDecisionFilter) && new Set(value).size === value.length;
 
-export const toJobStatusQueryValues = (value: unknown): JobStatus[] | undefined => {
+const toSupportedQueryValues = <Value extends string>(
+    value: unknown,
+    supportedValues: readonly Value[]
+): Value[] | undefined => {
     if (value === undefined) {
-        return [...JOB_STATUSES];
+        return [...supportedValues];
     }
 
-    const requestedStatuses = Array.isArray(value) ? value : [value];
-    if (requestedStatuses.length === 1 && requestedStatuses[0] === '') {
-        return [...JOB_STATUSES];
+    const requestedValues = Array.isArray(value) ? value : [value];
+    if (requestedValues.length === 1 && requestedValues[0] === '') {
+        return [...supportedValues];
     }
 
-    const jobStatuses: JobStatus[] = [];
-    for (const requestedStatus of requestedStatuses) {
-        if (!isJobStatus(requestedStatus)) {
+    const values: Value[] = [];
+    for (const requestedValue of requestedValues) {
+        if (typeof requestedValue !== 'string' || !supportedValues.includes(requestedValue as Value)) {
             return undefined;
         }
-        if (!jobStatuses.includes(requestedStatus)) {
-            jobStatuses.push(requestedStatus);
+        if (!values.includes(requestedValue as Value)) {
+            values.push(requestedValue as Value);
         }
     }
 
-    return jobStatuses;
+    return values;
 };
+
+export const toJobStatusQueryValues = (value: unknown): JobStatus[] | undefined =>
+    toSupportedQueryValues(value, JOB_STATUSES);
+
+export const toInterviewTimeFilterQueryValues = (value: unknown): InterviewTimeFilter[] | undefined =>
+    toSupportedQueryValues(value, INTERVIEW_TIME_FILTERS);
+
+export const toOfferDecisionFilterQueryValues = (
+    value: unknown,
+    isArchived: boolean
+): OfferDecisionFilter[] | ArchivedOfferDecisionFilter[] | undefined =>
+    toSupportedQueryValues(value, isArchived ? ARCHIVED_OFFER_DECISION_FILTERS : OFFER_DECISION_FILTERS);
 
 export const isOptionalBoolean = (value: unknown): value is boolean | undefined =>
     value === undefined || typeof value === 'boolean';

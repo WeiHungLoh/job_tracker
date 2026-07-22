@@ -27,6 +27,8 @@ const validDetails = {
 };
 
 const validRequest = { ratings: validValues, details: validDetails };
+const activeFilters = ['Offers to Evaluate', 'Evaluated Offers', 'Expired Evaluated Offers', 'Previous Evaluations'];
+const archivedFilters = ['Evaluated Offers', 'Expired Evaluated Offers', 'Previous Evaluations'];
 
 const withMockedPoolQuery = async (query, operation) => {
     const originalQuery = pool.query;
@@ -187,16 +189,22 @@ test('loads the active workspace in one user-scoped query and maps optional eval
                 ],
             };
         },
-        () => offerDecisionQueries.getOfferDecisionWorkspace(7, false)
+        () => offerDecisionQueries.getOfferDecisionWorkspace(7, false, activeFilters)
     );
 
     assert.equal(calls.length, 1);
-    assert.deepEqual(calls[0].values, [7, false]);
+    assert.deepEqual(calls[0].values, [7, false, activeFilters]);
     assert.match(calls[0].sql, /applications\.application_date/);
     assert.match(calls[0].sql, /evaluations\.user_id = applications\.user_id/);
     assert.match(calls[0].sql, /applications\.user_id = \$1/);
     assert.match(calls[0].sql, /applications\.is_archived = \$2/);
     assert.match(calls[0].sql, /applications\.job_status = 'Offer'/);
+    assert.match(calls[0].sql, /'Offers to Evaluate' = ANY\(\$3::text\[\]\)/);
+    assert.match(calls[0].sql, /'Evaluated Offers' = ANY\(\$3::text\[\]\)/);
+    assert.match(calls[0].sql, /'Expired Evaluated Offers' = ANY\(\$3::text\[\]\)/);
+    assert.match(calls[0].sql, /'Previous Evaluations' = ANY\(\$3::text\[\]\)/);
+    assert.match(calls[0].sql, /evaluations\.decision_deadline IS NULL\s+OR evaluations\.decision_deadline >= NOW\(\)/);
+    assert.match(calls[0].sql, /evaluations\.decision_deadline < NOW\(\)/);
     assert.doesNotMatch(calls[0].sql, /latest_importance|importance|equity|\bbase_salary\b/);
     assert.deepEqual(workspace, {
         applications: [
@@ -237,10 +245,10 @@ test('loads only saved archived evaluations and returns an empty application lis
             calls.push({ sql: compactSQL(sql), values });
             return { rows: [] };
         },
-        () => offerDecisionQueries.getOfferDecisionWorkspace(8, true)
+        () => offerDecisionQueries.getOfferDecisionWorkspace(8, true, archivedFilters)
     );
 
-    assert.deepEqual(calls[0].values, [8, true]);
+    assert.deepEqual(calls[0].values, [8, true, archivedFilters]);
     assert.match(calls[0].sql, /\(\$2 = true AND evaluations\.job_id IS NOT NULL\)/);
     assert.deepEqual(workspace, { applications: [] });
 });
@@ -361,8 +369,8 @@ test('routes active and archived workspace reads through their matching query mo
         async () => {
             const activeResponse = createResponse();
             const archivedResponse = createResponse();
-            await activeHandler({ user: { id: 7 } }, activeResponse);
-            await archivedHandler({ user: { id: 7 } }, archivedResponse);
+            await activeHandler({ query: {}, user: { id: 7 } }, activeResponse);
+            await archivedHandler({ query: {}, user: { id: 7 } }, archivedResponse);
 
             assert.equal(activeResponse.statusCode, 200);
             assert.deepEqual(activeResponse.body, { applications: [] });
@@ -372,9 +380,24 @@ test('routes active and archived workspace reads through their matching query mo
     );
 
     assert.deepEqual(calls, [
-        [7, false],
-        [7, true],
+        [7, false, activeFilters],
+        [7, true, archivedFilters],
     ]);
+});
+
+test('rejects unsupported and archive-incompatible offer GET filters', async () => {
+    const activeHandler = getRouteHandler('get', '/');
+    const archivedHandler = getRouteHandler('get', '/archived');
+
+    const activeResponse = createResponse();
+    await activeHandler({ query: { filters: 'Unknown' }, user: { id: 7 } }, activeResponse);
+    assert.equal(activeResponse.statusCode, 422);
+    assert.deepEqual(activeResponse.body, { message: 'Each offer comparison filter must be supported.' });
+
+    const archivedResponse = createResponse();
+    await archivedHandler({ query: { filters: 'Offers to Evaluate' }, user: { id: 7 } }, archivedResponse);
+    assert.equal(archivedResponse.statusCode, 422);
+    assert.deepEqual(archivedResponse.body, { message: 'Each offer comparison filter must be supported.' });
 });
 
 test('rejects malformed per-offer saves before database access', async () => {
