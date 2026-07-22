@@ -212,6 +212,25 @@ describe('demo page interactions', () => {
         fetchSpy.mockRestore();
     });
 
+    test('tests offer decision robustness in active demo without fetching and omits it from archived demo', () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        const { unmount } = renderDemo(<DemoOfferDecisionPage archived={false} />, [routes.demoOfferDecisions]);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Try priorities' }));
+        fireEvent.change(screen.getByLabelText('Career Growth importance'), {
+            target: { value: '5' },
+        });
+
+        expect(screen.getByRole('list', { name: 'Offer results' })).toBeInTheDocument();
+        expect(fetchSpy).not.toHaveBeenCalled();
+
+        unmount();
+        renderDemo(<DemoOfferDecisionPage archived />, [routes.demoArchivedOfferDecisions]);
+
+        expect(screen.queryByRole('button', { name: 'Try priorities' })).not.toBeInTheDocument();
+        fetchSpy.mockRestore();
+    });
+
     test('shows a success toast only when an offer evaluation is first added', async () => {
         mockConfirm.mockResolvedValueOnce({ confirmed: true });
         renderDemo(<DemoOfferDecisionPage archived={false} />, [routes.demoOfferDecisions]);

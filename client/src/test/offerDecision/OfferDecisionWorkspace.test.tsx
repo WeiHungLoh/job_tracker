@@ -72,6 +72,37 @@ const activeData: OfferDecisionWorkspaceData = {
     ],
 };
 
+const robustnessData: OfferDecisionWorkspaceData = {
+    applications: [
+        {
+            ...activeData.applications[0],
+            evaluation: createEvaluation(
+                11,
+                {
+                    career_growth: 5,
+                    company_culture_fit: 4,
+                    work_life_balance: 3,
+                    compensation: 4,
+                },
+                '2099-08-15T10:00:00.000Z'
+            ),
+        },
+        {
+            ...activeData.applications[1],
+            evaluation: createEvaluation(
+                12,
+                {
+                    career_growth: 3,
+                    company_culture_fit: 3,
+                    work_life_balance: 5,
+                    compensation: 5,
+                },
+                '2099-08-20T10:00:00.000Z'
+            ),
+        },
+    ],
+};
+
 type HarnessProps = {
     initialData?: OfferDecisionWorkspaceData;
     onSave?: (jobId: number, request: SaveOfferEvaluationRequest) => Promise<void>;
@@ -130,6 +161,89 @@ describe('OfferDecisionWorkspace', () => {
         expect(
             within(evaluatedSection as HTMLElement).getByRole('article', { name: 'Acme Software Engineer' })
         ).toBeInTheDocument();
+    });
+
+    test('shows decision robustness only for two active current evaluated offers', () => {
+        const { rerender } = render(
+            <OfferDecisionWorkspace data={robustnessData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />
+        );
+
+        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated Offers' }).closest('section');
+        const prioritiesButton = screen.getByRole('button', { name: 'Try priorities' });
+        expect(evaluatedSection).not.toBeNull();
+        expect(within(evaluatedSection as HTMLElement).getByRole('button', { name: 'Try priorities' })).toBe(
+            prioritiesButton
+        );
+
+        rerender(<OfferDecisionWorkspace data={robustnessData} onDelete={vi.fn()} readOnly />);
+
+        expect(screen.queryByRole('button', { name: 'Try priorities' })).not.toBeInTheDocument();
+    });
+
+    test('hides decision robustness when fewer than two current evaluations remain eligible', () => {
+        const secondEvaluation = robustnessData.applications[1].evaluation;
+        if (!secondEvaluation) {
+            throw new Error('Robustness fixture requires a saved second evaluation.');
+        }
+        const expiredSecondOffer: OfferDecisionWorkspaceData = {
+            applications: [
+                robustnessData.applications[0],
+                {
+                    ...robustnessData.applications[1],
+                    evaluation: createEvaluation(12, secondEvaluation.ratings, '2000-01-01T10:00:00.000Z'),
+                },
+            ],
+        };
+
+        render(
+            <OfferDecisionWorkspace data={expiredSecondOffer} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />
+        );
+
+        expect(screen.queryByRole('button', { name: 'Try priorities' })).not.toBeInTheDocument();
+    });
+
+    test('hides decision robustness when Evaluated Offers is filtered out', () => {
+        render(<OfferDecisionWorkspace data={robustnessData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />, {
+            initialPreferences: { offer_decision_filters: ['Previous Evaluations'] },
+        });
+
+        expect(screen.queryByRole('button', { name: 'Try priorities' })).not.toBeInTheDocument();
+    });
+
+    test('disables decision priorities while an evaluation draft is open and restores them on cancel', () => {
+        render(<OfferDecisionWorkspace data={robustnessData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Try priorities' }));
+        expect(screen.getByLabelText('Career Growth importance')).toBeEnabled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Edit evaluation for Acme' }));
+        expect(screen.getByLabelText('Career Growth importance')).toBeDisabled();
+        expect(
+            screen.getByText('Save or cancel the open evaluation before trying different priorities.')
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel evaluation for Acme' }));
+        expect(screen.getByLabelText('Career Growth importance')).toBeEnabled();
+    });
+
+    test('keeps saved fit ratings and deadline-first card order unchanged while testing priorities', () => {
+        render(<OfferDecisionWorkspace data={robustnessData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />);
+
+        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated Offers' }).closest('section');
+        const getCardNames = () =>
+            within(evaluatedSection as HTMLElement)
+                .getAllByRole('article')
+                .map((article) => article.getAttribute('aria-label'));
+        const acmeFitRating = screen.getByRole('progressbar', { name: 'Acme offer fit rating' });
+
+        expect(getCardNames()).toEqual(['Acme Software Engineer', 'Beta Labs Platform Developer']);
+        expect(acmeFitRating).toHaveAttribute('value', '80');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Try priorities' }));
+        fireEvent.change(screen.getByLabelText('Career Growth importance'), { target: { value: '5' } });
+
+        expect(getCardNames()).toEqual(['Acme Software Engineer', 'Beta Labs Platform Developer']);
+        expect(acmeFitRating).toHaveAttribute('value', '80');
     });
 
     test('adds one SGD draft, saves it per application, moves it and relocks it', async () => {

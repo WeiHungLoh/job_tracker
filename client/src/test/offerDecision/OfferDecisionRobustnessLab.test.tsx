@@ -1,0 +1,122 @@
+import { fireEvent, screen, within } from '@testing-library/react';
+import OfferDecisionRobustnessLab from '../../pages/offerDecision/robustness/OfferDecisionRobustnessLab';
+import type { EvaluatedOfferDecisionApplication } from '../../pages/offerDecision/robustness/offerDecisionRobustnessCalculations';
+import { render } from '../renderWithProviders';
+
+const applications: EvaluatedOfferDecisionApplication[] = [
+    {
+        job_id: 1,
+        company_name: 'Acme',
+        job_title: 'Software Engineer',
+        job_status: 'Offer',
+        application_date: '2026-07-01T08:00:00.000Z',
+        evaluation: {
+            job_id: 1,
+            ratings: {
+                career_growth: 5,
+                company_culture_fit: 4,
+                work_life_balance: 3,
+                compensation: 3,
+            },
+            details: {
+                currency: 'SGD',
+                monthly_base_salary: 10000,
+                bonus: '',
+                annual_leave_days: 20,
+                work_arrangement: 'Hybrid',
+                decision_deadline: '2026-08-15T10:00:00.000Z',
+                pros: '',
+                concerns: '',
+            },
+            updated_at: '2026-07-18T08:00:00.000Z',
+        },
+    },
+    {
+        job_id: 2,
+        company_name: 'Beta Labs',
+        job_title: 'Platform Developer',
+        job_status: 'Offer',
+        application_date: '2026-07-02T08:00:00.000Z',
+        evaluation: {
+            job_id: 2,
+            ratings: {
+                career_growth: 3,
+                company_culture_fit: 3,
+                work_life_balance: 5,
+                compensation: 5,
+            },
+            details: {
+                currency: 'SGD',
+                monthly_base_salary: 10500,
+                bonus: '',
+                annual_leave_days: 24,
+                work_arrangement: 'Remote',
+                decision_deadline: '2026-08-20T10:00:00.000Z',
+                pros: '',
+                concerns: '',
+            },
+            updated_at: '2026-07-18T09:00:00.000Z',
+        },
+    },
+];
+
+describe('OfferDecisionRobustnessLab', () => {
+    test('opens with balanced importance and explains the result in plain language', () => {
+        render(<OfferDecisionRobustnessLab applications={applications} disabled={false} />);
+
+        const openButton = screen.getByRole('button', { name: 'Try priorities' });
+        expect(openButton).toHaveAttribute('aria-expanded', 'false');
+        fireEvent.click(openButton);
+
+        expect(openButton).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByText('This uses your saved ratings for a quick comparison. Nothing here is saved.')).toBeInTheDocument();
+        expect(screen.getByLabelText('Career Growth importance')).toHaveValue('3');
+        expect(screen.getByLabelText('Company/Culture Fit importance')).toHaveValue('3');
+        expect(screen.getByLabelText('Work-Life Balance importance')).toHaveValue('3');
+        expect(screen.getByLabelText('Compensation importance')).toHaveValue('3');
+
+        const ranking = screen.getByRole('list', { name: 'Offer results' });
+        expect(within(ranking).getAllByRole('listitem')[0]).toHaveTextContent('Beta Labs');
+        expect(screen.getByText(/Beta Labs Platform Developer is your top match/i)).toBeInTheDocument();
+        expect(screen.queryByText(/81|scenario|outright|tested mixes|probability|certainty/i)).not.toBeInTheDocument();
+    });
+
+    test('updates the ranking, resets to balanced and discards state on close', () => {
+        render(<OfferDecisionRobustnessLab applications={applications} disabled={false} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Try priorities' }));
+
+        const growthInput = screen.getByLabelText('Career Growth importance');
+        fireEvent.change(growthInput, { target: { value: '5' } });
+
+        expect(
+            screen.getByText(/Acme Software Engineer is your top match/i)
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Reset importance to balanced' }));
+        expect(growthInput).toHaveValue('3');
+        expect(
+            screen.getByText(/Beta Labs Platform Developer is your top match/i)
+        ).toBeInTheDocument();
+
+        fireEvent.change(growthInput, { target: { value: '5' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Try priorities' }));
+        expect(screen.getByLabelText('Career Growth importance')).toHaveValue('3');
+    });
+
+    test('explains and disables temporary controls while an evaluation draft is open', () => {
+        render(<OfferDecisionRobustnessLab applications={applications} disabled />);
+        const openButton = screen.getByRole('button', { name: 'Try priorities' });
+
+        expect(openButton).toBeDisabled();
+        expect(
+            screen.getByText('Save or cancel the open evaluation before trying different priorities.')
+        ).toBeInTheDocument();
+    });
+
+    test('renders nothing with fewer than two evaluated offers', () => {
+        render(<OfferDecisionRobustnessLab applications={[applications[0]]} disabled={false} />);
+
+        expect(screen.queryByText('Try different priorities')).not.toBeInTheDocument();
+    });
+});

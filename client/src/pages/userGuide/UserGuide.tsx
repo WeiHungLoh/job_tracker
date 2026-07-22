@@ -184,6 +184,18 @@ const guideSections: readonly UserGuideSection[] = [
                     expired offers are sorted by deadline, then fit rating and name. Expired offers remain available to
                     review, edit or delete when their applications still have Offer status.
                 </p>
+                <h3>Try different priorities</h3>
+                <p>
+                    When at least two active, non-expired offers have saved evaluations, select{' '}
+                    <code>Try priorities</code> in Evaluated offers. Change how important career growth, company and
+                    culture fit, work-life balance, and compensation are. The results show your top match and whether a
+                    small priority change could change it.
+                </p>
+                <p>
+                    This uses saved ratings only. Your changes and results are not saved, do not change an offer&apos;s
+                    fit rating, and reset when you close the tool. It is not available for expired, previous or
+                    archived evaluations.
+                </p>
                 <h3>Status changes, deletion and archive</h3>
                 <p>
                     While a saved evaluation exists, its application can only remain at Offer or move to Accepted or

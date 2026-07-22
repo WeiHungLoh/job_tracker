@@ -33,6 +33,8 @@ import { createOfferDecisionEmptyState } from './offerDecisionEmptyState';
 import OfferDecisionSkeleton from './OfferDecisionSkeleton';
 import OfferEvaluationCard from './OfferEvaluationCard';
 import { type OfferFieldRefs } from './OfferEvaluationForm';
+import OfferDecisionRobustnessLab from './robustness/OfferDecisionRobustnessLab';
+import { isEvaluatedOfferDecisionApplication } from './robustness/offerDecisionRobustnessCalculations';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { routes } from '../../routes';
 import { useToast } from '../../components/toast/ToastProvider';
@@ -44,6 +46,7 @@ type EvaluationErrors = Record<number, OfferEvaluationFormErrors>;
 
 type ComparisonSectionProps = {
     applications: OfferDecisionApplication[];
+    contentBeforeGrid?: ReactNode;
     description: string;
     heading: string;
     id: string;
@@ -78,13 +81,21 @@ const EvaluationGrid = ({ children, count }: { children: ReactNode; count: numbe
     </div>
 );
 
-const ComparisonSection = ({ applications, description, heading, id, renderCard }: ComparisonSectionProps) =>
+const ComparisonSection = ({
+    applications,
+    contentBeforeGrid,
+    description,
+    heading,
+    id,
+    renderCard,
+}: ComparisonSectionProps) =>
     applications.length > 0 ? (
         <section aria-labelledby={id} className={styles.comparisonSection}>
             <div className={styles.sectionHeading}>
                 <h2 id={id}>{heading}</h2>
                 <p>{description}</p>
             </div>
+            {contentBeforeGrid}
             <EvaluationGrid count={applications.length}>{applications.map(renderCard)}</EvaluationGrid>
         </section>
     ) : null;
@@ -119,6 +130,8 @@ const OfferDecisionWorkspace = ({
     const evaluatedOffers = groups['Evaluated Offers'];
     const expiredEvaluatedOffers = groups['Expired Evaluated Offers'];
     const previousEvaluations = groups['Previous Evaluations'];
+    const robustnessOffers = evaluatedOffers.filter(isEvaluatedOfferDecisionApplication);
+    const hasOpenEvaluationDraft = Object.keys(drafts).length > 0;
     const hasApplications = data.applications.length > 0;
     const displayedApplicationCount = selectedFilters.reduce((count, filter) => count + groups[filter].length, 0);
     const displayedEvaluationCount = selectedFilters.reduce(
@@ -420,6 +433,14 @@ const OfferDecisionWorkspace = ({
                     {selectedFilters.includes('Evaluated Offers') && (
                         <ComparisonSection
                             applications={evaluatedOffers}
+                            contentBeforeGrid={
+                                robustnessOffers.length >= 2 ? (
+                                    <OfferDecisionRobustnessLab
+                                        applications={robustnessOffers}
+                                        disabled={hasOpenEvaluationDraft}
+                                    />
+                                ) : undefined
+                            }
                             description='Sorted by the nearest decision deadline, then fit rating.'
                             heading='Evaluated Offers'
                             id='evaluated-offers-heading'

@@ -1,0 +1,192 @@
+.lab {
+    margin-bottom: var(--spaceSection);
+    padding: var(--spaceCard);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+    color: var(--colorText);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spaceSection);
+}
+
+.header h3,
+.header p,
+.results h4,
+.summary p,
+.ranking p,
+.temporaryNote,
+.disabledMessage,
+.explanation p {
+    margin: 0;
+}
+
+.header h3 {
+    font-size: 1.1rem;
+}
+
+.header p,
+.temporaryNote,
+.disabledMessage,
+.ranking p,
+.explanation p {
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeControl);
+    line-height: 1.5;
+}
+
+.header p {
+    margin-top: 4px;
+}
+
+.disabledMessage {
+    margin-top: var(--spaceCompact);
+}
+
+.content {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--spaceSection);
+    margin-top: var(--spaceCard);
+    padding-top: var(--spaceCard);
+    border-top: 1px solid var(--colorCardBorder);
+}
+
+.controls,
+.results {
+    min-width: 0;
+}
+
+.importanceFields {
+    display: grid;
+    gap: var(--spaceCompact);
+    margin: var(--spaceCard) 0;
+    padding: 0;
+    border: 0;
+}
+
+.importanceFields legend {
+    padding: 0;
+    color: var(--colorText);
+    font-size: var(--fontSizeControl);
+    font-weight: 700;
+}
+
+.importanceField {
+    display: grid;
+    gap: 6px;
+}
+
+.importanceHeader,
+.rankingHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spaceControl);
+}
+
+.importanceHeader {
+    font-size: var(--fontSizeControl);
+}
+
+.importanceHeader output,
+.rankingHeader > strong {
+    color: var(--colorPrimary);
+}
+
+.importanceField input {
+    width: 100%;
+    accent-color: var(--colorPrimary);
+}
+
+.importanceField input:focus-visible {
+    outline: 3px solid var(--colorPrimaryFocusShadow);
+    outline-offset: 2px;
+}
+
+.results h4 {
+    font-size: 1.1rem;
+}
+
+.ranking {
+    display: grid;
+    gap: var(--spaceCompact);
+    margin: var(--spaceCompact) 0 0;
+    padding-left: 24px;
+}
+
+.ranking li {
+    padding: var(--spaceCompact);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorCardBg);
+}
+
+.rankingHeader > span {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.rankingHeader span,
+.rankingHeader strong {
+    overflow-wrap: anywhere;
+}
+
+.ranking p {
+    margin-top: 6px;
+}
+
+.summary {
+    display: grid;
+    gap: 6px;
+    margin-top: var(--spaceCard);
+}
+
+.summary p:first-child {
+    font-weight: 700;
+}
+
+.explanation {
+    margin-top: var(--spaceCard);
+    color: var(--colorText);
+    font-size: var(--fontSizeControl);
+}
+
+.explanation summary {
+    width: fit-content;
+    cursor: pointer;
+    color: var(--colorPrimary);
+    font-weight: 700;
+}
+
+.explanation summary:focus-visible {
+    outline: 2px solid var(--colorPrimaryFocusOutline);
+    outline-offset: 3px;
+}
+
+.explanation p {
+    margin-top: var(--spaceCompact);
+}
+
+@media (max-width: 768px) {
+    .header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .rankingHeader {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

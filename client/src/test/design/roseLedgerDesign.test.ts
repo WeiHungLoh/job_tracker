@@ -238,12 +238,22 @@ describe('Rose Ledger visual contract', () => {
         const offerDecisionWorkspaceCss = readSource('src/pages/offerDecision/OfferDecisionWorkspace.module.css');
         const offerEvaluationCss = readSource('src/pages/offerDecision/OfferEvaluation.module.css');
         const offerDecisionSkeletonCss = readSource('src/pages/offerDecision/OfferDecisionSkeleton.module.css');
+        const robustnessCss = readSource('src/pages/offerDecision/robustness/OfferDecisionRobustnessLab.module.css');
         const activityControlsCss = readSource('src/components/activityControls/ActivityControls.module.css');
 
         expect(offerDecisionWorkspaceCss).not.toContain('linear-gradient');
         expect(offerDecisionWorkspaceCss).not.toContain('box-shadow');
         expect(offerEvaluationCss).not.toContain('linear-gradient');
         expect(offerEvaluationCss).not.toContain('box-shadow');
+        expect(robustnessCss).not.toContain('linear-gradient');
+        expect(robustnessCss).not.toContain('box-shadow');
+        expect(robustnessCss).toContain('background-color: var(--colorControlMutedSurface);');
+        expect(robustnessCss).toContain('border: 1px solid var(--colorCardBorder);');
+        expect(robustnessCss).toContain('accent-color: var(--colorPrimary);');
+        expect(robustnessCss).toContain('@media (max-width: 768px)');
+        expect(robustnessCss).toMatch(
+            /@media \(max-width: 768px\)[\s\S]*?\.content\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s
+        );
         expect(activityControlsCss).toMatch(/\.controls\s*\{[^}]*margin:\s*20px 0;/s);
         expect(offerDecisionWorkspaceCss).toMatch(/\.workspace\s*\{[^}]*padding:\s*0 32px 32px;/s);
         expect(offerDecisionWorkspaceCss).toMatch(

@@ -1,7 +1,7 @@
 import SkeletonCard from '../skeletonCard/SkeletonCard';
 import styles from './SkeletonInterviewBoard.module.css';
 
-const SKELETON_INTERVIEW_COUNT = 6;
+const SKELETON_INTERVIEW_COUNT = 4;
 
 const SkeletonInterviewBoard = () => (
     <div aria-busy='true' aria-label='Loading interviews' className={styles.board} role='status'>

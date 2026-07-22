@@ -62,6 +62,10 @@ describe('renders user guide properly', () => {
         expect(
             screen.getByText(/review, edit or delete when their applications still have offer status/i)
         ).toBeVisible();
+        expect(screen.getByText(/when at least two active, non-expired offers have saved evaluations/i)).toBeVisible();
+        expect(screen.getByText(/results show your top match/i)).toBeVisible();
+        expect(screen.getByText(/your changes and results are not saved/i)).toBeVisible();
+        expect(screen.getByText(/not available for expired, previous or archived evaluations/i)).toBeVisible();
         expect(screen.getByText(/while a saved evaluation exists/i)).toBeVisible();
         expect(screen.getByText(/deleting the evaluation removes only that evaluation/i)).toBeVisible();
         expect(screen.getByText(/archived evaluations are read-only/i)).toBeVisible();
