@@ -184,7 +184,7 @@ describe('demo page interactions', () => {
         const fetchSpy = vi.spyOn(globalThis, 'fetch');
         renderDemo(<DemoOfferDecisionPage archived={false} />, [routes.demoOfferDecisions]);
 
-        expect(screen.getByRole('heading', { name: 'Evaluated offers' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Evaluated Offers' })).toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Edit evaluation for Greenhouse CloudOps' }));
         expect(screen.getByLabelText('Greenhouse CloudOps Company/Culture Fit rating')).toHaveValue('5');
         fireEvent.change(screen.getByLabelText('Greenhouse CloudOps Company/Culture Fit rating'), {
@@ -233,7 +233,7 @@ describe('demo page interactions', () => {
     test('renders archived demo offer comparisons as review-only snapshots', () => {
         renderDemo(<DemoOfferDecisionPage archived />, [routes.demoArchivedOfferDecisions]);
 
-        expect(screen.getByRole('heading', { name: 'Archived expired evaluated offers' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Archived Expired Evaluated Offers' })).toBeInTheDocument();
         expect(screen.getByText('Keppel Digital')).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /edit evaluation/i })).not.toBeInTheDocument();

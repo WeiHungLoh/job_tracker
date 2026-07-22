@@ -49,6 +49,19 @@ export type OfferDecisionWorkspaceData = {
     applications: OfferDecisionApplication[];
 };
 
+export const OFFER_DECISION_FILTER_CONFIG = {
+    'Offers to Evaluate': { availableWhenArchived: false, exportable: false },
+    'Evaluated Offers': { availableWhenArchived: true, exportable: true },
+    'Expired Evaluated Offers': { availableWhenArchived: true, exportable: true },
+    'Previous Evaluations': { availableWhenArchived: true, exportable: true },
+} as const;
+
+export type OfferDecisionFilter = keyof typeof OFFER_DECISION_FILTER_CONFIG;
+
+export type ArchivedOfferDecisionFilter = Exclude<OfferDecisionFilter, 'Offers to Evaluate'>;
+
+export type OfferDecisionGroups = Record<OfferDecisionFilter, OfferDecisionApplication[]>;
+
 export type SaveOfferEvaluationRequest = {
     ratings: OfferDecisionValues;
     details: OfferDetails;
@@ -87,10 +100,15 @@ export type GetOfferDecisionsResponse = OfferDecisionWorkspaceData;
 export type SaveOfferEvaluationResponse = null;
 export type DeleteOfferEvaluationRequest = { jobId: number };
 export type DeleteOfferEvaluationResponse = null;
+export type DeleteAllOfferEvaluationsRequest = null;
+export type DeleteAllOfferEvaluationsResponse = null;
 
 export type OfferDecisionWorkspaceProps = {
+    applicationsRoute?: string;
     data: OfferDecisionWorkspaceData;
+    isLoading?: boolean;
     onDelete?: (jobId: number) => Promise<void>;
+    onDeleteAll?: () => Promise<void>;
     onSave?: (jobId: number, request: SaveOfferEvaluationRequest) => Promise<void>;
     readOnly: boolean;
 };

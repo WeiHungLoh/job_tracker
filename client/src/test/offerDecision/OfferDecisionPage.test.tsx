@@ -1,11 +1,14 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { JobTrackerAPIError } from '../../api/models';
 import OfferDecisionPage from '../../pages/offerDecision/OfferDecisionPage';
 import type { OfferDecisionWorkspaceData, OfferEvaluation } from '../../pages/offerDecision/models';
 import { parseDatetimeLocal } from '../../helper/dateFormatter';
+import { render } from '../renderWithToast';
 
 const mocks = vi.hoisted(() => ({
     confirm: vi.fn(),
+    deleteAllActiveEvaluations: vi.fn(),
+    deleteAllArchivedEvaluations: vi.fn(),
     deleteEvaluation: vi.fn(),
     getActive: vi.fn(),
     getArchived: vi.fn(),
@@ -19,6 +22,8 @@ vi.mock('material-ui-confirm', () => ({ useConfirm: () => mocks.confirm }));
 vi.mock('../../api/useJobTrackerAPI', () => ({
     useJobTrackerAPI: () => ({
         offerDecision: {
+            deleteAllActiveEvaluations: mocks.deleteAllActiveEvaluations,
+            deleteAllArchivedEvaluations: mocks.deleteAllArchivedEvaluations,
             deleteEvaluation: mocks.deleteEvaluation,
             getActive: mocks.getActive,
             getArchived: mocks.getArchived,
@@ -27,7 +32,8 @@ vi.mock('../../api/useJobTrackerAPI', () => ({
     }),
 }));
 
-vi.mock('../../components/toast/ToastProvider', () => ({
+vi.mock('../../components/toast/ToastProvider', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('../../components/toast/ToastProvider')>()),
     useToast: () => ({
         showErrorToast: mocks.showErrorToast,
         showSuccessToast: mocks.showSuccessToast,
@@ -88,12 +94,14 @@ const workspaceData: OfferDecisionWorkspaceData = {
     ],
 };
 
-const waitForActiveWorkspace = () => screen.findByRole('heading', { name: 'Evaluated offers' });
+const waitForActiveWorkspace = () => screen.findByRole('heading', { name: 'Evaluated Offers' });
 
 describe('OfferDecisionPage', () => {
     beforeEach(() => {
         Object.values(mocks).forEach((mock) => mock.mockReset());
         mocks.confirm.mockResolvedValue({ confirmed: true });
+        mocks.deleteAllActiveEvaluations.mockResolvedValue(null);
+        mocks.deleteAllArchivedEvaluations.mockResolvedValue(null);
         mocks.deleteEvaluation.mockResolvedValue(null);
         mocks.getActive.mockResolvedValue(workspaceData);
         mocks.getArchived.mockResolvedValue(workspaceData);
@@ -201,7 +209,7 @@ describe('OfferDecisionPage', () => {
 
     test('removes deleted previous history locally without deleting the application', async () => {
         render(<OfferDecisionPage archived={false} />);
-        await screen.findByRole('heading', { name: 'Previous evaluations' });
+        await screen.findByRole('heading', { name: 'Previous Evaluations' });
 
         fireEvent.click(screen.getByRole('button', { name: 'Delete evaluation for Past Co' }));
 
@@ -216,7 +224,7 @@ describe('OfferDecisionPage', () => {
     test('loads archived comparisons as read-only but keeps deletion available', async () => {
         render(<OfferDecisionPage archived />);
 
-        expect(await screen.findByRole('heading', { name: 'Archived evaluated offers' })).toBeInTheDocument();
+        expect(await screen.findByRole('heading', { name: 'Archived Evaluated Offers' })).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: 'Archived Offer Comparisons' })).not.toBeInTheDocument();
         expect(mocks.getArchived).toHaveBeenCalledOnce();
         expect(mocks.getActive).not.toHaveBeenCalled();
@@ -247,6 +255,51 @@ describe('OfferDecisionPage', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Delete evaluation for Acme' }));
 
         await waitFor(() => expect(mocks.showErrorToast).toHaveBeenCalledWith('Evaluation no longer exists.'));
+        expect(screen.getByRole('button', { name: 'Delete evaluation for Acme' })).toBeInTheDocument();
+        expect(mocks.showSuccessToast).not.toHaveBeenCalled();
+    });
+
+    test('deletes only active evaluations in bulk and keeps current offers', async () => {
+        render(<OfferDecisionPage archived={false} />);
+        await waitForActiveWorkspace();
+
+        fireEvent.click(screen.getByRole('button', { name: 'More...' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+
+        await waitFor(() => expect(mocks.deleteAllActiveEvaluations).toHaveBeenCalledOnce());
+        expect(mocks.deleteAllArchivedEvaluations).not.toHaveBeenCalled();
+        expect(await screen.findByRole('button', { name: 'Add evaluation for Acme' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Add evaluation for Beta Labs' })).toBeInTheDocument();
+        expect(screen.queryByRole('article', { name: 'Past Co Developer' })).not.toBeInTheDocument();
+        expect(mocks.showSuccessToast).toHaveBeenCalledWith('Active offer evaluations deleted.');
+        expect(mocks.getActive).toHaveBeenCalledOnce();
+    });
+
+    test('uses the archived bulk endpoint and clears archived evaluation snapshots', async () => {
+        render(<OfferDecisionPage archived />);
+        await screen.findByRole('heading', { name: 'Archived Evaluated Offers' });
+
+        fireEvent.click(screen.getByRole('button', { name: 'More...' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+
+        await waitFor(() => expect(mocks.deleteAllArchivedEvaluations).toHaveBeenCalledOnce());
+        expect(mocks.deleteAllActiveEvaluations).not.toHaveBeenCalled();
+        expect(await screen.findByRole('heading', { name: 'No archived offer comparisons' })).toBeInTheDocument();
+        expect(mocks.showSuccessToast).toHaveBeenCalledWith('Archived offer evaluations deleted.');
+        expect(mocks.getArchived).toHaveBeenCalledOnce();
+    });
+
+    test('shows the bulk deletion error and preserves evaluations', async () => {
+        mocks.deleteAllActiveEvaluations.mockRejectedValueOnce(
+            new JobTrackerAPIError('Unable to delete these evaluations.', 500)
+        );
+        render(<OfferDecisionPage archived={false} />);
+        await waitForActiveWorkspace();
+
+        fireEvent.click(screen.getByRole('button', { name: 'More...' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+
+        await waitFor(() => expect(mocks.showErrorToast).toHaveBeenCalledWith('Unable to delete these evaluations.'));
         expect(screen.getByRole('button', { name: 'Delete evaluation for Acme' })).toBeInTheDocument();
         expect(mocks.showSuccessToast).not.toHaveBeenCalled();
     });

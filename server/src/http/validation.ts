@@ -3,11 +3,15 @@ import {
     APPLICATION_LIST_SORT_ORDERS,
     JOB_STATUSES,
     INTERVIEW_TIME_FILTERS,
+    OFFER_DECISION_FILTERS,
+    ARCHIVED_OFFER_DECISION_FILTERS,
     type ApplicationBoardSortOrder,
     type ApplicationListSortOrder,
     type ApplicationViewMode,
     type JobStatus,
     type InterviewTimeFilter,
+    type OfferDecisionFilter,
+    type ArchivedOfferDecisionFilter,
     OFFER_WORK_ARRANGEMENTS,
     type OfferDetails,
     type OfferDecisionValues,
@@ -209,6 +213,18 @@ const isInterviewTimeFilter = (value: unknown): value is InterviewTimeFilter =>
 export const isInterviewTimeFilterArray = (value: unknown): value is InterviewTimeFilter[] => {
     return Array.isArray(value) && value.every(isInterviewTimeFilter) && new Set(value).size === value.length;
 };
+
+const isOfferDecisionFilter = (value: unknown): value is OfferDecisionFilter =>
+    typeof value === 'string' && OFFER_DECISION_FILTERS.includes(value as OfferDecisionFilter);
+
+const isArchivedOfferDecisionFilter = (value: unknown): value is ArchivedOfferDecisionFilter =>
+    typeof value === 'string' && ARCHIVED_OFFER_DECISION_FILTERS.includes(value as ArchivedOfferDecisionFilter);
+
+export const isOfferDecisionFilterArray = (value: unknown): value is OfferDecisionFilter[] =>
+    Array.isArray(value) && value.every(isOfferDecisionFilter) && new Set(value).size === value.length;
+
+export const isArchivedOfferDecisionFilterArray = (value: unknown): value is ArchivedOfferDecisionFilter[] =>
+    Array.isArray(value) && value.every(isArchivedOfferDecisionFilter) && new Set(value).size === value.length;
 
 export const toJobStatusQueryValues = (value: unknown): JobStatus[] | undefined => {
     if (value === undefined) {

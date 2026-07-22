@@ -4,6 +4,7 @@ import OfferDecisionWorkspace from '../../offerDecision/OfferDecisionWorkspace';
 import type { SaveOfferEvaluationRequest } from '../../offerDecision/models';
 import { selectArchivedOfferDecisionWorkspace, selectOfferDecisionWorkspace } from '../state/demoSelectors';
 import { useToast } from '../../../components/toast/ToastProvider';
+import { routes } from '../../../routes';
 
 type DemoOfferDecisionPageProps = {
     archived: boolean;
@@ -32,10 +33,17 @@ const DemoOfferDecisionPage = ({ archived }: DemoOfferDecisionPageProps) => {
         dispatch({ type: 'DELETE_OFFER_EVALUATION', payload: { jobId } });
     };
 
+    const deleteAllEvaluations = async () => {
+        dispatch({ type: 'DELETE_ALL_OFFER_EVALUATIONS', payload: { archived } });
+        showSuccessToast(archived ? 'Archived offer evaluations deleted.' : 'Active offer evaluations deleted.');
+    };
+
     return (
         <OfferDecisionWorkspace
+            applicationsRoute={archived ? routes.demoArchivedApplications : routes.demoViewApplications}
             data={data}
             onDelete={deleteEvaluation}
+            onDeleteAll={deleteAllEvaluations}
             onSave={archived ? undefined : saveEvaluation}
             readOnly={archived}
         />

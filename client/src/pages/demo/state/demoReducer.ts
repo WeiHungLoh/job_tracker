@@ -49,6 +49,7 @@ export type DemoAction =
     | { type: 'DELETE_ALL_ARCHIVED_INTERVIEWS' }
     | { type: 'SAVE_OFFER_EVALUATION'; payload: SaveOfferEvaluationPayload }
     | { type: 'DELETE_OFFER_EVALUATION'; payload: { jobId: number } }
+    | { type: 'DELETE_ALL_OFFER_EVALUATIONS'; payload: { archived: boolean } }
     | { type: 'UPDATE_PREFERENCES'; payload: UpdateUserPreferencesRequest }
     | { type: 'RESET_DEMO'; payload?: { now?: Date } };
 
@@ -369,6 +370,17 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
             return {
                 ...state,
                 offerEvaluations: removeOfferEvaluations(state.offerEvaluations, [action.payload.jobId]),
+            };
+
+        case 'DELETE_ALL_OFFER_EVALUATIONS':
+            return {
+                ...state,
+                offerEvaluations: removeOfferEvaluations(
+                    state.offerEvaluations,
+                    action.payload.archived
+                        ? state.archivedApplications.map((application) => application.archived_job_id)
+                        : state.applications.map((application) => application.job_id)
+                ),
             };
 
         case 'UPDATE_PREFERENCES':

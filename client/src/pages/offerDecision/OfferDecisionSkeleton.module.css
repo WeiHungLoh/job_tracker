@@ -1,0 +1,83 @@
+.skeletonCard {
+    min-width: 0;
+    min-height: 285px;
+    padding: var(--spaceCard);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: var(--radiusCard);
+    background-color: var(--colorCardBg);
+    box-sizing: border-box;
+}
+
+.header,
+.actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spaceCompact);
+}
+
+.headingLines {
+    display: grid;
+    width: min(68%, 230px);
+    gap: var(--spaceControl);
+}
+
+.line {
+    composes: skeletonLine from '../../components/skeletonLoader/skeletonCard/SkeletonCard.module.css';
+    display: block;
+    height: 14px;
+    border-radius: var(--radiusPill);
+}
+
+.title {
+    width: 78%;
+    height: 24px;
+}
+
+.subtitle {
+    width: 100%;
+}
+
+.badge {
+    width: 62px;
+    height: 22px;
+}
+
+.summary,
+.score {
+    display: grid;
+    gap: var(--spaceControl);
+    margin-top: var(--spaceCard);
+    padding: var(--spaceCompact);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+}
+
+.summary {
+    border: 1px solid var(--colorPrimary);
+}
+
+.label,
+.scoreLabel {
+    width: 42%;
+}
+
+.value {
+    width: 70%;
+}
+
+.progress {
+    width: 100%;
+    height: 8px;
+}
+
+.actions {
+    justify-content: flex-end;
+    margin-top: var(--spaceCard);
+}
+
+.button {
+    width: 96px;
+    height: 38px;
+    border-radius: var(--radiusControl);
+}

@@ -100,6 +100,19 @@ export const createDeleteAllInterviewsConfirmation = (
     );
 };
 
+export const createDeleteAllOfferEvaluationsConfirmation = (
+    evaluationCount: number,
+    state: ApplicationCollectionState
+): ConfirmOptions => {
+    const evaluationLabel = formatCountLabel(evaluationCount, `${state} offer evaluation`);
+
+    return bulkOptions(
+        'Confirm Delete All',
+        `Delete all ${evaluationLabel} you own? This removes only saved evaluations for ${state} applications. Applications and offers without evaluations are not deleted. ${PERMANENT_DELETION_WARNING}`,
+        'Delete All'
+    );
+};
+
 export const createBulkCalendarExportConfirmation = (interviewCount: number): ConfirmOptions => {
     const interviewLabel = formatCountLabel(interviewCount, 'upcoming interview');
 

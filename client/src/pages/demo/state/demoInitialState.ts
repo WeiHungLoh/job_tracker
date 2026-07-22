@@ -11,6 +11,10 @@ import type { JobStatus } from '../../application/models';
 import { daysAgo, daysFromNow, toDateString, weeksAgo } from './demoDateHelpers';
 import { DEFAULT_INTERVIEW_DURATION_MINUTES, INTERVIEW_TIME_FILTERS } from '../../../helper/interviewTiming';
 import type { OfferDecisionValues, OfferDetails, OfferEvaluation } from '../../offerDecision/models';
+import {
+    ACTIVE_OFFER_DECISION_FILTERS,
+    ARCHIVED_OFFER_DECISION_FILTERS,
+} from '../../offerDecision/offerDecisionConfig';
 
 const defaultDemoPreferences = {
     application_job_statuses: [...JOB_STATUSES],
@@ -29,6 +33,8 @@ const defaultDemoPreferences = {
     archived_interview_view_mode: 'list',
     interview_time_filters: [...INTERVIEW_TIME_FILTERS],
     archived_interview_time_filters: [...INTERVIEW_TIME_FILTERS],
+    offer_decision_filters: [...ACTIVE_OFFER_DECISION_FILTERS],
+    archived_offer_decision_filters: [...ARCHIVED_OFFER_DECISION_FILTERS],
 } as const;
 
 type ApplicationSeed = {
@@ -545,6 +551,8 @@ export const createDemoInitialState = (now = new Date()): DemoState => ({
         archived_application_job_statuses: [...defaultDemoPreferences.archived_application_job_statuses],
         interview_time_filters: [...defaultDemoPreferences.interview_time_filters],
         archived_interview_time_filters: [...defaultDemoPreferences.archived_interview_time_filters],
+        offer_decision_filters: [...defaultDemoPreferences.offer_decision_filters],
+        archived_offer_decision_filters: [...defaultDemoPreferences.archived_offer_decision_filters],
     },
     nextApplicationId: 121,
     nextInterviewId: 410,

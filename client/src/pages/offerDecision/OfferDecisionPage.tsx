@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import EmptyState from '../../components/emptyState/EmptyState';
-import LoadingSpinner from '../../components/loadingSpinner/LoadingSpinner';
 import OfferDecisionWorkspace from './OfferDecisionWorkspace';
 import type { OfferDecisionWorkspaceData, SaveOfferEvaluationRequest } from './models';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
-import styles from './OfferDecisionWorkspace.module.css';
+import { routes } from '../../routes';
 
 type OfferDecisionPageProps = {
     archived: boolean;
@@ -116,15 +115,44 @@ const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className={styles.loadingState}>
-                <LoadingSpinner title={archived ? 'Loading archived offer comparisons' : 'Loading offer comparisons'} />
-            </div>
-        );
-    }
+    const deleteAllEvaluations = async () => {
+        try {
+            if (archived) {
+                await api.offerDecision.deleteAllArchivedEvaluations();
+            } else {
+                await api.offerDecision.deleteAllActiveEvaluations();
+            }
+            setData((current) => {
+                if (!current) {
+                    return current;
+                }
 
-    if (loadFailed || !data) {
+                return {
+                    applications: archived
+                        ? []
+                        : current.applications.flatMap((application) => {
+                              if (!application.evaluation) {
+                                  return [application];
+                              }
+                              return application.job_status === 'Offer' ? [{ ...application, evaluation: null }] : [];
+                          }),
+                };
+            });
+            showSuccessToast(archived ? 'Archived offer evaluations deleted.' : 'Active offer evaluations deleted.');
+        } catch (error) {
+            showErrorToast(
+                getErrorToastMessage(
+                    error,
+                    archived
+                        ? 'Unable to delete archived offer evaluations. Please try again.'
+                        : 'Unable to delete active offer evaluations. Please try again.'
+                )
+            );
+            throw error;
+        }
+    };
+
+    if (!isLoading && (loadFailed || !data)) {
         return (
             <EmptyState
                 description='Your saved data is unchanged. Try loading the workspace again.'
@@ -137,8 +165,11 @@ const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
 
     return (
         <OfferDecisionWorkspace
-            data={data}
+            applicationsRoute={routes.viewApplications}
+            data={data ?? { applications: [] }}
+            isLoading={isLoading}
             onDelete={deleteEvaluation}
+            onDeleteAll={deleteAllEvaluations}
             onSave={archived ? undefined : saveEvaluation}
             readOnly={archived}
         />

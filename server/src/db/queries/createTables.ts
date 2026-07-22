@@ -6,6 +6,8 @@ import {
     DEFAULT_APPLICATION_LIST_SORT_ORDER,
     JOB_STATUSES,
     INTERVIEW_TIME_FILTERS,
+    OFFER_DECISION_FILTERS,
+    ARCHIVED_OFFER_DECISION_FILTERS,
 } from '../models.js';
 import {
     DEFAULT_INTERVIEW_DURATION_MINUTES,
@@ -22,6 +24,8 @@ const APPLICATION_LIST_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_LIST_
 const APPLICATION_BOARD_SORT_ORDER_SQL_VALUES = toSQLTextValues(APPLICATION_BOARD_SORT_ORDERS);
 const INTERVIEW_TIME_FILTER_SQL_VALUES = toSQLTextValues(INTERVIEW_TIME_FILTERS);
 const INTERVIEW_TIME_FILTER_SQL_ARRAY = `ARRAY[${INTERVIEW_TIME_FILTER_SQL_VALUES}]::TEXT[]`;
+const OFFER_DECISION_FILTER_SQL_ARRAY = `ARRAY[${toSQLTextValues(OFFER_DECISION_FILTERS)}]::TEXT[]`;
+const ARCHIVED_OFFER_DECISION_FILTER_SQL_ARRAY = `ARRAY[${toSQLTextValues(ARCHIVED_OFFER_DECISION_FILTERS)}]::TEXT[]`;
 
 const createTables = async (): Promise<void> => {
     const createUsersTable = `
@@ -106,7 +110,13 @@ const createTables = async (): Promise<void> => {
                 CHECK (interview_time_filters <@ ${INTERVIEW_TIME_FILTER_SQL_ARRAY}),
             archived_interview_time_filters TEXT[] NOT NULL DEFAULT ${INTERVIEW_TIME_FILTER_SQL_ARRAY}
                 CONSTRAINT user_preferences_archived_interview_time_filters_check
-                CHECK (archived_interview_time_filters <@ ${INTERVIEW_TIME_FILTER_SQL_ARRAY})
+                CHECK (archived_interview_time_filters <@ ${INTERVIEW_TIME_FILTER_SQL_ARRAY}),
+            offer_decision_filters TEXT[] NOT NULL DEFAULT ${OFFER_DECISION_FILTER_SQL_ARRAY}
+                CONSTRAINT user_preferences_offer_decision_filters_check
+                CHECK (offer_decision_filters <@ ${OFFER_DECISION_FILTER_SQL_ARRAY}),
+            archived_offer_decision_filters TEXT[] NOT NULL DEFAULT ${ARCHIVED_OFFER_DECISION_FILTER_SQL_ARRAY}
+                CONSTRAINT user_preferences_archived_offer_decision_filters_check
+                CHECK (archived_offer_decision_filters <@ ${ARCHIVED_OFFER_DECISION_FILTER_SQL_ARRAY})
         )`;
 
     const addInterviewViewModePreferences = `

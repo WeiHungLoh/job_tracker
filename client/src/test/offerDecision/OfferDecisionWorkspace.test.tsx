@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import OfferDecisionWorkspace from '../../pages/offerDecision/OfferDecisionWorkspace';
 import formatDate, { parseDatetimeLocal, toDatetimeLocalInputValue } from '../../helper/dateFormatter';
 import type {
@@ -7,6 +9,8 @@ import type {
     OfferEvaluation,
     SaveOfferEvaluationRequest,
 } from '../../pages/offerDecision/models';
+import type { UserPreferences } from '../../components/userPreferences/models';
+import { render, testPreferences } from '../renderWithToast';
 
 const mockConfirm = vi.hoisted(() => vi.fn());
 
@@ -110,14 +114,14 @@ describe('OfferDecisionWorkspace', () => {
     test('separates unevaluated, evaluated and previous offers without global importance or save controls', () => {
         render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />);
 
-        expect(screen.getByRole('heading', { name: 'Offers to evaluate' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Evaluated offers' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Previous evaluations' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Offers to Evaluate' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Evaluated Offers' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Previous Evaluations' })).toBeInTheDocument();
         expect(screen.queryByText('Set what matters')).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Save comparisons' })).not.toBeInTheDocument();
 
-        const unevaluatedSection = screen.getByRole('heading', { name: 'Offers to evaluate' }).closest('section');
-        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated offers' }).closest('section');
+        const unevaluatedSection = screen.getByRole('heading', { name: 'Offers to Evaluate' }).closest('section');
+        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated Offers' }).closest('section');
         expect(unevaluatedSection).not.toBeNull();
         expect(evaluatedSection).not.toBeNull();
         expect(
@@ -140,7 +144,7 @@ describe('OfferDecisionWorkspace', () => {
         expect(screen.getByRole('button', { name: 'Save evaluation for Beta Labs' })).toBeEnabled();
         expect(
             within(
-                screen.getByRole('heading', { name: 'Offers to evaluate' }).closest('section') as HTMLElement
+                screen.getByRole('heading', { name: 'Offers to Evaluate' }).closest('section') as HTMLElement
             ).getByRole('article', { name: 'Beta Labs Platform Developer' })
         ).toBeInTheDocument();
 
@@ -170,7 +174,7 @@ describe('OfferDecisionWorkspace', () => {
             },
         });
 
-        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated offers' }).closest('section');
+        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated Offers' }).closest('section');
         expect(
             await within(evaluatedSection as HTMLElement).findByRole('article', {
                 name: 'Beta Labs Platform Developer',
@@ -423,7 +427,7 @@ describe('OfferDecisionWorkspace', () => {
         const { rerender } = render(
             <OfferDecisionWorkspace data={{ applications }} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />
         );
-        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated offers' }).closest('section');
+        const evaluatedSection = screen.getByRole('heading', { name: 'Evaluated Offers' }).closest('section');
         expect(
             within(evaluatedSection as HTMLElement)
                 .getAllByRole('article')
@@ -479,7 +483,7 @@ describe('OfferDecisionWorkspace', () => {
                 readOnly
             />
         );
-        expect(screen.getByRole('heading', { name: 'Archived evaluated offers' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Archived Evaluated Offers' })).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: 'Archived Offer Comparisons' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /edit evaluation/i })).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: /delete evaluation/i })).toBeInTheDocument();
@@ -505,8 +509,8 @@ describe('OfferDecisionWorkspace', () => {
             />
         );
 
-        const expiredSection = screen.getByRole('heading', { name: 'Expired evaluated offers' }).closest('section');
-        const previousSection = screen.getByRole('heading', { name: 'Previous evaluations' }).closest('section');
+        const expiredSection = screen.getByRole('heading', { name: 'Expired Evaluated Offers' }).closest('section');
+        const previousSection = screen.getByRole('heading', { name: 'Previous Evaluations' }).closest('section');
         expect(expiredSection).not.toBeNull();
         expect(previousSection).not.toBeNull();
         expect(within(expiredSection as HTMLElement).getByText('Expired')).toBeInTheDocument();
@@ -532,8 +536,8 @@ describe('OfferDecisionWorkspace', () => {
             />
         );
 
-        expect(screen.getByRole('heading', { name: 'Archived expired evaluated offers' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Archived previous evaluations' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Archived Expired Evaluated Offers' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Archived Previous Evaluations' })).toBeInTheDocument();
         expect(screen.queryByRole('heading', { name: /offers to evaluate/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /edit evaluation/i })).not.toBeInTheDocument();
         expect(screen.getAllByRole('button', { name: /delete evaluation/i })).toHaveLength(2);
@@ -554,5 +558,392 @@ describe('OfferDecisionWorkspace', () => {
             .getByRole('heading', { name: 'No archived offer comparisons' })
             .closest('section');
         expect(archivedEmptyState?.className).toContain('followsControls');
+    });
+
+    test('offers the active categories and filters locally without changing group order', async () => {
+        render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.getAllByRole('checkbox').map((checkbox) => checkbox.closest('label')?.textContent)).toEqual([
+            'Show All',
+            'Offers to Evaluate',
+            'Evaluated Offers',
+            'Expired Evaluated Offers',
+            'Previous Evaluations',
+        ]);
+
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        expect(screen.getByRole('heading', { name: 'Previous Evaluations' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Offers to Evaluate' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Evaluated Offers' })).not.toBeInTheDocument();
+    });
+
+    test('restores active and archived filters independently without saving during hydration', () => {
+        const updatePreferences = vi.fn();
+        const { rerender } = render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly={false} />, {
+            initialPreferences: {
+                offer_decision_filters: ['Previous Evaluations'],
+                archived_offer_decision_filters: ['Evaluated Offers'],
+            },
+            updatePreferences,
+        });
+
+        expect(screen.getByRole('heading', { name: 'Previous Evaluations' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Evaluated Offers' })).not.toBeInTheDocument();
+
+        rerender(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly />);
+
+        expect(screen.getByRole('heading', { name: 'Archived Evaluated Offers' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Archived Previous Evaluations' })).not.toBeInTheDocument();
+        expect(updatePreferences).not.toHaveBeenCalled();
+    });
+
+    test('saves active filter changes and Show All through the preference provider', async () => {
+        let savedPreferences: UserPreferences = {
+            ...testPreferences,
+            offer_decision_filters: ['Previous Evaluations'],
+        };
+        const updatePreferences = vi.fn(async (updates: Partial<UserPreferences>) => {
+            savedPreferences = { ...savedPreferences, ...updates };
+            return savedPreferences;
+        });
+        render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly={false} />, {
+            initialPreferences: savedPreferences,
+            updatePreferences,
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('checkbox', { name: 'Evaluated Offers' }));
+            await Promise.resolve();
+        });
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenLastCalledWith({
+                offer_decision_filters: ['Previous Evaluations', 'Evaluated Offers'],
+            })
+        );
+
+        await act(async () => {
+            await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+            await Promise.resolve();
+        });
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenLastCalledWith({
+                offer_decision_filters: [
+                    'Offers to Evaluate',
+                    'Evaluated Offers',
+                    'Expired Evaluated Offers',
+                    'Previous Evaluations',
+                ],
+            })
+        );
+    });
+
+    test('saves archived filter changes without overwriting the active preference', async () => {
+        let savedPreferences: UserPreferences = {
+            ...testPreferences,
+            offer_decision_filters: ['Offers to Evaluate'],
+            archived_offer_decision_filters: ['Previous Evaluations'],
+        };
+        const updatePreferences = vi.fn(async (updates: Partial<UserPreferences>) => {
+            savedPreferences = { ...savedPreferences, ...updates };
+            return savedPreferences;
+        });
+        render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly />, {
+            initialPreferences: savedPreferences,
+            updatePreferences,
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('checkbox', { name: 'Evaluated Offers' }));
+            await Promise.resolve();
+        });
+
+        await waitFor(() =>
+            expect(updatePreferences).toHaveBeenCalledWith({
+                archived_offer_decision_filters: ['Previous Evaluations', 'Evaluated Offers'],
+            })
+        );
+        expect(savedPreferences.offer_decision_filters).toEqual(['Offers to Evaluate']);
+    });
+
+    test('shows the standard error and restores saved filters when persistence fails', async () => {
+        const updatePreferences = vi.fn().mockRejectedValue(new Error('offline'));
+        render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly={false} />, {
+            initialPreferences: { offer_decision_filters: ['Previous Evaluations'] },
+            updatePreferences,
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Evaluated Offers' }));
+
+        expect(
+            await screen.findByText('Unable to save offer comparison filters. Please try again.')
+        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByRole('checkbox', { name: 'Previous Evaluations' })).toBeChecked();
+            expect(screen.getByRole('checkbox', { name: 'Evaluated Offers' })).not.toBeChecked();
+        });
+    });
+
+    test('omits Offers to Evaluate from archived filters', async () => {
+        render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} readOnly />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        expect(screen.queryByRole('checkbox', { name: 'Offers to Evaluate' })).not.toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Evaluated Offers' })).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Expired Evaluated Offers' })).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'Previous Evaluations' })).toBeInTheDocument();
+    });
+
+    test('hides More when only unevaluated offers are displayed', () => {
+        render(
+            <OfferDecisionWorkspace
+                data={{ applications: [activeData.applications[1]] }}
+                onDelete={vi.fn()}
+                onDeleteAll={vi.fn()}
+                onSave={vi.fn()}
+                readOnly={false}
+            />
+        );
+
+        expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Offer comparison controls' }).children).toHaveLength(1);
+    });
+
+    test.each([
+        ['Evaluated Offers', activeData.applications[0]],
+        [
+            'Expired Evaluated Offers',
+            {
+                ...activeData.applications[0],
+                evaluation: createEvaluation(11, undefined, '2026-07-01T10:00:00.000Z'),
+            },
+        ],
+        ['Previous Evaluations', activeData.applications[2]],
+    ] as const)('shows More and its divider for a displayed %s record', (selectedFilter, application) => {
+        render(
+            <OfferDecisionWorkspace data={{ applications: [application] }} onDeleteAll={vi.fn()} readOnly={false} />,
+            { initialPreferences: { offer_decision_filters: [selectedFilter] } }
+        );
+
+        expect(screen.getByRole('button', { name: 'More...' })).toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Offer comparison controls' }).children).toHaveLength(2);
+    });
+
+    test('hides archived More and its divider when selected evaluations have no matches', () => {
+        render(
+            <OfferDecisionWorkspace
+                data={{ applications: [activeData.applications[0]] }}
+                onDeleteAll={vi.fn()}
+                readOnly
+            />,
+            { initialPreferences: { archived_offer_decision_filters: ['Previous Evaluations'] } }
+        );
+
+        expect(screen.queryByRole('button', { name: 'More...' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Archived offer comparison controls' }).children).toHaveLength(1);
+    });
+
+    test('exports only selected evaluated groups with CSV section headers', async () => {
+        render(
+            <OfferDecisionWorkspace
+                data={activeData}
+                onDelete={vi.fn()}
+                onDeleteAll={vi.fn()}
+                onSave={vi.fn()}
+                readOnly={false}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Evaluated Offers' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+
+        const exportLink = screen.getByRole('link', { name: 'Export as CSV' });
+        const href = exportLink.getAttribute('href') ?? '';
+        const encodedCsv = href.slice(href.indexOf(',') + 1).replace(/%(?![0-9a-f]{2})/gi, '%25');
+        const csv = decodeURIComponent(encodedCsv).replace(/^\uFEFF/, '');
+        expect(exportLink).toHaveAttribute('download', 'active_offer_evaluations.csv');
+        expect(csv).toContain('Evaluated Offers');
+        expect(csv).toContain('Previous Evaluations');
+        expect(csv).toContain('Acme');
+        expect(csv).toContain('Continuum');
+        expect(csv).not.toContain('Beta Labs');
+    });
+
+    test('downloads escaped CSV text and N/A values from the generated table', async () => {
+        const application = {
+            ...activeData.applications[0],
+            company_name: 'Acme, "Global"\nLtd',
+            evaluation: {
+                ...createEvaluation(11),
+                details: {
+                    ...createEvaluation(11).details,
+                    annual_leave_days: null,
+                    bonus: 'Annual, "target"\nbonus',
+                    work_arrangement: '' as const,
+                },
+            },
+        };
+        render(
+            <OfferDecisionWorkspace data={{ applications: [application] }} onDeleteAll={vi.fn()} readOnly={false} />,
+            { initialPreferences: { offer_decision_filters: ['Evaluated Offers'] } }
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        const href = screen.getByRole('link', { name: 'Export as CSV' }).getAttribute('href') ?? '';
+        const encodedCsv = href.slice(href.indexOf(',') + 1).replace(/%(?![0-9a-f]{2})/gi, '%25');
+        const csv = decodeURIComponent(encodedCsv).replace(/^\uFEFF/, '');
+
+        expect(csv).toContain('Evaluated Offers');
+        expect(csv).toContain('"Acme, ""Global""\nLtd"');
+        expect(csv).toContain('"Annual, ""target""\nbonus"');
+        expect(csv).toContain('N/A');
+    });
+
+    test('uses an explicit Enter-safe confirmation before deleting every evaluation', async () => {
+        const onDeleteAll = vi.fn().mockResolvedValue(undefined);
+        render(
+            <OfferDecisionWorkspace
+                data={activeData}
+                onDelete={vi.fn()}
+                onDeleteAll={onDeleteAll}
+                onSave={vi.fn()}
+                readOnly={false}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+
+        await waitFor(() => expect(onDeleteAll).toHaveBeenCalledOnce());
+        const options = mockConfirm.mock.calls[0][0];
+        expect(options).toEqual(
+            expect.objectContaining({
+                title: 'Confirm Delete All',
+                confirmationText: 'Delete All',
+                description: expect.stringContaining('Applications and offers without evaluations are not deleted.'),
+            })
+        );
+        const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
+        options.confirmationButtonProps.onKeyDown({ key: 'Enter', preventDefault, stopPropagation });
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(stopPropagation).toHaveBeenCalledOnce();
+    });
+
+    test('does not delete all evaluations when confirmation is cancelled', async () => {
+        mockConfirm.mockResolvedValueOnce({ confirmed: false });
+        const onDeleteAll = vi.fn();
+        render(
+            <OfferDecisionWorkspace
+                data={activeData}
+                onDelete={vi.fn()}
+                onDeleteAll={onDeleteAll}
+                onSave={vi.fn()}
+                readOnly={false}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        await act(async () => {
+            await userEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+        });
+        await waitFor(() => expect(mockConfirm).toHaveBeenCalledOnce());
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Delete all evaluations' })).toBeEnabled());
+        expect(onDeleteAll).not.toHaveBeenCalled();
+    });
+
+    test('guards against duplicate bulk deletion submissions', async () => {
+        let resolveDelete!: () => void;
+        const onDeleteAll = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveDelete = resolve;
+                })
+        );
+        render(
+            <OfferDecisionWorkspace
+                data={activeData}
+                onDelete={vi.fn()}
+                onDeleteAll={onDeleteAll}
+                onSave={vi.fn()}
+                readOnly={false}
+            />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'More...' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+        await waitFor(() => expect(onDeleteAll).toHaveBeenCalledOnce());
+        fireEvent.click(screen.getByRole('button', { name: 'Delete all evaluations' }));
+        expect(onDeleteAll).toHaveBeenCalledOnce();
+
+        await act(async () => resolveDelete());
+    });
+
+    test('uses Clear filters for empty evaluation filters and restores all groups', async () => {
+        render(<OfferDecisionWorkspace data={activeData} onDelete={vi.fn()} onSave={vi.fn()} readOnly={false} />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Expired Evaluated Offers' }));
+
+        expect(screen.getByRole('heading', { name: 'No offer comparisons match your filters' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(screen.getByRole('heading', { name: 'Offers to Evaluate' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Evaluated Offers' })).toBeInTheDocument();
+    });
+
+    test('uses Clear filters for archived filters with no matches', async () => {
+        render(
+            <OfferDecisionWorkspace data={{ applications: [activeData.applications[0]] }} onDelete={vi.fn()} readOnly />
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        expect(
+            screen.getByRole('heading', { name: 'No archived offer comparisons match your filters' })
+        ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(screen.getByRole('heading', { name: 'Archived Evaluated Offers' })).toBeInTheDocument();
+    });
+
+    test('links to applications when the Offers to Evaluate filter has no results', async () => {
+        render(
+            <MemoryRouter>
+                <OfferDecisionWorkspace
+                    applicationsRoute='/application/view'
+                    data={{ applications: [activeData.applications[0]] }}
+                    onDelete={vi.fn()}
+                    onSave={vi.fn()}
+                    readOnly={false}
+                />
+            </MemoryRouter>
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        await userEvent.click(screen.getByRole('checkbox', { name: 'Offers to Evaluate' }));
+
+        expect(screen.getByRole('heading', { name: 'No offers to evaluate' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'View applications' })).toHaveAttribute('href', '/application/view');
+    });
+
+    test('keeps controls visible and renders the shared card skeletons while loading', () => {
+        render(<OfferDecisionWorkspace data={{ applications: [] }} isLoading readOnly={false} />);
+
+        expect(screen.getByRole('region', { name: 'Offer comparison controls' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Filter by' })).toBeDisabled();
+        expect(screen.getAllByTestId('offer-decision-skeleton')).toHaveLength(3);
+        expect(screen.getByRole('status', { name: 'Loading offer comparisons' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'No offers to compare' })).not.toBeInTheDocument();
     });
 });

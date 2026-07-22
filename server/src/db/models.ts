@@ -5,6 +5,27 @@ export type InterviewTimeFilter = 'Upcoming Interviews' | 'Past Interviews';
 
 export const INTERVIEW_TIME_FILTERS: readonly InterviewTimeFilter[] = ['Upcoming Interviews', 'Past Interviews'];
 
+export type OfferDecisionFilter =
+    | 'Offers to Evaluate'
+    | 'Evaluated Offers'
+    | 'Expired Evaluated Offers'
+    | 'Previous Evaluations';
+
+export type ArchivedOfferDecisionFilter = Exclude<OfferDecisionFilter, 'Offers to Evaluate'>;
+
+export const OFFER_DECISION_FILTERS: readonly OfferDecisionFilter[] = [
+    'Offers to Evaluate',
+    'Evaluated Offers',
+    'Expired Evaluated Offers',
+    'Previous Evaluations',
+];
+
+export const ARCHIVED_OFFER_DECISION_FILTERS: readonly ArchivedOfferDecisionFilter[] = [
+    'Evaluated Offers',
+    'Expired Evaluated Offers',
+    'Previous Evaluations',
+];
+
 export type ApplicationListSortOrder =
     | 'job_status'
     | 'application_date_desc'
@@ -197,4 +218,6 @@ export type UserPreferences = {
     archived_interview_view_mode: ApplicationViewMode;
     interview_time_filters: InterviewTimeFilter[];
     archived_interview_time_filters: InterviewTimeFilter[];
+    offer_decision_filters: OfferDecisionFilter[];
+    archived_offer_decision_filters: ArchivedOfferDecisionFilter[];
 };

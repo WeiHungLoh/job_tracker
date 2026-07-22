@@ -177,43 +177,60 @@ const contrastRatio = (first: string, second: string) => {
 
 describe('Rose Ledger visual contract', () => {
     it('keeps Offer Comparison inside the existing solid-surface design system', () => {
-        const offerDecisionCss = readSource('src/pages/offerDecision/OfferDecisionWorkspace.module.css');
+        const offerDecisionWorkspaceCss = readSource('src/pages/offerDecision/OfferDecisionWorkspace.module.css');
+        const offerEvaluationCss = readSource('src/pages/offerDecision/OfferEvaluation.module.css');
+        const offerDecisionSkeletonCss = readSource('src/pages/offerDecision/OfferDecisionSkeleton.module.css');
+        const activityControlsCss = readSource('src/components/activityControls/ActivityControls.module.css');
 
-        expect(offerDecisionCss).not.toContain('linear-gradient');
-        expect(offerDecisionCss).not.toContain('box-shadow');
-        expect(offerDecisionCss).toContain('background-color: var(--colorCardBg);');
-        expect(offerDecisionCss).toContain('border: 1px solid var(--colorCardBorder);');
-        expect(offerDecisionCss).toContain('color: var(--colorTextSecondary);');
-        expect(offerDecisionCss).toContain(".evaluationGrid[data-card-count='one']");
-        expect(offerDecisionCss).toContain(".evaluationGrid[data-card-count='two']");
-        expect(offerDecisionCss).toContain('align-items: start;');
-        expect(offerDecisionCss).toContain('outline: 3px solid var(--colorPrimaryFocusShadow);');
-        expect(offerDecisionCss).toContain('white-space: nowrap;');
-        expect(offerDecisionCss).toContain('align-items: flex-end;');
-        expect(offerDecisionCss).not.toContain('.cardActions button {\n        width: 100%;');
-        expect(offerDecisionCss).toMatch(/\.ratingFields legend\s*\{[^}]*padding-right:/s);
-        expect(offerDecisionCss).toMatch(
+        expect(offerDecisionWorkspaceCss).not.toContain('linear-gradient');
+        expect(offerDecisionWorkspaceCss).not.toContain('box-shadow');
+        expect(offerEvaluationCss).not.toContain('linear-gradient');
+        expect(offerEvaluationCss).not.toContain('box-shadow');
+        expect(activityControlsCss).toMatch(/\.controls\s*\{[^}]*margin:\s*20px 0;/s);
+        expect(offerDecisionWorkspaceCss).toMatch(/\.workspace\s*\{[^}]*padding:\s*0 32px 32px;/s);
+        expect(offerDecisionWorkspaceCss).toMatch(
+            /@media \(max-width: 768px\)[\s\S]*?\.workspace\s*\{[^}]*padding:\s*0 16px 16px;/s
+        );
+        expect(offerDecisionWorkspaceCss).not.toMatch(/\.workspace\s*\{[^}]*padding:\s*32px;/s);
+        expect(offerEvaluationCss).toContain('background-color: var(--colorCardBg);');
+        expect(offerEvaluationCss).toContain('border: 1px solid var(--colorCardBorder);');
+        expect(offerDecisionWorkspaceCss).toContain('color: var(--colorTextSecondary);');
+        expect(offerDecisionWorkspaceCss).toContain(".evaluationGrid[data-card-count='one']");
+        expect(offerDecisionWorkspaceCss).toContain(".evaluationGrid[data-card-count='two']");
+        expect(offerDecisionWorkspaceCss).toContain('align-items: start;');
+        expect(offerEvaluationCss).toContain('outline: 3px solid var(--colorPrimaryFocusShadow);');
+        expect(offerDecisionWorkspaceCss).toContain('white-space: nowrap;');
+        expect(offerDecisionWorkspaceCss).toContain('align-items: flex-end;');
+        expect(offerEvaluationCss).not.toContain('.cardActions button {\n        width: 100%;');
+        expect(offerEvaluationCss).toMatch(/\.ratingFields legend\s*\{[^}]*padding-right:/s);
+        expect(offerEvaluationCss).toMatch(
             /\.detailsReview dt,\s*\.reviewValue dt\s*\{[^}]*color:\s*var\(--colorLabel\);[^}]*font-size:\s*var\(--fontSizeBody\);[^}]*font-weight:\s*500;/s
         );
-        expect(offerDecisionCss).toMatch(
+        expect(offerEvaluationCss).toMatch(
             /\.detailsReview dd\s*\{[^}]*color:\s*var\(--colorText\);[^}]*font-size:\s*var\(--fontSizeBody\);[^}]*font-weight:\s*400;/s
         );
-        expect(offerDecisionCss).toMatch(
+        expect(offerDecisionWorkspaceCss).toMatch(
             /\.comparisonSection\s*\+\s*\.comparisonSection\s*\{[^}]*padding-top:\s*var\(--spacePageGrid\);[^}]*border-top:\s*1px solid var\(--colorCardBorder\);/s
         );
-        expect(offerDecisionCss).toMatch(
+        expect(offerEvaluationCss).toMatch(
             /\.reviewSection h4\s*\{[^}]*color:\s*var\(--colorPrimary\);[^}]*font-size:\s*var\(--fontSizeMetadata\);[^}]*text-transform:\s*uppercase;/s
         );
-        expect(offerDecisionCss).toMatch(
+        expect(offerEvaluationCss).toMatch(
             /\.detailsReview,\s*\.reviewValues\s*\{[^}]*padding:\s*var\(--spaceCompact\);[^}]*background-color:\s*var\(--colorControlMutedSurface\);/s
         );
-        expect(offerDecisionCss).toMatch(
+        expect(offerEvaluationCss).toMatch(
             /\.expiredBadge\s*\{[^}]*padding:\s*4px 9px;[^}]*font-size:\s*0\.6875rem;[^}]*font-weight:\s*600;[^}]*line-height:\s*1\.2;/s
         );
-        expect(offerDecisionCss).toMatch(/\.sectionHeading h2\s*\{[^}]*font-size:\s*1\.5rem;/s);
-        expect(offerDecisionCss).toMatch(/\.cardHeader h3\s*\{[^}]*font-size:\s*1\.5rem;/s);
-        expect(offerDecisionCss).toContain('@media (max-width: 768px)');
-        expect(offerDecisionCss).not.toMatch(/\.cardActions\s*\{[^}]*flex-direction:\s*column;/s);
+        expect(offerDecisionWorkspaceCss).toMatch(/\.sectionHeading h2\s*\{[^}]*font-size:\s*1\.5rem;/s);
+        expect(offerEvaluationCss).toMatch(/\.cardHeader h3\s*\{[^}]*font-size:\s*1\.5rem;/s);
+        expect(offerDecisionWorkspaceCss).toContain('@media (max-width: 768px)');
+        expect(offerEvaluationCss).toContain('@media (max-width: 768px)');
+        expect(offerEvaluationCss).not.toMatch(/\.cardActions\s*\{[^}]*flex-direction:\s*column;/s);
+        expect(offerDecisionSkeletonCss).toContain(
+            "composes: skeletonLine from '../../components/skeletonLoader/skeletonCard/SkeletonCard.module.css';"
+        );
+        expect(offerDecisionSkeletonCss).not.toContain('linear-gradient');
+        expect(offerDecisionSkeletonCss).not.toContain('box-shadow');
     });
 
     it('defines both approved palettes and the shared metric aliases', () => {

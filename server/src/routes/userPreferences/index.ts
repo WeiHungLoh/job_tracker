@@ -8,7 +8,9 @@ import { getUserPreferences, updateUserPreferences } from '../../db/queries/user
 import { handleRouteError, sendError } from '../../http/responses.js';
 import {
     isJobStatusArray,
+    isArchivedOfferDecisionFilterArray,
     isInterviewTimeFilterArray,
+    isOfferDecisionFilterArray,
     isOptionalApplicationBoardSortOrder,
     isOptionalApplicationListSortOrder,
     isOptionalApplicationViewMode,
@@ -61,6 +63,8 @@ router.patch(
             archived_interview_view_mode,
             interview_time_filters,
             archived_interview_time_filters,
+            offer_decision_filters,
+            archived_offer_decision_filters,
         } = req.body;
 
         if (application_job_statuses !== undefined && !isJobStatusArray(application_job_statuses)) {
@@ -84,6 +88,17 @@ router.patch(
             !isInterviewTimeFilterArray(archived_interview_time_filters)
         ) {
             sendError(res, 422, 'Archived interview time filter preferences must contain only supported values.');
+            return;
+        }
+        if (offer_decision_filters !== undefined && !isOfferDecisionFilterArray(offer_decision_filters)) {
+            sendError(res, 422, 'Offer comparison filter preferences must contain only supported values.');
+            return;
+        }
+        if (
+            archived_offer_decision_filters !== undefined &&
+            !isArchivedOfferDecisionFilterArray(archived_offer_decision_filters)
+        ) {
+            sendError(res, 422, 'Archived offer comparison filter preferences must contain only supported values.');
             return;
         }
         if (

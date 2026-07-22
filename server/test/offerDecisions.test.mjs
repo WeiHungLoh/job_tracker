@@ -460,6 +460,63 @@ test('deletes a user-owned evaluation attached to an active or archived applicat
     assert.match(calls[0].sql, /RETURNING evaluations\.job_id/);
 });
 
+test('deletes only user-owned evaluations in the requested application collection', async () => {
+    const calls = [];
+    await withMockedPoolQuery(
+        async (sql, values) => {
+            calls.push({ sql: compactSQL(sql), values });
+            return { rows: [], rowCount: 2 };
+        },
+        async () => {
+            await offerDecisionQueries.deleteAllOfferEvaluations(7, false);
+            await offerDecisionQueries.deleteAllOfferEvaluations(7, true);
+        }
+    );
+
+    assert.deepEqual(
+        calls.map((call) => call.values),
+        [
+            [7, false],
+            [7, true],
+        ]
+    );
+    for (const call of calls) {
+        assert.match(call.sql, /DELETE FROM offer_evaluations AS evaluations/);
+        assert.match(call.sql, /applications\.user_id = evaluations\.user_id/);
+        assert.match(call.sql, /applications\.is_archived = \$2/);
+        assert.doesNotMatch(call.sql, /DELETE FROM job_applications/);
+    }
+});
+
+test('routes active and archived bulk evaluation deletion through exact scopes', async () => {
+    const activeHandler = getRouteHandler('delete', '/');
+    const archivedHandler = getRouteHandler('delete', '/archived');
+    assert.equal(typeof activeHandler, 'function');
+    assert.equal(typeof archivedHandler, 'function');
+
+    const calls = [];
+    await withMockedPoolQuery(
+        async (_sql, values) => {
+            calls.push(values);
+            return { rows: [], rowCount: 1 };
+        },
+        async () => {
+            const activeResponse = createResponse();
+            const archivedResponse = createResponse();
+            await activeHandler({ user: { id: 7 } }, activeResponse);
+            await archivedHandler({ user: { id: 7 } }, archivedResponse);
+
+            assert.equal(activeResponse.statusCode, 204);
+            assert.equal(archivedResponse.statusCode, 204);
+        }
+    );
+
+    assert.deepEqual(calls, [
+        [7, false],
+        [7, true],
+    ]);
+});
+
 test('validates evaluation deletion and returns not found without exposing ownership', async () => {
     const handler = getRouteHandler('delete', '/:jobId');
     assert.equal(typeof handler, 'function');

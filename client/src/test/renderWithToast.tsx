@@ -9,7 +9,7 @@ import { render as renderWithTestingLibrary } from '@testing-library/react';
 import { useState } from 'react';
 import { JOB_STATUSES } from '../pages/application/models';
 
-const testPreferences: UserPreferences = {
+export const testPreferences: UserPreferences = {
     application_job_statuses: [...JOB_STATUSES],
     application_show_notes: false,
     application_show_archive: false,
@@ -26,6 +26,13 @@ const testPreferences: UserPreferences = {
     archived_interview_view_mode: 'list',
     interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
     archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+    offer_decision_filters: [
+        'Offers to Evaluate',
+        'Evaluated Offers',
+        'Expired Evaluated Offers',
+        'Previous Evaluations',
+    ],
+    archived_offer_decision_filters: ['Evaluated Offers', 'Expired Evaluated Offers', 'Previous Evaluations'],
 };
 
 type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & {

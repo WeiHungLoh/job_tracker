@@ -20,7 +20,9 @@ export const getUserPreferences = async (userId: number): Promise<UserPreference
             interview_view_mode,
             archived_interview_view_mode,
             interview_time_filters,
-            archived_interview_time_filters
+            archived_interview_time_filters,
+            offer_decision_filters,
+            archived_offer_decision_filters
          FROM user_preferences
          WHERE user_id = $1`,
         [userId]
@@ -51,7 +53,9 @@ export const updateUserPreferences = async (
             interview_view_mode = COALESCE($14, interview_view_mode),
             archived_interview_view_mode = COALESCE($15, archived_interview_view_mode),
             interview_time_filters = COALESCE($16, interview_time_filters),
-            archived_interview_time_filters = COALESCE($17, archived_interview_time_filters)
+            archived_interview_time_filters = COALESCE($17, archived_interview_time_filters),
+            offer_decision_filters = COALESCE($18, offer_decision_filters),
+            archived_offer_decision_filters = COALESCE($19, archived_offer_decision_filters)
          WHERE user_id = $1
          RETURNING
             application_job_statuses,
@@ -69,7 +73,9 @@ export const updateUserPreferences = async (
             interview_view_mode,
             archived_interview_view_mode,
             interview_time_filters,
-            archived_interview_time_filters`,
+            archived_interview_time_filters,
+            offer_decision_filters,
+            archived_offer_decision_filters`,
         [
             userId,
             preferences.application_job_statuses,
@@ -88,6 +94,8 @@ export const updateUserPreferences = async (
             preferences.archived_interview_view_mode,
             preferences.interview_time_filters,
             preferences.archived_interview_time_filters,
+            preferences.offer_decision_filters,
+            preferences.archived_offer_decision_filters,
         ]
     );
 

@@ -50,6 +50,13 @@ const mockPreferences: UserPreferences = {
     archived_interview_view_mode: 'list',
     interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
     archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+    offer_decision_filters: [
+        'Offers to Evaluate',
+        'Evaluated Offers',
+        'Expired Evaluated Offers',
+        'Previous Evaluations',
+    ],
+    archived_offer_decision_filters: ['Evaluated Offers', 'Expired Evaluated Offers', 'Previous Evaluations'],
 };
 
 const response = (data?: unknown, status = 200) => ({

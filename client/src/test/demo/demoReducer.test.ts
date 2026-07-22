@@ -144,6 +144,26 @@ describe('demo reducer state', () => {
         );
     });
 
+    test('bulk deletes offer evaluations only from the selected active or archived collection', () => {
+        const state = createDemoInitialState(fixedNow);
+        const activeDeleted = demoReducer(state, {
+            type: 'DELETE_ALL_OFFER_EVALUATIONS',
+            payload: { archived: false },
+        });
+        const archivedDeleted = demoReducer(state, {
+            type: 'DELETE_ALL_OFFER_EVALUATIONS',
+            payload: { archived: true },
+        });
+
+        expect(activeDeleted.offerEvaluations[111]).toBeUndefined();
+        expect(activeDeleted.offerEvaluations[112]).toBeUndefined();
+        expect(activeDeleted.offerEvaluations[204]).toBe(state.offerEvaluations[204]);
+        expect(archivedDeleted.offerEvaluations[204]).toBeUndefined();
+        expect(archivedDeleted.offerEvaluations[111]).toBe(state.offerEvaluations[111]);
+        expect(activeDeleted.applications).toBe(state.applications);
+        expect(archivedDeleted.archivedApplications).toBe(state.archivedApplications);
+    });
+
     test('preserves offer evaluations across archive and restore and removes them on deletion', () => {
         const state = createDemoInitialState(fixedNow);
         const archived = demoReducer(state, { type: 'ARCHIVE_APPLICATION', payload: { jobId: 111 } });

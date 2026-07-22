@@ -45,6 +45,8 @@ describe('makeJobTrackerAPIRequest', () => {
         expect(endpointConfig.offerDecision).toEqual({
             getActive: { url: '/offer-decisions', verb: 'GET', retry: true },
             getArchived: { url: '/offer-decisions/archived', verb: 'GET', retry: true },
+            deleteAllActiveEvaluations: { url: '/offer-decisions', verb: 'DELETE' },
+            deleteAllArchivedEvaluations: { url: '/offer-decisions/archived', verb: 'DELETE' },
             saveEvaluation: {
                 url: '/offer-decisions/:jobId',
                 verb: 'PUT',

@@ -73,6 +73,8 @@ import type {
     VerifyAuthenticationResponse,
 } from '../pages/authentication/models';
 import type {
+    DeleteAllOfferEvaluationsRequest,
+    DeleteAllOfferEvaluationsResponse,
     DeleteOfferEvaluationRequest,
     DeleteOfferEvaluationResponse,
     GetOfferDecisionsRequest,
@@ -338,6 +340,20 @@ export const useJobTrackerAPI = () => {
             >(req, endpointConfig.offerDecision.deleteEvaluation);
         };
 
+        const deleteAllActiveOfferEvaluations = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                DeleteAllOfferEvaluationsRequest,
+                DeleteAllOfferEvaluationsResponse
+            >(null, endpointConfig.offerDecision.deleteAllActiveEvaluations);
+        };
+
+        const deleteAllArchivedOfferEvaluations = async () => {
+            return await makeAuthenticatedJobTrackerAPIRequest<
+                DeleteAllOfferEvaluationsRequest,
+                DeleteAllOfferEvaluationsResponse
+            >(null, endpointConfig.offerDecision.deleteAllArchivedEvaluations);
+        };
+
         const getUserPreferences = async () => {
             return await makeAuthenticatedJobTrackerAPIRequest<GetUserPreferencesRequest, GetUserPreferencesResponse>(
                 null,
@@ -391,6 +407,8 @@ export const useJobTrackerAPI = () => {
                 deleteAllInterviews: deleteAllArchivedInterviews,
             },
             offerDecision: {
+                deleteAllActiveEvaluations: deleteAllActiveOfferEvaluations,
+                deleteAllArchivedEvaluations: deleteAllArchivedOfferEvaluations,
                 getActive: getActiveOfferDecisions,
                 getArchived: getArchivedOfferDecisions,
                 saveEvaluation: saveOfferEvaluation,

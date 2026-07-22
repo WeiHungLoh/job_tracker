@@ -202,6 +202,18 @@ export const deleteOfferEvaluation = async (userId: number, jobId: number): Prom
     return result.rowCount === 1;
 };
 
+export const deleteAllOfferEvaluations = async (userId: number, isArchived: boolean): Promise<void> => {
+    await pool.query(
+        `DELETE FROM offer_evaluations AS evaluations
+        USING job_applications AS applications
+        WHERE evaluations.user_id = $1
+            AND applications.job_id = evaluations.job_id
+            AND applications.user_id = evaluations.user_id
+            AND applications.is_archived = $2`,
+        [userId, isArchived]
+    );
+};
+
 export const saveOfferEvaluation = async (
     userId: number,
     jobId: number,

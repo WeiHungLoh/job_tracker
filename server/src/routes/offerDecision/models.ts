@@ -9,3 +9,4 @@ export type SaveOfferEvaluationRequest = {
 export type GetOfferDecisionsResponse = OfferDecisionWorkspace | ErrorResponse;
 export type SaveOfferEvaluationResponse = EmptyResponse | ErrorResponse;
 export type DeleteOfferEvaluationResponse = EmptyResponse | ErrorResponse;
+export type DeleteAllOfferEvaluationsResponse = EmptyResponse | ErrorResponse;

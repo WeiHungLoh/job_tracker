@@ -1,6 +1,7 @@
 import type { ApplicationBoardSortOrder, ApplicationListSortOrder, JobStatus } from '../../pages/application/models';
 import type { ApplicationViewMode } from '../activityControls/applicationViewToggle/models';
 import type { InterviewTimeFilter } from '../../helper/interviewTiming';
+import type { ArchivedOfferDecisionFilter, OfferDecisionFilter } from '../../pages/offerDecision/models';
 
 export type UserPreferences = {
     application_job_statuses: JobStatus[];
@@ -19,6 +20,8 @@ export type UserPreferences = {
     archived_interview_view_mode: ApplicationViewMode;
     interview_time_filters: InterviewTimeFilter[];
     archived_interview_time_filters: InterviewTimeFilter[];
+    offer_decision_filters: OfferDecisionFilter[];
+    archived_offer_decision_filters: ArchivedOfferDecisionFilter[];
 };
 
 export type GetUserPreferencesRequest = null;

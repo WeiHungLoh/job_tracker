@@ -1,4 +1,5 @@
 import type {
+    DeleteAllOfferEvaluationsResponse,
     DeleteOfferEvaluationResponse,
     GetOfferDecisionsResponse,
     SaveOfferEvaluationRequest,
@@ -6,6 +7,7 @@ import type {
 } from './models.js';
 import type { Request, Response } from 'express';
 import {
+    deleteAllOfferEvaluations,
     deleteOfferEvaluation,
     getOfferDecisionWorkspace,
     saveOfferEvaluation,
@@ -15,6 +17,26 @@ import { isSaveOfferEvaluationRequest, toPositiveInteger } from '../../http/vali
 import express from 'express';
 
 const router = express.Router();
+
+const createDeleteAllHandler =
+    (isArchived: boolean) =>
+    async (
+        req: Request<Record<string, never>, DeleteAllOfferEvaluationsResponse>,
+        res: Response<DeleteAllOfferEvaluationsResponse>
+    ): Promise<void> => {
+        try {
+            await deleteAllOfferEvaluations(req.user.id, isArchived);
+            res.sendStatus(204);
+        } catch (error: unknown) {
+            handleRouteError(
+                res,
+                error,
+                isArchived
+                    ? 'Unable to delete archived offer evaluations.'
+                    : 'Unable to delete active offer evaluations.'
+            );
+        }
+    };
 
 router.get(
     '/',
@@ -43,6 +65,9 @@ router.get(
         }
     }
 );
+
+router.delete('/', createDeleteAllHandler(false));
+router.delete('/archived', createDeleteAllHandler(true));
 
 router.put(
     '/:jobId',

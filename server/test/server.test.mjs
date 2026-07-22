@@ -89,6 +89,16 @@ test('creates new user preference rows with enabled display defaults', async () 
     );
     assert.match(userPreferencesTable, /user_preferences_interview_time_filters_check/);
     assert.match(userPreferencesTable, /user_preferences_archived_interview_time_filters_check/);
+    assert.match(
+        userPreferencesTable,
+        /offer_decision_filters TEXT\[\] NOT NULL DEFAULT \$\{OFFER_DECISION_FILTER_SQL_ARRAY\}/
+    );
+    assert.match(
+        userPreferencesTable,
+        /archived_offer_decision_filters TEXT\[\] NOT NULL DEFAULT \$\{ARCHIVED_OFFER_DECISION_FILTER_SQL_ARRAY\}/
+    );
+    assert.match(userPreferencesTable, /user_preferences_offer_decision_filters_check/);
+    assert.match(userPreferencesTable, /user_preferences_archived_offer_decision_filters_check/);
 });
 
 test('creates fresh interview duration and time-filter columns without adding startup migration SQL', async () => {
@@ -108,6 +118,8 @@ test('creates fresh interview duration and time-filter columns without adding st
     assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS interview_duration_minutes/);
     assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS interview_time_filters/);
     assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS archived_interview_time_filters/);
+    assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS offer_decision_filters/);
+    assert.doesNotMatch(createTablesSource, /ADD COLUMN IF NOT EXISTS archived_offer_decision_filters/);
 });
 
 test('adds interview view preferences to existing user preference tables idempotently', async () => {
@@ -292,6 +304,35 @@ test('returns 422 for unsupported active and archived interview time filters', a
     }
 });
 
+test('returns 422 for unsupported active and archived offer comparison filters', async () => {
+    const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
+
+    for (const [field, value, message] of [
+        [
+            'offer_decision_filters',
+            ['Unknown'],
+            'Offer comparison filter preferences must contain only supported values.',
+        ],
+        [
+            'archived_offer_decision_filters',
+            ['Offers to Evaluate'],
+            'Archived offer comparison filter preferences must contain only supported values.',
+        ],
+    ]) {
+        const response = await fetch(`${baseUrl}/user-preferences`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Cookie: `access_token=${token}`,
+            },
+            body: JSON.stringify({ [field]: value }),
+        });
+
+        assert.equal(response.status, 422);
+        assert.deepEqual(await response.json(), { message });
+    }
+});
+
 test('returns 422 for unsupported application list sort preferences', async () => {
     const token = createAccessToken(TEST_USER, process.env.ACCESS_TOKEN_SECRET);
     const response = await fetch(`${baseUrl}/user-preferences`, {
@@ -345,6 +386,8 @@ test('saves a supported application sort preference and returns the complete pre
         archived_interview_view_mode: 'board',
         interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
         archived_interview_time_filters: ['Upcoming Interviews', 'Past Interviews'],
+        offer_decision_filters: ['Offers to Evaluate', 'Evaluated Offers'],
+        archived_offer_decision_filters: ['Previous Evaluations'],
     };
     let queryValues;
     pool.query = async (_sql, values) => {
@@ -365,7 +408,7 @@ test('saves a supported application sort preference and returns the complete pre
 
         assert.equal(response.status, 200);
         assert.deepEqual(await response.json(), storedPreferences);
-        assert.equal(queryValues.length, 17);
+        assert.equal(queryValues.length, 19);
         assert.equal(queryValues[0], TEST_USER.id);
         assert.equal(queryValues[12], 'company_name_desc');
     } finally {

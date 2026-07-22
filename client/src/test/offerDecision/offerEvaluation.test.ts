@@ -2,23 +2,17 @@ import {
     DEFAULT_OFFER_DECISION_VALUES,
     DEFAULT_OFFER_DETAILS,
     OFFER_DETAILS_MAX_LENGTHS,
+} from '../../pages/offerDecision/offerDecisionConfig';
+import {
     calculateOfferDecisionScore,
     createDefaultOfferEvaluation,
-    isOfferDecisionDeadlineExpired,
     normalizeOfferDetails,
     offerEvaluationsAreEqual,
-    sortEvaluatedOffers,
-    sortPreviousOfferEvaluations,
     updateOfferDecisionValue,
     validateOfferEvaluation,
-} from '../../pages/offerDecision/offerDecisionData';
+} from '../../pages/offerDecision/offerEvaluation';
 import { parseDatetimeLocal, toDatetimeLocalInputValue } from '../../helper/dateFormatter';
-import type {
-    OfferDecisionApplication,
-    OfferDetails,
-    OfferEvaluation,
-    SaveOfferEvaluationRequest,
-} from '../../pages/offerDecision/models';
+import type { OfferDetails, OfferEvaluation, SaveOfferEvaluationRequest } from '../../pages/offerDecision/models';
 
 const validDeadlineInput = '2026-07-18T18:00';
 const validDeadlineTimestamp = parseDatetimeLocal(validDeadlineInput).toISOString();
@@ -55,22 +49,7 @@ const createEvaluation = (
     updated_at: '2026-07-18T08:00:00.000Z',
 });
 
-const createApplication = (
-    jobId: number,
-    ratings: OfferEvaluation['ratings'],
-    decisionDeadline: string,
-    companyName = `Company ${jobId}`,
-    jobTitle = 'Engineer'
-): OfferDecisionApplication => ({
-    job_id: jobId,
-    company_name: companyName,
-    job_title: jobTitle,
-    job_status: 'Offer',
-    application_date: '2026-07-01T08:00:00.000Z',
-    evaluation: createEvaluation(jobId, ratings, decisionDeadline),
-});
-
-describe('offer decision data helpers', () => {
+describe('offer evaluation', () => {
     test('calculates an equal-weight percentage from the four ratings', () => {
         expect(calculateOfferDecisionScore(validRequest.ratings)).toBe(80);
         expect(calculateOfferDecisionScore(DEFAULT_OFFER_DECISION_VALUES)).toBe(60);
@@ -307,64 +286,5 @@ describe('offer decision data helpers', () => {
         expect(
             offerEvaluationsAreEqual(first, { ...clone, ratings: { ...clone.ratings, company_culture_fit: 5 } })
         ).toBe(false);
-    });
-
-    test('sorts evaluated offers by deadline, fit score, then application name', () => {
-        const highScore = {
-            career_growth: 5,
-            company_culture_fit: 5,
-            work_life_balance: 5,
-            compensation: 5,
-        };
-        const tiedScore = {
-            career_growth: 4,
-            company_culture_fit: 4,
-            work_life_balance: 4,
-            compensation: 4,
-        };
-        const applications = [
-            createApplication(5, tiedScore, ''),
-            createApplication(4, highScore, '2026-08-02T10:00:00.000Z', 'Zulu'),
-            createApplication(3, tiedScore, '2026-08-01T10:00:00.000Z', 'Beta'),
-            createApplication(2, highScore, '2026-08-01T10:00:00.000Z', 'Gamma'),
-            createApplication(1, highScore, '2026-08-01T10:00:00.000Z', 'Alpha'),
-        ];
-
-        expect(sortEvaluatedOffers(applications).map((application) => application.job_id)).toEqual([1, 2, 3, 4, 5]);
-        expect(applications.map((application) => application.job_id)).toEqual([5, 4, 3, 2, 1]);
-    });
-
-    test('sorts previous evaluations by fit score, then application name', () => {
-        const highScore = {
-            career_growth: 5,
-            company_culture_fit: 5,
-            work_life_balance: 5,
-            compensation: 5,
-        };
-        const tiedScore = {
-            career_growth: 4,
-            company_culture_fit: 4,
-            work_life_balance: 4,
-            compensation: 4,
-        };
-        const applications = [
-            createApplication(4, tiedScore, '2026-08-03T10:00:00.000Z', 'Zulu'),
-            createApplication(3, highScore, '2026-08-02T10:00:00.000Z', 'Gamma'),
-            createApplication(2, highScore, '2026-08-01T10:00:00.000Z', 'Alpha'),
-            createApplication(1, tiedScore, '2026-08-01T10:00:00.000Z', 'Beta'),
-        ];
-
-        expect(sortPreviousOfferEvaluations(applications).map((application) => application.job_id)).toEqual([
-            2, 3, 1, 4,
-        ]);
-    });
-
-    test('treats an offer decision deadline before the reference time as expired', () => {
-        const referenceTime = new Date('2026-07-20T12:00:00.000Z');
-
-        expect(isOfferDecisionDeadlineExpired('2026-07-20T11:59:59.999Z', referenceTime)).toBe(true);
-        expect(isOfferDecisionDeadlineExpired('2026-07-20T12:00:00.000Z', referenceTime)).toBe(false);
-        expect(isOfferDecisionDeadlineExpired('', referenceTime)).toBe(false);
-        expect(isOfferDecisionDeadlineExpired('not-a-date', referenceTime)).toBe(false);
     });
 });

@@ -5,6 +5,8 @@ import {
     APPLICATION_LIST_SORT_ORDERS,
     DEFAULT_APPLICATION_BOARD_SORT_ORDER,
     DEFAULT_APPLICATION_LIST_SORT_ORDER,
+    OFFER_DECISION_FILTERS,
+    ARCHIVED_OFFER_DECISION_FILTERS,
 } from '../dist/db/models.js';
 import { pool } from '../dist/db/connectDB.js';
 import { getUserPreferences, updateUserPreferences } from '../dist/db/queries/userPreferences.js';
@@ -12,6 +14,8 @@ import {
     isApplicationBoardSortOrder,
     isApplicationListSortOrder,
     isInterviewTimeFilterArray,
+    isArchivedOfferDecisionFilterArray,
+    isOfferDecisionFilterArray,
     isOptionalApplicationBoardSortOrder,
     isOptionalApplicationListSortOrder,
 } from '../dist/http/validation.js';
@@ -23,6 +27,27 @@ test('interview time filter validator accepts only supported arrays', () => {
     assert.equal(isInterviewTimeFilterArray(['Upcoming Interviews', 'Upcoming Interviews']), false);
     assert.equal(isInterviewTimeFilterArray(['Unknown']), false);
     assert.equal(isInterviewTimeFilterArray('Upcoming Interviews'), false);
+});
+
+test('offer comparison filter validators keep active and archived values distinct', () => {
+    assert.deepEqual(OFFER_DECISION_FILTERS, [
+        'Offers to Evaluate',
+        'Evaluated Offers',
+        'Expired Evaluated Offers',
+        'Previous Evaluations',
+    ]);
+    assert.deepEqual(ARCHIVED_OFFER_DECISION_FILTERS, [
+        'Evaluated Offers',
+        'Expired Evaluated Offers',
+        'Previous Evaluations',
+    ]);
+    assert.equal(isOfferDecisionFilterArray(['Offers to Evaluate', 'Evaluated Offers']), true);
+    assert.equal(isOfferDecisionFilterArray([]), true);
+    assert.equal(isOfferDecisionFilterArray(['Evaluated Offers', 'Evaluated Offers']), false);
+    assert.equal(isOfferDecisionFilterArray(['Unknown']), false);
+    assert.equal(isArchivedOfferDecisionFilterArray(['Evaluated Offers', 'Previous Evaluations']), true);
+    assert.equal(isArchivedOfferDecisionFilterArray(['Offers to Evaluate']), false);
+    assert.equal(isArchivedOfferDecisionFilterArray('Evaluated Offers'), false);
 });
 
 test('application sort order constants, defaults, and validators agree', () => {
@@ -58,7 +83,7 @@ test('application sort order constants, defaults, and validators agree', () => {
     assert.equal(isOptionalApplicationBoardSortOrder(undefined), true);
 });
 
-test('user preference queries read and update all sort fields with independent parameters', async () => {
+test('user preference queries read and update every preference field with independent parameters', async () => {
     const originalQuery = pool.query;
     const calls = [];
     const storedPreferences = {
@@ -78,6 +103,8 @@ test('user preference queries read and update all sort fields with independent p
         archived_interview_view_mode: 'board',
         interview_time_filters: ['Upcoming Interviews'],
         archived_interview_time_filters: ['Past Interviews'],
+        offer_decision_filters: ['Offers to Evaluate', 'Evaluated Offers'],
+        archived_offer_decision_filters: ['Previous Evaluations'],
     };
 
     pool.query = async (sql, values) => {
@@ -97,6 +124,8 @@ test('user preference queries read and update all sort fields with independent p
         'application_board_sort_order',
         'archived_application_list_sort_order',
         'archived_application_board_sort_order',
+        'offer_decision_filters',
+        'archived_offer_decision_filters',
     ]) {
         assert.match(calls[0].sql, new RegExp(`\\b${field}\\b`));
         assert.match(calls[1].sql, new RegExp(`\\b${field}\\b`));
@@ -114,6 +143,8 @@ test('user preference queries read and update all sort fields with independent p
     );
     assert.match(calls[1].sql, /interview_time_filters = COALESCE\(\$16, interview_time_filters\)/);
     assert.match(calls[1].sql, /archived_interview_time_filters = COALESCE\(\$17, archived_interview_time_filters\)/);
+    assert.match(calls[1].sql, /offer_decision_filters = COALESCE\(\$18, offer_decision_filters\)/);
+    assert.match(calls[1].sql, /archived_offer_decision_filters = COALESCE\(\$19, archived_offer_decision_filters\)/);
     assert.deepEqual(calls[1].values, [
         42,
         ['Applied'],
@@ -132,6 +163,8 @@ test('user preference queries read and update all sort fields with independent p
         'board',
         ['Upcoming Interviews'],
         ['Past Interviews'],
+        ['Offers to Evaluate', 'Evaluated Offers'],
+        ['Previous Evaluations'],
     ]);
 });
 
@@ -149,7 +182,7 @@ test('omitted sort preferences remain undefined for SQL COALESCE preservation', 
         pool.query = originalQuery;
     }
 
-    assert.equal(values.length, 17);
+    assert.equal(values.length, 19);
     assert.equal(values[0], 9);
     assert.equal(values[12], 'company_name_asc');
     assert.equal(
