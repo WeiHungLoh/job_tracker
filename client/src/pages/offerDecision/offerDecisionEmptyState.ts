@@ -1,22 +1,16 @@
 import type { EmptyStateProps } from '../../components/emptyState/models';
-import type { OfferDecisionFilter } from './models';
-
 type OfferDecisionEmptyStateOptions = {
-    applicationsRoute: string;
-    hasApplications: boolean;
+    filtersAreActive: boolean;
     onClearFilters: () => void;
     readOnly: boolean;
-    selectedFilters: readonly OfferDecisionFilter[];
 };
 
 export const createOfferDecisionEmptyState = ({
-    applicationsRoute,
-    hasApplications,
+    filtersAreActive,
     onClearFilters,
     readOnly,
-    selectedFilters,
 }: OfferDecisionEmptyStateOptions): EmptyStateProps => {
-    if (!hasApplications) {
+    if (!filtersAreActive) {
         return {
             description: readOnly
                 ? 'Saved evaluations appear here after their applications are archived.'
@@ -27,20 +21,10 @@ export const createOfferDecisionEmptyState = ({
         };
     }
 
-    if (!readOnly && selectedFilters.length === 1 && selectedFilters[0] === 'Offers to Evaluate') {
-        return {
-            description: 'Applications must have Offer status and no saved evaluation to appear here.',
-            followsControls: true,
-            icon: 'briefcase',
-            primaryAction: { label: 'View applications', to: applicationsRoute },
-            title: 'No offers to evaluate',
-        };
-    }
-
     return {
         description: readOnly
             ? 'Try showing all evaluation types to see every archived offer comparison.'
-            : 'Try showing all evaluation types to see every offer comparison.',
+            : 'Try showing all evaluation types to see every active offer comparison.',
         followsControls: true,
         icon: readOnly ? 'archive' : 'briefcase',
         primaryAction: { label: 'Clear filters', onClick: onClearFilters },

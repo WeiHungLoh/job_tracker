@@ -180,7 +180,6 @@ export type OfferEvaluation = {
     job_id: number;
     ratings: OfferDecisionValues;
     details: OfferDetails;
-    updated_at: Date;
 };
 
 export type OfferDecisionApplication = {

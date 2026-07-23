@@ -28,7 +28,6 @@ const applications: EvaluatedOfferDecisionApplication[] = [
                 pros: '',
                 concerns: '',
             },
-            updated_at: '2026-07-18T08:00:00.000Z',
         },
     },
     {
@@ -55,7 +54,6 @@ const applications: EvaluatedOfferDecisionApplication[] = [
                 pros: '',
                 concerns: '',
             },
-            updated_at: '2026-07-18T09:00:00.000Z',
         },
     },
 ];
@@ -69,7 +67,9 @@ describe('OfferDecisionRobustnessLab', () => {
         fireEvent.click(openButton);
 
         expect(openButton).toHaveAttribute('aria-expanded', 'true');
-        expect(screen.getByText('This uses your saved ratings for a quick comparison. Nothing here is saved.')).toBeInTheDocument();
+        expect(
+            screen.getByText('This uses your saved ratings for a quick comparison. Nothing here is saved.')
+        ).toBeInTheDocument();
         expect(screen.getByLabelText('Career Growth importance')).toHaveValue('3');
         expect(screen.getByLabelText('Company/Culture Fit importance')).toHaveValue('3');
         expect(screen.getByLabelText('Work-Life Balance importance')).toHaveValue('3');
@@ -88,15 +88,11 @@ describe('OfferDecisionRobustnessLab', () => {
         const growthInput = screen.getByLabelText('Career Growth importance');
         fireEvent.change(growthInput, { target: { value: '5' } });
 
-        expect(
-            screen.getByText(/Acme Software Engineer is your top match/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Acme Software Engineer is your top match/i)).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Reset importance to balanced' }));
         expect(growthInput).toHaveValue('3');
-        expect(
-            screen.getByText(/Beta Labs Platform Developer is your top match/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Beta Labs Platform Developer is your top match/i)).toBeInTheDocument();
 
         fireEvent.change(growthInput, { target: { value: '5' } });
         fireEvent.click(screen.getByRole('button', { name: 'Close' }));

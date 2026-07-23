@@ -28,7 +28,6 @@ type OfferDecisionRow = {
     decision_deadline: Date | string | null;
     pros: string | null;
     concerns: string | null;
-    updated_at: Date | null;
 };
 
 type LockedApplicationRow = {
@@ -42,7 +41,7 @@ export type SaveOfferEvaluationResult = 'saved' | 'application_unavailable' | 'd
 const toISOString = (value: Date | string): string => (value instanceof Date ? value.toISOString() : value);
 
 const toEvaluation = (row: OfferDecisionRow): OfferEvaluation | null => {
-    if (row.evaluation_job_id === null || row.updated_at === null) {
+    if (row.evaluation_job_id === null) {
         return null;
     }
 
@@ -64,7 +63,6 @@ const toEvaluation = (row: OfferDecisionRow): OfferEvaluation | null => {
             pros: row.pros ?? '',
             concerns: row.concerns ?? '',
         },
-        updated_at: row.updated_at,
     };
 };
 
@@ -101,8 +99,7 @@ export const getOfferDecisionWorkspace = async (
             evaluations.work_arrangement,
             evaluations.decision_deadline,
             evaluations.pros,
-            evaluations.concerns,
-            evaluations.updated_at
+            evaluations.concerns
         FROM job_applications AS applications
         LEFT JOIN offer_evaluations AS evaluations
             ON evaluations.job_id = applications.job_id
@@ -196,8 +193,7 @@ const upsertOfferEvaluation = async (
             work_arrangement = EXCLUDED.work_arrangement,
             decision_deadline = EXCLUDED.decision_deadline,
             pros = EXCLUDED.pros,
-            concerns = EXCLUDED.concerns,
-            updated_at = CURRENT_TIMESTAMP`,
+            concerns = EXCLUDED.concerns`,
         [
             jobId,
             userId,

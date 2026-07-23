@@ -34,7 +34,6 @@ const createApplication = (
         job_id: jobId,
         ratings,
         details,
-        updated_at: '2026-07-18T08:00:00.000Z',
     },
 });
 

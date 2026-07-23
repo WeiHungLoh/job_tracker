@@ -21,7 +21,6 @@ const createEvaluation = (jobId: number, overrides: Partial<OfferEvaluation['det
         concerns: 'Line one\n"Line two"',
         ...overrides,
     },
-    updated_at: '2026-07-18T08:00:00.000Z',
 });
 
 const createApplication = (
@@ -48,6 +47,7 @@ describe('offer evaluation CSV data', () => {
         expect(csvData).toHaveLength(3);
         expect(csvData[0]).toEqual(['Evaluated Offers']);
         expect(csvData[1][0]).toBe('Company');
+        expect(csvData[1]).not.toContain('Updated Date');
         expect(csvData[2][0]).toBe('Acme, Inc.');
         expect(csvData.flat()).not.toContain('Offers to Evaluate');
         expect(csvData.flat()).not.toContain(2);

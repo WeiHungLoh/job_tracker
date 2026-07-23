@@ -4,7 +4,6 @@ import OfferDecisionWorkspace from '../../offerDecision/OfferDecisionWorkspace';
 import type { SaveOfferEvaluationRequest } from '../../offerDecision/models';
 import { selectArchivedOfferDecisionWorkspace, selectOfferDecisionWorkspace } from '../state/demoSelectors';
 import { useToast } from '../../../components/toast/ToastProvider';
-import { routes } from '../../../routes';
 
 type DemoOfferDecisionPageProps = {
     archived: boolean;
@@ -22,7 +21,7 @@ const DemoOfferDecisionPage = ({ archived }: DemoOfferDecisionPageProps) => {
         const isNewEvaluation = !state.offerEvaluations[jobId];
         dispatch({
             type: 'SAVE_OFFER_EVALUATION',
-            payload: { jobId, request, updatedAt: new Date().toISOString() },
+            payload: { jobId, request },
         });
         if (isNewEvaluation) {
             showSuccessToast('Offer evaluation added.');
@@ -40,7 +39,6 @@ const DemoOfferDecisionPage = ({ archived }: DemoOfferDecisionPageProps) => {
 
     return (
         <OfferDecisionWorkspace
-            applicationsRoute={archived ? routes.demoArchivedApplications : routes.demoViewApplications}
             data={data}
             onDelete={deleteEvaluation}
             onDeleteAll={deleteAllEvaluations}

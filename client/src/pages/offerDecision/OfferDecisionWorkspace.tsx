@@ -36,7 +36,6 @@ import { type OfferFieldRefs } from './OfferEvaluationForm';
 import OfferDecisionRobustnessLab from './robustness/OfferDecisionRobustnessLab';
 import { isEvaluatedOfferDecisionApplication } from './robustness/offerDecisionRobustnessCalculations';
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
-import { routes } from '../../routes';
 import { useToast } from '../../components/toast/ToastProvider';
 import { useUserPreferences } from '../../components/userPreferences/UserPreferencesProvider';
 import styles from './OfferDecisionWorkspace.module.css';
@@ -101,7 +100,6 @@ const ComparisonSection = ({
     ) : null;
 
 const OfferDecisionWorkspace = ({
-    applicationsRoute = routes.viewApplications,
     data,
     getDeleteAllEvaluationCount,
     isFiltering = false,
@@ -132,7 +130,7 @@ const OfferDecisionWorkspace = ({
     const previousEvaluations = groups['Previous Evaluations'];
     const robustnessOffers = evaluatedOffers.filter(isEvaluatedOfferDecisionApplication);
     const hasOpenEvaluationDraft = Object.keys(drafts).length > 0;
-    const hasApplications = data.applications.length > 0;
+    const filtersAreActive = selectedFilters.length !== filterOptions.length;
     const displayedApplicationCount = selectedFilters.reduce((count, filter) => count + groups[filter].length, 0);
     const displayedEvaluationCount = selectedFilters.reduce(
         (count, filter) => count + (OFFER_DECISION_FILTER_CONFIG[filter].exportable ? groups[filter].length : 0),
@@ -342,11 +340,9 @@ const OfferDecisionWorkspace = ({
     );
 
     const emptyState = createOfferDecisionEmptyState({
-        applicationsRoute,
-        hasApplications,
+        filtersAreActive,
         onClearFilters: () => void handleFilterSelection([...filterOptions]),
         readOnly,
-        selectedFilters,
     });
 
     return (

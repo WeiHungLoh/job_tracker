@@ -40,7 +40,6 @@ const createEvaluation = (
     job_id: jobId,
     ratings,
     details: { ...details, decision_deadline: decisionDeadline },
-    updated_at: '2026-07-18T08:00:00.000Z',
 });
 
 const activeData: OfferDecisionWorkspaceData = {
@@ -125,7 +124,6 @@ const WorkspaceHarness = ({
                               job_id: jobId,
                               ratings: request.ratings,
                               details: request.details,
-                              updated_at: '2026-07-18T09:00:00.000Z',
                           },
                       }
                     : application
@@ -939,7 +937,7 @@ describe('OfferDecisionWorkspace', () => {
         expect(csv).toContain('Acme');
         expect(csv).toContain('Continuum');
         expect(csv).not.toContain('Beta Labs');
-        expect(csv).toContain(`\n${Array.from({ length: 18 }, () => '""').join(',')}\n"Previous Evaluations"`);
+        expect(csv).toContain(`\n${Array.from({ length: 17 }, () => '""').join(',')}\n"Previous Evaluations"`);
     });
 
     test('downloads escaped CSV text and N/A values from the generated table', async () => {
@@ -1081,11 +1079,10 @@ describe('OfferDecisionWorkspace', () => {
         expect(screen.getByRole('heading', { name: 'Archived Evaluated Offers' })).toBeInTheDocument();
     });
 
-    test('links to applications when the Offers to Evaluate filter has no results', async () => {
+    test('uses the standard filtered empty state when Offers to Evaluate has no results', async () => {
         render(
             <MemoryRouter>
                 <OfferDecisionWorkspace
-                    applicationsRoute='/application/view'
                     data={{ applications: [activeData.applications[0]] }}
                     onDelete={vi.fn()}
                     onSave={vi.fn()}
@@ -1098,8 +1095,11 @@ describe('OfferDecisionWorkspace', () => {
         await userEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
         await userEvent.click(screen.getByRole('checkbox', { name: 'Offers to Evaluate' }));
 
-        expect(screen.getByRole('heading', { name: 'No offers to evaluate' })).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'View applications' })).toHaveAttribute('href', '/application/view');
+        expect(screen.getByRole('heading', { name: 'No offer comparisons match your filters' })).toBeInTheDocument();
+        expect(
+            screen.getByText('Try showing all evaluation types to see every active offer comparison.')
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Clear filters' })).toBeInTheDocument();
     });
 
     test('keeps controls visible and renders the shared card skeletons while loading', () => {

@@ -71,7 +71,6 @@ const createEvaluation = (jobId: number): OfferEvaluation => ({
     job_id: jobId,
     ratings,
     details,
-    updated_at: '2026-07-18T08:00:00.000Z',
 });
 
 const workspaceData: OfferDecisionWorkspaceData = {
@@ -153,6 +152,31 @@ describe('OfferDecisionPage', () => {
         expect(updatePreferences).toHaveBeenCalledWith({ offer_decision_filters: ['Previous Evaluations'] });
     });
 
+    test('shows Clear filters when an active server-side filter returns no offers', async () => {
+        mocks.getActive.mockImplementation(async ({ filters }: { filters: string[] }) =>
+            filters.length === 1 ? { applications: [] } : workspaceData
+        );
+
+        render(<OfferDecisionPage archived={false} />);
+        await waitForActiveWorkspace();
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        expect(
+            await screen.findByRole('heading', { name: 'No offer comparisons match your filters' })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Try showing all evaluation types to see every active offer comparison.')
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(await screen.findByRole('heading', { name: 'Evaluated Offers' })).toBeInTheDocument();
+        expect(mocks.getActive).toHaveBeenLastCalledWith({
+            filters: ['Offers to Evaluate', 'Evaluated Offers', 'Expired Evaluated Offers', 'Previous Evaluations'],
+        });
+    });
+
     test('requests archived filters from the server and saves only the archived preference', async () => {
         const updatePreferences = vi.fn(async (updates: UpdateUserPreferencesRequest) => ({
             ...testPreferences,
@@ -194,6 +218,31 @@ describe('OfferDecisionPage', () => {
         expect(requestOrder).toEqual(['filtered-get', 'preference']);
         expect(updatePreferences).toHaveBeenCalledWith({
             archived_offer_decision_filters: ['Previous Evaluations'],
+        });
+    });
+
+    test('shows Clear filters when an archived server-side filter returns no offers', async () => {
+        mocks.getArchived.mockImplementation(async ({ filters }: { filters: string[] }) =>
+            filters.length === 1 ? { applications: [] } : workspaceData
+        );
+
+        render(<OfferDecisionPage archived />);
+        await screen.findByRole('heading', { name: 'Archived Evaluated Offers' });
+        fireEvent.click(screen.getByRole('button', { name: 'Filter by' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Show All' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Previous Evaluations' }));
+
+        expect(
+            await screen.findByRole('heading', { name: 'No archived offer comparisons match your filters' })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Try showing all evaluation types to see every archived offer comparison.')
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(await screen.findByRole('heading', { name: 'Archived Evaluated Offers' })).toBeInTheDocument();
+        expect(mocks.getArchived).toHaveBeenLastCalledWith({
+            filters: ['Evaluated Offers', 'Expired Evaluated Offers', 'Previous Evaluations'],
         });
     });
 

@@ -138,7 +138,6 @@ export const createDefaultOfferEvaluation = (jobId: number): OfferEvaluation => 
     job_id: jobId,
     ratings: { ...DEFAULT_OFFER_DECISION_VALUES },
     details: { ...DEFAULT_OFFER_DETAILS },
-    updated_at: '',
 });
 
 const valuesAreEqual = (first: OfferDecisionValues, second: OfferDecisionValues): boolean =>

@@ -125,7 +125,7 @@ test('declares the constrained offer evaluation table after job applications wit
     assert.match(table, /concerns TEXT NOT NULL DEFAULT ''/);
     assert.match(table, /CHAR_LENGTH\(pros\) <= \$\{OFFER_DETAILS_MAX_LENGTHS\.notes\}/);
     assert.match(table, /CHAR_LENGTH\(concerns\) <= \$\{OFFER_DETAILS_MAX_LENGTHS\.notes\}/);
-    assert.match(table, /updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP/);
+    assert.doesNotMatch(table, /updated_at/);
     assert.match(table, /PRIMARY KEY \(job_id, user_id\)/);
     assert.match(table, /CONSTRAINT offer_evaluations_job_user_fk/);
     assert.match(table, /FOREIGN KEY \(job_id, user_id\)/);
@@ -191,7 +191,6 @@ test('validates one normalized offer evaluation request instead of a bulk reques
 });
 
 test('loads the active workspace in one user-scoped query and maps optional evaluations', async () => {
-    const updatedAt = new Date('2026-07-18T08:00:00.000Z');
     const calls = [];
     const workspace = await withMockedPoolQuery(
         async (sql, values) => {
@@ -217,7 +216,6 @@ test('loads the active workspace in one user-scoped query and maps optional eval
                         decision_deadline: new Date(validDetails.decision_deadline),
                         pros: 'Strong product ownership',
                         concerns: 'Two office days each week',
-                        updated_at: updatedAt,
                     },
                     {
                         job_id: 12,
@@ -246,6 +244,7 @@ test('loads the active workspace in one user-scoped query and maps optional eval
     assert.match(calls[0].sql, /'Previous Evaluations' = ANY\(\$3::text\[\]\)/);
     assert.match(calls[0].sql, /evaluations\.decision_deadline IS NULL\s+OR evaluations\.decision_deadline >= NOW\(\)/);
     assert.match(calls[0].sql, /evaluations\.decision_deadline < NOW\(\)/);
+    assert.doesNotMatch(calls[0].sql, /updated_at/);
     assert.doesNotMatch(calls[0].sql, /latest_importance|importance|equity|\bbase_salary\b/);
     assert.deepEqual(workspace, {
         applications: [
@@ -264,7 +263,6 @@ test('loads the active workspace in one user-scoped query and maps optional eval
                         compensation: 4,
                     },
                     details: validDetails,
-                    updated_at: updatedAt,
                 },
             },
             {
@@ -323,6 +321,7 @@ test('saves one offer evaluation at the application timestamp atomically', async
     assert.match(calls[2].sql, /monthly_base_salary/);
     assert.doesNotMatch(calls[2].sql, /importance|equity|\bbase_salary\b/);
     assert.match(calls[2].sql, /ON CONFLICT \(job_id, user_id\) DO UPDATE/);
+    assert.doesNotMatch(calls[2].sql, /updated_at/);
     assert.equal(calls[3].sql, 'COMMIT');
 });
 

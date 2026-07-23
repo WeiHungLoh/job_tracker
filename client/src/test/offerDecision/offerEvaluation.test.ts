@@ -46,7 +46,6 @@ const createEvaluation = (
     job_id: jobId,
     ratings,
     details: { ...validDetails, decision_deadline: decisionDeadline },
-    updated_at: '2026-07-18T08:00:00.000Z',
 });
 
 describe('offer evaluation', () => {
@@ -63,7 +62,6 @@ describe('offer evaluation', () => {
             job_id: 11,
             ratings: DEFAULT_OFFER_DECISION_VALUES,
             details: DEFAULT_OFFER_DETAILS,
-            updated_at: '',
         });
         expect(DEFAULT_OFFER_DETAILS).toEqual({
             currency: 'SGD',

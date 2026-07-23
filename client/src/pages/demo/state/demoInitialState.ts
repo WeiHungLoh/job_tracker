@@ -465,13 +465,11 @@ const createArchivedInterviews = (now: Date): ArchivedJobInterview[] => [
 const createOfferEvaluation = (
     jobId: number,
     ratings: OfferDecisionValues,
-    details: OfferDetails,
-    updatedAt: Date
+    details: OfferDetails
 ): OfferEvaluation => ({
     job_id: jobId,
     ratings,
     details,
-    updated_at: updatedAt.toISOString(),
 });
 
 const createOfferEvaluations = (now: Date): Record<number, OfferEvaluation> => {
@@ -493,8 +491,7 @@ const createOfferEvaluations = (now: Date): Record<number, OfferEvaluation> => {
                 decision_deadline: toDateString(daysFromNow(now, 5)),
                 pros: 'Strong product ownership and a clear promotion path.',
                 concerns: 'Two fixed office days each week.',
-            },
-            daysAgo(now, 2)
+            }
         ),
         112: createOfferEvaluation(
             112,
@@ -513,8 +510,7 @@ const createOfferEvaluations = (now: Date): Record<number, OfferEvaluation> => {
                 decision_deadline: toDateString(daysFromNow(now, 7)),
                 pros: 'Higher base salary and flexible location.',
                 concerns: 'Smaller engineering team and broader on-call scope.',
-            },
-            daysAgo(now, 1)
+            }
         ),
         204: createOfferEvaluation(
             204,
@@ -533,8 +529,7 @@ const createOfferEvaluations = (now: Date): Record<number, OfferEvaluation> => {
                 decision_deadline: toDateString(daysAgo(now, 65)),
                 pros: 'Stable team and well-defined responsibilities.',
                 concerns: 'Commute was longer than preferred.',
-            },
-            daysAgo(now, 70)
+            }
         ),
     };
 };

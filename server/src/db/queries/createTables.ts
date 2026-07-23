@@ -85,7 +85,6 @@ const createTables = async (): Promise<void> => {
             CHECK (CHAR_LENGTH(pros) <= ${OFFER_DETAILS_MAX_LENGTHS.notes}),
         concerns TEXT NOT NULL DEFAULT ''
             CHECK (CHAR_LENGTH(concerns) <= ${OFFER_DETAILS_MAX_LENGTHS.notes}),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (job_id, user_id),
         CONSTRAINT offer_evaluations_job_user_fk
             FOREIGN KEY (job_id, user_id)

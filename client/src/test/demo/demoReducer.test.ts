@@ -100,13 +100,11 @@ describe('demo reducer state', () => {
             pros: 'Strong product ownership',
             concerns: 'Two office days each week',
         };
-        const updatedAt = '2026-07-18T09:30:00.000Z';
         const updated = demoReducer(state, {
             type: 'SAVE_OFFER_EVALUATION',
             payload: {
                 jobId: 111,
                 request: { ratings, details },
-                updatedAt,
             },
         });
 
@@ -114,7 +112,6 @@ describe('demo reducer state', () => {
             job_id: 111,
             ratings,
             details,
-            updated_at: updatedAt,
         });
         expect(updated.offerEvaluations[112]).toBe(state.offerEvaluations[112]);
         expect(updated.offerEvaluations).not.toBe(state.offerEvaluations);
@@ -128,7 +125,7 @@ describe('demo reducer state', () => {
         };
         const updated = demoReducer(state, {
             type: 'SAVE_OFFER_EVALUATION',
-            payload: { jobId: 113, request, updatedAt: '2026-07-18T09:30:00.000Z' },
+            payload: { jobId: 113, request },
         });
 
         expect(updated).toBe(state);

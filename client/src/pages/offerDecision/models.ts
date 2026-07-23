@@ -33,7 +33,6 @@ export type OfferEvaluation = {
     job_id: number;
     ratings: OfferDecisionValues;
     details: OfferDetails;
-    updated_at: string;
 };
 
 export type OfferDecisionApplication = {
@@ -106,7 +105,6 @@ export type DeleteAllOfferEvaluationsRequest = null;
 export type DeleteAllOfferEvaluationsResponse = null;
 
 export type OfferDecisionWorkspaceProps = {
-    applicationsRoute?: string;
     data: OfferDecisionWorkspaceData;
     getDeleteAllEvaluationCount?: () => Promise<number>;
     isFiltering?: boolean;

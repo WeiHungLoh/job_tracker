@@ -30,7 +30,6 @@ const createEvaluation = (
         pros: 'Strong product ownership',
         concerns: 'Two office days each week',
     },
-    updated_at: '2026-07-18T08:00:00.000Z',
 });
 
 const createApplication = (

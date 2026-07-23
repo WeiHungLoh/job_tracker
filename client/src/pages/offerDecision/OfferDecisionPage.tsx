@@ -5,7 +5,6 @@ import type { OfferDecisionFilter, OfferDecisionWorkspaceData, SaveOfferEvaluati
 import { getErrorToastMessage } from '../../helper/getErrorToastMessage';
 import { useJobTrackerAPI } from '../../api/useJobTrackerAPI';
 import { useToast } from '../../components/toast/ToastProvider';
-import { routes } from '../../routes';
 import { useUserPreferences } from '../../components/userPreferences/UserPreferencesProvider';
 import useFilterRequest from '../../hooks/useFilterRequest';
 import { isArchivedOfferDecisionFilter } from './offerDecisionConfig';
@@ -138,7 +137,6 @@ const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
                                       job_id: jobId,
                                       ratings: { ...request.ratings },
                                       details: { ...request.details },
-                                      updated_at: new Date().toISOString(),
                                   },
                               }
                             : application
@@ -230,7 +228,6 @@ const OfferDecisionPage = ({ archived }: OfferDecisionPageProps) => {
 
     return (
         <OfferDecisionWorkspace
-            applicationsRoute={routes.viewApplications}
             data={data ?? { applications: [] }}
             getDeleteAllEvaluationCount={getDeleteAllEvaluationCount}
             isFiltering={isFiltering}

@@ -27,7 +27,6 @@ type CreateInterviewPayload = {
 type SaveOfferEvaluationPayload = {
     jobId: number;
     request: SaveOfferEvaluationRequest;
-    updatedAt: string;
 };
 
 export type DemoAction =
@@ -346,7 +345,7 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
             return { ...state, archivedInterviews: [] };
 
         case 'SAVE_OFFER_EVALUATION': {
-            const { jobId, request, updatedAt } = action.payload;
+            const { jobId, request } = action.payload;
             const application = state.applications.find((candidate) => candidate.job_id === jobId);
             if (application?.job_status !== 'Offer') {
                 return state;
@@ -360,7 +359,6 @@ export const demoReducer = (state: DemoState, action: DemoAction): DemoState => 
                         job_id: jobId,
                         ratings: { ...request.ratings },
                         details: { ...request.details },
-                        updated_at: updatedAt,
                     },
                 },
             };

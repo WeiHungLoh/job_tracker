@@ -22,7 +22,6 @@ const OFFER_EVALUATION_CSV_HEADERS = [
     'Work-Life Balance Rating',
     'Compensation Rating',
     'Fit Rating (%)',
-    'Updated Date',
 ] as const;
 
 const OFFER_EVALUATION_CSV_SEPARATOR = OFFER_EVALUATION_CSV_HEADERS.map(() => '');
@@ -59,7 +58,6 @@ const createEvaluationRow = (application: OfferDecisionApplication): Array<strin
         evaluation.ratings.work_life_balance,
         evaluation.ratings.compensation,
         calculateOfferDecisionScore(evaluation.ratings),
-        dateValue(evaluation.updated_at),
     ];
 };
 
