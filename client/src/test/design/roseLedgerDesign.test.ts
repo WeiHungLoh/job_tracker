@@ -238,6 +238,9 @@ describe('Rose Ledger visual contract', () => {
         expect(addApplicationCss).toMatch(
             /\.capturedPageTitle\s*\{[^}]*line-height:\s*1\.45;[^}]*overflow-wrap:\s*anywhere;/s
         );
+        expect(addApplicationCss).toMatch(
+            /@media \(max-width: 600px\)\s*\{[^}]*\.quickCaptureSetup\s*\{[^}]*display:\s*none;/s
+        );
     });
 
     it('reuses the production application boards in demo views', () => {

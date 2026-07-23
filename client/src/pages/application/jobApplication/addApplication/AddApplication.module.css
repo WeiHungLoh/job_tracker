@@ -119,3 +119,9 @@
         transition: none;
     }
 }
+
+@media (max-width: 600px) {
+    .quickCaptureSetup {
+        display: none;
+    }
+}
