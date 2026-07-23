@@ -21,6 +21,21 @@ import { useConfirm } from 'material-ui-confirm';
 import { isDuplicateApplicationError } from '../../possibleDuplicateApplication';
 import { createDuplicateApplicationConfirmation } from '../../duplicateApplicationConfirmation';
 import { useQuickCaptureData } from '../QuickCaptureProvider';
+import Icon from '../../../../components/icon/Icon';
+import QuickCaptureBookmarklet from '../QuickCaptureBookmarklet';
+
+const getQuickCaptureHelperText = (companyName: string, jobTitle: string): string => {
+    if (companyName && jobTitle) {
+        return 'Company and job title were prefilled. Review them before saving.';
+    }
+    if (companyName) {
+        return 'Company name was prefilled. Review it and enter the job title before saving.';
+    }
+    if (jobTitle) {
+        return 'Job title was prefilled. Review it and enter the company name before saving.';
+    }
+    return 'We could not detect the company or job title from this page. Enter them manually.';
+};
 
 const AddApplication = () => {
     const quickCaptureData = useQuickCaptureData();
@@ -31,7 +46,7 @@ const AddApplication = () => {
     const [applicationDate, setApplicationDate] = useState<string>('');
     const [jobLocation, setJobLocation] = useState<string>(capturedData.jobLocation);
     const [jobURL, setJobURL] = useState<string>(capturedData.jobURL);
-    const hasPrefilledMetadata = Boolean(capturedData.companyName || capturedData.jobTitle || capturedData.jobLocation);
+    const quickCaptureHelperText = getQuickCaptureHelperText(capturedData.companyName, capturedData.jobTitle);
     const { clearFieldError, errors, setErrors } = useFormErrors<ApplicationFormField>();
     const companyNameInputRef = useRef<HTMLInputElement>(null);
     const jobTitleInputRef = useRef<HTMLInputElement>(null);
@@ -41,9 +56,14 @@ const AddApplication = () => {
     const pendingSubmissionRef = useRef(false);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isQuickCaptureSetupExpanded, setIsQuickCaptureSetupExpanded] = useState(false);
     const api = useJobTrackerAPI();
     const confirm = useConfirm();
     const { showErrorToast, showSuccessToast } = useToast();
+
+    const handleToggleQuickCaptureSetup = () => {
+        setIsQuickCaptureSetupExpanded((isExpanded) => !isExpanded);
+    };
 
     const resetForm = () => {
         setCompanyName('');
@@ -130,21 +150,55 @@ const AddApplication = () => {
 
     return (
         <form className={styles.addApplication} noValidate onSubmit={handleAdd}>
-            {hasPrefilledMetadata && (
-                <p className={styles.quickCaptureNotice}>
-                    Some details were filled from the job posting. Review them before adding the application.
-                </p>
-            )}
-            {capturedData.pageTitle && (
-                <section className={styles.capturedPageTitle} aria-labelledby='captured-page-title-label'>
-                    <p id='captured-page-title-label' className={styles.capturedPageTitleLabel}>
-                        Captured page title
+            {capturedData.hasCaptureParameters ? (
+                <section className={styles.quickCaptureReference} aria-labelledby='quick-capture-reference-heading'>
+                    <p id='quick-capture-reference-heading' className={styles.quickCaptureReferenceHeading}>
+                        <Icon data-testid='quick-capture-reference-icon' name='activeApplications' size='1.1em' />
+                        <span>Quick Capture reference</span>
                     </p>
-                    <p className={styles.capturedPageTitleValue}>{capturedData.pageTitle}</p>
-                    <p className={styles.capturedPageTitleHelp}>
-                        Use this as a reference and verify the company and job title below.
-                    </p>
+                    {capturedData.pageTitle && (
+                        <p className={styles.capturedPageTitle} data-testid='captured-page-title'>
+                            {capturedData.pageTitle}
+                        </p>
+                    )}
+                    <p className={styles.quickCaptureReferenceHelp}>{quickCaptureHelperText}</p>
                 </section>
+            ) : (
+                <div className={styles.quickCaptureSetup}>
+                    <div className={styles.quickCaptureSetupTriggerRow}>
+                        <PrimaryButton
+                            aria-controls='quick-capture-setup-content'
+                            aria-expanded={isQuickCaptureSetupExpanded}
+                            className={styles.quickCaptureSetupTrigger}
+                            type='button'
+                            variant='navigation'
+                            onClick={handleToggleQuickCaptureSetup}
+                        >
+                            <span>Quick Capture</span>
+                            <Icon
+                                className={`${styles.quickCaptureChevron} ${
+                                    isQuickCaptureSetupExpanded ? styles.quickCaptureChevronOpen : ''
+                                }`}
+                                data-testid='quick-capture-chevron'
+                                name='chevronDown'
+                            />
+                        </PrimaryButton>
+                    </div>
+                    {isQuickCaptureSetupExpanded && (
+                        <section
+                            id='quick-capture-setup-content'
+                            className={styles.quickCaptureSetupContent}
+                            aria-label='Quick Capture setup'
+                        >
+                            <p className={styles.quickCaptureSetupTitle}>Save jobs faster from a listing</p>
+                            <p className={styles.quickCaptureSetupInstructions}>
+                                Drag “Save to Job Tracker” to your desktop browser’s bookmarks bar. Then select it while
+                                viewing a job posting.
+                            </p>
+                            <QuickCaptureBookmarklet showInstructions={false} />
+                        </section>
+                    )}
+                </div>
             )}
             <label htmlFor='company-name'>Company Name</label>
             <input

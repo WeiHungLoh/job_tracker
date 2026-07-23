@@ -192,6 +192,7 @@ describe('Rose Ledger visual contract', () => {
             'src/pages/dashboard/dashboardSelectors.ts',
             'src/pages/dashboard/attentionCenter/attentionItems.ts',
             'src/pages/demo/state/demoDates.ts',
+            'src/pages/application/jobApplication/QuickCaptureBookmarklet.tsx',
         ];
         const obsoletePaths = [
             'src/test/renderWithToast.tsx',
@@ -208,10 +209,35 @@ describe('Rose Ledger visual contract', () => {
             'src/pages/dashboard/data/dashboardData.ts',
             'src/pages/dashboard/attentionCenter/attentionCenterData.ts',
             'src/pages/demo/state/demoDateHelpers.ts',
+            'src/pages/userGuide/components/quickCaptureBookmarklet/QuickCaptureBookmarklet.tsx',
+            'src/pages/application/jobApplication/QuickCaptureSetupDialog.tsx',
         ];
 
         expectedPaths.forEach((path) => expect(existsSync(resolve(clientRoot, path)), path).toBe(true));
         obsoletePaths.forEach((path) => expect(existsSync(resolve(clientRoot, path)), path).toBe(false));
+    });
+
+    it('keeps Quick Capture setup and reference UI compact and responsive', () => {
+        const addApplicationCss = readSource(
+            'src/pages/application/jobApplication/addApplication/AddApplication.module.css'
+        );
+
+        expect(addApplicationCss).not.toContain('linear-gradient');
+        expect(addApplicationCss).not.toContain('box-shadow');
+        expect(addApplicationCss).toContain('background-color: var(--colorControlMutedSurface);');
+        expect(addApplicationCss).toContain('border-left: 4px solid var(--colorPrimary);');
+        expect(addApplicationCss).toMatch(/\.quickCaptureSetupTriggerRow\s*\{[^}]*justify-content:\s*flex-end;/s);
+        expect(addApplicationCss).toMatch(
+            /\.quickCaptureSetupTrigger\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;/s
+        );
+        expect(addApplicationCss).toMatch(/\.quickCaptureChevronOpen\s*\{[^}]*transform:\s*rotate\(180deg\);/s);
+        expect(addApplicationCss).toContain('@media (prefers-reduced-motion: reduce)');
+        expect(addApplicationCss).toMatch(
+            /\.quickCaptureSetupContent\s*\{[^}]*background-color:\s*var\(--colorControlMutedSurface\);/s
+        );
+        expect(addApplicationCss).toMatch(
+            /\.capturedPageTitle\s*\{[^}]*line-height:\s*1\.45;[^}]*overflow-wrap:\s*anywhere;/s
+        );
     });
 
     it('reuses the production application boards in demo views', () => {

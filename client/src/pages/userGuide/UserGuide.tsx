@@ -6,7 +6,7 @@ import { routes } from '../../routes';
 import styles from './UserGuide.module.css';
 import { useState } from 'react';
 import { FIELD_MAX_LENGTHS, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../../helper/formValidation';
-import QuickCaptureBookmarklet from './components/quickCaptureBookmarklet/QuickCaptureBookmarklet';
+import QuickCaptureBookmarklet from '../application/jobApplication/QuickCaptureBookmarklet';
 
 const guideSections: readonly UserGuideSection[] = [
     {
@@ -248,6 +248,7 @@ const guideSections: readonly UserGuideSection[] = [
                     visible, then install the bookmark once. If you already use an older Quick Capture bookmark, replace
                     that saved bookmark once to enable smart prefilling:
                 </p>
+                <p>Expand Quick Capture at the top of the Add Application form for the same setup shortcut.</p>
                 <QuickCaptureBookmarklet />
                 <ol>
                     <li>Visit a job advertisement and select the saved bookmark.</li>
@@ -257,7 +258,10 @@ const guideSections: readonly UserGuideSection[] = [
                         When the page provides structured job-posting metadata, Quick Capture fills only the company
                         name, job title and location provided by that metadata.
                     </li>
-                    <li>Missing details stay empty, and the browser-tab title remains a reference.</li>
+                    <li>
+                        Missing details stay empty, and the Quick Capture reference panel keeps the browser-tab title as
+                        a reference.
+                    </li>
                     <li>Review every populated field and complete the application before submitting.</li>
                 </ol>
                 <p>

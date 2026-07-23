@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { createEvent, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import AddApplication from '../../../pages/application/jobApplication/addApplication/AddApplication';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { render as renderWithToast } from '../../renderWithProviders';
@@ -160,11 +160,73 @@ describe('User add application flow', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    test('keeps the URL empty and hides captured title information without quick-capture parameters', () => {
+    test('shows a collapsed Quick Capture disclosure only on normal Add Application navigation', () => {
         renderQuickCaptureApplication('/application/add');
 
         expect(screen.getByLabelText(/job posting url/i)).toHaveValue('');
-        expect(screen.queryByText('Captured page title')).not.toBeInTheDocument();
+        const setupTrigger = screen.getByRole('button', { name: 'Quick Capture' });
+        expect(setupTrigger).toBeVisible();
+        expect(setupTrigger).toHaveAttribute('type', 'button');
+        expect(setupTrigger).toHaveAttribute('aria-expanded', 'false');
+        expect(setupTrigger).toHaveAttribute('aria-controls', 'quick-capture-setup-content');
+        expect(within(setupTrigger).getByTestId('quick-capture-chevron')).toHaveAttribute('aria-hidden', 'true');
+        expect(within(setupTrigger).getByTestId('quick-capture-chevron').className.baseVal).not.toMatch(/open/i);
+        expect(screen.queryByText('Save jobs faster from a listing')).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Save to Job Tracker' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', { name: 'Quick Capture reference' })).not.toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('expands and collapses inline setup without changing entered form values or making requests', async () => {
+        renderQuickCaptureApplication('/application/add');
+
+        fillCompleteApplicationForm();
+        const setupTrigger = screen.getByRole('button', { name: 'Quick Capture' });
+        const setItem = vi.spyOn(Storage.prototype, 'setItem');
+        await userEvent.click(setupTrigger);
+
+        expect(setupTrigger).toHaveAttribute('aria-expanded', 'true');
+        expect(within(setupTrigger).getByTestId('quick-capture-chevron').className.baseVal).toMatch(/open/i);
+        const setupContent = document.getElementById('quick-capture-setup-content');
+        expect(setupContent).toBeVisible();
+        expect(within(setupContent!).getByText('Save jobs faster from a listing')).toBeVisible();
+        expect(
+            within(setupContent!).getByText(
+                /drag “save to job tracker” to your desktop browser’s bookmarks bar\. then select it while viewing a job posting\./i
+            )
+        ).toBeVisible();
+        const bookmarklet = within(setupContent!).getByRole('link', { name: 'Save to Job Tracker' });
+        expect(bookmarklet).toHaveAttribute('href', expect.stringMatching(/^javascript:/));
+
+        const clickEvent = createEvent.click(bookmarklet);
+        fireEvent(bookmarklet, clickEvent);
+        expect(clickEvent.defaultPrevented).toBe(true);
+
+        await userEvent.click(setupTrigger);
+        expect(setupTrigger).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByText('Save jobs faster from a listing')).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Save to Job Tracker' })).not.toBeInTheDocument();
+        expectCompleteApplicationFormValues();
+        expect(setItem).not.toHaveBeenCalled();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    test('toggles the disclosure with Enter and Space while keeping focus on the trigger', async () => {
+        renderQuickCaptureApplication('/application/add');
+
+        const setupTrigger = screen.getByRole('button', { name: 'Quick Capture' });
+        setupTrigger.focus();
+        await userEvent.keyboard('{Enter}');
+
+        expect(setupTrigger).toHaveAttribute('aria-expanded', 'true');
+        expect(document.activeElement).toBe(setupTrigger);
+        expect(screen.getByRole('link', { name: 'Save to Job Tracker' })).toBeVisible();
+
+        await userEvent.keyboard(' ');
+        expect(setupTrigger).toHaveAttribute('aria-expanded', 'false');
+        expect(document.activeElement).toBe(setupTrigger);
+        expect(screen.queryByRole('link', { name: 'Save to Job Tracker' })).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -174,7 +236,12 @@ describe('User add application flow', () => {
 
         const jobURLInput = screen.getByLabelText(/job posting url/i);
         expect(jobURLInput).toHaveValue('https://example.com/jobs/1');
-        expect(screen.queryByText('Captured page title')).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Quick Capture reference' })).toBeVisible();
+        expect(
+            screen.getByText('We could not detect the company or job title from this page. Enter them manually.')
+        ).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Quick Capture' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Save to Job Tracker' })).not.toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
         expect(replaceState).toHaveBeenCalledWith(window.history.state, '', '/application/add');
 
@@ -186,7 +253,7 @@ describe('User add application flow', () => {
         expect(jobURLInput).toHaveValue('');
     });
 
-    test('prefills structured metadata once and asks the user to review it', async () => {
+    test('shows one reference panel when company and job title were originally prefilled', async () => {
         const fragment = new URLSearchParams({
             jobURL: 'https://example.com/jobs/1',
             pageTitle: 'Software Engineer | Example Careers',
@@ -201,13 +268,19 @@ describe('User add application flow', () => {
         expect(screen.getByLabelText(/job title/i)).toHaveValue('Software Engineer');
         expect(screen.getByLabelText(/job location/i)).toHaveValue('Singapore');
         expect(screen.getByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/1');
+        const reference = screen.getByRole('region', { name: 'Quick Capture reference' });
+        expect(within(reference).getByText('Quick Capture reference')).toBeVisible();
+        expect(within(reference).getByTestId('quick-capture-reference-icon')).toHaveAttribute('aria-hidden', 'true');
+        expect(screen.getByText('Software Engineer | Example Careers')).toBeVisible();
+        expect(screen.getByText('Company and job title were prefilled. Review them before saving.')).toBeVisible();
         expect(
-            screen.getByText(
+            screen.queryByText(
                 'Some details were filled from the job posting. Review them before adding the application.'
             )
-        ).toBeVisible();
-        expect(screen.getByText('Captured page title')).toBeVisible();
-        expect(screen.getByText('Software Engineer | Example Careers')).toBeVisible();
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Quick Capture' })).not.toBeInTheDocument();
+        expect(within(reference).queryByTestId('bookmark-add-icon')).not.toBeInTheDocument();
+        expect(within(reference).queryByTestId('briefcase-icon')).not.toBeInTheDocument();
 
         await userEvent.clear(screen.getByLabelText(/company name/i));
         await userEvent.type(screen.getByLabelText(/company name/i), 'Edited Company');
@@ -218,9 +291,10 @@ describe('User add application flow', () => {
         expect(screen.getByLabelText(/company name/i)).toHaveValue('Edited Company');
         expect(screen.getByLabelText(/job title/i)).toHaveValue('Edited Role');
         expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+        expect(screen.getByText('Company and job title were prefilled. Review them before saving.')).toBeVisible();
     });
 
-    test('prefills only metadata fields that are present', () => {
+    test('describes a job-title-only prefill from the original captured metadata', async () => {
         const fragment = new URLSearchParams({
             jobURL: 'https://example.com/jobs/1',
             jobTitle: 'Platform Engineer',
@@ -232,26 +306,60 @@ describe('User add application flow', () => {
         expect(screen.getByLabelText(/job title/i)).toHaveValue('Platform Engineer');
         expect(screen.getByLabelText(/job location/i)).toHaveValue('');
         expect(
-            screen.getByText(
-                'Some details were filled from the job posting. Review them before adding the application.'
-            )
+            screen.getByText('Job title was prefilled. Review it and enter the company name before saving.')
+        ).toBeVisible();
+
+        await userEvent.type(screen.getByLabelText(/company name/i), 'Added manually');
+        expect(
+            screen.getByText('Job title was prefilled. Review it and enter the company name before saving.')
         ).toBeVisible();
     });
 
-    test('keeps the existing page-title fallback when no metadata fields exist', () => {
+    test('describes a company-only prefill from the original captured metadata', () => {
         const fragment = new URLSearchParams({
-            jobURL: 'https://example.com/jobs/legacy',
-            pageTitle: 'Legacy page title',
+            jobURL: 'https://example.com/jobs/1',
+            companyName: 'Example',
         });
 
         renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
 
-        expect(screen.queryByText(/some details were filled from the job posting/i)).not.toBeInTheDocument();
-        expect(screen.getByText('Captured page title')).toBeVisible();
-        expect(screen.getByText('Legacy page title')).toBeVisible();
+        expect(
+            screen.getByText('Company name was prefilled. Review it and enter the job title before saving.')
+        ).toBeVisible();
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('Example');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+    });
+
+    test('shows the captured title and manual-entry guidance when neither required field was prefilled', () => {
+        const fragment = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/legacy',
+            pageTitle: 'swe intern - Google Search',
+        });
+
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
+
+        expect(screen.getByRole('region', { name: 'Quick Capture reference' })).toBeVisible();
+        expect(screen.getByText('swe intern - Google Search')).toBeVisible();
+        expect(
+            screen.getByText('We could not detect the company or job title from this page. Enter them manually.')
+        ).toBeVisible();
         expect(screen.getByLabelText(/company name/i)).toHaveValue('');
         expect(screen.getByLabelText(/job title/i)).toHaveValue('');
         expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+    });
+
+    test('uses the missing-required-fields guidance for a location-only prefill', () => {
+        const fragment = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/1',
+            jobLocation: 'Remote',
+        });
+
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
+
+        expect(
+            screen.getByText('We could not detect the company or job title from this page. Enter them manually.')
+        ).toBeVisible();
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('Remote');
     });
 
     test('submits prefilled values through the unchanged application request', async () => {
@@ -303,7 +411,7 @@ describe('User add application flow', () => {
 
         renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
 
-        expect(screen.getByText('Captured page title')).toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Quick Capture reference' })).toBeInTheDocument();
         expect(screen.getByText(pageTitle)).toBeInTheDocument();
         expect(document.querySelector('script')).toBeNull();
         expect(screen.getByLabelText(/company name/i)).toHaveValue('');
@@ -311,11 +419,17 @@ describe('User add application flow', () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    test('hides whitespace page titles and caps long titles for display', () => {
+    test('omits an empty title while keeping the reference panel and caps long titles for display', () => {
         const longTitle = `  ${'x'.repeat(MAX_CAPTURED_PAGE_TITLE_LENGTH + 20)}  `;
         const { unmount } = renderQuickCaptureApplication('/application/add?pageTitle=%20%20%20');
 
-        expect(screen.queryByText('Captured page title')).not.toBeInTheDocument();
+        const referenceWithoutTitle = screen.getByRole('region', { name: 'Quick Capture reference' });
+        expect(within(referenceWithoutTitle).queryByTestId('captured-page-title')).not.toBeInTheDocument();
+        expect(
+            within(referenceWithoutTitle).getByText(
+                'We could not detect the company or job title from this page. Enter them manually.'
+            )
+        ).toBeVisible();
         unmount();
 
         const query = new URLSearchParams({ pageTitle: longTitle });

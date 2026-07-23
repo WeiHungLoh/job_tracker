@@ -1,10 +1,14 @@
 import type { MouseEvent } from 'react';
 import { useEffect, useRef } from 'react';
-import { createQuickCaptureBookmarklet } from '../../../application/jobApplication/quickCapture';
-import { routes } from '../../../../routes';
+import { routes } from '../../../routes';
+import { createQuickCaptureBookmarklet } from './quickCapture';
 import styles from './QuickCaptureBookmarklet.module.css';
 
-const QuickCaptureBookmarklet = () => {
+type QuickCaptureBookmarkletProps = {
+    showInstructions?: boolean;
+};
+
+const QuickCaptureBookmarklet = ({ showInstructions = true }: QuickCaptureBookmarkletProps) => {
     const bookmarkRef = useRef<HTMLAnchorElement>(null);
 
     useEffect(() => {
@@ -20,7 +24,7 @@ const QuickCaptureBookmarklet = () => {
 
     return (
         <div className={styles.quickCaptureBookmarklet}>
-            <p>Drag this link to your desktop browser’s bookmarks bar:</p>
+            {showInstructions && <p>Drag this link to your desktop browser’s bookmarks bar:</p>}
             <a ref={bookmarkRef} className={styles.bookmarkletLink} onClick={preventBookmarkletExecution}>
                 Save to Job Tracker
             </a>

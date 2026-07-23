@@ -2,21 +2,10 @@
     composes: formPage from '../../../../components/formPage/FormPage.module.css';
 }
 
-.quickCaptureNotice {
+.quickCaptureReference {
+    min-width: 0;
     padding: var(--spaceCompact) var(--spaceCard);
     margin: 0 0 var(--spaceCard);
-    border: 1px solid var(--colorCardBorder);
-    border-left: 4px solid var(--colorPrimary);
-    border-radius: var(--radiusControl);
-    background-color: var(--colorControlMutedSurface);
-    color: var(--colorText);
-    font-size: var(--fontSizeCompactControl);
-    font-weight: 600;
-}
-
-.capturedPageTitle {
-    padding: var(--spaceCompact) var(--spaceCard);
-    margin-bottom: var(--spaceCard);
     border: 1px solid var(--colorCardBorder);
     border-left: 4px solid var(--colorPrimary);
     border-radius: var(--radiusControl);
@@ -24,25 +13,109 @@
     overflow-wrap: anywhere;
 }
 
-.capturedPageTitleLabel {
+.quickCaptureReferenceHeading {
+    display: flex;
+    align-items: center;
+    gap: var(--spaceControl);
     margin: 0;
     color: var(--colorPrimary);
     font-size: var(--fontSizeCompactControl);
     font-weight: 700;
 }
 
-.capturedPageTitleValue {
+.capturedPageTitle {
     margin: var(--spaceControl) 0 0;
     color: var(--colorText);
     font-weight: 600;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
 }
 
-.capturedPageTitleHelp {
+.quickCaptureReferenceHelp {
     margin: var(--spaceControl) 0 0;
     color: var(--colorTextSecondary);
     font-size: var(--fontSizeCompactControl);
+    line-height: 1.4;
+}
+
+.quickCaptureSetup {
+    min-width: 0;
+    margin: 0 0 var(--spaceCompact);
+}
+
+.quickCaptureSetupTriggerRow {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.quickCaptureSetupTrigger.quickCaptureSetupTrigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    border: 0;
+    border-radius: var(--radiusControl);
+    background: transparent;
+    color: var(--colorPrimary);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.quickCaptureSetupTrigger.quickCaptureSetupTrigger:hover {
+    background: transparent;
+    color: var(--colorPrimaryHover);
+}
+
+.quickCaptureChevron {
+    flex: 0 0 auto;
+    transition: transform 0.15s ease;
+}
+
+.quickCaptureChevronOpen {
+    transform: rotate(180deg);
+}
+
+.quickCaptureSetupContent {
+    min-width: 0;
+    padding: var(--spaceCompact) var(--spaceCard);
+    margin-top: var(--spaceControl);
+    border: 1px solid var(--colorCardBorder);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+    overflow-wrap: anywhere;
+}
+
+.quickCaptureSetupTitle {
+    margin: 0;
+    color: var(--colorText);
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.quickCaptureSetupInstructions {
+    margin: var(--spaceControl) 0 0;
+    color: var(--colorTextSecondary);
+    font-size: var(--fontSizeCompactControl);
+    line-height: 1.4;
+}
+
+.quickCaptureSetupContent > div {
+    margin: var(--spaceCompact) 0 0;
+}
+
+.quickCaptureSetupContent a {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
 }
 
 .submitButton {
     composes: actions from '../../../../components/formPage/FormPage.module.css';
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quickCaptureChevron {
+        transition: none;
+    }
 }

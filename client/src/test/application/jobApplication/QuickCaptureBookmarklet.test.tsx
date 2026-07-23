@@ -1,6 +1,6 @@
 import { createEvent, fireEvent, render, screen } from '@testing-library/react';
-import QuickCaptureBookmarklet from '../../pages/userGuide/components/quickCaptureBookmarklet/QuickCaptureBookmarklet';
-import { routes } from '../../routes';
+import QuickCaptureBookmarklet from '../../../pages/application/jobApplication/QuickCaptureBookmarklet';
+import { routes } from '../../../routes';
 
 globalThis.fetch = vi.fn();
 
