@@ -124,7 +124,51 @@ describe('App routing and authentication behavior', () => {
         });
     });
 
-    test('scrubs legacy Quick Capture data before authentication begins and retains it for the form', async () => {
+    test('scrubs Quick Capture data before authentication begins and retains it for the form', async () => {
+        const replaceState = vi.spyOn(window.history, 'replaceState');
+        let resolveAuthentication: (value: ReturnType<typeof jsonResponse>) => void = () => undefined;
+        fetch.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveAuthentication = resolve;
+                })
+        );
+        const captureParameters = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/private',
+            pageTitle: 'Private captured title',
+            companyName: 'Private Company',
+            jobTitle: 'Private Role',
+            jobLocation: 'Private Location',
+        });
+
+        renderRoute(`/application/add#${captureParameters.toString()}`);
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        expect(replaceState).toHaveBeenCalledWith(window.history.state, '', '/application/add');
+        expect(replaceState.mock.invocationCallOrder[0]).toBeLessThan(fetch.mock.invocationCallOrder[0]);
+        expect(window.location.href).not.toContain('Private%20Company');
+        expect(window.location.href).not.toContain('Private%20Role');
+        expect(window.location.href).not.toContain('Private%20Location');
+
+        await act(async () => resolveAuthentication(jsonResponse({ message: 'Authenticated user.' })));
+
+        expect(await screen.findByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/private');
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+        expect(
+            fetch.mock.calls.filter(
+                ([url, init]) =>
+                    url === `${import.meta.env.VITE_API_URL}/authentication/sessions/current` && init?.method === 'GET'
+            )
+        ).toHaveLength(1);
+        expect(
+            fetch.mock.calls.filter(
+                ([url, init]) => url === `${import.meta.env.VITE_API_URL}/user-preferences` && init?.method === 'GET'
+            )
+        ).toHaveLength(1);
+        replaceState.mockRestore();
+    });
+
+    test('scrubs legacy Quick Capture query data before authentication and preserves unrelated parameters', async () => {
         const replaceState = vi.spyOn(window.history, 'replaceState');
         let resolveAuthentication: (value: ReturnType<typeof jsonResponse>) => void = () => undefined;
         fetch.mockImplementationOnce(
@@ -134,7 +178,8 @@ describe('App routing and authentication behavior', () => {
                 })
         );
         const query = new URLSearchParams({
-            jobURL: 'https://example.com/jobs/private',
+            jobURL: 'https://example.com/jobs/legacy',
+            pageTitle: 'Legacy bookmark',
             source: 'bookmark',
         });
 
@@ -146,7 +191,20 @@ describe('App routing and authentication behavior', () => {
 
         await act(async () => resolveAuthentication(jsonResponse({ message: 'Authenticated user.' })));
 
-        expect(await screen.findByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/private');
+        expect(await screen.findByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/legacy');
+        expect(screen.getByText('Legacy bookmark')).toBeVisible();
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+        expect(
+            fetch.mock.calls.filter(
+                ([url, init]) =>
+                    url === `${import.meta.env.VITE_API_URL}/authentication/sessions/current` && init?.method === 'GET'
+            )
+        ).toHaveLength(1);
+        expect(
+            fetch.mock.calls.filter(
+                ([url, init]) => url === `${import.meta.env.VITE_API_URL}/user-preferences` && init?.method === 'GET'
+            )
+        ).toHaveLength(1);
         replaceState.mockRestore();
     });
 

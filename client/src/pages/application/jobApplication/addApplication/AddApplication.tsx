@@ -25,12 +25,13 @@ import { useQuickCaptureData } from '../QuickCaptureProvider';
 const AddApplication = () => {
     const quickCaptureData = useQuickCaptureData();
     const [capturedData] = useState(quickCaptureData);
-    const [companyName, setCompanyName] = useState<string>('');
-    const [jobTitle, setJobTitle] = useState<string>('');
+    const [companyName, setCompanyName] = useState<string>(capturedData.companyName);
+    const [jobTitle, setJobTitle] = useState<string>(capturedData.jobTitle);
     const [jobStatus, setJobStatus] = useState<JobStatus>('Applied');
     const [applicationDate, setApplicationDate] = useState<string>('');
-    const [jobLocation, setJobLocation] = useState<string>('');
+    const [jobLocation, setJobLocation] = useState<string>(capturedData.jobLocation);
     const [jobURL, setJobURL] = useState<string>(capturedData.jobURL);
+    const hasPrefilledMetadata = Boolean(capturedData.companyName || capturedData.jobTitle || capturedData.jobLocation);
     const { clearFieldError, errors, setErrors } = useFormErrors<ApplicationFormField>();
     const companyNameInputRef = useRef<HTMLInputElement>(null);
     const jobTitleInputRef = useRef<HTMLInputElement>(null);
@@ -129,6 +130,11 @@ const AddApplication = () => {
 
     return (
         <form className={styles.addApplication} noValidate onSubmit={handleAdd}>
+            {hasPrefilledMetadata && (
+                <p className={styles.quickCaptureNotice}>
+                    Some details were filled from the job posting. Review them before adding the application.
+                </p>
+            )}
             {capturedData.pageTitle && (
                 <section className={styles.capturedPageTitle} aria-labelledby='captured-page-title-label'>
                     <p id='captured-page-title-label' className={styles.capturedPageTitleLabel}>

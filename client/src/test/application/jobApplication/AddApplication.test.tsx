@@ -186,6 +186,99 @@ describe('User add application flow', () => {
         expect(jobURLInput).toHaveValue('');
     });
 
+    test('prefills structured metadata once and asks the user to review it', async () => {
+        const fragment = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/1',
+            pageTitle: 'Software Engineer | Example Careers',
+            companyName: 'Example',
+            jobTitle: 'Software Engineer',
+            jobLocation: 'Singapore',
+        });
+
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
+
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('Example');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('Software Engineer');
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('Singapore');
+        expect(screen.getByLabelText(/job posting url/i)).toHaveValue('https://example.com/jobs/1');
+        expect(
+            screen.getByText(
+                'Some details were filled from the job posting. Review them before adding the application.'
+            )
+        ).toBeVisible();
+        expect(screen.getByText('Captured page title')).toBeVisible();
+        expect(screen.getByText('Software Engineer | Example Careers')).toBeVisible();
+
+        await userEvent.clear(screen.getByLabelText(/company name/i));
+        await userEvent.type(screen.getByLabelText(/company name/i), 'Edited Company');
+        await userEvent.clear(screen.getByLabelText(/job title/i));
+        await userEvent.type(screen.getByLabelText(/job title/i), 'Edited Role');
+        await userEvent.clear(screen.getByLabelText(/job location/i));
+
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('Edited Company');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('Edited Role');
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+    });
+
+    test('prefills only metadata fields that are present', () => {
+        const fragment = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/1',
+            jobTitle: 'Platform Engineer',
+        });
+
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
+
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('Platform Engineer');
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+        expect(
+            screen.getByText(
+                'Some details were filled from the job posting. Review them before adding the application.'
+            )
+        ).toBeVisible();
+    });
+
+    test('keeps the existing page-title fallback when no metadata fields exist', () => {
+        const fragment = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/legacy',
+            pageTitle: 'Legacy page title',
+        });
+
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
+
+        expect(screen.queryByText(/some details were filled from the job posting/i)).not.toBeInTheDocument();
+        expect(screen.getByText('Captured page title')).toBeVisible();
+        expect(screen.getByText('Legacy page title')).toBeVisible();
+        expect(screen.getByLabelText(/company name/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job title/i)).toHaveValue('');
+        expect(screen.getByLabelText(/job location/i)).toHaveValue('');
+    });
+
+    test('submits prefilled values through the unchanged application request', async () => {
+        fetch.mockResolvedValueOnce(successResponse());
+        const fragment = new URLSearchParams({
+            jobURL: 'https://example.com/jobs/1',
+            pageTitle: 'Reference only',
+            companyName: 'Example',
+            jobTitle: 'Engineer',
+            jobLocation: 'Remote',
+        });
+
+        renderQuickCaptureApplication(`/application/add#${fragment.toString()}`);
+        userEvent.click(screen.getByRole('button', { name: /add job application/i }));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+        const request = fetch.mock.calls[0][1] as RequestInit;
+        const body = JSON.parse(request.body as string);
+        expect(body).toMatchObject({
+            companyName: 'Example',
+            jobTitle: 'Engineer',
+            jobLocation: 'Remote',
+            jobURL: 'https://example.com/jobs/1',
+        });
+        expect(body).not.toHaveProperty('pageTitle');
+    });
+
     test('supports and removes legacy query capture parameters', () => {
         const replaceState = vi.spyOn(window.history, 'replaceState');
         const query = new URLSearchParams({

@@ -7,6 +7,9 @@ const EMPTY_QUICK_CAPTURE_DATA: QuickCaptureData = {
     hasCaptureParameters: false,
     jobURL: '',
     pageTitle: '',
+    companyName: '',
+    jobTitle: '',
+    jobLocation: '',
 };
 
 const QuickCaptureContext = createContext<QuickCaptureData>(EMPTY_QUICK_CAPTURE_DATA);

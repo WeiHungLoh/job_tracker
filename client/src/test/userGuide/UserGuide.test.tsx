@@ -82,8 +82,14 @@ describe('renders user guide properly', () => {
         expect(screen.getByText(/install the bookmark once/i)).toBeVisible();
         expect(screen.getByText(/desktop browser(?:'|’)s bookmarks bar/i)).toBeVisible();
         expect(screen.getByText(/job posting url is prefilled/i)).toBeVisible();
-        expect(screen.getByText(/browser-tab title is shown only as a reference/i)).toBeVisible();
-        expect(screen.getByText(/complete the remaining fields manually/i)).toBeVisible();
+        expect(screen.getByText(/structured job-posting metadata/i)).toBeVisible();
+        expect(
+            screen.getByText(/fills only the company name, job title and location provided by that metadata/i)
+        ).toBeVisible();
+        expect(screen.getByText(/missing details stay empty/i)).toBeVisible();
+        expect(screen.getByText(/browser-tab title remains a reference/i)).toBeVisible();
+        expect(screen.getByText(/replace that saved bookmark once/i)).toBeVisible();
+        expect(screen.getByText(/does not guess from visible page text/i)).toBeVisible();
         expect(screen.getByText(/copy the job page url and paste it/i)).toBeVisible();
         expect(screen.getByText(/quick visual overview/i)).not.toBeVisible();
 

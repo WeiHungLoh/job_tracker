@@ -18,6 +18,10 @@ describe('QuickCaptureBookmarklet', () => {
         expect(bookmark.tagName).toBe('A');
         expect(bookmark).toHaveAttribute('href', expect.stringMatching(/^javascript:/));
         expect(bookmark.getAttribute('href')).toContain(JSON.stringify(destinationURL));
+        expect(bookmark.getAttribute('href')).toContain('application/ld+json');
+        expect(bookmark.getAttribute('href')).toContain('companyName');
+        expect(bookmark.getAttribute('href')).toContain('jobTitle');
+        expect(bookmark.getAttribute('href')).toContain('jobLocation');
         expect(screen.getByText(/drag this link to your desktop browser(?:'|’)s bookmarks bar/i)).toBeVisible();
         expect(fetch).not.toHaveBeenCalled();
     });

@@ -2,6 +2,18 @@
     composes: formPage from '../../../../components/formPage/FormPage.module.css';
 }
 
+.quickCaptureNotice {
+    padding: var(--spaceCompact) var(--spaceCard);
+    margin: 0 0 var(--spaceCard);
+    border: 1px solid var(--colorCardBorder);
+    border-left: 4px solid var(--colorPrimary);
+    border-radius: var(--radiusControl);
+    background-color: var(--colorControlMutedSurface);
+    color: var(--colorText);
+    font-size: var(--fontSizeCompactControl);
+    font-weight: 600;
+}
+
 .capturedPageTitle {
     padding: var(--spaceCompact) var(--spaceCard);
     margin-bottom: var(--spaceCard);

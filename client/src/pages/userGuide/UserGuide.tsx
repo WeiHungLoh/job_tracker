@@ -193,8 +193,8 @@ const guideSections: readonly UserGuideSection[] = [
                 </p>
                 <p>
                     This uses saved ratings only. Your changes and results are not saved, do not change an offer&apos;s
-                    fit rating, and reset when you close the tool. It is not available for expired, previous or
-                    archived evaluations.
+                    fit rating, and reset when you close the tool. It is not available for expired, previous or archived
+                    evaluations.
                 </p>
                 <h3>Status changes, deletion and archive</h3>
                 <p>
@@ -245,24 +245,31 @@ const guideSections: readonly UserGuideSection[] = [
                 <h3>Quick capture from a job posting</h3>
                 <p>
                     Sign in to Job Tracker before using Quick Capture. In a desktop browser, make the bookmarks bar
-                    visible, then install the bookmark once:
+                    visible, then install the bookmark once. If you already use an older Quick Capture bookmark, replace
+                    that saved bookmark once to enable smart prefilling:
                 </p>
                 <QuickCaptureBookmarklet />
                 <ol>
                     <li>Visit a job advertisement and select the saved bookmark.</li>
                     <li>Job Tracker opens the Add Application page in a new tab.</li>
                     <li>The Job Posting URL is prefilled from the current page.</li>
-                    <li>The browser-tab title is shown only as a reference.</li>
-                    <li>Verify the title and complete the remaining fields manually before submitting.</li>
+                    <li>
+                        When the page provides structured job-posting metadata, Quick Capture fills only the company
+                        name, job title and location provided by that metadata.
+                    </li>
+                    <li>Missing details stay empty, and the browser-tab title remains a reference.</li>
+                    <li>Review every populated field and complete the application before submitting.</li>
                 </ol>
                 <p>
-                    Quick Capture reads only the current top-level URL and browser-tab title. It does not inspect an
-                    Easy Apply modal or embedded iframe. Some portals may also use temporary or session-dependent URLs.
+                    Quick Capture reads the current top-level URL, browser-tab title and Schema.org JobPosting metadata.
+                    It does not guess from visible page text or inspect an Easy Apply modal or embedded iframe. Some
+                    portals may also use temporary or session-dependent URLs.
                 </p>
                 <p>
-                    Quick Capture works on most standard desktop job pages. Some websites or browser security settings
-                    may block bookmarklets. If it does not open, copy the job page URL and paste it into the Job Posting
-                    URL field manually.
+                    Quick Capture works on most standard desktop job pages. Pages without supported metadata keep the
+                    existing URL and page-title fallback. Some websites or browser security settings may block
+                    bookmarklets. If it does not open, copy the job page URL and paste it into the Job Posting URL field
+                    manually.
                 </p>
                 <h3>View job applications</h3>
                 <p>

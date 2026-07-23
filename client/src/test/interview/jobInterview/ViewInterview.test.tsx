@@ -463,7 +463,7 @@ describe('Job interview viewer flow', () => {
         );
 
         expect(screen.getByRole('status', { name: 'Loading interviews' })).toBeInTheDocument();
-        expect(screen.getAllByTestId('skeleton-card')).toHaveLength(6);
+        expect(screen.getAllByTestId('skeleton-card')).toHaveLength(4);
         expect(screen.queryByRole('status', { name: 'Loading results' })).not.toBeInTheDocument();
         expect(screen.queryByRole('status', { name: 'Loading board' })).not.toBeInTheDocument();
     });
